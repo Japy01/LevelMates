@@ -175,3 +175,10 @@ C_Club = {
 }
 function UnitXP() return STUB.player.xp or 0 end
 function UnitXPMax() return 1000 end
+RAID_CLASS_COLORS = {}
+C_Map.GetMapInfo = function(id) return { name = "Map " .. id, mapID = id } end
+MenuUtil = { CreateContextMenu = function(owner, fn) local root = { CreateTitle = function() end, CreateButton = function() end }; fn(owner, root) end }
+ChatFrameUtil = { SendTell = function(name) STUB.lastTell = name end }
+function Region:RegisterForClicks() end
+function Region:GetPoint() return "CENTER", nil, "CENTER", 0, 0 end
+AddonCompartmentFrame = { RegisterAddon = function() end }
