@@ -28,6 +28,7 @@ end
 function H.Ask(text)
 	text = strtrim(tostring(text or "")):gsub("[%c|]", ""):sub(1, 60)
 	if text == "" then return false end
+	if not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	local mapId, x, y = myPosition()
 	if not mapId or not x then ns.Say(L.HELP_PROMPT); return false end
 	local id = newId()
@@ -88,8 +89,9 @@ ns.On("LM_HELP_BUTTON", function()
 	if H.mine then H.Cancel(); return end
 	StaticPopupDialogs["LEVELMATES_HELP"] = StaticPopupDialogs["LEVELMATES_HELP"] or {
 		text = L.HELP_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 60, timeout = 0, whileDead = true, hideOnEscape = true,
-		OnAccept = function(self) H.Ask(self.editBox:GetText()) end,
-		EditBoxOnEnterPressed = function(self) H.Ask(self:GetParent().editBox:GetText()); self:GetParent():Hide() end,
+		-- Mainline dialogs carry the edit box as dialog.EditBox / dialog:GetEditBox() (GameDialog.xml); there is no `editBox`.
+		OnAccept = function(self) local eb = self.GetEditBox and self:GetEditBox() or self.EditBox; H.Ask(eb and eb:GetText()) end,
+		EditBoxOnEnterPressed = function(self) local dialog = self:GetParent(); H.Ask(self:GetText()); dialog:Hide() end,
 	}
 	StaticPopup_Show("LEVELMATES_HELP")
 end)

@@ -9,14 +9,29 @@ R.mates = {}
 local lastSent, lastHb, lastQuestsSig = nil, -math.huge, nil
 local xpWindow = {}   -- { t, xp } samples for XP/h over the last hour
 
-function R.IsGuildmate(name)
+-- Guild roster as a name set, cached: the hidden channel is open to anyone, so the roster is the whitelist.
+local guildSet, guildSetAt = nil, -math.huge
+local ROSTER_TTL = 300
+local function buildGuildSet()
+	local set = {}
 	local clubId = C_Club and C_Club.GetGuildClubId and C_Club.GetGuildClubId()
-	if not clubId then return true end   -- no roster API: don't block (GUILD transport already filters)
-	for _, id in ipairs(C_Club.GetClubMembers(clubId) or {}) do
-		local info = C_Club.GetMemberInfo(clubId, id)
-		if info and info.name and Ambiguate(info.name, "guild") == name then return true end
+	if clubId then
+		for _, id in ipairs(C_Club.GetClubMembers(clubId) or {}) do
+			local info = C_Club.GetMemberInfo(clubId, id)
+			if info and info.name then set[Ambiguate(info.name, "guild")] = true end
+		end
+	elseif GetNumGuildMembers and GetGuildRosterInfo then
+		for i = 1, GetNumGuildMembers() do
+			local full = GetGuildRosterInfo(i)
+			if full then set[Ambiguate(full, "guild")] = true end
+		end
 	end
-	return false
+	return set
+end
+function R.InvalidateGuildRoster() guildSet = nil end
+function R.IsGuildmate(name)
+	if not guildSet or GetTime() - guildSetAt > ROSTER_TTL then guildSet = buildGuildSet(); guildSetAt = GetTime() end
+	return guildSet[name] == true   -- no roster available: nobody is trusted
 end
 
 function R.MyQuests()
@@ -110,7 +125,18 @@ C.OnMessage("hb", function(f, name)
 	ns.Fire("LM_ROSTER_CHANGED")
 end)
 C.OnMessage("bye", function(_, name) if R.mates[name] then R.mates[name] = nil; ns.Fire("LM_ROSTER_CHANGED") end end)
-C.OnMessage("ping", function() C_Timer.After(math.random() * PING_JITTER, function() R.SendHeartbeat(true) end) end)
+-- A newcomer's ping gets my heartbeat and my quest list (so matching works both ways), jittered 0-5 s and
+-- coalesced: a login storm of pings produces one answer.
+local pingPending = false
+C.OnMessage("ping", function()
+	if pingPending then return end
+	pingPending = true
+	C_Timer.After(math.random() * PING_JITTER, function()
+		pingPending = false
+		lastQuestsSig = nil
+		R.SendHeartbeat(true); R.SendQuests()
+	end)
+end)
 C.OnMessage("q", function(f, name)
 	local m = R.mates[name]
 	if not m then return end
@@ -122,24 +148,35 @@ end)
 
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("PLAYER_LEVEL_UP"); ev:RegisterEvent("ZONE_CHANGED_NEW_AREA"); ev:RegisterEvent("GROUP_ROSTER_UPDATE"); ev:RegisterEvent("QUEST_LOG_UPDATE")
+ev:RegisterEvent("GUILD_ROSTER_UPDATE"); ev:RegisterEvent("CLUB_MEMBER_ADDED"); ev:RegisterEvent("CLUB_MEMBER_REMOVED")
 local questDebounce = false
 ev:SetScript("OnEvent", function(_, event)
 	if event == "QUEST_LOG_UPDATE" then
 		if questDebounce then return end
 		questDebounce = true
 		C_Timer.After(2, function() questDebounce = false; R.SendQuests() end)
+	elseif event == "GUILD_ROSTER_UPDATE" or event == "CLUB_MEMBER_ADDED" or event == "CLUB_MEMBER_REMOVED" then
+		R.InvalidateGuildRoster()
 	else
 		C_Timer.After(0.5, function() R.SendHeartbeat(false) end)
 	end
 end)
 
-ns.On("LM_WORLD", function(isInitial)
-	if not isInitial then return end
-	C_Timer.After(0.5, function()
-		if not C.IsReady() then return end
-		C.Send("ping", {}, "now")
-		R.SendHeartbeat(true)
-		R.SendQuests()
-	end)
-	C_Timer.NewTicker(HB_EVERY, function() R.SendHeartbeat(false); R.Expire() end)
+-- Lifecycle: announce myself (ping + forced hb + quests) at login, after /reload, and whenever the transport
+-- (re)starts while I am in the world; forget everyone when it stops ("off: you see nobody").
+local inWorld, ticker = false, nil
+local function announce()
+	if not C.IsReady() then return end
+	lastSent, lastHb, lastQuestsSig = nil, -math.huge, nil
+	C.Send("ping", {}, "now")
+	R.SendHeartbeat(true)
+	R.SendQuests()
+end
+ns.On("LM_WORLD", function(isInitial, isReloading)
+	if not (isInitial or isReloading) then return end
+	inWorld = true
+	C_Timer.After(0.5, announce)
+	if not ticker then ticker = C_Timer.NewTicker(HB_EVERY, function() R.SendHeartbeat(false); R.Expire() end) end
 end)
+ns.On("LM_COMM_READY", function() if inWorld then C_Timer.After(0.5, announce) end end)
+ns.On("LM_COMM_STOPPED", function() if next(R.mates) then wipe(R.mates); ns.Fire("LM_ROSTER_CHANGED") end end)

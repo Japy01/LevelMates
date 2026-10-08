@@ -96,7 +96,7 @@ end
 
 ------------------------------------------------------------------ transport
 local handlers = {}
-C.stats = { sent = 0, received = 0, bad = 0, queued = 0, lockdownSkips = 0 }
+C.stats = { sent = 0, received = 0, bad = 0, queued = 0, lockdownSkips = 0, retries = 0 }
 local queue = {}            -- { text, kind, prio }
 local allowance, lastTick = 10, 0   -- per-prefix: 10 burst, +1/s
 local active = "none"
@@ -117,11 +117,14 @@ local function pickTransport()
 	return "guild"   -- "guild" and "auto" start on GUILD; auto falls back on a failed send
 end
 
+local lastJoin = -math.huge
 local function ensureChannel()
 	local name = channelName()
 	if not name then return nil end
 	local id = GetChannelName(name)
-	if not id or id == 0 then JoinTemporaryChannel(name); id = GetChannelName(name) end
+	if (not id or id == 0) and GetTime() - lastJoin >= 5 then   -- joining is a server round-trip: ask, then poll on later pumps
+		JoinTemporaryChannel(name); lastJoin = GetTime(); id = GetChannelName(name)
+	end
 	channelId = (id and id > 0) and id or nil
 	return channelId
 end
@@ -144,18 +147,24 @@ local function pump()
 	while #queue > 0 and allowance >= 1 do
 		local item = table.remove(queue, 1)
 		local r = rawSend(item.text)
-		if r == 11 then table.insert(queue, 1, item); C.stats.lockdownSkips = C.stats.lockdownSkips + 1; return end
-		if r ~= 0 and ns.db.settings.transport == "auto" and active == "guild" then
+		if r == 0 then
+			C.stats.sent = C.stats.sent + 1; allowance = allowance - 1
+		elseif r == 11 then   -- lockdown: keep everything, try again later
+			table.insert(queue, 1, item); C.stats.lockdownSkips = C.stats.lockdownSkips + 1; break
+		elseif r == 3 or r == 8 or r == 7 then   -- throttled, or the hidden channel is not joined yet: retry on a later pump
+			table.insert(queue, 1, item); C.stats.retries = C.stats.retries + 1; break
+		elseif ns.db.settings.transport == "auto" and active == "guild" then
 			ns.Log("GUILD send failed (%s); switching to hidden channel", tostring(r))
-			active = "channel"; ensureChannel(); table.insert(queue, 1, item); ns.Fire("LM_COMM_READY", active); return
+			active = "channel"; ensureChannel(); table.insert(queue, 1, item); ns.Fire("LM_COMM_READY", active); break
+		else
+			C.stats.bad = C.stats.bad + 1   -- invalid prefix/message/type: nothing a retry would fix
 		end
-		if r == 0 then C.stats.sent = C.stats.sent + 1; allowance = allowance - 1 else C.stats.bad = C.stats.bad + 1 end
 	end
 	C.stats.queued = #queue
 end
 
 function C.Send(kind, fields, prio)
-	if not IsInGuild() then return false end
+	if active == "none" or not IsInGuild() then return false end
 	local text, why = C.Encode(kind, fields)
 	if not text then ns.Log("encode %s failed: %s", kind, tostring(why)); return false end
 	if kind == "hb" then   -- only the newest heartbeat waits in the queue
@@ -205,6 +214,7 @@ function C.Stop()
 	if ticker then ticker:Cancel(); ticker = nil end
 	if frame then frame:UnregisterEvent("CHAT_MSG_ADDON") end
 	queue = {}; active = "none"; channelId = nil
+	ns.Fire("LM_COMM_STOPPED")
 end
 function C.ActiveTransport() return active end
 function C.IsReady() return active ~= "none" end

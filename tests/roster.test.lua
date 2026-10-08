@@ -46,3 +46,11 @@ assert(STUB.sent[#STUB.sent].msg:find("ids=1098,6562"), "quest ids sent: " .. ST
 STUB.Receive("LVLM", C.Encode("hb", { l = 12, z = 1412 }), "GUILD", "Ana-Testrealm")
 STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "1098,959" }), "GUILD", "Ana-Testrealm")
 assert(R.mates.Ana.quests[1098] and R.mates.Ana.quests[959], "mate quests stored")
+-- a newcomer's ping gets my quest list too, not only a heartbeat (otherwise matching is one-way)
+n = #STUB.sent
+STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
+STUB.Advance(6)
+local answered = {}
+for i = n + 1, #STUB.sent do answered[#answered + 1] = select(1, C.Decode(STUB.sent[i].msg)) end
+table.sort(answered)
+assert(table.concat(answered, ",") == "hb,q", "ping answered with hb and q: " .. table.concat(answered, ","))

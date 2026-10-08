@@ -42,3 +42,22 @@ assert(H.mine == nil, "mine cleared")
 -- expiry 10 min
 STUB.Advance(601); H.Expire()
 assert(H.active.zz12 == nil, "expired")
+-- the board button opens the prompt; Okay and Enter read the Mainline dialog's EditBox
+ns.Fire("LM_HELP_BUTTON")
+assert(STUB.lastPopup == "LEVELMATES_HELP", "prompt shown")
+STUB.lastDialog.EditBox:SetText("Ogro")
+StaticPopupDialogs.LEVELMATES_HELP.OnAccept(STUB.lastDialog)
+kind, f = C.Decode(STUB.sent[#STUB.sent].msg)
+assert(kind == "help" and f.t == "Ogro" and H.mine, "popup Okay asks: " .. tostring(kind))
+H.Cancel()
+ns.Fire("LM_HELP_BUTTON")
+STUB.lastDialog.EditBox:SetText("Troll")
+StaticPopupDialogs.LEVELMATES_HELP.EditBoxOnEnterPressed(STUB.lastDialog.EditBox)
+kind, f = C.Decode(STUB.sent[#STUB.sent].msg)
+assert(kind == "help" and f.t == "Troll" and not STUB.lastDialog:IsShown(), "popup Enter asks and closes")
+H.Cancel()
+-- sharing off: asking does nothing but tell the user why
+ns.db.settings.share = false; C.Stop()
+local sentBefore = #STUB.sent
+assert(H.Ask("Elite Z") == false and H.mine == nil and #STUB.sent == sentBefore, "no request while invisible")
+assert(STUB.printed[#STUB.printed]:find(ns.L.HELP_NEEDS_SHARE, 1, true), "told to turn sharing on: " .. tostring(STUB.printed[#STUB.printed]))

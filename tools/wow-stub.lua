@@ -8,6 +8,7 @@ function GetTime() return STUB.now end
 -- interval (Advance(30) on a 0.2 s ticker = 150 calls), as the real client would.
 function STUB.Advance(seconds)
 	local target = STUB.now + seconds
+	STUB.ResolveChannelJoins()
 	while true do
 		local idx, best
 		for i, t in ipairs(STUB.timers) do
@@ -80,6 +81,7 @@ function Region:UnregisterEvent(e) self.registered[e] = nil end
 function Region:SetScript(name, fn) self.scripts[name] = fn end
 function Region:GetScript(name) return self.scripts[name] end
 function Region:HookScript(name, fn) local old = self.scripts[name]; self.scripts[name] = function(...) if old then old(...) end fn(...) end end
+function Region:GetParent() return self.parent end
 
 function CreateFrame(kind, name, parent, template)
 	local f = setmetatable({ kind = kind, name = name, parent = parent, template = template, registered = {}, scripts = {}, shown = true, TitleText = setmetatable({}, Region) }, Region)
@@ -97,6 +99,8 @@ C_ChatInfo = {
 	SendAddonMessage = function(prefix, msg, chatType, target)
 		if #msg > 255 then return 2 end
 		if STUB.lockdown then return 11 end
+		if (STUB.throttleNext or 0) > 0 then STUB.throttleNext = STUB.throttleNext - 1; return 3 end
+		if chatType == "CHANNEL" and not STUB.joinedChannelIds[target] then return 7 end
 		STUB.sent[#STUB.sent + 1] = { prefix = prefix, msg = msg, chatType = chatType or "PARTY", target = target, at = STUB.now }
 		return 0
 	end,
@@ -116,9 +120,20 @@ function GetZoneText() return STUB.player.zone end
 function IsInGuild() return STUB.player.guild ~= nil end
 function GetGuildInfo(u) return STUB.player.guild, "Member", 3, STUB.player.realm end
 function IsInGroup() return false end
-STUB.channels = {}
-function JoinTemporaryChannel(name) STUB.channels[name] = STUB.channels[name] or (#STUB.channels + 10); return 0, name end
+-- Joining a channel is a server round-trip: the id is known only after the next Advance, as in the client.
+STUB.channels, STUB.pendingChannels, STUB.joinedChannelIds, STUB.nextChannelId = {}, {}, {}, 10
+function JoinTemporaryChannel(name)
+	if not STUB.channels[name] and not STUB.pendingChannels[name] then STUB.pendingChannels[name] = true end
+	return 0, name
+end
 function GetChannelName(name) return STUB.channels[name] or 0, name end
+function STUB.ResolveChannelJoins()
+	for name in pairs(STUB.pendingChannels) do
+		STUB.channels[name] = STUB.nextChannelId; STUB.joinedChannelIds[STUB.nextChannelId] = true
+		STUB.nextChannelId = STUB.nextChannelId + 1
+		STUB.pendingChannels[name] = nil
+	end
+end
 function Ambiguate(name, ctx) return (name:gsub("%-.*$", "")) end
 function GetLocale() return STUB.locale or "enUS" end
 function GetBuildInfo() return "1.60.1", "70245", "Oct 6 2026", 16001 end
@@ -184,7 +199,15 @@ function Region:GetPoint() return "CENTER", nil, "CENTER", 0, 0 end
 AddonCompartmentFrame = { RegisterAddon = function() end }
 C_QuestLog.GetTitleForQuestID = function(id) return "Quest " .. id end
 StaticPopupDialogs = {}
-function StaticPopup_Show(which) STUB.lastPopup = which end
+-- Mainline dialogs expose their edit box as dialog.EditBox / dialog:GetEditBox() (GameDialog.xml, parentKey="EditBox").
+function StaticPopup_Show(which)
+	local dialog = CreateFrame("Frame")
+	dialog.EditBox = setmetatable({ parent = dialog, shown = true }, Region)
+	function dialog:GetEditBox() return self.EditBox end
+	function dialog:GetEditBoxText() return self.EditBox:GetText() end
+	STUB.lastPopup, STUB.lastDialog = which, dialog
+	return dialog
+end
 OKAY = "Okay"; CANCEL = "Cancel"
 function PlaySound() end
 function SendChatMessage(msg, chatType, lang, target) STUB.lastChat = { msg = msg, chatType = chatType or "SAY", lang = lang, target = target } end
