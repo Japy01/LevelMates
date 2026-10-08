@@ -12,3 +12,4 @@
 Locales\enUS.lua
 Locales\esES.lua
 Core.lua
+Comm.lua
