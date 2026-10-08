@@ -22,4 +22,13 @@ assert(C.Validate("help", { t = "a|cffff0000x", z = 1, x = 50, y = 50, id = "a1b
 assert(C.Validate("nope", {}) == false, "unknown kind")
 assert(select(1, C.Decode("v9\31hb\31l=1")) == nil, "unknown version dropped")
 assert(select(1, C.Decode("garbage")) == nil, "garbage dropped")
+-- schema-typed coercion
+local _, fh = C.Decode(C.Encode("help", { t = "50", z = 1, x = 1, y = 1, id = "1234" }))
+assert(fh and fh.id == "1234" and fh.t == "50" and fh.z == 1, "string fields stay strings")
+local kv, fv = C.Decode(C.Encode("hb", { l = 22, z = 1, v = "1.0.0" }))
+assert(kv == "hb" and fv.v == "1.0.0" and fv.l == 22 and type(fv.l) == "number", "version word with dots")
+assert(C.Decode("v1\31hb\31l=0x10;z=1") == nil, "hex level refused")
+assert(C.Decode("v1\31hb\31l=22\n;z=1") == nil, "control byte refused")
+assert(C.Validate("hb", { l = "1e2", z = 1 }) == false, "exponent refused")
+assert(C.Validate("hb", { l = " 22", z = 1 }) == false, "space refused")
 print("ok")
