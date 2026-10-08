@@ -1,0 +1,5 @@
+## Interface: 16001
+## Title: LM CommTest
+## Notes: Prueba de comunicación entre addons en WoW Forever: hermandad, canal oculto, con y sin clic. Desechable.
+## Version: 0.1
+LM_CommTest.lua
