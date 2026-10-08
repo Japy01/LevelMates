@@ -4,15 +4,24 @@
 STUB = { events = {}, timers = {}, sent = {}, frames = {}, now = 0, prefixes = {} }
 
 function GetTime() return STUB.now end
+-- Advance the clock, firing every due timer in time order; a repeating ticker fires once per
+-- interval (Advance(30) on a 0.2 s ticker = 150 calls), as the real client would.
 function STUB.Advance(seconds)
-	STUB.now = STUB.now + seconds
-	local due = {}
-	for i, t in ipairs(STUB.timers) do if t.at <= STUB.now then due[#due + 1] = i end end
-	for k = #due, 1, -1 do
-		local t = table.remove(STUB.timers, due[k])
-		t.fn()
-		if t.every and not t.cancelled then t.at = STUB.now + t.every; STUB.timers[#STUB.timers + 1] = t end
+	local target = STUB.now + seconds
+	while true do
+		local idx, best
+		for i, t in ipairs(STUB.timers) do
+			if t.at <= target and (not best or t.at < best.at) then idx, best = i, t end
+		end
+		if not best then break end
+		table.remove(STUB.timers, idx)
+		if best.at > STUB.now then STUB.now = best.at end
+		if not best.cancelled then
+			best.fn()
+			if best.every and best.every > 0 and not best.cancelled then best.at = STUB.now + best.every; STUB.timers[#STUB.timers + 1] = best end
+		end
 	end
+	STUB.now = target
 end
 C_Timer = {
 	After = function(sec, fn) STUB.timers[#STUB.timers + 1] = { at = STUB.now + sec, fn = fn } end,

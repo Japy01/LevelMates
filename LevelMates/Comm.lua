@@ -92,3 +92,121 @@ function C.Decode(s)
 	if not ok then return nil, why end
 	return kind, fields
 end
+
+------------------------------------------------------------------ transport
+local handlers = {}
+C.stats = { sent = 0, received = 0, bad = 0, queued = 0, lockdownSkips = 0 }
+local queue = {}            -- { text, kind, prio }
+local allowance, lastTick = 10, 0   -- per-prefix: 10 burst, +1/s
+local active = "none"
+local channelId
+local ticker
+
+local function channelName()
+	local g = GetGuildInfo("player")
+	if not g then return nil end
+	local h = 5381
+	for i = 1, #g do h = (h * 33 + g:byte(i)) % 4294967296 end
+	return "LM" .. string.format("%04x%04x", math.floor(h / 65536), h % 65536)   -- two halves: safe on 5.1 doubles and 32-bit ints
+end
+
+local function pickTransport()
+	local want = ns.db.settings.transport
+	if want == "channel" then return "channel" end
+	return "guild"   -- "guild" and "auto" start on GUILD; auto falls back on a failed send
+end
+
+local function ensureChannel()
+	local name = channelName()
+	if not name then return nil end
+	local id = GetChannelName(name)
+	if not id or id == 0 then JoinTemporaryChannel(name); id = GetChannelName(name) end
+	channelId = (id and id > 0) and id or nil
+	return channelId
+end
+
+local function rawSend(text)
+	if active == "channel" then
+		local id = channelId or ensureChannel()
+		if not id then return 7 end
+		return C_ChatInfo.SendAddonMessage(C.PREFIX, text, "CHANNEL", id)
+	end
+	return C_ChatInfo.SendAddonMessage(C.PREFIX, text, "GUILD")
+end
+
+local function pump()
+	local now = GetTime()
+	allowance = math.min(10, allowance + (now - lastTick))
+	lastTick = now
+	if #queue == 0 then return end
+	if C_ChatInfo.InChatMessagingLockdown() then C.stats.lockdownSkips = C.stats.lockdownSkips + 1; return end
+	while #queue > 0 and allowance >= 1 do
+		local item = table.remove(queue, 1)
+		local r = rawSend(item.text)
+		if r == 11 then table.insert(queue, 1, item); C.stats.lockdownSkips = C.stats.lockdownSkips + 1; return end
+		if r ~= 0 and ns.db.settings.transport == "auto" and active == "guild" then
+			ns.Log("GUILD send failed (%s); switching to hidden channel", tostring(r))
+			active = "channel"; ensureChannel(); table.insert(queue, 1, item); ns.Fire("LM_COMM_READY", active); return
+		end
+		if r == 0 then C.stats.sent = C.stats.sent + 1; allowance = allowance - 1 else C.stats.bad = C.stats.bad + 1 end
+	end
+	C.stats.queued = #queue
+end
+
+function C.Send(kind, fields, prio)
+	if not IsInGuild() then return false end
+	local text, why = C.Encode(kind, fields)
+	if not text then ns.Log("encode %s failed: %s", kind, tostring(why)); return false end
+	if kind == "hb" then   -- only the newest heartbeat waits in the queue
+		for i = #queue, 1, -1 do if queue[i].kind == "hb" then table.remove(queue, i) end end
+	end
+	local item = { text = text, kind = kind, prio = prio or "normal" }
+	if item.prio == "now" then table.insert(queue, 1, item) else queue[#queue + 1] = item end
+	C.stats.queued = #queue
+	pump()
+	return true
+end
+
+function C.OnMessage(kind, fn) handlers[kind] = handlers[kind] or {}; table.insert(handlers[kind], fn) end
+
+local me
+local function onAddonMessage(prefix, text, channel, sender)
+	if prefix ~= C.PREFIX then return end
+	if issecretvalue and (issecretvalue(text) or issecretvalue(sender)) then return end
+	if channel ~= "GUILD" and channel ~= "CHANNEL" then return end
+	if channel == "CHANNEL" and active ~= "channel" then return end
+	local name = Ambiguate(sender, "guild")
+	if name == me then return end
+	if channel == "CHANNEL" and ns.Roster and ns.Roster.IsGuildmate and not ns.Roster.IsGuildmate(name) then C.stats.bad = C.stats.bad + 1; return end
+	local kind, fields = C.Decode(text)
+	if not kind then C.stats.bad = C.stats.bad + 1; return end
+	C.stats.received = C.stats.received + 1
+	for _, fn in ipairs(handlers[kind] or {}) do fn(fields, name, sender) end
+end
+
+local frame
+function C.Start()
+	me = UnitName("player")
+	C_ChatInfo.RegisterAddonMessagePrefix(C.PREFIX)
+	active = pickTransport()
+	if active == "channel" then ensureChannel() end
+	if not frame then
+		frame = CreateFrame("Frame")
+		frame:SetScript("OnEvent", function(_, _, ...) onAddonMessage(...) end)
+	end
+	frame:RegisterEvent("CHAT_MSG_ADDON")
+	lastTick = GetTime()
+	if ticker then ticker:Cancel() end   -- Start is idempotent: one pump ticker at a time
+	ticker = C_Timer.NewTicker(0.2, pump)
+	ns.Fire("LM_COMM_READY", active)
+end
+function C.Stop()
+	if ticker then ticker:Cancel(); ticker = nil end
+	if frame then frame:UnregisterEvent("CHAT_MSG_ADDON") end
+	queue = {}; active = "none"; channelId = nil
+end
+function C.ActiveTransport() return active end
+function C.IsReady() return active ~= "none" end
+
+ns.On("LM_LOADED", function() if ns.db.settings.share then C.Start() end end)
+ns.On("LM_LOGOUT", function() if C.IsReady() then rawSend(C.Encode("bye", {})) end end)
