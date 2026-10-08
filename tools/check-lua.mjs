@@ -9,8 +9,16 @@ const require = createRequire(import.meta.url);
 let luaparse;
 try { luaparse = require('luaparse'); } catch { console.error('luaparse not found: run `npm install luaparse` in', path.dirname(new URL(import.meta.url).pathname)); process.exit(2); }
 const files = [];
+function walk(d) {
+  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    if (e.name === 'node_modules') continue;
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) walk(p);
+    else if (e.name.endsWith('.lua')) files.push(p);
+  }
+}
 for (const a of process.argv.slice(2)) {
-  if (fs.statSync(a).isDirectory()) for (const f of fs.readdirSync(a)) { if (f.endsWith('.lua')) files.push(path.join(a, f)); }
+  if (fs.statSync(a).isDirectory()) walk(a);
   else files.push(a);
 }
 let bad = 0;
