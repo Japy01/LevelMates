@@ -14,3 +14,4 @@ Locales\esES.lua
 Core.lua
 Comm.lua
 Roster.lua
+Settings.lua
