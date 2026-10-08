@@ -182,3 +182,4 @@ ChatFrameUtil = { SendTell = function(name) STUB.lastTell = name end }
 function Region:RegisterForClicks() end
 function Region:GetPoint() return "CENTER", nil, "CENTER", 0, 0 end
 AddonCompartmentFrame = { RegisterAddon = function() end }
+C_QuestLog.GetTitleForQuestID = function(id) return "Quest " .. id end
