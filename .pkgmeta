@@ -1,8 +1,13 @@
 package-as: LevelMates
 enable-nolib-creation: no
+move-folders:
+  LevelMates/LevelMates: LevelMates
 ignore:
   - tests
   - tools
   - docs
   - spike
   - reference
+  - package.json
+  - .claude
+  - .superpowers
