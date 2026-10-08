@@ -160,3 +160,18 @@ function print(...) local parts = {}; for i = 1, select("#", ...) do parts[i] = 
 -- LevelMates additions
 function GetRealmName() return STUB.player.realm end
 C_AddOns = { GetAddOnMetadata = function() return "dev" end }
+STUB.quests = {}
+C_QuestLog.GetNumQuestLogEntries = function() return #STUB.quests, #STUB.quests end
+C_QuestLog.GetInfo = function(i) local id = STUB.quests[i]; if not id then return nil end; return { questID = id, title = "Quest " .. id, isHeader = false, level = 20 } end
+C_QuestLog.IsComplete = function(id) return STUB.completed and STUB.completed[id] or false end
+C_QuestLog.IsPushableQuest = function() return true end
+function GetNumGroupMembers() return STUB.groupSize or 0 end
+function GetNumSubgroupMembers() return math.max(0, (STUB.groupSize or 0) - 1) end
+STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
+C_Club = {
+	GetGuildClubId = function() return 1 end,
+	GetClubMembers = function() local out = {}; for k in pairs(STUB.guildMembers) do out[#out + 1] = k end; return out end,
+	GetMemberInfo = function(_, id) return { name = id, level = 1, presence = 1 } end,
+}
+function UnitXP() return STUB.player.xp or 0 end
+function UnitXPMax() return 1000 end

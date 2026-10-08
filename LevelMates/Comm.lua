@@ -33,11 +33,12 @@ end
 local function text(max) return function(v) return type(v) == "string" and #v >= 1 and #v <= max and not v:find("[%c|]") end end
 local function word(max) return function(v) return type(v) == "string" and v:match("^[%w_%.%-]+$") ~= nil and #v <= max end end
 local function idlist(max) return function(v) if type(v) == "number" then v = tostring(v) end; return type(v) == "string" and #v <= max and v:match("^%d+[,%d]*$") ~= nil end end
+local function chunkIndex(max) return function(v) return type(v) == "string" and #v <= max and v:match("^%d+/%d+$") ~= nil end end   -- "index/total"
 
 -- field validators; required fields are listed in REQUIRED
 C.SCHEMA = {
 	hb   = { l = int(1, 100), z = int(0, 100000), g = int(0, 1), s = int(0, 1), x = num(0, 100), y = num(0, 100), r = int(0, 999999), c = word(16), v = word(20) },
-	q    = { i = word(7), ids = idlist(240) },
+	q    = { i = chunkIndex(7), ids = idlist(240) },
 	help = { t = text(60), z = int(0, 100000), x = num(0, 100), y = num(0, 100), id = word(8) },
 	helpok = { id = word(8) },
 	bye  = {},
