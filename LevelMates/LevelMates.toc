@@ -8,7 +8,8 @@
 ## IconTexture: Interface\AddOns\LevelMates\Media\icon
 ## AllowLoadGameType: camelot
 ## X-License: MIT
-## X-Website: https://github.com/<owner>/LevelMates
+## X-Website: https://github.com/Japy01/LevelMates
+## X-Curse-Project-ID: 1733921
 Locales\enUS.lua
 Locales\esES.lua
 Core.lua
