@@ -183,3 +183,8 @@ function Region:RegisterForClicks() end
 function Region:GetPoint() return "CENTER", nil, "CENTER", 0, 0 end
 AddonCompartmentFrame = { RegisterAddon = function() end }
 C_QuestLog.GetTitleForQuestID = function(id) return "Quest " .. id end
+StaticPopupDialogs = {}
+function StaticPopup_Show(which) STUB.lastPopup = which end
+OKAY = "Okay"; CANCEL = "Cancel"
+function PlaySound() end
+function SendChatMessage(msg, chatType, lang, target) STUB.lastChat = { msg = msg, chatType = chatType or "SAY", lang = lang, target = target } end

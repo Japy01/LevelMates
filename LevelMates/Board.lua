@@ -3,7 +3,7 @@ local _, ns = ...
 local B = {}
 ns.Board = B
 local L, R = ns.L, ns.Roster
-local ROWS, ROW_H = 20, 16
+local ROWS, ROW_H, HELP_ROWS = 20, 16, 3
 
 local function ClassColor(class)
 	local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
@@ -14,7 +14,7 @@ end
 local function Build()
 	local f = CreateFrame("Frame", "LevelMatesBoard", UIParent, "BasicFrameTemplateWithInset")
 	B.frame = f
-	f:SetSize(420, 60 + ROWS * ROW_H)
+	f:SetSize(420, 60 + (ROWS + HELP_ROWS) * ROW_H)
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving)
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); local p, _, rp, x, y = self:GetPoint(); ns.char.board = { p, rp, x, y } end)
@@ -52,6 +52,35 @@ local function Build()
 	help:SetSize(120, 22); help:SetPoint("BOTTOMLEFT", 12, 8); help:SetText(L.BTN_HELP)
 	help:SetScript("OnClick", function() ns.Fire("LM_HELP_BUTTON") end)
 	B.helpButton = help
+
+	-- active help requests, above the help button; "On my way" whispers only from its click
+	B.helpRows = {}
+	for i = 1, HELP_ROWS do
+		local text = Col(f, 300)
+		text:SetPoint("BOTTOMLEFT", 12, 34 + (i - 1) * ROW_H)
+		local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+		btn:SetSize(60, ROW_H); btn:SetPoint("LEFT", text, "RIGHT", 4, 0); btn:SetText(L.BTN_COMING)
+		btn:SetScript("OnClick", function(self) if self.helpId then ns.Help.Coming(self.helpId) end end)
+		B.helpRows[i] = { text = text, button = btn }
+	end
+end
+
+local function RefreshHelp()
+	local H = ns.Help
+	local ids = H and H.List() or {}
+	for i = 1, HELP_ROWS do
+		local row, id = B.helpRows[i], ids[i]
+		local h = id and H.active[id]
+		row.button.helpId = id
+		if h then
+			local info = h.mapId and C_Map.GetMapInfo(h.mapId)
+			row.text:SetText(string.format("%s: %s (%s)", h.name, h.text, info and info.name or tostring(h.mapId)))
+			row.text:Show(); row.button:Show()
+		else
+			row.text:SetText(""); row.text:Hide(); row.button:Hide()
+		end
+	end
+	B.helpButton:SetText(H and H.mine and L.BTN_HELP_CANCEL or L.BTN_HELP)
 end
 
 function B.Refresh()
@@ -75,6 +104,7 @@ function B.Refresh()
 		end
 	end
 	B.frame.empty:SetText(#list == 0 and (IsInGuild() and L.EMPTY or L.NOT_IN_GUILD) or "")
+	RefreshHelp()
 end
 
 function B.Toggle()
@@ -98,6 +128,7 @@ function B.OpenMenu(name)
 end
 
 ns.On("LM_ROSTER_CHANGED", B.Refresh)
+ns.On("LM_HELP_CHANGED", B.Refresh)
 ns.On("LM_TOGGLE_BOARD", B.Toggle)
 ns.On("LM_LOADED", function()
 	if AddonCompartmentFrame and ns.db.settings.minimap then

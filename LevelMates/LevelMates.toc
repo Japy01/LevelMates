@@ -17,3 +17,4 @@ Roster.lua
 Settings.lua
 Board.lua
 Match.lua
+Help.lua
