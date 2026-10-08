@@ -1,0 +1,9 @@
+{
+  "name": "levelmates",
+  "private": true,
+  "description": "LevelMates: WoW Forever guild addon. Tests run outside the game with fengari.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/run-all.mjs"
+  }
+}
