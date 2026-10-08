@@ -1,0 +1,8 @@
+package-as: LevelMates
+enable-nolib-creation: no
+ignore:
+  - tests
+  - tools
+  - docs
+  - spike
+  - reference
