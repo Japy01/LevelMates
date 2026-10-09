@@ -143,7 +143,8 @@ local function pump()
 	allowance = math.min(10, allowance + (now - lastTick))
 	lastTick = now
 	if #queue == 0 then return end
-	if C_ChatInfo.InChatMessagingLockdown() then C.stats.lockdownSkips = C.stats.lockdownSkips + 1; return end
+	-- No pre-check of the restriction flags: on Forever they read true outside combat while sends still work
+	-- (spike). SendAddonMessage returns 11 under a real lockdown and the loop below keeps the queue.
 	while #queue > 0 and allowance >= 1 do
 		local item = table.remove(queue, 1)
 		local r = rawSend(item.text)

@@ -29,6 +29,13 @@ STUB.lockdown = false
 STUB.Advance(1)
 assert(#STUB.sent == 3, "queue flushed: latest hb + help, got " .. #STUB.sent)
 assert(STUB.sent[2].msg:find("l=23") or STUB.sent[3].msg:find("l=23"), "only the latest hb kept")
+-- Forever's restriction flag can read true while sends still work (spike): only the send result decides
+STUB.reportsRestricted = true
+local r0 = #STUB.sent
+C.Send("ping", {})
+STUB.Advance(1)
+assert(#STUB.sent == r0 + 1, "sent although the restriction flag reads true")
+STUB.reportsRestricted = false
 -- a throttled send (result 3) is retried on the same transport, not dropped and not a reason to switch
 STUB.throttleNext = 1
 local b = #STUB.sent

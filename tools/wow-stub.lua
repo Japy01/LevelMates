@@ -104,7 +104,8 @@ C_ChatInfo = {
 		STUB.sent[#STUB.sent + 1] = { prefix = prefix, msg = msg, chatType = chatType or "PARTY", target = target, at = STUB.now }
 		return 0
 	end,
-	InChatMessagingLockdown = function() return STUB.lockdown == true end,
+	-- STUB.reportsRestricted: the restriction flags read true on Forever even outside combat (spike), while sends still succeed.
+	InChatMessagingLockdown = function() return STUB.lockdown == true or STUB.reportsRestricted == true end,
 	AreOutgoingAddonChatMessagesRestricted = function() return false end,
 }
 Enum = { SendAddonMessageResult = { Success = 0, InvalidPrefix = 1, InvalidMessage = 2, AddonMessageThrottle = 3, InvalidChatType = 4, NotInGroup = 5, TargetRequired = 6, InvalidChannel = 7, ChannelThrottle = 8, GeneralError = 9, NotInGuild = 10, AddOnMessageLockdown = 11, TargetOffline = 12 } }
