@@ -13,9 +13,10 @@ B.COLS = { 150, 50, 180, 70, 70 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
 B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
+B.WCOLS = { 100, 1, 344, 1, 74 }   -- wishes: who, -, item, -, since (same total as B.COLS)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
-B.TAB_KEYS = { "mates", "lfg", "journal", "goals" }
-local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS" }
+B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes" }
+local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES" }
 B.TAB_LABELS = TAB_LABELS
 local function KnownTab(key) for _, k in ipairs(B.TAB_KEYS) do if k == key then return key end end; return "mates" end
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
@@ -154,6 +155,10 @@ local function Build()
 		local r = { bg = bg, icon = icon, button = btn, name = Col(btn, B.COLS[1] - (ROW_H - 4) - 4), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
 		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
+			if B.tab == "wishes" then
+				if mouse == "RightButton" and self.wishMine then B.OpenWishMenu(self.wishId) end
+				return
+			end
 			if B.tab == "goals" then
 				if mouse == "RightButton" then
 					if self.goalId then B.OpenGoalMenu(self.goalId) elseif self.personalMine then B.OpenMyGoalMenu() end
@@ -179,6 +184,8 @@ local function Build()
 						GameTooltip:Show()
 					end
 				end
+			elseif B.tab == "wishes" and self.wishId then   -- wishes: the item card
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink("item:" .. self.wishId); GameTooltip:Show()
 			elseif B.tab == "journal" and self.entry and self.entry.link then   -- journal: the item card
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink(self.entry.link); GameTooltip:Show()
 			elseif B.tab == "mates" and self.mate then   -- partner match and shared rested XP
@@ -257,6 +264,12 @@ local function Build()
 	myGoal:SetSize(120, 20); myGoal:SetPoint("BOTTOMRIGHT", -12, 3); myGoal:SetText(L.BTN_MYGOAL)
 	myGoal:SetScript("OnClick", function() ns.Fire("LM_MYGOAL") end)
 	B.myGoal = myGoal
+
+	-- Wishes tab: "Add wish" (bottom left).
+	local wishAdd = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	wishAdd:SetSize(120, 20); wishAdd:SetPoint("BOTTOMLEFT", 12, 3); wishAdd:SetText(L.BTN_WISH_ADD)
+	wishAdd:SetScript("OnClick", function() ns.Fire("LM_WISH_ADD") end)
+	B.wishAdd = wishAdd
 
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
@@ -364,6 +377,12 @@ end
 -- Header texts and colours for the active tab; only the guildmates tab sorts.
 local function SetHeaders()
 	local lfg = B.tab == "lfg"
+	if B.tab == "wishes" then
+		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ITEM)
+		B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_SINCE)
+		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
+		return
+	end
 	if B.tab == "goals" then
 		B.headText[1]:SetText(L.COL_BY); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_GOAL)
 		B.headText[4]:SetText(L.COL_PROGRESS); B.headText[5]:SetText(L.COL_UNTIL)
@@ -519,6 +538,33 @@ function B.OpenGoalMenu(id)
 	end)
 end
 
+local function FillWishes(list)
+	for i = 1, ROWS do
+		local r, w = B.rows[i], list[i]
+		r.button.mate, r.button.adId, r.button.entry, r.button.goalId, r.button.personalMine = nil, nil, nil, nil, nil
+		r.button.wishId, r.button.wishMine = w and w.id or nil, w and w.mine or nil
+		if w then
+			r.icon:Hide()
+			r.name:SetText(w.name); r.name:SetTextColor(unpack(w.mine and { 1, 1, 1 } or { 0.7, 0.7, 0.7 }))
+			r.level:SetText("")
+			r.zone:SetText(ns.Wishlist.Link(w.id) or string.format(L.WISH_UNKNOWN, w.id)); r.zone:SetTextColor(1, 1, 1)
+			r.group:SetText("")
+			r.xph:SetText(date("%d/%m", w.t)); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+
+function B.OpenWishMenu(id)
+	if not ns.Wishlist.Has(id) then return end
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		root:CreateButton(L.WISH_REMOVE, function() ns.Wishlist.Remove(id) end)
+	end)
+end
+
 function B.OpenMyGoalMenu()
 	if not ns.Personal.Mine() then return end
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
@@ -527,8 +573,8 @@ function B.OpenMyGoalMenu()
 end
 
 local function RefreshTabs()
-	local lfg, journal, goals = B.tab == "lfg", B.tab == "journal", B.tab == "goals"
-	local mates = not lfg and not journal and not goals
+	local lfg, journal, goals, wishes = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes"
+	local mates = B.tab == "mates"
 	local index = 1
 	for i, key in ipairs(B.TAB_KEYS) do if key == B.tab then index = i end end
 	if PanelTemplates_SetTab then PanelTemplates_SetTab(B.frame, index)
@@ -542,11 +588,12 @@ local function RefreshTabs()
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
+	B.wishAdd:SetShown(wishes)
 end
 
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
-	local lfg, journal, goals = B.tab == "lfg", B.tab == "journal", B.tab == "goals"
+	local lfg, journal, goals, wishes = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes"
 	local list
 	if journal then
 		local all = ns.Journal.List(B.journalFilter or "all", B.search)
@@ -557,23 +604,26 @@ function B.Refresh()
 		B.journalPageText:SetText(string.format(L.J_PAGE, B.journalPage, pages))
 		B.journalPrev:SetEnabled(B.journalPage > 1); B.journalNext:SetEnabled(B.journalPage < pages)
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
+	elseif wishes then
+		list = ns.Wishlist.List()
 	elseif goals then
 		list = ns.Goals.List()
 		for _, p in ipairs(ns.Personal.List()) do list[#list + 1] = p end
 	else
 		list = lfg and LfgVisible() or Visible()
 	end
-	SetColumns(journal and B.JCOLS or goals and B.GCOLS or B.COLS)
+	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or B.COLS)
 	SetHeaders()
 	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
 	local rested = ns.Rested and ns.Rested.Mine()
 	B.restedText:SetText(rested and string.format(L.RESTED_MINE, rested) or "")
-	if journal then FillJournal(list) elseif goals then FillGoals(list) elseif lfg then FillLfg(list) else FillMates(list) end
+	if journal then FillJournal(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillLfg(list) else FillMates(list) end
 	local emptyText = ""
 	if #list == 0 then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
 		elseif goals then emptyText = L.GOAL_EMPTY
+		elseif wishes then emptyText = L.WISH_EMPTY
 		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD
 		elseif lfg then emptyText = #ns.LFG.List() > 0 and L.EMPTY_FILTERED or L.LFG_EMPTY
 		elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED
@@ -581,7 +631,7 @@ function B.Refresh()
 	end
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
-	if journal or goals then
+	if journal or goals or wishes then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else
 		RefreshHelp()
@@ -657,3 +707,7 @@ ns.Slash("journal", function() B.ShowTab("journal") end)
 ns.On("LM_GOALS_CHANGED", B.Refresh)
 ns.Slash("metas", function() B.ShowTab("goals") end)
 ns.Slash("goals", function() B.ShowTab("goals") end)
+
+ns.On("LM_WISHES_CHANGED", B.Refresh)
+ns.Slash("deseos", function() B.ShowTab("wishes") end)
+ns.Slash("wishlist", function() B.ShowTab("wishes") end)

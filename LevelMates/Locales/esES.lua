@@ -91,3 +91,6 @@ L.WISH_DUP = "Ese objeto ya está en tu lista de deseos."; L.WISH_NOT_ITEM = "Es
 L.WISH_FULL = "Tu lista de deseos está llena (%d objetos)."; L.WISH_GOT = "¡Conseguiste %s de tu lista de deseos!"
 L.WISH_THEY_WANT = "%s quiere %s. ¡Pásaselo!"; L.WISH_TOOLTIP = "Lo quiere: %s"
 L.OPT_WISH = "Avisos de deseos"; L.OPT_WISH_TT = "Una línea en el chat cuando te cae un objeto que quiere un hermano."
+L.TAB_WISHES = "Deseos"; L.COL_WHO = "Quién"; L.COL_ITEM = "Objeto"; L.COL_SINCE = "Desde"
+L.WISH_EMPTY = "Nadie tiene deseos todavía. Añade los tuyos con \"Añadir deseo\"."; L.WISH_UNKNOWN = "Objeto #%d"; L.WISH_REMOVE = "Quitar de la lista"
+L.BTN_WISH_ADD = "Añadir deseo"; L.WISH_DIALOG_TITLE = "Añadir deseo"; L.WISH_HINT = "Mayús+clic en un objeto (bolsas, chat, botín...)"; L.WISH_ADD = "Añadir"

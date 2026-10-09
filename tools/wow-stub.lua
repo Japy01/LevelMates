@@ -275,7 +275,7 @@ function hooksecurefunc(a, b, c)
 	local tbl, key, fn = a, b, c
 	if type(a) == "string" then tbl, key, fn = _G, a, b end
 	local old = tbl[key]
-	tbl[key] = function(...) local r = { old(...) }; fn(...); return unpack(r) end
+	tbl[key] = function(...) local r = { old(...) }; fn(...); return (unpack or table.unpack)(r) end
 end
 ChatFrameUtil.InsertLink = function() return false end
 STUB.tooltipPost = {}

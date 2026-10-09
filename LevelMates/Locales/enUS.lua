@@ -91,3 +91,6 @@ L.WISH_DUP = "That item is already on your wishlist."; L.WISH_NOT_ITEM = "That i
 L.WISH_FULL = "Your wishlist is full (%d items)."; L.WISH_GOT = "You got %s from your wishlist!"
 L.WISH_THEY_WANT = "%s wants %s. Pass it on!"; L.WISH_TOOLTIP = "Wanted by: %s"
 L.OPT_WISH = "Wishlist notices"; L.OPT_WISH_TT = "A chat line when you loot an item a guildmate wants."
+L.TAB_WISHES = "Wishes"; L.COL_WHO = "Who"; L.COL_ITEM = "Item"; L.COL_SINCE = "Since"
+L.WISH_EMPTY = "Nobody has wishes yet. Add yours with \"Add wish\"."; L.WISH_UNKNOWN = "Item #%d"; L.WISH_REMOVE = "Remove from my list"
+L.BTN_WISH_ADD = "Add wish"; L.WISH_DIALOG_TITLE = "Add a wish"; L.WISH_HINT = "Shift+click an item (bags, chat, loot...)"; L.WISH_ADD = "Add"

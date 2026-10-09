@@ -32,4 +32,5 @@ Goals.lua
 Personal.lua
 Wishlist.lua
 GoalDialog.lua
+WishDialog.lua
 Sim.lua
