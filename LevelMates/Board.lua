@@ -10,7 +10,8 @@ local unpack = unpack or table.unpack   -- the client has unpack; table.unpack c
 B.COLS = { 120, 40, 140, 50, 50 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 12, 440
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
-B.CHROME = B.TOP + 16 + 36                  -- window height without the mate and help rows
+B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
+B.CHROME = B.TOP + 16 + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
 local ROW_W = B.COLS[1] + B.COLS[2] + B.COLS[3] + B.COLS[4] + B.COLS[5] + 4 * B.GAP
 
 -- Colour coding: group state and how close a mate is to my level.
@@ -32,6 +33,16 @@ local function Build()
 	end
 	f = f or CreateFrame("Frame", "LevelMatesBoard", UIParent, "BasicFrameTemplateWithInset")
 	B.frame = f
+	-- Lay the content out from the inset's real anchors, so it sits inside the dark recess whatever the template does.
+	local insetTop, insetBottom = 24, 26
+	if f.Inset and f.Inset.GetPoint then
+		local _, _, _, _, y1 = f.Inset:GetPoint(1)
+		local _, _, _, _, y2 = f.Inset:GetPoint(2)
+		if type(y1) == "number" and y1 < 0 then insetTop = -y1 end
+		if type(y2) == "number" and y2 > 0 then insetBottom = y2 end
+	end
+	B.TOP, B.BOTTOM = insetTop + 60, insetBottom
+	B.CHROME = B.TOP + 16 + B.BOTTOM + 10
 	f:SetSize(B.WIDTH, B.CHROME + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving)
@@ -44,14 +55,14 @@ local function Build()
 
 	-- Heading, subtitle, divider and the name search, in the style of the dungeon journal.
 	B.heading = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-	B.heading:SetPoint("TOPLEFT", B.MARGIN, -34); B.heading:SetText(L.BOARD_HEADING); B.heading:SetJustifyH("LEFT")
+	B.heading:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 10)); B.heading:SetText(L.BOARD_HEADING); B.heading:SetJustifyH("LEFT")
 	B.subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -58); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
+	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 34)); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
 	local divider = f:CreateTexture(nil, "ARTWORK")
 	divider:SetColorTexture(1, 0.82, 0, 0.35); divider:SetHeight(1)
 	divider:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 8)); divider:SetPoint("TOPRIGHT", -B.MARGIN, -(B.TOP - 8))
 	local search = CreateFrame("EditBox", nil, f, "SearchBoxTemplate")
-	search:SetSize(150, 20); search:SetPoint("TOPRIGHT", -B.MARGIN - 6, -36)
+	search:SetSize(150, 20); search:SetPoint("TOPRIGHT", -B.MARGIN - 6, -(insetTop + 12))
 	if search.Instructions then search.Instructions:SetText(L.SEARCH_HINT) end
 	search:SetScript("OnTextChanged", function(self) B.search = self:GetText() or ""; B.Refresh() end)
 	B.searchBox = search
@@ -76,7 +87,7 @@ local function Build()
 
 	-- "Near my level (±5)" filter, bottom right.
 	local near = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")   -- the template draws the box; a bare CheckButton is invisible
-	near:SetSize(24, 24); near:SetPoint("BOTTOMRIGHT", -150, 6)
+	near:SetSize(22, 22); near:SetPoint("BOTTOMRIGHT", -150, 2)
 	near:SetChecked(ns.char.boardNear == true)
 	near:SetScript("OnClick", function(self) ns.char.boardNear = self:GetChecked() and true or false; B.Refresh() end)
 	local nearLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -104,7 +115,7 @@ local function Build()
 	f.empty = Col(f, B.WIDTH - 40, "CENTER"); f.empty:SetPoint("TOP", 0, -(B.TOP + 40))
 
 	local help = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-	help:SetSize(120, 22); help:SetPoint("BOTTOMLEFT", 12, 8); help:SetText(L.BTN_HELP)
+	help:SetSize(120, 20); help:SetPoint("BOTTOMLEFT", 12, 3); help:SetText(L.BTN_HELP)
 	help:SetScript("OnClick", function() ns.Fire("LM_HELP_BUTTON") end)
 	B.helpButton = help
 
@@ -112,7 +123,7 @@ local function Build()
 	B.helpRows = {}
 	for i = 1, HELP_ROWS do
 		local text = Col(f, 300)
-		text:SetPoint("BOTTOMLEFT", 12, 34 + (i - 1) * ROW_H)
+		text:SetPoint("BOTTOMLEFT", 12, B.BOTTOM + 8 + (i - 1) * ROW_H)
 		local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 		btn:SetSize(60, ROW_H); btn:SetPoint("LEFT", text, "RIGHT", 4, 0); btn:SetText(L.BTN_COMING)
 		btn:SetScript("OnClick", function(self) if self.helpId then ns.Help.Coming(self.helpId) end end)

@@ -40,3 +40,6 @@ do
 	assert(B.frame:GetWidth() == B.WIDTH, "window uses the declared width")
 	assert(B.rows[1].button:GetWidth() == total - B.MARGIN, "row click area spans the columns: " .. tostring(B.rows[1].button:GetWidth()))
 end
+-- bottom controls stay inside the inset's bottom margin instead of overlapping its border
+assert(B.helpButton:GetHeight() + 4 <= B.BOTTOM, "help button fits under the inset: " .. B.helpButton:GetHeight() .. " vs " .. B.BOTTOM)
+assert(B.nearCheck:GetHeight() + 3 <= B.BOTTOM, "filter box fits under the inset")
