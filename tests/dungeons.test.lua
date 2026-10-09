@@ -1,13 +1,25 @@
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 local D, L = ns.Dungeons, ns.L
-assert(#D.list == 6, "six confirmed dungeons, got " .. #D.list)
-assert(D.Get(2).min == 13 and D.Get(2).max == 18, "Ragefire Chasm is 13-18 in the journal")
-assert(D.Get(1).min == 13 and D.Get(1).max == 20, "Hall of Thanes 13-20")
-assert(D.Get(6).min == 20 and D.Get(6).max == 30, "Shadowfang Keep 20-30")
-assert(D.Get(99) == nil, "unknown id")
-assert(D.Name(2) == L.DUNGEON_RAGEFIRE_CHASM and D.Name(2) ~= "DUNGEON_RAGEFIRE_CHASM", "name goes through the locale")
-assert(D.Name(99) == "#99", "unknown id has a visible fallback")
-assert(D.Fits(2, 13) and D.Fits(2, 18) and not D.Fits(2, 12) and not D.Fits(2, 19), "range is inclusive")
-assert(not D.Fits(99, 15), "unknown never fits")
-for _, d in ipairs(D.list) do assert(d.id >= 1 and d.id <= 99 and d.min <= d.max, "ids fit the wire format: " .. d.key) end
+assert(#D.list == 14, "fourteen dungeons: " .. #D.list)
+local seen = {}
+for _, d in ipairs(D.list) do
+	assert(not seen[d.id] and d.id >= 1 and d.id <= 14, "unique ids")
+	seen[d.id] = true
+	assert(type(L[d.key]) == "string" and L[d.key] ~= "", "named: " .. d.key)
+	assert(d.min < d.max, "a level range")
+end
+assert(D.Name(5) == "The Deadmines" and D.Name(8) == "The Stockade" and D.Get(14).min == 33 and D.Get(14).max == 41, "known rows")
+local sorted = D.Sorted()
+for i = 2, #sorted do
+	local a, b = sorted[i - 1], sorted[i]
+	assert(a.min < b.min or a.min == b.min and (a.max < b.max or a.max == b.max and a.id < b.id), "by level")
+end
+local tex, coords = D.Art(2)
+assert(tex == "Interface\\Glues\\LoadingScreens\\LoadScreenRagefireChasm" and coords[3] == 0.25, "game loading screen, cropped")
+assert(D.Art(8) == 131870, "file ids work too")
+assert(D.Art(1) == nil and D.Art(3) == nil, "the journal addon's own art: not without it")
+assert(D.Art(14) == "Interface\\Glues\\LoadingScreens\\LoadScreenScarletMonastery2", "the Library falls back to the Graveyard")
+STUB.loadedAddons = { ForeverDungeonJournal = true }
+assert(D.Art(1) == "Interface\\AddOns\\ForeverDungeonJournal\\Media\\HallOfThanes", "its art while it is loaded")
+assert(D.Art(14) == "Interface\\AddOns\\ForeverDungeonJournal\\Media\\ScarletMonasteryLibraryHome", "the Library's own art")

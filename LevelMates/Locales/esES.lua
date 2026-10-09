@@ -98,3 +98,6 @@ L.BTN_DISCORD = "Discord"; L.DC_TITLE = "Copiar para Discord"; L.DC_HINT = "Ctrl
 L.DC_LEVEL = "nivel %d"; L.DC_LFG = "%s busca grupo para %s"; L.DC_ROLES = "va de %s"; L.DC_UNTIL = "hasta el %s"
 L.DC_PERSONAL = "Metas personales"; L.DC_NOTHING = "Nada que mostrar ahora mismo."; L.DC_MORE = "…y %d más"
 L.DC_J_TITLE = "La semana de %s"; L.DC_J_LEVELS = "Niveles: %d → %d"; L.DC_J_QUESTS = "Misiones: %d"; L.DC_J_DUNGEONS = "Mazmorras: %s"; L.DC_J_ITEMS = "Objetos: %s"; L.DC_J_DEATHS = "Muertes: %d"
+L.DUNGEON_BLACKFATHOM_DEEPS = "Cavernas de Brazanegra"; L.DUNGEON_STOCKADE = "Las Mazmorras"; L.DUNGEON_EXCAVATION_WETLANDS = "Excavación: Los Humedales"
+L.DUNGEON_DALARAN = "Ciudad de Dalaran"; L.DUNGEON_GNOMEREGAN = "Gnomeregan"; L.DUNGEON_RAZORFEN_KRAUL = "Horado Rajacieno"
+L.DUNGEON_SM_GRAVEYARD = "Monasterio Escarlata: Cementerio"; L.DUNGEON_SM_LIBRARY = "Monasterio Escarlata: Biblioteca"

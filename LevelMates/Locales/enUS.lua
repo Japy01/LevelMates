@@ -98,3 +98,6 @@ L.BTN_DISCORD = "Discord"; L.DC_TITLE = "Copy for Discord"; L.DC_HINT = "Ctrl+C 
 L.DC_LEVEL = "level %d"; L.DC_LFG = "%s is looking for a group for %s"; L.DC_ROLES = "plays %s"; L.DC_UNTIL = "until %s"
 L.DC_PERSONAL = "Personal goals"; L.DC_NOTHING = "Nothing to show right now."; L.DC_MORE = "…and %d more"
 L.DC_J_TITLE = "%s's week"; L.DC_J_LEVELS = "Levels: %d → %d"; L.DC_J_QUESTS = "Quests: %d"; L.DC_J_DUNGEONS = "Dungeons: %s"; L.DC_J_ITEMS = "Items: %s"; L.DC_J_DEATHS = "Deaths: %d"
+L.DUNGEON_BLACKFATHOM_DEEPS = "Blackfathom Deeps"; L.DUNGEON_STOCKADE = "The Stockade"; L.DUNGEON_EXCAVATION_WETLANDS = "Excavation Site: Wetlands"
+L.DUNGEON_DALARAN = "City of Dalaran"; L.DUNGEON_GNOMEREGAN = "Gnomeregan"; L.DUNGEON_RAZORFEN_KRAUL = "Razorfen Kraul"
+L.DUNGEON_SM_GRAVEYARD = "Scarlet Monastery: Graveyard"; L.DUNGEON_SM_LIBRARY = "Scarlet Monastery: Library"

@@ -81,7 +81,7 @@ function Region:StartMoving() end
 function Region:StopMovingOrSizing() end
 function Region:SetBackdrop() end
 function Region:SetColorTexture(r, g, b, a) self.colorTexture = { r, g, b, a } end
-function Region:SetTexture(t) self.atlas = nil end
+function Region:SetTexture(t) self.atlas = nil; self.texture = t end
 function Region:SetAtlas(a) self.atlas = a; self.texcoord = nil end
 function Region:SetChecked(v) self.checked = v end
 function Region:GetChecked() return self.checked end
@@ -198,6 +198,7 @@ function print(...) local parts = {}; for i = 1, select("#", ...) do parts[i] = 
 -- LevelMates additions
 function GetRealmName() return STUB.player.realm end
 C_AddOns = { GetAddOnMetadata = function() return "dev" end }
+C_AddOns.IsAddOnLoaded = function(name) return STUB.loadedAddons ~= nil and STUB.loadedAddons[name] == true end
 STUB.quests = {}
 C_QuestLog.GetNumQuestLogEntries = function() return #STUB.quests, #STUB.quests end
 C_QuestLog.GetInfo = function(i) local id = STUB.quests[i]; if not id then return nil end; return { questID = id, title = "Quest " .. id, isHeader = false, level = 20 } end
