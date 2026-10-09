@@ -95,3 +95,51 @@ function Dlg.Open()
 end
 
 ns.On("LM_GOAL_NEW", Dlg.Open)
+
+-- "My goal": any player, one per character. Personal.Set/Clear run only from its buttons.
+local My = { days = 7 }
+ns.MyGoalDialog = My
+local P = ns.Personal
+
+local function BuildMine()
+	local f = CreateFrame("Frame", "LevelMatesMyGoalDialog", UIParent, "BasicFrameTemplateWithInset")
+	My.frame = f
+	f:SetSize(300, 170); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
+	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	if f.TitleText then f.TitleText:SetText(L.MYGOAL_TITLE) end
+	tinsert(UISpecialFrames, "LevelMatesMyGoalDialog")
+	f:Hide()
+	local label = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	label:SetPoint("TOPLEFT", 20, -42); label:SetText(L.MYGOAL_LEVEL)
+	local level = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+	level:SetSize(60, 22); level:SetPoint("TOPLEFT", 150, -38); level:SetAutoFocus(false); level:SetMaxLetters(2)
+	level:SetScript("OnTextChanged", function() My.Refresh() end)
+	My.level = level
+	My.daysButton = Button(f, 120, "TOPLEFT", 20, -74, string.format(L.GOAL_DAYS, My.days), function(self)
+		local items = {}
+		for _, n in ipairs(DAYS) do items[#items + 1] = { string.format(L.GOAL_DAYS, n), function() My.days = n; My.daysButton:SetText(string.format(L.GOAL_DAYS, n)); My.Refresh() end } end
+		Menu(self, items)
+	end)
+	My.remove = Button(f, 130, "TOPLEFT", 150, -74, L.MYGOAL_REMOVE, function() P.Clear(); f:Hide() end)
+	My.save = Button(f, 120, "BOTTOMLEFT", 20, 14, L.MYGOAL_SAVE, function()
+		if P.Set(tonumber(My.level:GetText() or ""), My.days) then f:Hide() end   -- a refused goal keeps the dialog open
+	end)
+	Button(f, 120, "BOTTOMRIGHT", -20, 14, L.LFG_CLOSE, function() f:Hide() end)
+end
+
+function My.Refresh()
+	if not My.frame then return end
+	My.save:SetEnabled(tonumber(My.level:GetText() or "") ~= nil)
+	My.remove:SetShown(P.Mine() ~= nil)
+end
+
+function My.Open()
+	if not My.frame then BuildMine() end
+	local g = P.Mine()
+	My.level:SetText(g and tostring(g.l) or "")
+	My.frame:Show()
+	My.Refresh()
+end
+
+ns.On("LM_MYGOAL", My.Open)

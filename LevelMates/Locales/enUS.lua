@@ -86,3 +86,4 @@ L.GOAL_WHAT_LVL = "Levels"; L.GOAL_WHAT_QST = "Quests"; L.GOAL_WHAT_DUN = "Dunge
 L.GOAL_DAYS = "%d days"; L.GOAL_CREATE = "Create"
 L.GOAL_BAD_VALUE = "That goal is not valid: level 2-60, counter 1-10000, 1-30 days."
 L.MYGOAL_TEXT = "Level %d"; L.MYGOAL_BAD = "Choose a level above yours (up to 60) and 1-30 days."; L.MYGOAL_REACHED = "Personal goal reached: level %d!"
+L.BTN_MYGOAL = "My goal"; L.MYGOAL_TITLE = "My goal"; L.MYGOAL_LEVEL = "Target level"; L.MYGOAL_SAVE = "Save"; L.MYGOAL_REMOVE = "Remove my goal"

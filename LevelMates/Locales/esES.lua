@@ -86,3 +86,4 @@ L.GOAL_WHAT_LVL = "Niveles"; L.GOAL_WHAT_QST = "Misiones"; L.GOAL_WHAT_DUN = "Ma
 L.GOAL_DAYS = "%d días"; L.GOAL_CREATE = "Crear"
 L.GOAL_BAD_VALUE = "Esa meta no es válida: nivel 2-60, contador 1-10000, de 1 a 30 días."
 L.MYGOAL_TEXT = "Nivel %d"; L.MYGOAL_BAD = "Elige un nivel por encima del tuyo (hasta 60) y de 1 a 30 días."; L.MYGOAL_REACHED = "¡Meta personal cumplida: nivel %d!"
+L.BTN_MYGOAL = "Mi meta"; L.MYGOAL_TITLE = "Mi meta"; L.MYGOAL_LEVEL = "Nivel objetivo"; L.MYGOAL_SAVE = "Guardar"; L.MYGOAL_REMOVE = "Quitar mi meta"

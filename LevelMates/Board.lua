@@ -150,7 +150,9 @@ local function Build()
 		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
 			if B.tab == "goals" then
-				if mouse == "RightButton" and self.goalId then B.OpenGoalMenu(self.goalId) end
+				if mouse == "RightButton" then
+					if self.goalId then B.OpenGoalMenu(self.goalId) elseif self.personalMine then B.OpenMyGoalMenu() end
+				end
 				return
 			end
 			local name = self.mate
@@ -242,6 +244,10 @@ local function Build()
 	goalNew:SetSize(120, 20); goalNew:SetPoint("BOTTOMLEFT", 12, 3); goalNew:SetText(L.BTN_GOAL_NEW)
 	goalNew:SetScript("OnClick", function() ns.Fire("LM_GOAL_NEW") end)
 	B.goalNew = goalNew
+	local myGoal = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	myGoal:SetSize(120, 20); myGoal:SetPoint("BOTTOMRIGHT", -12, 3); myGoal:SetText(L.BTN_MYGOAL)
+	myGoal:SetScript("OnClick", function() ns.Fire("LM_MYGOAL") end)
+	B.myGoal = myGoal
 
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
@@ -466,8 +472,20 @@ end
 local function FillGoals(list)
 	for i = 1, ROWS do
 		local r, g = B.rows[i], list[i]
-		r.button.mate, r.button.adId, r.button.entry, r.button.goalId = nil, nil, nil, g and g.id
-		if g then
+		r.button.mate, r.button.adId, r.button.entry = nil, nil, nil
+		r.button.goalId = g and not g.name and g.id or nil
+		r.button.personalMine = g and g.mine or nil
+		if g and g.name then   -- personal goal
+			local P = ns.Personal
+			r.icon:Hide()
+			r.name:SetText(g.name); r.name:SetTextColor(1, 1, 1)
+			r.level:SetText("")
+			r.zone:SetText(P.Text(g)); r.zone:SetTextColor(0.6, 0.8, 1)
+			r.group:SetText(P.ProgressText(g)); r.group:SetTextColor(unpack(P.IsDone(g) and B.GROUP_COLORS.open or { 1, 1, 1 }))
+			r.xph:SetText(ns.Goals.UntilText(g)); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show()
+			RowBg(r, i, false)
+		elseif g then
 			r.icon:Hide()
 			r.name:SetText(g.by or ""); r.name:SetTextColor(0.7, 0.7, 0.7)
 			r.level:SetText("")
@@ -492,6 +510,13 @@ function B.OpenGoalMenu(id)
 	end)
 end
 
+function B.OpenMyGoalMenu()
+	if not ns.Personal.Mine() then return end
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		root:CreateButton(L.MYGOAL_REMOVE, function() ns.Personal.Clear() end)
+	end)
+end
+
 local function RefreshTabs()
 	local lfg, journal, goals = B.tab == "lfg", B.tab == "journal", B.tab == "goals"
 	local mates = not lfg and not journal and not goals
@@ -504,6 +529,7 @@ local function RefreshTabs()
 	B.journalClear:SetShown(journal); B.journalFilterButton:SetShown(journal)
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 	B.goalNew:SetShown(goals and R.IAmOfficer())
+	B.myGoal:SetShown(goals)
 end
 
 function B.Refresh()
@@ -521,6 +547,7 @@ function B.Refresh()
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
 	elseif goals then
 		list = ns.Goals.List()
+		for _, p in ipairs(ns.Personal.List()) do list[#list + 1] = p end
 	else
 		list = lfg and LfgVisible() or Visible()
 	end
