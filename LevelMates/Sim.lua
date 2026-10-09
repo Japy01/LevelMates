@@ -35,6 +35,11 @@ local function simLfg()
 	inject("lfg", { d = 5, r = "H", id = "simlfg02", m = 20 }, "Luis")
 end
 
+local function simPal()
+	if not R.mates.Luis then run() end   -- the marks need their owners in the roster
+	inject("pal", { p = 1 }, "Luis"); inject("pal", { p = 1 }, "Mario")
+end
+
 local function off()
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -46,5 +51,6 @@ ns.Slash("sim", function(rest)
 	if rest == "off" then off()
 	elseif rest == "help" or rest == "ayuda" then simHelp()
 	elseif rest == "lfg" or rest == "grupo" then simLfg()
+	elseif rest == "pal" or rest == "compa" then simPal()
 	else run() end
 end)

@@ -23,3 +23,4 @@ First version.
 - A minimap button: left-click shows or hides the board, right-click opens the options, drag moves it. The "Minimap button" option shows or hides it right away.
 - Board rows show the class icon.
 - Dungeon groups: a "Dungeons" tab on the board and a "Find a group" dialog (dungeon, roles, short note). Ads last 20 minutes, one per player, only the author can withdraw it; a chat line shows when an ad fits your level (option in the settings). Starts with six dungeons. New message kinds `lfg` and `lfgx`; older versions ignore them.
+- Leveling partner: a "Looking for a partner" check box on the Guildmates tab; matches (within 3 levels, both ticked) go to the top, tinted, with a one-time chat line; it turns off when you group with one of them. New message kind `pal`; older versions ignore it.

@@ -8,6 +8,7 @@ A World of Warcraft: Forever guild addon. See which guildmates are online and wh
 - **Quest matching**: when you accept a quest, a line tells you which guildmate on your map has it too. With Questie installed it also says who could pick it up.
 - **Help requests**: "Ask for help" tells guildmates what you need. They get a notice and a map waypoint, and an "On my way" button that whispers you.
 - **Dungeon groups** (Dungeons tab, or `/lm lfg`): post "Find a group" with a dungeon, your role and a short note; guildmates see it in the list and get a chat line if it fits their level. Ads last 20 minutes.
+- **Leveling partner** (Guildmates tab): tick "Looking for a partner"; guildmates within 3 levels who also tick it appear at the top, tinted, with a chat line. It turns itself off when you group with one of them.
 
 ## Privacy
 
@@ -23,7 +24,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Commands
 
-`/lm` (board), `/lm lfg` (Dungeons tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim off`.
+`/lm` (board), `/lm lfg` (Dungeons tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim off`.
 
 ## Not in v1 (planned)
 
@@ -43,6 +44,7 @@ Addon de hermandad para World of Warcraft: Forever. Ve qué hermanos están cone
 - **Emparejar misiones**: al aceptar una misión, una línea te dice qué hermano de tu mapa también la tiene. Con Questie instalado dice además quién podría cogerla.
 - **Pedir ayuda**: "Pedir ayuda" cuenta a la hermandad con qué necesitas ayuda. Reciben un aviso y un punto en el mapa, y un botón "Voy" que te susurra.
 - **Grupos de mazmorra** (pestaña Mazmorras, o `/lm lfg`): publica "Buscar grupo" con una mazmorra, tu rol y una nota corta; los hermanos lo ven en la lista y reciben una línea en el chat si encaja con su nivel. Los anuncios duran 20 minutos.
+- **Compañero de leveo** (pestaña Hermanos): marca "Busco compañero"; los hermanos a 3 niveles o menos que también lo marcan salen arriba, resaltados, con una línea en el chat. Se desmarca solo al agruparte con uno de ellos.
 
 ## Privacidad
 
@@ -58,7 +60,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Comandos
 
-`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim off`.
+`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim off`.
 
 ## Pendiente para después de v1
 
