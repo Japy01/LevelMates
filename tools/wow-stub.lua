@@ -247,3 +247,12 @@ GameTooltip = { lines = {}, hidden = true,
 
 STUB.atlases = {}
 C_Texture = { GetAtlasInfo = function(a) if STUB.atlases[a] then return { width = 64, height = 64 } end end }
+
+-- Journal support
+function time() return 1760000000 + math.floor(STUB.now) end
+function UnitGUID(u) return "Player-1-TESTER" end
+function GetInstanceInfo() return STUB.instanceName or "Mulgore", STUB.inInstance and "party" or "none", 0, "", 5, 0, false, STUB.instanceId or 0 end
+C_SkillInfo = {
+	GetNumSkillLines = function() return STUB.skills and #STUB.skills or 0 end,
+	GetSkillLineInfo = function(i) return STUB.skills and STUB.skills[i] end,
+}

@@ -27,4 +27,5 @@ LFG.lua
 LfgDialog.lua
 Partner.lua
 Rested.lua
+Journal.lua
 Sim.lua
