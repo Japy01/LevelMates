@@ -23,6 +23,7 @@ function J.Add(kind, data)
 	local list = entries()
 	list[#list + 1] = e
 	while #list > J.MAX do table.remove(list, 1) end   -- oldest first: drop from the front
+	ns.Fire("LM_JOURNAL_ADDED", e)
 	ns.Fire("LM_JOURNAL_CHANGED")
 	return e
 end

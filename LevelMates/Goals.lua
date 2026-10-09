@@ -160,3 +160,60 @@ ns.On("LM_PING_ANSWERED", function()
 		if officer or g.by == me() then C.Send("go", fields(g)) end
 	end
 end)
+
+-- Dungeon together, done by someone else (any guildmate).
+C.OnMessage("gd", function(f, name)
+	local g = G.Get(f.id)
+	if not g or g.ty ~= "dun" or g.doneBy or not R.mates[name] then return end
+	g.doneBy = name
+	G.CheckDone(g)
+	ns.Fire("LM_GOALS_CHANGED")
+end)
+
+-- A guildmate's part of a counter (my own echo is ignored by Progress).
+C.OnMessage("gc", function(f, name)
+	local g = G.Get(f.id)
+	if not g or g.ty ~= "cnt" or not R.mates[name] then return end
+	g.contrib = g.contrib or {}
+	g.contrib[name] = f.n
+	G.CheckDone(g)
+	ns.Fire("LM_GOALS_CHANGED")
+end)
+
+-- My journal: a dungeon with a guildmate completes a dungeon goal; any entry may move a counter.
+ns.On("LM_JOURNAL_ADDED", function(e)
+	for _, g in ipairs(G.List()) do
+		if g.ty == "dun" and not g.doneBy and e.k == "dungeon" and e.name == D.Name(g.a) and e.mates and #e.mates > 0 then
+			g.doneBy = me()
+			C.Send("gd", { id = g.id }, "now")
+		end
+		G.CheckDone(g)
+	end
+	ns.Fire("LM_GOALS_CHANGED")
+end)
+
+-- My counter parts go out after a heartbeat when they changed, at most once a minute per goal.
+local sentN, sentAt = {}, {}
+ns.On("LM_HB_SENT", function()
+	local now = GetTime()
+	for _, g in ipairs(G.List()) do
+		if g.ty == "cnt" then
+			local n = math.min(10000, G.MyContribution(g))
+			if n ~= (sentN[g.id] or 0) and now - (sentAt[g.id] or -math.huge) >= 60 then
+				if C.Send("gc", { id = g.id, n = n }) then sentN[g.id], sentAt[g.id] = n, now end
+			end
+		end
+	end
+end)
+
+-- A newcomer also gets my counter parts and the dungeons I completed.
+ns.On("LM_PING_ANSWERED", function()
+	for _, g in ipairs(G.List()) do
+		if g.ty == "cnt" then
+			local n = G.MyContribution(g)
+			if n > 0 then C.Send("gc", { id = g.id, n = math.min(10000, n) }) end
+		elseif g.ty == "dun" and g.doneBy == me() then
+			C.Send("gd", { id = g.id })
+		end
+	end
+end)
