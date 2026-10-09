@@ -6,7 +6,9 @@ local FAKES = { "Mario", "Ana", "Luis" }
 
 local function inject(kind, fields, who)
 	local text = C.Encode(kind, fields)
-	if text then C.Inject(text, who .. "-" .. (GetRealmName() or "Realm")) end
+	-- sender names carry the realm without spaces ("Classic Beta PvP" -> "ClassicBetaPvP"), as the client sends them
+	local realm = (GetRealmName() or "Realm"):gsub("%s", "")
+	if text then C.Inject(text, who .. "-" .. realm) end
 end
 
 local function myQuestId()

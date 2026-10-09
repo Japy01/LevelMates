@@ -3,6 +3,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local R = ns.Roster
+STUB.player.realm = "Classic Beta PvP"   -- realm names have spaces; sender names carry the realm without them
 STUB.player.mapId = 1421
 STUB.quests = { 1098 }
 local sentBefore = #STUB.sent

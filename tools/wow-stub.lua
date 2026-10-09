@@ -135,7 +135,13 @@ function STUB.ResolveChannelJoins()
 		STUB.pendingChannels[name] = nil
 	end
 end
-function Ambiguate(name, ctx) return (name:gsub("%-.*$", "")) end
+-- Like the client: only my own realm (spelled without spaces) is stripped; other realms stay in the name.
+function Ambiguate(name, ctx)
+	local mine = (STUB.player.realm or ""):gsub("%s", "")
+	local n, r = name:match("^(.-)%-(.+)$")
+	if n and r == mine then return n end
+	return name
+end
 function GetLocale() return STUB.locale or "enUS" end
 function GetBuildInfo() return "1.60.1", "70245", "Oct 6 2026", 16001 end
 WOW_PROJECT_CAMELOT = 18
