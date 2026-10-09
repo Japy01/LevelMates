@@ -5,6 +5,7 @@ ns.Board = B
 local L, R = ns.L, ns.Roster
 local ROWS, ROW_H, HELP_ROWS, MIN_ROWS = 20, 20, 3, 8
 B.ROWS, B.ROW_H, B.MIN_ROWS = ROWS, ROW_H, MIN_ROWS
+B.tab = "mates"
 local unpack = unpack or table.unpack   -- the client has unpack; table.unpack covers other Lua versions
 
 -- Layout: one place for the widths so the columns always fit inside the window.
@@ -135,6 +136,12 @@ local function Build()
 			if not name then return end
 			if mouse == "RightButton" then B.OpenMenu(name) else ns.Fire("LM_ROW_CLICK", name) end
 		end)
+		btn:SetScript("OnEnter", function(self)   -- Dungeons tab: the whole note on hover
+			if B.tab ~= "lfg" or not self.adId or not GameTooltip then return end
+			local a = ns.LFG.ads[self.adId]
+			if a and a.n then GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(a.n, 1, 1, 1, true); GameTooltip:Show() end
+		end)
+		btn:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 		B.rows[i] = r
 	end
 	f.empty = Col(f, B.WIDTH - 40, "CENTER"); f.empty:SetPoint("TOP", 0, -(B.TOP + 40))
@@ -143,6 +150,21 @@ local function Build()
 	help:SetSize(120, 20); help:SetPoint("BOTTOMLEFT", 12, 3); help:SetText(L.BTN_HELP)
 	help:SetScript("OnClick", function() ns.Fire("LM_HELP_BUTTON") end)
 	B.helpButton = help
+
+	-- Dungeons tab: its own action button in the same spot as "Ask for help", and the two tab buttons in the bottom bar.
+	local lfg = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	lfg:SetSize(140, 20); lfg:SetPoint("BOTTOMLEFT", 12, 3); lfg:SetText(L.BTN_LFG)
+	lfg:SetScript("OnClick", function() ns.Fire("LM_LFG_BUTTON") end)
+	B.lfgButton = lfg
+	B.tabs = {}
+	local function Tab(key, label, offset)
+		local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+		b:SetSize(96, 20); b:SetPoint("BOTTOM", offset, 3); b:SetText(label)
+		b:SetScript("OnClick", function() B.SetTab(key) end)
+		B.tabs[key] = b
+	end
+	Tab("mates", L.TAB_MATES, -52); Tab("lfg", L.TAB_LFG, 52)
+	B.tab = ns.char.boardTab == "lfg" and "lfg" or "mates"
 
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
@@ -189,6 +211,7 @@ end
 local function ZoneName(m) local info = m.mapId and C_Map.GetMapInfo(m.mapId); return info and info.name or "" end
 
 function B.SetSort(mode)
+	if B.tab ~= "mates" then return end
 	local s = ns.char.boardSort or { mode = "level", desc = true }
 	if s.mode == mode then s.desc = not s.desc else s = { mode = mode, desc = mode == "level" } end   -- level starts high-to-low, zone a-to-z
 	ns.char.boardSort = s
@@ -220,22 +243,40 @@ local function Visible()
 	return out
 end
 
-function B.Refresh()
-	if not B.frame or not B.frame:IsShown() then return end
-	local list = Visible()
+-- Dungeons tab: ad ids newest first, filtered by the search box (player or dungeon name, plain text).
+local function LfgVisible()
+	local out = {}
+	local q = (B.search or ""):lower()
+	for _, id in ipairs(ns.LFG.List()) do
+		local a = ns.LFG.ads[id]
+		if q == "" or (a.name .. " " .. ns.Dungeons.Name(a.d)):lower():find(q, 1, true) then out[#out + 1] = id end
+	end
+	return out
+end
+
+-- Header texts and colours for the active tab; only the guildmates tab sorts.
+local function SetHeaders()
+	local lfg = B.tab == "lfg"
 	local sort = ns.char.boardSort or { mode = "level", desc = true }
+	B.headText[1]:SetText(lfg and L.COL_PLAYER or L.COL_NAME)
+	B.headText[5]:SetText(lfg and L.COL_NOTE or L.COL_XPH)
+	B.headText[4]:SetText(lfg and L.COL_ROLES or L.COL_GROUP)
+	local sorted = not lfg
 	for key, fs in pairs({ level = B.headText[2], zone = B.headText[3] }) do
-		if key == sort.mode then fs:SetTextColor(1, 1, 1) else fs:SetTextColor(1, 0.82, 0) end
+		if sorted and key == sort.mode then fs:SetTextColor(1, 1, 1) else fs:SetTextColor(1, 0.82, 0) end
 	end
 	-- the sorted header carries its direction: v = high to low / z to a, ^ = low to high / a to z
-	B.headText[2]:SetText(L.COL_LEVEL .. (sort.mode == "level" and (sort.desc and " v" or " ^") or ""))
-	B.headText[3]:SetText(L.COL_ZONE .. (sort.mode == "zone" and (sort.desc and " v" or " ^") or ""))
-	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
-	B.SetTitle(B.TitleString())
+	B.headText[2]:SetText(L.COL_LEVEL .. (sorted and sort.mode == "level" and (sort.desc and " v" or " ^") or ""))
+	B.headText[3]:SetText((lfg and L.COL_DUNGEON or L.COL_ZONE) .. (sorted and sort.mode == "zone" and (sort.desc and " v" or " ^") or ""))
+end
+
+local function ClearRow(r) r.icon:Hide(); r.name:SetText(""); r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText(""); r.button:Hide() end
+
+local function FillMates(list)
 	local mine = UnitLevel("player")
 	for i = 1, ROWS do
 		local r, name = B.rows[i], list[i]
-		r.button.mate = name
+		r.button.mate, r.button.adId = name, nil
 		if name then
 			local m = R.mates[name]
 			r.name:SetText(name); r.name:SetTextColor(ClassColor(m.class))
@@ -243,23 +284,88 @@ function B.Refresh()
 			r.level:SetText(m.level)
 			r.level:SetTextColor(unpack(math.abs((m.level or 0) - mine) <= NEAR_RANGE and B.LEVEL_COLORS.near or B.LEVEL_COLORS.far))
 			local info = m.mapId and C_Map.GetMapInfo(m.mapId)
-			r.zone:SetText(info and info.name or "")
+			r.zone:SetText(info and info.name or ""); r.zone:SetTextColor(1, 1, 1)
 			local state = m.inGroup and (m.hasSlot and "open" or "full") or "solo"
 			r.group:SetText(state == "open" and L.GROUP_FREE or state == "full" and L.GROUP_FULL or L.SOLO)
 			r.group:SetTextColor(unpack(B.GROUP_COLORS[state]))
 			r.xph:SetText(m.xph and m.xph > 0 and tostring(m.xph) or "")
 			r.button:Show()
 		else
-			r.icon:Hide(); r.name:SetText(""); r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
-			r.button:Hide()
+			r.button.mate = nil
+			ClearRow(r)
 		end
 	end
+end
+
+local function FillLfg(list)
+	local mine = UnitLevel("player")
+	for i = 1, ROWS do
+		local r, id = B.rows[i], list[i]
+		local a = id and ns.LFG.ads[id]
+		r.button.mate, r.button.adId = a and a.name, id
+		if a then
+			local m = R.mates[a.name]
+			r.name:SetText(a.name); r.name:SetTextColor(ClassColor(m and m.class))
+			SetClassIcon(r.icon, m and m.class)
+			r.level:SetText(m and m.level or ""); r.level:SetTextColor(1, 1, 1)
+			local d = ns.Dungeons.Get(a.d)
+			r.zone:SetText(string.format("%s (%d-%d)", ns.Dungeons.Name(a.d), d.min, d.max))
+			r.zone:SetTextColor(unpack(ns.Dungeons.Fits(a.d, mine) and B.LEVEL_COLORS.near or B.LEVEL_COLORS.far))
+			r.group:SetText(ns.LFG.RolesShort(a.r)); r.group:SetTextColor(1, 1, 1)
+			local n = a.n or ""
+			if #n > 12 then n = ns.CutUtf8(n, 10) .. "..." end   -- the column is narrow; the tooltip has the whole note
+			r.xph:SetText(n)
+			r.button:Show()
+		else
+			r.button.mate = nil
+			ClearRow(r)
+		end
+	end
+end
+
+-- Which controls belong to which tab.
+local function RefreshTabs()
+	local lfg = B.tab == "lfg"
+	B.tabs.mates:SetEnabled(lfg); B.tabs.lfg:SetEnabled(not lfg)
+	B.helpButton:SetShown(not lfg); B.nearCheck:SetShown(not lfg)
+	B.lfgButton:SetShown(lfg)
+	B.lfgButton:SetText(ns.LFG.mine and L.BTN_LFG_CANCEL or L.BTN_LFG)
+end
+
+function B.Refresh()
+	if not B.frame or not B.frame:IsShown() then return end
+	local lfg = B.tab == "lfg"
+	local list = lfg and LfgVisible() or Visible()
+	SetHeaders()
+	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
+	B.SetTitle(B.TitleString())
+	if lfg then FillLfg(list) else FillMates(list) end
 	local emptyText = ""
 	if #list == 0 then
-		if not IsInGuild() then emptyText = L.NOT_IN_GUILD elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED else emptyText = L.EMPTY end
+		if not IsInGuild() then emptyText = L.NOT_IN_GUILD
+		elseif lfg then emptyText = #ns.LFG.List() > 0 and L.EMPTY_FILTERED or L.LFG_EMPTY
+		elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED
+		else emptyText = L.EMPTY end
 	end
 	B.frame.empty:SetText(emptyText)
+	RefreshTabs()
 	RefreshHelp()
+end
+
+function B.SetTab(key)
+	key = key == "lfg" and "lfg" or "mates"
+	ns.char.boardTab, B.tab, B.search = key, key, ""
+	if B.searchBox then B.searchBox:SetText("") end
+	B.Refresh()
+end
+
+-- Open the board on a given tab (slash command, minimap, binding).
+function B.ShowTab(key)
+	if not B.frame then Build() end
+	B.tab = key == "lfg" and "lfg" or "mates"
+	ns.char.boardTab = B.tab
+	B.frame:Show()
+	B.Refresh()
 end
 
 function B.Toggle()
@@ -299,3 +405,7 @@ BINDING_NAME_LEVELMATES_TOGGLE = L.BINDING_TOGGLE
 local guildFrame = CreateFrame("Frame")
 guildFrame:RegisterEvent("PLAYER_GUILD_UPDATE")
 guildFrame:SetScript("OnEvent", function() B.Refresh() end)
+
+ns.On("LM_LFG_CHANGED", B.Refresh)
+ns.Slash("lfg", function() B.ShowTab("lfg") end)
+ns.Slash("grupo", function() B.ShowTab("lfg") end)
