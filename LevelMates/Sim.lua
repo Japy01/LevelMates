@@ -45,7 +45,20 @@ local function simRested()
 	inject("rx", { p = 80 }, "Mario"); inject("rx", { p = 150 }, "Luis")
 end
 
+local function simJournal()
+	local J = ns.Journal
+	local green = "|cff1eff00|Hitem:2589::::::::20:::::::|h[Linen Cloth]|h|r"
+	J.Add("level", { level = 21, took = 4800, sim = true })
+	J.Add("quest", { id = 1098, name = "Fuerte Colmillo", sim = true })
+	J.Add("dungeon", { name = "Ragefire Chasm", mates = { "Mario" }, sim = true })
+	J.Add("group", { name = "Mario", sim = true })
+	J.Add("item", { link = green, q = 2, sim = true })
+	J.Add("skill", { name = "Herbalism", rank = 50, sim = true })
+	J.Add("death", { level = 21, sim = true })
+end
+
 local function off()
+	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
 	for _, who in ipairs(FAKES) do inject("bye", {}, who) end
@@ -58,5 +71,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "lfg" or rest == "grupo" then simLfg()
 	elseif rest == "pal" or rest == "compa" then simPal()
 	elseif rest == "rested" or rest == "descanso" then simRested()
+	elseif rest == "diario" or rest == "journal" then simJournal()
 	else run() end
 end)
