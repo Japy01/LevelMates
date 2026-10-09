@@ -155,7 +155,7 @@ Settings = {
 	RegisterVerticalLayoutCategory = function(name) local c = { name = name, settings = {} }; function c:GetID() return 1 end; return c, {} end,
 	RegisterAddOnSetting = function(cat, var, key, tbl, vtype, name, default)
 		if tbl[key] == nil then tbl[key] = default end
-		local s = { name = name, key = key, tbl = tbl }
+		local s = { name = name, key = key, tbl = tbl, default = default }
 		function s:SetValueChangedCallback(fn) self.cb = fn end
 		function s:GetValue() return self.tbl[self.key] end
 		function s:SetValue(v) self.tbl[self.key] = v; if self.cb then self.cb(self, v) end end

@@ -158,6 +158,7 @@ ev:SetScript("OnEvent", function(_, event)
 	elseif event == "GUILD_ROSTER_UPDATE" or event == "CLUB_MEMBER_ADDED" or event == "CLUB_MEMBER_REMOVED" then
 		R.InvalidateGuildRoster()
 	else
+		if event == "PLAYER_LEVEL_UP" then xpWindow = {} end   -- the XP bar resets: old samples would give nonsense
 		C_Timer.After(0.5, function() R.SendHeartbeat(false) end)
 	end
 end)

@@ -8,6 +8,8 @@ local DEFAULTS = {
 	transport = "auto", debug = false,
 }
 
+ns.DEFAULTS = DEFAULTS
+
 local bus = {}
 function ns.On(event, fn) bus[event] = bus[event] or {}; table.insert(bus[event], fn) end
 function ns.Fire(event, ...) local list = bus[event]; if not list then return end; for _, fn in ipairs(list) do fn(...) end end

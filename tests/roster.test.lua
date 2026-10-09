@@ -54,3 +54,12 @@ local answered = {}
 for i = n + 1, #STUB.sent do answered[#answered + 1] = select(1, C.Decode(STUB.sent[i].msg)) end
 table.sort(answered)
 assert(table.concat(answered, ",") == "hb,q", "ping answered with hb and q: " .. table.concat(answered, ","))
+-- XP/h restarts at a level-up: the XP bar resets, so the old window would report nonsense
+ns.db.settings.shareXp = true
+STUB.player.xp = 0
+R.Snapshot(); STUB.Advance(120)
+STUB.player.xp = 600
+assert(R.Snapshot().r == 18000, "xp/h over a clean window: " .. tostring(R.Snapshot().r))
+STUB.Fire("PLAYER_LEVEL_UP", 22)
+STUB.player.xp = 50
+assert(R.Snapshot().r == 0, "window restarted at level-up, not 50 xp over the old 120 s: " .. tostring(R.Snapshot().r))

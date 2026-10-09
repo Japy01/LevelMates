@@ -29,7 +29,7 @@ L.OPT_XPH = "Compartir mi XP por hora"; L.OPT_XPH_TT = "Se muestra en el tablón
 L.OPT_MATCH = "Avisos de misiones compartidas"; L.OPT_MATCH_TT = "Una línea cuando un hermano de tu zona comparte misión contigo."
 L.OPT_HELP = "Recibir peticiones de ayuda"; L.OPT_HELP_TT = "Un aviso y un punto de ruta cuando un hermano pide ayuda."
 L.OPT_SOUND = "Sonido en los avisos"
-L.OPT_MINIMAP = "Botón del minimapa"
+L.OPT_MINIMAP = "Botón del minimapa"; L.OPT_MINIMAP_TT = "Se aplica tras /reload."
 L.OPT_TRANSPORT = "Transporte"; L.OPT_TRANSPORT_TT = "Por dónde viajan los mensajes. Auto prueba el canal de hermandad y luego uno oculto."
 L.TRANSPORT_AUTO = "Automático"; L.TRANSPORT_GUILD = "Canal de hermandad"; L.TRANSPORT_CHANNEL = "Canal oculto"
 L.OPT_DEBUG = "Líneas de depuración en el chat"

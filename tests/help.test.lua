@@ -75,3 +75,11 @@ ns.db.settings.share = false; C.Stop()
 local sentBefore = #STUB.sent
 assert(H.Ask("Elite Z") == false and H.mine == nil and #STUB.sent == sentBefore, "no request while invisible")
 assert(STUB.printed[#STUB.printed]:find(ns.L.HELP_NEEDS_SHARE, 1, true), "told to turn sharing on: " .. tostring(STUB.printed[#STUB.printed]))
+-- truncation to 60 bytes never cuts a UTF-8 character in half
+do
+	ns.db.settings.share = true; C.Start(); STUB.Advance(1)
+	H.Ask(string.rep("a", 59) .. "ñ" .. "zzz")
+	local k, ff = C.Decode(STUB.sent[#STUB.sent].msg)
+	assert(k == "help" and ff.t == string.rep("a", 59), "cut before the two-byte character, got " .. tostring(ff and #ff.t))
+	H.Cancel()
+end
