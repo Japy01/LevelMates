@@ -190,10 +190,18 @@ function C.Send(kind, fields, prio)
 	if inInstance() and not INSTANCE_OK[kind] then return false end
 	local text, why = C.Encode(kind, fields)
 	if not text then ns.Log("encode %s failed: %s", kind, tostring(why)); return false end
-	if kind == "hb" then   -- only the newest heartbeat waits in the queue
-		for i = #queue, 1, -1 do if queue[i].kind == "hb" then table.remove(queue, i) end end
-	end
 	local item = { text = text, kind = kind, prio = prio or "normal" }
+	if kind == "hb" then   -- only the newest heartbeat waits, in the queued one's place: what followed it stays after it
+		local at
+		for i = 1, #queue do if queue[i].kind == "hb" then at = at or i end end
+		if at then
+			for i = #queue, at + 1, -1 do if queue[i].kind == "hb" then table.remove(queue, i) end end
+			queue[at] = item
+			C.stats.queued = #queue
+			pump()
+			return true
+		end
+	end
 	if item.prio == "now" then table.insert(queue, 1, item) else queue[#queue + 1] = item end
 	C.stats.queued = #queue
 	pump()

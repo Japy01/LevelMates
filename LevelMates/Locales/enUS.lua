@@ -6,7 +6,7 @@ L.COL_NAME = "Name"; L.COL_LEVEL = "Lv"; L.COL_ZONE = "Zone"; L.COL_GROUP = "Gro
 L.GROUP_FREE = "open"; L.GROUP_FULL = "full"; L.SOLO = "solo"
 L.EMPTY = "No guildmates with LevelMates online right now."
 L.EMPTY_FILTERED = "Nobody matches your filters. Clear them to see everyone."
-L.BOARD_HEADING = "Guildmates online"; L.BOARD_SUBTITLE = "Right-click a name to invite, whisper or set a waypoint."; L.SEARCH_HINT = "Search name..."
+L.BOARD_HEADING = "Guildmates online"; L.BOARD_SUBTITLE = "Right-click a name: invite, whisper or waypoint."; L.SEARCH_HINT = "Search name..."
 L.FILTER_NEAR = "Near my level (±5)"
 L.NOT_IN_GUILD = "You are not in a guild."
 L.BINDING_TOGGLE = "Show or hide the LevelMates board"

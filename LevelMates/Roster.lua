@@ -81,7 +81,11 @@ function R.SendHeartbeat(force)
 	local now = GetTime()
 	if not force and s == lastSent and now - lastHb < KEEPALIVE then return false end
 	if not force and now - lastHb < HB_EVERY then return false end
-	if C.Send("hb", f) then lastSent, lastHb = s, now; return true end
+	if C.Send("hb", f) then
+		lastSent, lastHb = s, now
+		ns.Fire("LM_HB_SENT")   -- state that rides along with the heartbeat (partner mark) goes right after it
+		return true
+	end
 	return false
 end
 

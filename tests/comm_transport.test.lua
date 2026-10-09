@@ -35,6 +35,15 @@ STUB.lockdown = false
 STUB.Advance(1)
 assert(#STUB.sent == 3, "queue flushed: latest hb + help, got " .. #STUB.sent)
 assert(STUB.sent[2].msg:find("l=23") or STUB.sent[3].msg:find("l=23"), "only the latest hb kept")
+-- a newer heartbeat takes the queued one's place, so what was queued after it stays after it
+STUB.lockdown = true
+local q0 = #STUB.sent
+C.Send("hb", { l = 22, z = 1421 }); C.Send("pal", { p = 1 }); C.Send("hb", { l = 23, z = 1421 })
+STUB.lockdown = false
+STUB.Advance(2)
+local k1, f1 = C.Decode(STUB.sent[q0 + 1].msg)
+local k2 = C.Decode(STUB.sent[q0 + 2].msg)
+assert(k1 == "hb" and f1.l == 23 and k2 == "pal", "hb kept its place ahead of pal: " .. tostring(k1) .. "," .. tostring(k2))
 -- Forever's restriction flag can read true while sends still work (spike): only the send result decides
 STUB.reportsRestricted = true
 local r0 = #STUB.sent

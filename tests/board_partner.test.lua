@@ -57,3 +57,8 @@ ns.db.settings.share = false; C.Stop()
 B.Toggle(); B.Toggle()
 B.palCheck:SetChecked(true); B.palCheck.scripts.OnClick(B.palCheck)
 assert(not P.IsOn() and not B.palCheck:GetChecked(), "box unticked again when refused")
+-- header layout: the box clears the divider and the subtitle stops before the box
+local pt = B.palCheck.point
+local boxLeft = B.WIDTH + pt[2] - B.palCheck:GetWidth()
+assert(-pt[3] + B.palCheck:GetHeight() <= B.TOP - 8, "box ends above the divider")
+assert(B.subtitle:GetWidth() > 0 and B.MARGIN + B.subtitle:GetWidth() <= boxLeft - 4, "subtitle is capped before the box")

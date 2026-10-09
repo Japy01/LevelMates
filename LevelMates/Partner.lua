@@ -8,6 +8,16 @@ local L, C, R = ns.L, ns.Comm, ns.Roster
 local RANGE = 3
 local marked = {}     -- name -> true: guildmates whose last pal said p=1
 local notified = {}   -- name -> true: already announced this session
+local REFRESH = 80    -- re-send my mark with a heartbeat at most this often (others forget me after an instance)
+local lastPalAt = -math.huge
+local dirty = false   -- the guild may not know my current state (a send was refused, e.g. inside an instance)
+
+-- Every pal goes through here so a refused send (instance, lockdown) is retried with the next heartbeat.
+local function sendPal(p, prio)
+	if C.Send("pal", { p = p }, prio) then lastPalAt = GetTime(); dirty = false; return true end
+	dirty = true
+	return false
+end
 
 function P.IsOn() return ns.char ~= nil and ns.char.lookingPartner == true end
 function P.Marked(name) return marked[name] == true end
@@ -38,7 +48,7 @@ end
 function P.SetOn(on)
 	if on and not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	ns.char.lookingPartner = on and true or false
-	if C.IsReady() then C.Send("pal", { p = on and 1 or 0 }, "now") end
+	if C.IsReady() then sendPal(on and 1 or 0, "now") end
 	recompute()
 	ns.Fire("LM_PARTNER_CHANGED")
 	return true
@@ -53,9 +63,20 @@ end)
 
 -- Re-announce my flag after the roster's own announce (login, reload, transport restart) and to newcomers,
 -- right after my heartbeat, so they already know me.
-local function announceMine() if P.IsOn() then C.Send("pal", { p = 1 }) end end
+local function announceMine()
+	if P.IsOn() and lastPalAt ~= GetTime() then sendPal(1) end   -- skip if a heartbeat already carried it this instant
+end
 ns.On("LM_ANNOUNCED", announceMine)
 ns.On("LM_PING_ANSWERED", announceMine)
+-- After any heartbeat: refresh my mark now and then (people who expired me while I was in an instance get it back),
+-- and retry a state the guild may have missed.
+ns.On("LM_HB_SENT", function()
+	if P.IsOn() then
+		if dirty or GetTime() - lastPalAt >= REFRESH then sendPal(1) end
+	elseif dirty then
+		sendPal(0)
+	end
+end)
 ns.On("LM_ROSTER_CHANGED", recompute)
 
 -- Sharing off: say "no longer looking" while we still can; forget everyone else's marks.
@@ -70,7 +91,7 @@ groupFrame:SetScript("OnEvent", function()
 	for name in pairs(marked) do
 		if UnitInParty(name) or UnitInRaid(name) then
 			ns.char.lookingPartner = false
-			C.Send("pal", { p = 0 }, "now")
+			sendPal(0, "now")
 			ns.Say(L.PAL_FOUND, name)
 			ns.Fire("LM_PARTNER_CHANGED")
 			return

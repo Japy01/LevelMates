@@ -121,7 +121,8 @@ local function Build()
 
 	-- "Looking for a partner" (guildmates tab), in the header under the search box.
 	local pal = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
-	pal:SetSize(22, 22); pal:SetPoint("TOPRIGHT", -(B.MARGIN + 130), -(insetTop + 32))
+	pal:SetSize(20, 20); pal:SetPoint("TOPRIGHT", -(B.MARGIN + 130), -(insetTop + 30))   -- ends above the divider
+	B.subtitle:SetWidth(B.WIDTH - (B.MARGIN + 130) - 20 - 4 - B.MARGIN); B.subtitle:SetWordWrap(false)   -- stops before the box
 	pal:SetScript("OnClick", function(self)
 		if not ns.Partner.SetOn(self:GetChecked() and true or false) then self:SetChecked(ns.Partner.IsOn()) end
 		B.Refresh()
