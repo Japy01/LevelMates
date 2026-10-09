@@ -12,6 +12,7 @@ local unpack = unpack or table.unpack   -- the client has unpack; table.unpack c
 B.COLS = { 150, 50, 180, 70, 70 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
 B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
+B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
 B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
@@ -148,6 +149,10 @@ local function Build()
 		local r = { bg = bg, icon = icon, button = btn, name = Col(btn, B.COLS[1] - (ROW_H - 4) - 4), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
 		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
+			if B.tab == "goals" then
+				if mouse == "RightButton" and self.goalId then B.OpenGoalMenu(self.goalId) end
+				return
+			end
 			local name = self.mate
 			if not name then return end
 			if mouse == "RightButton" then B.OpenMenu(name) else ns.Fire("LM_ROW_CLICK", name) end
@@ -157,6 +162,16 @@ local function Build()
 			if B.tab == "lfg" and self.adId then   -- Dungeons tab: the whole note
 				local a = ns.LFG.ads[self.adId]
 				if a and a.n then GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(a.n, 1, 1, 1, true); GameTooltip:Show() end
+			elseif B.tab == "goals" and self.goalId then   -- goals: who is missing a level goal
+				local g = ns.Goals.Get(self.goalId)
+				if g and g.ty == "lvl" then
+					local _, _, missing = ns.Goals.Progress(g)
+					if #missing > 0 then
+						GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+						GameTooltip:AddLine(string.format(L.GOAL_MISSING, table.concat(missing, ", ")), 1, 1, 1, true)
+						GameTooltip:Show()
+					end
+				end
 			elseif B.tab == "journal" and self.entry and self.entry.link then   -- journal: the item card
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink(self.entry.link); GameTooltip:Show()
 			elseif B.tab == "mates" and self.mate then   -- partner match and shared rested XP
@@ -189,12 +204,13 @@ local function Build()
 	B.tabs = {}
 	local function Tab(key, label, offset)
 		local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-		b:SetSize(80, 20); b:SetPoint("BOTTOM", offset, 3); b:SetText(label)
+		b:SetSize(70, 20); b:SetPoint("BOTTOM", offset, 3); b:SetText(label)
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.tabs[key] = b
 	end
-	Tab("mates", L.TAB_MATES, -84); Tab("lfg", L.TAB_LFG, 0); Tab("journal", L.TAB_JOURNAL, 84)
-	B.tab = (ns.char.boardTab == "lfg" or ns.char.boardTab == "journal") and ns.char.boardTab or "mates"
+	Tab("mates", L.TAB_MATES, -111); Tab("lfg", L.TAB_LFG, -37); Tab("journal", L.TAB_JOURNAL, 37); Tab("goals", L.TAB_GOALS, 111)
+	local saved = ns.char.boardTab
+	B.tab = (saved == "lfg" or saved == "journal" or saved == "goals") and saved or "mates"
 
 	-- Journal tab: clear (bottom left), type filter (bottom right), pager in the help-rows area.
 	local clear = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
@@ -220,6 +236,12 @@ local function Build()
 	local pageText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	pageText:SetPoint("BOTTOM", 0, B.BOTTOM + 12)
 	B.journalPrev, B.journalNext, B.journalPageText = prev, nextb, pageText
+
+	-- Goals tab: "New goal" for officers (bottom left).
+	local goalNew = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	goalNew:SetSize(120, 20); goalNew:SetPoint("BOTTOMLEFT", 12, 3); goalNew:SetText(L.BTN_GOAL_NEW)
+	goalNew:SetScript("OnClick", function() ns.Fire("LM_GOAL_NEW") end)
+	B.goalNew = goalNew
 
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
@@ -327,6 +349,12 @@ end
 -- Header texts and colours for the active tab; only the guildmates tab sorts.
 local function SetHeaders()
 	local lfg = B.tab == "lfg"
+	if B.tab == "goals" then
+		B.headText[1]:SetText(L.COL_BY); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_GOAL)
+		B.headText[4]:SetText(L.COL_PROGRESS); B.headText[5]:SetText(L.COL_UNTIL)
+		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
+		return
+	end
 	if B.tab == "journal" then
 		B.headText[1]:SetText(L.COL_WHEN); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ENTRY)
 		B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_ZONE)
@@ -435,10 +463,39 @@ local function FillJournal(list)
 	end
 end
 
+local function FillGoals(list)
+	for i = 1, ROWS do
+		local r, g = B.rows[i], list[i]
+		r.button.mate, r.button.adId, r.button.entry, r.button.goalId = nil, nil, nil, g and g.id
+		if g then
+			r.icon:Hide()
+			r.name:SetText(g.by or ""); r.name:SetTextColor(0.7, 0.7, 0.7)
+			r.level:SetText("")
+			r.zone:SetText(ns.Goals.Text(g)); r.zone:SetTextColor(1, 0.82, 0)
+			r.group:SetText(ns.Goals.ProgressText(g)); r.group:SetTextColor(unpack(ns.Goals.IsDone(g) and B.GROUP_COLORS.open or { 1, 1, 1 }))
+			r.xph:SetText(ns.Goals.UntilText(g)); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+
+function B.OpenGoalMenu(id)
+	if not ns.Goals.CanDelete(id) then return end
+	B.lastGoalMenu = id
+	local g = ns.Goals.Get(id)
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		root:CreateTitle(ns.Goals.Text(g))
+		root:CreateButton(L.GOAL_DELETE, function() ns.Goals.Delete(id) end)
+	end)
+end
+
 local function RefreshTabs()
-	local lfg, journal = B.tab == "lfg", B.tab == "journal"
-	local mates = not lfg and not journal
-	B.tabs.mates:SetEnabled(not mates); B.tabs.lfg:SetEnabled(not lfg); B.tabs.journal:SetEnabled(not journal)
+	local lfg, journal, goals = B.tab == "lfg", B.tab == "journal", B.tab == "goals"
+	local mates = not lfg and not journal and not goals
+	B.tabs.mates:SetEnabled(not mates); B.tabs.lfg:SetEnabled(not lfg); B.tabs.journal:SetEnabled(not journal); B.tabs.goals:SetEnabled(not goals)
 	B.helpButton:SetShown(mates); B.nearCheck:SetShown(mates); B.nearLabel:SetShown(mates)
 	B.palCheck:SetShown(mates); B.palLabel:SetShown(mates)
 	B.palCheck:SetChecked(ns.Partner and ns.Partner.IsOn() or false)
@@ -446,11 +503,12 @@ local function RefreshTabs()
 	B.lfgButton:SetText(ns.LFG.mine and L.BTN_LFG_CANCEL or L.BTN_LFG)
 	B.journalClear:SetShown(journal); B.journalFilterButton:SetShown(journal)
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
+	B.goalNew:SetShown(goals and R.IAmOfficer())
 end
 
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
-	local lfg, journal = B.tab == "lfg", B.tab == "journal"
+	local lfg, journal, goals = B.tab == "lfg", B.tab == "journal", B.tab == "goals"
 	local list
 	if journal then
 		local all = ns.Journal.List(B.journalFilter or "all", B.search)
@@ -461,19 +519,22 @@ function B.Refresh()
 		B.journalPageText:SetText(string.format(L.J_PAGE, B.journalPage, pages))
 		B.journalPrev:SetEnabled(B.journalPage > 1); B.journalNext:SetEnabled(B.journalPage < pages)
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
+	elseif goals then
+		list = ns.Goals.List()
 	else
 		list = lfg and LfgVisible() or Visible()
 	end
-	SetColumns(journal and B.JCOLS or B.COLS)
+	SetColumns(journal and B.JCOLS or goals and B.GCOLS or B.COLS)
 	SetHeaders()
 	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
 	local rested = ns.Rested and ns.Rested.Mine()
 	B.restedText:SetText(rested and string.format(L.RESTED_MINE, rested) or "")
-	if journal then FillJournal(list) elseif lfg then FillLfg(list) else FillMates(list) end
+	if journal then FillJournal(list) elseif goals then FillGoals(list) elseif lfg then FillLfg(list) else FillMates(list) end
 	local emptyText = ""
 	if #list == 0 then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
+		elseif goals then emptyText = L.GOAL_EMPTY
 		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD
 		elseif lfg then emptyText = #ns.LFG.List() > 0 and L.EMPTY_FILTERED or L.LFG_EMPTY
 		elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED
@@ -481,7 +542,7 @@ function B.Refresh()
 	end
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
-	if journal then
+	if journal or goals then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else
 		RefreshHelp()
@@ -489,7 +550,7 @@ function B.Refresh()
 end
 
 function B.SetTab(key)
-	key = (key == "lfg" or key == "journal") and key or "mates"
+	key = (key == "lfg" or key == "journal" or key == "goals") and key or "mates"
 	ns.char.boardTab, B.tab, B.search = key, key, ""
 	if B.searchBox then B.searchBox:SetText("") end
 	B.Refresh()
@@ -498,7 +559,7 @@ end
 -- Open the board on a given tab (slash command, minimap, binding).
 function B.ShowTab(key)
 	if not B.frame then Build() end
-	B.tab = (key == "lfg" or key == "journal") and key or "mates"
+	B.tab = (key == "lfg" or key == "journal" or key == "goals") and key or "mates"
 	ns.char.boardTab = B.tab
 	B.frame:Show()
 	B.Refresh()
@@ -553,3 +614,7 @@ ns.On("LM_RESTED_CHANGED", B.Refresh)
 ns.On("LM_JOURNAL_CHANGED", B.Refresh)
 ns.Slash("diario", function() B.ShowTab("journal") end)
 ns.Slash("journal", function() B.ShowTab("journal") end)
+
+ns.On("LM_GOALS_CHANGED", B.Refresh)
+ns.Slash("metas", function() B.ShowTab("goals") end)
+ns.Slash("goals", function() B.ShowTab("goals") end)
