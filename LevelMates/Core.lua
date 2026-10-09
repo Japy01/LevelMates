@@ -4,7 +4,7 @@ ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadat
 
 local DEFAULTS = {
 	share = true, sharePos = false, shareQuests = false, shareXp = false,
-	matchNotices = true, helpNotices = true, lfgNotices = true, sound = true, minimap = true,
+	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, sound = true, minimap = true,
 	transport = "auto", debug = false,
 }
 

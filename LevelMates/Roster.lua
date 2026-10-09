@@ -174,6 +174,7 @@ local function announce()
 	C.Send("ping", {}, "now")
 	R.SendHeartbeat(true)
 	R.SendQuests()
+	ns.Fire("LM_ANNOUNCED")   -- modules re-announce their own state (partner flag) after the roster's
 end
 ns.On("LM_WORLD", function(isInitial, isReloading)
 	if not (isInitial or isReloading) then return end

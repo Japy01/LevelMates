@@ -52,10 +52,11 @@ C.SCHEMA = {
 	helpgo = { id = word(8) },
 	lfg  = { d = int(1, 99), r = roles, n = text(40), id = word(8), m = int(1, 20) },
 	lfgx = { id = word(8) },
+	pal  = { p = int(0, 1) },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]

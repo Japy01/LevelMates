@@ -53,4 +53,8 @@ assert(C.Validate("lfg", { d = 2, r = "T", m = 5 }) == false, "id required")
 local kx, fx = C.Decode(C.Encode("lfgx", { id = "ab12cd34" }))
 assert(kx == "lfgx" and fx.id == "ab12cd34", "lfgx roundtrip")
 assert(C.Validate("lfgx", {}) == false, "lfgx needs an id")
+-- leveling partner flag
+local kp, fp = C.Decode(C.Encode("pal", { p = 1 }))
+assert(kp == "pal" and fp.p == 1, "pal roundtrip")
+assert(C.Validate("pal", { p = 2 }) == false and C.Validate("pal", {}) == false and C.Validate("pal", { p = "x" }) == false, "p must be 0 or 1")
 print("ok")
