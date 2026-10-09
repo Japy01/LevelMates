@@ -98,3 +98,93 @@ ev:SetScript("OnEvent", function(_, event, a1)
 end)
 
 ns.On("LM_LOADED", function() entries() end)
+
+-- Recorders: groups with guildmates (once per person per session).
+local grouped = {}
+local function inMyGroup(name) return UnitInParty(name) or UnitInRaid(name) end
+local function guildmatesInGroup()
+	local out = {}
+	for name in pairs(R.mates) do if inMyGroup(name) then out[#out + 1] = name end end
+	table.sort(out)
+	return out
+end
+
+-- Dungeons: once per entry into a party instance; the key survives loading screens and /reload.
+local function checkInstance()
+	local inside, itype = IsInInstance()
+	if inside and itype == "party" then
+		local name, _, _, _, _, _, _, id = GetInstanceInfo()
+		local key = tostring(id and id ~= 0 and id or name)
+		if ns.char.journalInstance ~= key then
+			ns.char.journalInstance = key
+			J.Add("dungeon", { name = name, mates = guildmatesInGroup() })
+		end
+	elseif not inside then
+		ns.char.journalInstance = nil
+	end
+end
+
+-- Items: mine only (guid, or the sender name when the guid is empty), uncommon or better.
+local COLOR_QUALITY = { ["9d9d9d"] = 0, ["ffffff"] = 1, ["1eff00"] = 2, ["0070dd"] = 3, ["a335ee"] = 4, ["ff8000"] = 5, ["e6cc80"] = 6 }
+local function quality(link)
+	local q = C_Item and C_Item.GetItemQualityByID and C_Item.GetItemQualityByID(link)
+	if q then return q end
+	local hex = link:match("^|c%x%x(%x%x%x%x%x%x)")
+	return hex and COLOR_QUALITY[hex:lower()]
+end
+local function isMine(guid, sender)
+	if guid and guid ~= "" then return guid == UnitGUID("player") end
+	return sender ~= nil and sender ~= "" and ns.ShortName(sender) == UnitName("player")
+end
+
+-- Professions: the twelve profession skill IDs (locale-independent).
+local PROFESSIONS = { [171] = true, [164] = true, [333] = true, [202] = true, [182] = true, [165] = true,
+	[186] = true, [393] = true, [197] = true, [129] = true, [185] = true, [356] = true }
+local function readProfessions()
+	local n = C_SkillInfo and C_SkillInfo.GetNumSkillLines() or 0
+	if n == 0 then return nil end   -- not loaded yet
+	local out = {}
+	for i = 1, n do
+		local s = C_SkillInfo.GetSkillLineInfo(i)
+		if s and not s.isHeader and PROFESSIONS[s.skillID] then out[s.skillID] = { name = s.name, rank = s.rank } end
+	end
+	return out
+end
+local function checkSkills()
+	local now = readProfessions()
+	if not now then return end
+	local before = ns.char.skills
+	ns.char.skills = now
+	if not before then return end   -- first readable sight: snapshot only
+	for id, s in pairs(now) do
+		local old = before[id]
+		if not old then
+			J.Add("skill", { name = s.name, learned = true, rank = s.rank })
+		elseif math.floor(s.rank / 25) > math.floor(old.rank / 25) then
+			J.Add("skill", { name = s.name, rank = math.floor(s.rank / 25) * 25 })
+		end
+	end
+end
+
+local ev2 = CreateFrame("Frame")
+ev2:RegisterEvent("GROUP_ROSTER_UPDATE"); ev2:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+ev2:RegisterEvent("CHAT_MSG_LOOT"); ev2:RegisterEvent("SKILL_LINES_CHANGED")
+ev2:SetScript("OnEvent", function(_, event, ...)
+	if event == "GROUP_ROSTER_UPDATE" then
+		for _, name in ipairs(guildmatesInGroup()) do
+			if not grouped[name] then grouped[name] = true; J.Add("group", { name = name }) end
+		end
+	elseif event == "ZONE_CHANGED_NEW_AREA" then
+		checkInstance()
+	elseif event == "CHAT_MSG_LOOT" then
+		local text, sender = ...
+		local guid = select(12, ...)
+		if type(text) ~= "string" or not isMine(guid, sender) then return end
+		local link = text:match("|c%x+|Hitem:.-|h.-|h|r")
+		local q = link and quality(link)
+		if q and q >= 2 then J.Add("item", { link = link, q = q }) end
+	elseif event == "SKILL_LINES_CHANGED" then
+		checkSkills()
+	end
+end)
+ns.On("LM_WORLD", function() checkInstance(); checkSkills() end)
