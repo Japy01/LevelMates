@@ -31,7 +31,10 @@ local function buildGuildSet()
 end
 function R.InvalidateGuildRoster() guildSet = nil end
 function R.IsGuildmate(name)
-	if not guildSet or GetTime() - guildSetAt > ROSTER_TTL then guildSet = buildGuildSet(); guildSetAt = GetTime() end
+	if not guildSet or GetTime() - guildSetAt > ROSTER_TTL then
+		guildSet = buildGuildSet(); guildSetAt = GetTime()
+		if next(guildSet) == nil then guildSet = nil; return false end   -- not loaded yet (login): ask again next time
+	end
 	return guildSet[name] ~= nil   -- no roster available: nobody is trusted
 end
 
@@ -178,6 +181,9 @@ ev:SetScript("OnEvent", function(_, event)
 		C_Timer.After(0.5, function() R.SendHeartbeat(false) end)
 	end
 end)
+
+-- Ask the server for the guild list early: officer checks need it as soon as goals arrive.
+ns.On("LM_WORLD", function() if C_GuildInfo and C_GuildInfo.GuildRoster then C_GuildInfo.GuildRoster() end end)
 
 -- Lifecycle: announce myself (ping + forced hb + quests) at login, after /reload, and whenever the transport
 -- (re)starts while I am in the world; forget everyone when it stops ("off: you see nobody").

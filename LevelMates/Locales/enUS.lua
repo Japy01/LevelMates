@@ -84,3 +84,4 @@ L.GOAL_TYPE_LVL = "Everyone to a level"; L.GOAL_TYPE_DUN = "Dungeon together"; L
 L.GOAL_TARGET = "Target"; L.GOAL_COUNT_WHAT = "Counts..."
 L.GOAL_WHAT_LVL = "Levels"; L.GOAL_WHAT_QST = "Quests"; L.GOAL_WHAT_DUN = "Dungeons"
 L.GOAL_DAYS = "%d days"; L.GOAL_CREATE = "Create"
+L.GOAL_BAD_VALUE = "That goal is not valid: level 2-60, counter 1-10000, 1-30 days."

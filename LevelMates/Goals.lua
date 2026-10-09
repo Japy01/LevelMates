@@ -25,15 +25,25 @@ local function seen()
 end
 local function newId() return string.format("%04x%04x", math.random(0, 65535), math.random(0, 65535)):sub(1, 8) end
 
-function G.Get(id) return store()[id] end
+-- A deleted goal stays as a marker ({ gone = true }) until it would have expired, so a re-share from an officer who
+-- missed the delete cannot bring it back.
+function G.Get(id) local g = store()[id]; if g and not g.gone then return g end end
+local function bury(id, e) store()[id] = { id = id, gone = true, e = e or today() } end
 
 -- Active goals, soonest deadline first; goals 2 days past their deadline are dropped here.
 function G.List()
 	local s, out = store(), {}
 	for id, g in pairs(s) do
-		if today() > g.e + G.KEEP_DAYS then s[id] = nil else out[#out + 1] = g end
+		if today() > g.e + G.KEEP_DAYS then s[id] = nil elseif not g.gone then out[#out + 1] = g end
 	end
 	table.sort(out, function(a, b) if a.e ~= b.e then return a.e < b.e end; return a.id < b.id end)
+	return out
+end
+
+-- Goals that may go out on the wire: simulation samples never do.
+local function shared()
+	local out = {}
+	for _, g in ipairs(G.List()) do if not g.sim then out[#out + 1] = g end end
 	return out
 end
 
@@ -70,7 +80,11 @@ end
 function G.Progress(g)
 	if g.ty == "lvl" then
 		local levels, cutoff = {}, time() - G.SEEN_DAYS * 86400
-		for name, s in pairs(seen()) do if s.t >= cutoff then levels[name] = s.l end end
+		local sn = seen()
+		for name, s in pairs(sn) do
+			if s.t < cutoff then sn[name] = nil   -- forgotten after 30 days
+			elseif R.IsGuildmate(name) then levels[name] = s.l end   -- someone who left the guild no longer counts
+		end
 		for name, m in pairs(R.mates) do levels[name] = m.level end
 		levels[me()] = UnitLevel("player")
 		local reached, total, missing = 0, 0, {}
@@ -112,7 +126,7 @@ end
 function G.Create(ty, a, w, days)
 	if not R.IAmOfficer() then ns.Say(L.GOAL_NOT_OFFICER); return false end
 	if not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
-	if not valid(ty, a, w) or type(days) ~= "number" or days < 1 or days > 30 then return false end
+	if not valid(ty, a, w) or type(days) ~= "number" or days < 1 or days > 30 then ns.Say(L.GOAL_BAD_VALUE); return false end
 	if #G.List() >= G.MAX then ns.Say(L.GOAL_FULL); return false end
 	local g = { id = newId(), ty = ty, a = a, w = ty == "cnt" and w or nil, s = today(), e = today() + days, by = me(), contrib = {} }
 	if not C.Send("go", fields(g), "now") then return false end
@@ -125,8 +139,8 @@ function G.CanDelete(id) local g = G.Get(id); return g ~= nil and (g.by == me() 
 
 function G.Delete(id)
 	if not G.CanDelete(id) then return false end
-	C.Send("gx", { id = id }, "now")
-	store()[id] = nil
+	C.Send("gx", { id = id }, "now")   -- if it cannot go out now, officers repeat it to newcomers
+	bury(id, G.Get(id).e)
 	ns.Fire("LM_GOALS_CHANGED")
 	return true
 end
@@ -135,6 +149,7 @@ C.OnMessage("go", function(f, name)
 	if not R.IsOfficer(name) or not valid(f.ty, f.a, f.w) then return end
 	local s = store()
 	local g = s[f.id]
+	if g and g.gone then return end
 	if not g then
 		if #G.List() >= G.MAX then return end
 		g = { id = f.id, contrib = {}, by = name }
@@ -147,17 +162,24 @@ end)
 
 C.OnMessage("gx", function(f, name)
 	local g = G.Get(f.id)
-	if g and (g.by == name or R.IsOfficer(name)) then store()[f.id] = nil; ns.Fire("LM_GOALS_CHANGED") end
+	if g and (g.by == name or R.IsOfficer(name)) then bury(f.id, g.e); ns.Fire("LM_GOALS_CHANGED") end
 end)
 
 -- Levels last seen per guildmate, for "everyone to level X".
-C.OnMessage("hb", function(f, name) seen()[name] = { l = f.l, t = time() } end)
+C.OnMessage("hb", function(f, name)
+	seen()[name] = { l = f.l, t = time() }
+	for _, g in ipairs(G.List()) do if g.ty == "lvl" then G.CheckDone(g) end end   -- the last one to arrive may be them
+end)
 
--- A newcomer: officers re-send every goal they hold, others only the goals they created.
+-- A newcomer: officers re-send every goal they hold and every delete they know of, others only the goals they created.
 ns.On("LM_PING_ANSWERED", function()
 	local officer = R.IAmOfficer()
-	for _, g in ipairs(G.List()) do
+	for _, g in ipairs(shared()) do
 		if officer or g.by == me() then C.Send("go", fields(g)) end
+	end
+	if officer then
+		G.List()   -- drops expired markers first
+		for id, g in pairs(store()) do if g.gone then C.Send("gx", { id = id }) end end
 	end
 end)
 
@@ -183,7 +205,7 @@ end)
 -- My journal: a dungeon with a guildmate completes a dungeon goal; any entry may move a counter.
 ns.On("LM_JOURNAL_ADDED", function(e)
 	if e.sim then return end   -- /lm sim diario: practice entries never complete a real goal
-	for _, g in ipairs(G.List()) do
+	for _, g in ipairs(shared()) do
 		if g.ty == "dun" and not g.doneBy and e.k == "dungeon" and e.name == D.Name(g.a) and e.mates and #e.mates > 0 then
 			g.doneBy = me()
 			C.Send("gd", { id = g.id }, "now")
@@ -197,7 +219,7 @@ end)
 local sentN, sentAt = {}, {}
 ns.On("LM_HB_SENT", function()
 	local now = GetTime()
-	for _, g in ipairs(G.List()) do
+	for _, g in ipairs(shared()) do
 		if g.ty == "cnt" then
 			local n = math.min(10000, G.MyContribution(g))
 			if n ~= (sentN[g.id] or 0) and now - (sentAt[g.id] or -math.huge) >= 60 then
@@ -209,7 +231,7 @@ end)
 
 -- A newcomer also gets my counter parts and the dungeons I completed.
 ns.On("LM_PING_ANSWERED", function()
-	for _, g in ipairs(G.List()) do
+	for _, g in ipairs(shared()) do
 		if g.ty == "cnt" then
 			local n = G.MyContribution(g)
 			if n > 0 then C.Send("gc", { id = g.id, n = math.min(10000, n) }) end

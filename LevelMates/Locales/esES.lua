@@ -84,3 +84,4 @@ L.GOAL_TYPE_LVL = "Todos a un nivel"; L.GOAL_TYPE_DUN = "Mazmorra juntos"; L.GOA
 L.GOAL_TARGET = "Objetivo"; L.GOAL_COUNT_WHAT = "Cuenta..."
 L.GOAL_WHAT_LVL = "Niveles"; L.GOAL_WHAT_QST = "Misiones"; L.GOAL_WHAT_DUN = "Mazmorras"
 L.GOAL_DAYS = "%d días"; L.GOAL_CREATE = "Crear"
+L.GOAL_BAD_VALUE = "Esa meta no es válida: nivel 2-60, contador 1-10000, de 1 a 30 días."
