@@ -16,3 +16,4 @@ First version.
 - `/lm sim` shows fake guildmates, locally, to try the addon alone.
 - Inside instances only help requests are sent.
 - The help prompt says that asking for help shares your position; only the asker can clear a request.
+- Board: click the level or zone header to sort, and a "near my level (±5)" filter. Both are remembered per character.

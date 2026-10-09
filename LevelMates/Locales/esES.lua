@@ -5,6 +5,8 @@ local L = ns.L
 L.COL_NAME = "Nombre"; L.COL_LEVEL = "Niv"; L.COL_ZONE = "Zona"; L.COL_GROUP = "Grupo"; L.COL_XPH = "XP/h"
 L.GROUP_FREE = "hueco"; L.GROUP_FULL = "lleno"; L.SOLO = "solo"
 L.EMPTY = "Ningún hermano con LevelMates conectado ahora mismo."
+L.EMPTY_FILTERED = "Nadie a menos de 5 niveles de ti. Desmarca el filtro para ver a todos."
+L.FILTER_NEAR = "Cerca de mi nivel (±5)"
 L.NOT_IN_GUILD = "No estás en una hermandad."
 L.MENU_INVITE = "Invitar"; L.MENU_WHISPER = "Susurrar"; L.MENU_WAYPOINT = "Poner punto de ruta"
 L.BTN_HELP = "Pedir ayuda"; L.BTN_HELP_CANCEL = "Cancelar petición"; L.BTN_COMING = "Voy"
