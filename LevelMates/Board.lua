@@ -79,6 +79,8 @@ local function Build()
 	-- Heading, subtitle, divider and the name search, in the style of the dungeon journal.
 	B.heading = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	B.heading:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 10)); B.heading:SetText(L.BOARD_HEADING); B.heading:SetJustifyH("LEFT")
+	B.restedText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")   -- my rested XP, next to the heading
+	B.restedText:SetPoint("LEFT", B.heading, "RIGHT", 12, 0); B.restedText:SetTextColor(0.6, 0.8, 1)
 	B.subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 34)); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
 	local divider = f:CreateTexture(nil, "ARTWORK")
@@ -154,8 +156,16 @@ local function Build()
 			if B.tab == "lfg" and self.adId then   -- Dungeons tab: the whole note
 				local a = ns.LFG.ads[self.adId]
 				if a and a.n then GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(a.n, 1, 1, 1, true); GameTooltip:Show() end
-			elseif B.tab == "mates" and self.mate and ns.Partner and ns.Partner.Matches(self.mate) then   -- a partner match
-				GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(L.PAL_TOOLTIP, 0.4, 1, 0.4); GameTooltip:Show()
+			elseif B.tab == "mates" and self.mate then   -- partner match and shared rested XP
+				local lines = {}
+				if ns.Partner and ns.Partner.Matches(self.mate) then lines[#lines + 1] = { L.PAL_TOOLTIP, 0.4, 1, 0.4 } end
+				local rx = ns.Rested and ns.Rested.Of(self.mate)
+				if rx then lines[#lines + 1] = { string.format(L.RESTED_THEIRS, rx), 0.6, 0.8, 1 } end
+				if #lines > 0 then
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					for _, l in ipairs(lines) do GameTooltip:AddLine(l[1], l[2], l[3], l[4]) end
+					GameTooltip:Show()
+				end
 			end
 		end)
 		btn:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
@@ -381,6 +391,8 @@ function B.Refresh()
 	SetHeaders()
 	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
+	local rested = ns.Rested and ns.Rested.Mine()
+	B.restedText:SetText(rested and string.format(L.RESTED_MINE, rested) or "")
 	if lfg then FillLfg(list) else FillMates(list) end
 	local emptyText = ""
 	if #list == 0 then
@@ -453,3 +465,5 @@ ns.Slash("lfg", function() B.ShowTab("lfg") end)
 ns.Slash("grupo", function() B.ShowTab("lfg") end)
 
 ns.On("LM_PARTNER_CHANGED", B.Refresh)
+
+ns.On("LM_RESTED_CHANGED", B.Refresh)
