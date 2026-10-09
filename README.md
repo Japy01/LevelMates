@@ -9,10 +9,11 @@ A World of Warcraft: Forever guild addon. See which guildmates are online and wh
 - **Help requests**: "Ask for help" tells guildmates what you need. They get a notice and a map waypoint, and an "On my way" button that whispers you.
 - **Dungeon groups** (Dungeons tab, or `/lm lfg`): post "Find a group" with a dungeon, your role and a short note; guildmates see it in the list and get a chat line if it fits their level. Ads last 20 minutes.
 - **Leveling partner** (Guildmates tab): tick "Looking for a partner"; guildmates within 3 levels who also tick it appear at the top, tinted, with a chat line. It turns itself off when you group with one of them.
+- **Rested XP**: yours next to the board heading, with a chat line when it reaches the maximum; guildmates who opt in ("Share my rested XP", off by default) show theirs when you hover their name.
 
 ## Privacy
 
-By default it shares only your **level, zone, class and whether you are in a group**, every 30 seconds and only when something changed. Your **position**, **quest ids** and **XP per hour** are shared only if you turn them on in `/lm options`. Turning "Appear on the board" off stops everything: you send nothing and see nobody.
+By default it shares only your **level, zone, class and whether you are in a group**, every 30 seconds and only when something changed. Your **position**, **quest ids**, **XP per hour** and **rested XP** are shared only if you turn them on in `/lm options`. Turning "Appear on the board" off stops everything: you send nothing and see nobody.
 
 ## Policy
 
@@ -24,7 +25,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Commands
 
-`/lm` (board), `/lm lfg` (Dungeons tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim off`.
+`/lm` (board), `/lm lfg` (Dungeons tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim off`.
 
 ## Not in v1 (planned)
 
@@ -45,10 +46,11 @@ Addon de hermandad para World of Warcraft: Forever. Ve qué hermanos están cone
 - **Pedir ayuda**: "Pedir ayuda" cuenta a la hermandad con qué necesitas ayuda. Reciben un aviso y un punto en el mapa, y un botón "Voy" que te susurra.
 - **Grupos de mazmorra** (pestaña Mazmorras, o `/lm lfg`): publica "Buscar grupo" con una mazmorra, tu rol y una nota corta; los hermanos lo ven en la lista y reciben una línea en el chat si encaja con su nivel. Los anuncios duran 20 minutos.
 - **Compañero de leveo** (pestaña Hermanos): marca "Busco compañero"; los hermanos a 3 niveles o menos que también lo marcan salen arriba, resaltados, con una línea en el chat. Se desmarca solo al agruparte con uno de ellos.
+- **XP descansada**: la tuya junto al título del tablón, con una línea en el chat cuando llega al máximo; los hermanos que lo activan ("Compartir mi XP descansada", apagado por defecto) muestran la suya al pasar el ratón por su nombre.
 
 ## Privacidad
 
-Por defecto comparte solo tu **nivel, zona, clase y si estás en grupo**, cada 30 segundos y solo cuando algo cambia. Tu **posición**, tus **misiones** y tu **XP por hora** se comparten solo si lo activas en `/lm opciones`. Si apagas "Aparecer en el tablón", se detiene todo: no envías nada y no ves a nadie.
+Por defecto comparte solo tu **nivel, zona, clase y si estás en grupo**, cada 30 segundos y solo cuando algo cambia. Tu **posición**, tus **misiones**, tu **XP por hora** y tu **XP descansada** se comparten solo si lo activas en `/lm opciones`. Si apagas "Aparecer en el tablón", se detiene todo: no envías nada y no ves a nadie.
 
 ## Política
 
@@ -60,7 +62,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Comandos
 
-`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim off`.
+`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim off`.
 
 ## Pendiente para después de v1
 

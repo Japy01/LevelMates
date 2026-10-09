@@ -40,6 +40,11 @@ local function simPal()
 	inject("pal", { p = 1 }, "Luis"); inject("pal", { p = 1 }, "Mario")
 end
 
+local function simRested()
+	if not R.mates.Mario then run() end   -- the values need their owners in the roster
+	inject("rx", { p = 80 }, "Mario"); inject("rx", { p = 150 }, "Luis")
+end
+
 local function off()
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -52,5 +57,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "help" or rest == "ayuda" then simHelp()
 	elseif rest == "lfg" or rest == "grupo" then simLfg()
 	elseif rest == "pal" or rest == "compa" then simPal()
+	elseif rest == "rested" or rest == "descanso" then simRested()
 	else run() end
 end)
