@@ -101,3 +101,4 @@ L.DC_J_TITLE = "La semana de %s"; L.DC_J_LEVELS = "Niveles: %d → %d"; L.DC_J_Q
 L.DUNGEON_BLACKFATHOM_DEEPS = "Cavernas de Brazanegra"; L.DUNGEON_STOCKADE = "Las Mazmorras"; L.DUNGEON_EXCAVATION_WETLANDS = "Excavación: Los Humedales"
 L.DUNGEON_DALARAN = "Ciudad de Dalaran"; L.DUNGEON_GNOMEREGAN = "Gnomeregan"; L.DUNGEON_RAZORFEN_KRAUL = "Horado Rajacieno"
 L.DUNGEON_SM_GRAVEYARD = "Monasterio Escarlata: Cementerio"; L.DUNGEON_SM_LIBRARY = "Monasterio Escarlata: Biblioteca"
+L.LFG_SEARCHING = "%d buscan"; L.LFG_SEARCHING_ONE = "1 busca"; L.LFG_WHISPER = "Susurrar a %s"; L.LFG_INVITE = "Invitar a %s"; L.LFG_HERE = "Buscar grupo aquí"; L.LFG_CANCEL_MINE = "Retirar mi anuncio"

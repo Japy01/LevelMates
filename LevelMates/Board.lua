@@ -14,6 +14,7 @@ B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
 B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 344, 1, 74 }   -- wishes: who, -, item, -, since (same total as B.COLS)
+B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 96, 58   -- dungeon cards
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
 B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes" }
 local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES" }
@@ -210,6 +211,26 @@ local function Build()
 	end
 	f.empty = Col(f, B.WIDTH - 40, "CENTER"); f.empty:SetPoint("TOP", 0, -(B.TOP + 40))
 
+	-- Dungeons tab: a card per dungeon (art, name, levels, how many are looking), as the dungeon journal's home.
+	B.CARD_W = math.floor((B.WIDTH - 2 * B.MARGIN - (B.CARD_COLS - 1) * B.CARD_GAP) / B.CARD_COLS)
+	B.cards = {}
+	for i = 1, #ns.Dungeons.list do
+		local c = CreateFrame("Button", nil, f)
+		c:SetSize(B.CARD_W, B.CARD_H); c:RegisterForClicks("AnyUp")
+		c:SetHighlightTexture("Interface/QuestFrame/UI-QuestLogTitleHighlight", "ADD")
+		c.bg = c:CreateTexture(nil, "BACKGROUND"); c.bg:SetAllPoints()
+		c.art = c:CreateTexture(nil, "ARTWORK"); c.art:SetPoint("TOPLEFT", 3, -3); c.art:SetPoint("TOPRIGHT", -3, -3); c.art:SetHeight(B.ART_H)
+		c.name = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		c.name:SetPoint("TOPLEFT", 5, -(B.ART_H + 6)); c.name:SetWidth(B.CARD_W - 10); c.name:SetJustifyH("LEFT"); c.name:SetWordWrap(false)
+		c.levels = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); c.levels:SetPoint("BOTTOMLEFT", 5, 5)
+		c.count = c:CreateFontString(nil, "OVERLAY", "GameFontGreenSmall"); c.count:SetPoint("BOTTOMRIGHT", -5, 5)
+		c:SetScript("OnClick", function(self) B.OpenDungeonMenu(self.dungeonId) end)
+		c:SetScript("OnEnter", function(self) B.DungeonTooltip(self) end)
+		c:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+		c:Hide()
+		B.cards[i] = c
+	end
+
 	local help = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	help:SetSize(120, 20); help:SetPoint("BOTTOMLEFT", 12, 3); help:SetText(L.BTN_HELP)
 	help:SetScript("OnClick", function() ns.Fire("LM_HELP_BUTTON") end)
@@ -368,20 +389,10 @@ local function Visible()
 	return out
 end
 
--- Dungeons tab: ad ids newest first, filtered by the search box (player or dungeon name, plain text).
-local function LfgVisible()
-	local out = {}
-	local q = (B.search or ""):lower()
-	for _, id in ipairs(ns.LFG.List()) do
-		local a = ns.LFG.ads[id]
-		if q == "" or (a.name .. " " .. ns.Dungeons.Name(a.d)):lower():find(q, 1, true) then out[#out + 1] = id end
-	end
-	return out
-end
-
 -- Header texts and colours for the active tab; only the guildmates tab sorts.
 local function SetHeaders()
 	local lfg = B.tab == "lfg"
+	if lfg then for i = 1, 5 do B.headText[i]:SetText("") end; return end   -- the grid has no columns
 	if B.tab == "wishes" then
 		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ITEM)
 		B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_SINCE)
@@ -440,33 +451,6 @@ local function FillMates(list)
 			r.xph:SetText(m.xph and m.xph > 0 and tostring(m.xph) or "")
 			r.button:Show()
 			RowBg(r, i, ns.Partner and ns.Partner.Matches(name))
-		else
-			r.button.mate = nil
-			ClearRow(r)
-		end
-	end
-end
-
-local function FillLfg(list)
-	local mine = UnitLevel("player")
-	for i = 1, ROWS do
-		local r, id = B.rows[i], list[i]
-		local a = id and ns.LFG.ads[id]
-		r.button.mate, r.button.adId = a and a.name, id
-		if a then
-			local m = R.mates[a.name]
-			r.name:SetText(a.name); r.name:SetTextColor(ClassColor(m and m.class))
-			SetClassIcon(r.icon, m and m.class)
-			r.level:SetText(m and m.level or ""); r.level:SetTextColor(1, 1, 1)
-			local d = ns.Dungeons.Get(a.d)
-			r.zone:SetText(string.format("%s (%d-%d)", ns.Dungeons.Name(a.d), d.min, d.max))
-			r.zone:SetTextColor(unpack(ns.Dungeons.Fits(a.d, mine) and B.LEVEL_COLORS.near or B.LEVEL_COLORS.far))
-			r.group:SetText(ns.LFG.RolesShort(a.r)); r.group:SetTextColor(1, 1, 1)
-			local n = a.n or ""
-			if #n > 12 then n = ns.CutUtf8(n, 10) .. "..." end   -- the column is narrow; the tooltip has the whole note
-			r.xph:SetText(n)
-			r.button:Show()
-			RowBg(r, i, false)
 		else
 			r.button.mate = nil
 			ClearRow(r)
@@ -570,6 +554,79 @@ function B.OpenWishMenu(id)
 	end)
 end
 
+-- Dungeons tab: the ads for a dungeon (mine first), the visible cards, and filling them.
+function B.AdsFor(id)
+	local out, LFG = {}, ns.LFG
+	if LFG.mine and LFG.mine.d == id then out[1] = { name = (UnitName("player")), r = LFG.mine.r, n = LFG.mine.n, mine = true } end
+	for _, adId in ipairs(LFG.List()) do
+		local a = LFG.ads[adId]
+		if a.d == id and not (LFG.mine and adId == LFG.mine.id) then out[#out + 1] = a end
+	end
+	return out
+end
+
+local function GridVisible()
+	local out, q = {}, (B.search or ""):lower()
+	for _, d in ipairs(ns.Dungeons.Sorted()) do
+		local match = q == "" or ns.Dungeons.Name(d.id):lower():find(q, 1, true) ~= nil
+		if not match then for _, a in ipairs(B.AdsFor(d.id)) do if a.name:lower():find(q, 1, true) then match = true end end end
+		if match then out[#out + 1] = d.id end
+	end
+	return out
+end
+
+local function FillGrid(list)
+	for i = 1, ROWS do ClearRow(B.rows[i]) end
+	local mine = UnitLevel("player")
+	for i, c in ipairs(B.cards) do
+		local id = list[i]
+		if id then
+			local d, ads = ns.Dungeons.Get(id), B.AdsFor(id)
+			local col, row = (i - 1) % B.CARD_COLS, math.floor((i - 1) / B.CARD_COLS)
+			c:ClearAllPoints()
+			c:SetPoint("TOPLEFT", B.frame, "TOPLEFT", B.MARGIN + col * (B.CARD_W + B.CARD_GAP), -(B.TOP + row * (B.CARD_H + B.CARD_GAP)))
+			c.dungeonId, c.fits = id, ns.Dungeons.Fits(id, mine)
+			local tex, coords = ns.Dungeons.Art(id)
+			if tex then c.art:SetTexture(tex); c.art:SetTexCoord(unpack(coords)); c.art:SetAlpha(c.fits and 1 or 0.45); c.art:Show() else c.art:Hide() end
+			c.bg:SetColorTexture(unpack(c.fits and { 0.35, 0.27, 0.05, 0.9 } or { 0.08, 0.08, 0.08, 0.9 }))
+			c.name:SetText(ns.Dungeons.Name(id)); c.name:SetTextColor(unpack(c.fits and { 1, 0.82, 0 } or { 0.75, 0.75, 0.75 }))
+			c.levels:SetText(string.format("%d-%d", d.min, d.max))
+			c.count:SetText(#ads == 0 and "" or #ads == 1 and L.LFG_SEARCHING_ONE or string.format(L.LFG_SEARCHING, #ads))
+			c:Show()
+		else
+			c:Hide()
+		end
+	end
+end
+
+function B.DungeonTooltip(card)
+	if not GameTooltip then return end
+	local d = ns.Dungeons.Get(card.dungeonId)
+	GameTooltip:SetOwner(card, "ANCHOR_RIGHT")
+	GameTooltip:AddLine(string.format("%s (%d-%d)", ns.Dungeons.Name(d.id), d.min, d.max), 1, 0.82, 0)
+	for _, a in ipairs(B.AdsFor(d.id)) do
+		GameTooltip:AddLine(a.name .. " · " .. ns.LFG.RolesShort(a.r) .. (a.n and (": " .. a.n) or ""), 1, 1, 1, true)
+	end
+	GameTooltip:Show()
+end
+
+-- A card's click: whisper or invite who is looking, withdraw mine, or look for a group there.
+function B.OpenDungeonMenu(id)
+	B.lastDungeonMenu = id
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		root:CreateTitle(ns.Dungeons.Name(id))
+		for _, a in ipairs(B.AdsFor(id)) do
+			if a.mine then
+				root:CreateButton(L.LFG_CANCEL_MINE, function() ns.LFG.Cancel() end)
+			else
+				root:CreateButton(string.format(L.LFG_WHISPER, a.name), function() B.Whisper(a.name) end)
+				root:CreateButton(string.format(L.LFG_INVITE, a.name), function() B.Invite(a.name) end)
+			end
+		end
+		root:CreateButton(L.LFG_HERE, function() ns.Fire("LM_LFG_HERE", id) end)
+	end)
+end
+
 function B.OpenMyGoalMenu()
 	if not ns.Personal.Mine() then return end
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
@@ -627,22 +684,25 @@ function B.Refresh()
 		for _, p in ipairs(ns.Personal.List()) do all[#all + 1] = p end
 		list, pages = Page(all)
 	else
-		list = lfg and LfgVisible() or Visible()
+		list = lfg and GridVisible() or Visible()
 	end
 	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or B.COLS)
 	SetHeaders()
-	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
+	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
+	if lfg then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
+	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
 	local rested = ns.Rested and ns.Rested.Mine()
 	B.restedText:SetText(rested and string.format(L.RESTED_MINE, rested) or "")
-	if journal then FillJournal(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillLfg(list) else FillMates(list) end
+	if journal then FillJournal(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillGrid(list) else FillMates(list) end
+	if not lfg then for _, c in ipairs(B.cards) do c:Hide() end end
 	local emptyText = ""
 	if #list == 0 then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
 		elseif goals then emptyText = L.GOAL_EMPTY
 		elseif wishes then emptyText = L.WISH_EMPTY
 		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD
-		elseif lfg then emptyText = #ns.LFG.List() > 0 and L.EMPTY_FILTERED or L.LFG_EMPTY
+		elseif lfg then emptyText = L.EMPTY_FILTERED   -- every dungeon has a card: empty only when the search hides them all
 		elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED
 		else emptyText = L.EMPTY end
 	end

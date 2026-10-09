@@ -92,3 +92,6 @@ end
 ns.On("LM_LFG_BUTTON", function()
 	if G.mine then G.Cancel() else Dlg.Open() end
 end)
+
+-- A dungeon card's "Look for a group here": the dialog with that dungeon chosen.
+ns.On("LM_LFG_HERE", function(id) Dlg.Open(); Dlg.SelectDungeon(id) end)

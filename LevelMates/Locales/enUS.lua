@@ -101,3 +101,4 @@ L.DC_J_TITLE = "%s's week"; L.DC_J_LEVELS = "Levels: %d → %d"; L.DC_J_QUESTS =
 L.DUNGEON_BLACKFATHOM_DEEPS = "Blackfathom Deeps"; L.DUNGEON_STOCKADE = "The Stockade"; L.DUNGEON_EXCAVATION_WETLANDS = "Excavation Site: Wetlands"
 L.DUNGEON_DALARAN = "City of Dalaran"; L.DUNGEON_GNOMEREGAN = "Gnomeregan"; L.DUNGEON_RAZORFEN_KRAUL = "Razorfen Kraul"
 L.DUNGEON_SM_GRAVEYARD = "Scarlet Monastery: Graveyard"; L.DUNGEON_SM_LIBRARY = "Scarlet Monastery: Library"
+L.LFG_SEARCHING = "%d looking"; L.LFG_SEARCHING_ONE = "1 looking"; L.LFG_WHISPER = "Whisper %s"; L.LFG_INVITE = "Invite %s"; L.LFG_HERE = "Look for a group here"; L.LFG_CANCEL_MINE = "Withdraw my ad"
