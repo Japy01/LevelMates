@@ -78,7 +78,8 @@ function Region:StartMoving() end
 function Region:StopMovingOrSizing() end
 function Region:SetBackdrop() end
 function Region:SetColorTexture() end
-function Region:SetTexture() end
+function Region:SetTexture(t) self.atlas = nil end
+function Region:SetAtlas(a) self.atlas = a; self.texcoord = nil end
 function Region:SetChecked(v) self.checked = v end
 function Region:GetChecked() return self.checked end
 function Region:CreateFontString() return setmetatable({ shown = true }, Region) end
@@ -239,3 +240,6 @@ GameTooltip = { lines = {}, hidden = true,
 	SetOwner = function(self) self.lines = {}; self.hidden = false end,
 	AddLine = function(self, t) self.lines[#self.lines + 1] = t end,
 	Show = function(self) self.hidden = false end, Hide = function(self) self.hidden = true end }
+
+STUB.atlases = {}
+C_Texture = { GetAtlasInfo = function(a) if STUB.atlases[a] then return { width = 64, height = 64 } end end }

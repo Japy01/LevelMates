@@ -5,9 +5,10 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, L = ns.Comm, ns.Board, ns.L
 STUB.player.level = 20
-CLASS_ICON_TCOORDS = { MAGE = { 0.25, 0.5, 0, 0.25 } }
+CLASS_ICON_TCOORDS = { MAGE = { 0.25, 0.5, 0, 0.25 }, WARRIOR = { 0, 0.25, 0, 0.25 } }
+STUB.atlases["classicon-mage"] = true   -- Forever draws class icons from atlases; warrior is missing on purpose to exercise the fallback
 local function hb(name, level, z, g, s, class) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = z, g = g or 0, s = s or 0, c = class }), "GUILD", name .. "-Testrealm") end
-hb("Mario", 30, 1421, 1, 1, "MAGE"); hb("Ana", 12, 1412); hb("Luis", 22, 1421, 1, 0)
+hb("Mario", 30, 1421, 1, 1, "MAGE"); hb("Ana", 12, 1412, 0, 0, "WARRIOR"); hb("Luis", 22, 1421, 1, 0)
 B.Toggle()
 
 local function same(a, b) return a and b and a[1] == b[1] and a[2] == b[2] and a[3] == b[3] end
@@ -57,6 +58,9 @@ assert(B.ROW_H >= 20 and B.WIDTH >= 560 and B.MIN_ROWS >= 8, "roomier window")
 B.Refresh()
 local first = B.rows[1]
 assert(first.name.text == "Mario" and first.icon:IsShown(), "icon for a known class")
-assert(first.icon.texcoord and first.icon.texcoord[1] == 0.25 and first.icon.texcoord[2] == 0.5, "class coordinates applied")
+assert(first.icon.atlas == "classicon-mage", "uses the class atlas when the client has it: " .. tostring(first.icon.atlas))
+local ana
+for i = 1, #B.rows do if B.rows[i].name.text == "Ana" then ana = B.rows[i] end end   -- the list has grown by now
+assert(ana and ana.icon:IsShown() and ana.icon.atlas == nil and ana.icon.texcoord and ana.icon.texcoord[2] == 0.25, "falls back to the circles sheet and its coordinates")
 assert(not B.rows[2].icon:IsShown(), "no icon when the class is unknown")
 assert(not B.rows[#B.rows].icon:IsShown(), "no icon on an empty row")

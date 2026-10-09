@@ -19,6 +19,23 @@ local ROW_W = B.COLS[1] + B.COLS[2] + B.COLS[3] + B.COLS[4] + B.COLS[5] + 4 * B.
 B.GROUP_COLORS = { open = { 0.35, 0.9, 0.35 }, full = { 0.95, 0.35, 0.35 }, solo = { 0.7, 0.7, 0.7 } }
 B.LEVEL_COLORS = { near = { 0.4, 1, 0.4 }, far = { 0.75, 0.75, 0.75 } }
 
+-- Class icon: Forever draws them from atlases ("classicon-<class>", as its character screen does); the older
+-- circles sheet with CLASS_ICON_TCOORDS is the fallback when the client has no such atlas.
+local function SetClassIcon(tex, class)
+	if not class then tex:Hide(); return end
+	local atlas = "classicon-" .. class:lower()
+	if C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo(atlas) then
+		tex:SetAtlas(atlas); tex:Show(); return
+	end
+	local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class]
+	if coords then
+		tex:SetTexture("Interface/TargetingFrame/UI-Classes-Circles")
+		tex:SetTexCoord(unpack(coords)); tex:Show()
+	else
+		tex:Hide()
+	end
+end
+
 local function ClassColor(class)
 	local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
 	if c then return c.r, c.g, c.b end
@@ -222,13 +239,7 @@ function B.Refresh()
 		if name then
 			local m = R.mates[name]
 			r.name:SetText(name); r.name:SetTextColor(ClassColor(m.class))
-			local coords = m.class and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[m.class]
-			if coords then
-				r.icon:SetTexture("Interface/TargetingFrame/UI-Classes-Circles")
-				r.icon:SetTexCoord(unpack(coords)); r.icon:Show()
-			else
-				r.icon:Hide()
-			end
+			SetClassIcon(r.icon, m.class)
 			r.level:SetText(m.level)
 			r.level:SetTextColor(unpack(math.abs((m.level or 0) - mine) <= NEAR_RANGE and B.LEVEL_COLORS.near or B.LEVEL_COLORS.far))
 			local info = m.mapId and C_Map.GetMapInfo(m.mapId)
