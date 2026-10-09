@@ -32,3 +32,11 @@ assert(B.frame:GetHeight() == 82 + (12 + 3) * 16, "twelve mates: " .. tostring(B
 for i = 10, 30 do hb("Extra" .. i, 10, 1421) end
 B.Refresh()
 assert(B.frame:GetHeight() == 82 + (20 + 3) * 16, "capped at 20 rows: " .. tostring(B.frame:GetHeight()))
+-- every column fits inside the window (the XP/h column used to hang over the right edge)
+do
+	local total = B.MARGIN
+	for i, w in ipairs(B.COLS) do total = total + w + (i > 1 and B.GAP or 0) end
+	assert(total <= B.WIDTH - 10, "columns end at " .. total .. " but the window is " .. B.WIDTH .. " wide")
+	assert(B.frame:GetWidth() == B.WIDTH, "window uses the declared width")
+	assert(B.rows[1].button:GetWidth() == total - B.MARGIN, "row click area spans the columns: " .. tostring(B.rows[1].button:GetWidth()))
+end
