@@ -140,6 +140,7 @@ end)
 ns.On("LM_PING_ANSWERED", function() if #mine() > 0 then resend() end end)
 ns.On("LM_ANNOUNCED", function() if #mine() > 0 then resend() end end)
 ns.On("LM_HB_SENT", function() if ns.char.wishPending then send() end end)
+ns.On("LM_COMM_DROPPED", function(kind) if kind == "wl" then ns.char.wishPending = true end end)
 
 -- Item tooltips anywhere in the game: who wants it.
 if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then

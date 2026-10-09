@@ -188,7 +188,10 @@ local function pump()
 	lastTick = now
 	if #queue == 0 then return end
 	if inInstance() then   -- entering an instance: whatever waited for a heartbeat is stale, drop it
-		for i = #queue, 1, -1 do if not INSTANCE_OK[queue[i].kind] then table.remove(queue, i) end end
+		for i = #queue, 1, -1 do
+			local kind = queue[i].kind
+			if not INSTANCE_OK[kind] then table.remove(queue, i); ns.Fire("LM_COMM_DROPPED", kind) end   -- whole-state senders re-mark pending
+		end
 		C.stats.queued = #queue
 		if #queue == 0 then return end
 	end

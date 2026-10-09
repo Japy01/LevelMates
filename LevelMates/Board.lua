@@ -247,10 +247,10 @@ local function Build()
 	B.journalFilterButton = filter
 	local prev = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	prev:SetSize(110, 20); prev:SetPoint("BOTTOM", -160, B.BOTTOM + 8); prev:SetText(L.BTN_J_PREV)
-	prev:SetScript("OnClick", function() B.journalPage = (B.journalPage or 1) - 1; B.Refresh() end)
+	prev:SetScript("OnClick", function() B.TurnPage(-1) end)
 	local nextb = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	nextb:SetSize(110, 20); nextb:SetPoint("BOTTOM", 160, B.BOTTOM + 8); nextb:SetText(L.BTN_J_NEXT)
-	nextb:SetScript("OnClick", function() B.journalPage = (B.journalPage or 1) + 1; B.Refresh() end)
+	nextb:SetScript("OnClick", function() B.TurnPage(1) end)
 	local pageText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	pageText:SetPoint("BOTTOM", 0, B.BOTTOM + 12)
 	B.journalPrev, B.journalNext, B.journalPageText = prev, nextb, pageText
@@ -572,6 +572,23 @@ function B.OpenMyGoalMenu()
 	end)
 end
 
+-- Pages of ROWS for the long tabs (journal, goals, wishes); the pager sits in the help-rows area.
+local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage" }
+local function Page(all)
+	local key = PAGE_KEY[B.tab]
+	local pages = math.max(1, math.ceil(#all / ROWS))
+	B[key] = math.min(math.max(1, B[key] or 1), pages)
+	local list = {}
+	for i = (B[key] - 1) * ROWS + 1, math.min(#all, B[key] * ROWS) do list[#list + 1] = all[i] end
+	B.journalPageText:SetText(string.format(L.J_PAGE, B[key], pages))
+	B.journalPrev:SetEnabled(B[key] > 1); B.journalNext:SetEnabled(B[key] < pages)
+	return list, pages
+end
+function B.TurnPage(step)
+	local key = PAGE_KEY[B.tab]
+	if key then B[key] = (B[key] or 1) + step; B.Refresh() end
+end
+
 local function RefreshTabs()
 	local lfg, journal, goals, wishes = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes"
 	local mates = B.tab == "mates"
@@ -594,21 +611,16 @@ end
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
 	local lfg, journal, goals, wishes = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes"
-	local list
+	local list, pages
 	if journal then
-		local all = ns.Journal.List(B.journalFilter or "all", B.search)
-		local pages = math.max(1, math.ceil(#all / ROWS))
-		B.journalPage = math.min(math.max(1, B.journalPage or 1), pages)
-		list = {}
-		for i = (B.journalPage - 1) * ROWS + 1, math.min(#all, B.journalPage * ROWS) do list[#list + 1] = all[i] end
-		B.journalPageText:SetText(string.format(L.J_PAGE, B.journalPage, pages))
-		B.journalPrev:SetEnabled(B.journalPage > 1); B.journalNext:SetEnabled(B.journalPage < pages)
+		list = Page(ns.Journal.List(B.journalFilter or "all", B.search))
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
 	elseif wishes then
-		list = ns.Wishlist.List()
+		list, pages = Page(ns.Wishlist.List())
 	elseif goals then
-		list = ns.Goals.List()
-		for _, p in ipairs(ns.Personal.List()) do list[#list + 1] = p end
+		local all = ns.Goals.List()
+		for _, p in ipairs(ns.Personal.List()) do all[#all + 1] = p end
+		list, pages = Page(all)
 	else
 		list = lfg and LfgVisible() or Visible()
 	end
@@ -631,6 +643,9 @@ function B.Refresh()
 	end
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
+	if (goals or wishes) and pages > 1 then   -- the pager only when there is more than one page
+		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
+	end
 	if journal or goals or wishes then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else

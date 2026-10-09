@@ -98,6 +98,7 @@ ns.On("LM_WORLD", function() check() end)
 ns.On("LM_PING_ANSWERED", function() if P.Mine() then resend() end end)
 ns.On("LM_ANNOUNCED", function() if P.Mine() then resend() end end)
 ns.On("LM_HB_SENT", function() if ns.char.goalPending then send() end end)
+ns.On("LM_COMM_DROPPED", function(kind) if kind == "gp" then ns.char.goalPending = true end end)
 
 -- Simulation support (/lm sim metas): local samples, never sent.
 function P.AddSample(name, l, e) theirs()[name] = { l = l, e = e, sim = true }; ns.Fire("LM_GOALS_CHANGED") end

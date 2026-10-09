@@ -137,6 +137,8 @@ local COLOR_QUALITY = { ["9d9d9d"] = 0, ["ffffff"] = 1, ["1eff00"] = 2, ["0070dd
 local function quality(link)
 	local q = C_Item and C_Item.GetItemQualityByID and C_Item.GetItemQualityByID(link)
 	if q then return q end
+	local named = link:match("^|cnIQ(%d):")   -- the client's named quality colours
+	if named then return tonumber(named) end
 	local hex = link:match("^|c%x%x(%x%x%x%x%x%x)")
 	return hex and COLOR_QUALITY[hex:lower()]
 end
@@ -205,7 +207,7 @@ ev2:SetScript("OnEvent", function(_, event, ...)
 		-- during encounters the client hands out protected values: touching them errors, so skip the line
 		if issecretvalue and (issecretvalue(text) or issecretvalue(sender) or issecretvalue(guid)) then return end
 		if type(text) ~= "string" or not isMine(guid, sender) then return end
-		local link = text:match("|c%x+|Hitem:.-|h.-|h|r")
+		local link = text:match("|c[^|]-|Hitem:.-|h.-|h|r")   -- "|cffRRGGBB" or a named colour ("|cnIQ3:")
 		if link then ns.Fire("LM_MY_LOOT", link) end   -- any item I loot (the wishlist listens)
 		local q = link and quality(link)
 		if q and q >= 2 then J.Add("item", { link = link, q = q }) end
