@@ -38,3 +38,5 @@ L.TRANSPORT_AUTO = "Automático"; L.TRANSPORT_GUILD = "Canal de hermandad"; L.TR
 L.OPT_DEBUG = "Líneas de depuración en el chat"
 L.HELP_CMD = "LevelMates: /lm (tablón), /lm ayuda <texto>, /lm cancelar, /lm opciones, /lm debug"
 L.STATUS = "LevelMates: %d hermanos conectados, transporte %s, enviados %d, recibidos %d, descartados %d"
+L.DUNGEON_HALL_OF_THANES = "Salón de los Feudales"; L.DUNGEON_RAGEFIRE_CHASM = "Sima Ígnea"; L.DUNGEON_RUINS_OF_LORDAERON = "Ruinas de Lordaeron"
+L.DUNGEON_WAILING_CAVERNS = "Cuevas de los Lamentos"; L.DUNGEON_DEADMINES = "Minas de la Muerte"; L.DUNGEON_SHADOWFANG_KEEP = "Castillo de Colmillo Oscuro"

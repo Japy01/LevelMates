@@ -47,6 +47,7 @@ STUB.inInstance = true
 local i0 = #STUB.sent
 assert(C.Send("hb", { l = 22, z = 1421 }) == false, "hb refused in an instance")
 assert(C.Send("ping", {}) == false and C.Send("q", { i = "1/1", ids = "1" }) == false, "ping and q refused in an instance")
+assert(C.Send("lfg", { d = 2, r = "T", id = "in02", m = 20 }) == false and C.Send("lfgx", { id = "in02" }) == false, "group finder messages refused in an instance")
 assert(C.Send("help", { t = "x", z = 1, x = 1, y = 1, id = "in01" }) == true, "help allowed in an instance")
 assert(C.Send("helpok", { id = "in01" }) == true, "helpok allowed in an instance")
 STUB.Advance(2)

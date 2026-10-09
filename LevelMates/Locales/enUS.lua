@@ -38,3 +38,5 @@ L.TRANSPORT_AUTO = "Auto"; L.TRANSPORT_GUILD = "Guild channel"; L.TRANSPORT_CHAN
 L.OPT_DEBUG = "Debug lines in chat"
 L.HELP_CMD = "LevelMates: /lm (board), /lm help <text>, /lm cancel, /lm options, /lm debug"
 L.STATUS = "LevelMates: %d mates online, transport %s, sent %d, received %d, dropped %d"
+L.DUNGEON_HALL_OF_THANES = "Hall of Thanes"; L.DUNGEON_RAGEFIRE_CHASM = "Ragefire Chasm"; L.DUNGEON_RUINS_OF_LORDAERON = "Ruins of Lordaeron"
+L.DUNGEON_WAILING_CAVERNS = "Wailing Caverns"; L.DUNGEON_DEADMINES = "The Deadmines"; L.DUNGEON_SHADOWFANG_KEEP = "Shadowfang Keep"

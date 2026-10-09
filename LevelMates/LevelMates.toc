@@ -14,6 +14,7 @@
 Locales\enUS.lua
 Locales\esES.lua
 Core.lua
+Dungeons.lua
 Comm.lua
 Roster.lua
 Settings.lua

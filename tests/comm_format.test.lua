@@ -39,4 +39,18 @@ assert(C.Validate("q", { i = "x", ids = "1" }) == false, "q index must be index/
 local kg, fg = C.Decode(C.Encode("helpgo", { id = "ab12cd34" }))
 assert(kg == "helpgo" and fg.id == "ab12cd34", "helpgo roundtrip")
 assert(C.Validate("helpgo", {}) == false, "helpgo needs an id")
+-- group finder messages
+local kl, fl = C.Decode(C.Encode("lfg", { d = 2, r = "TD", n = "voy con agua", id = "ab12cd34", m = 20 }))
+assert(kl == "lfg" and fl.d == 2 and fl.r == "TD" and fl.n == "voy con agua" and fl.id == "ab12cd34" and fl.m == 20, "lfg roundtrip")
+assert(C.Validate("lfg", { d = 2, r = "H", id = "x1", m = 5 }) == true, "note is optional")
+for _, bad in ipairs({ "", "X", "TT", "THDT", "t", "T,D" }) do
+	assert(C.Validate("lfg", { d = 2, r = bad, id = "x1", m = 5 }) == false, "roles refused: '" .. bad .. "'")
+end
+assert(C.Validate("lfg", { d = 0, r = "T", id = "x1", m = 5 }) == false and C.Validate("lfg", { d = 100, r = "T", id = "x1", m = 5 }) == false, "dungeon id range")
+assert(C.Validate("lfg", { d = 2, r = "T", id = "x1", m = 0 }) == false and C.Validate("lfg", { d = 2, r = "T", id = "x1", m = 21 }) == false, "minutes range")
+assert(C.Validate("lfg", { d = 2, r = "T", id = "x1", m = 5, n = string.rep("x", 41) }) == false, "note longer than 40")
+assert(C.Validate("lfg", { d = 2, r = "T", m = 5 }) == false, "id required")
+local kx, fx = C.Decode(C.Encode("lfgx", { id = "ab12cd34" }))
+assert(kx == "lfgx" and fx.id == "ab12cd34", "lfgx roundtrip")
+assert(C.Validate("lfgx", {}) == false, "lfgx needs an id")
 print("ok")

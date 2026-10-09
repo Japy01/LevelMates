@@ -29,4 +29,13 @@ if (fs.existsSync(bindingsFile)) {
   }
   if (!/<Binding\b[^>]*\bname="[A-Z0-9_]+"/.test(body)) { bad++; console.error('Bindings.xml has no <Binding name="...">'); }
 }
+// every dungeon name key must exist in both locale files
+const dungeonsFile = path.join(dir, 'Dungeons.lua');
+if (fs.existsSync(dungeonsFile)) {
+  const keys = [...fs.readFileSync(dungeonsFile, 'utf8').matchAll(/key\s*=\s*"([A-Z0-9_]+)"/g)].map(m => m[1]);
+  for (const loc of ['enUS.lua', 'esES.lua']) {
+    const text = fs.readFileSync(path.join(dir, 'Locales', loc), 'utf8');
+    for (const k of keys) if (!new RegExp(`L\\.${k}\\s*=`).test(text)) { bad++; console.error(`${loc} lacks ${k}`); }
+  }
+}
 if (bad) process.exit(1); else console.log('ok policy');
