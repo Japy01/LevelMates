@@ -243,7 +243,18 @@ function C.Start()
 	ticker = C_Timer.NewTicker(0.2, pump)
 	ns.Fire("LM_COMM_READY", active)
 end
+-- Send now, bypassing the queue: only for goodbyes (logout, sharing off) when no later pump will run.
+-- Same gates as C.Send; returns true when the client accepted it.
+function C.SendImmediate(kind, fields)
+	if active == "none" or not IsInGuild() then return false end
+	if inInstance() and not INSTANCE_OK[kind] then return false end
+	local text = C.Encode(kind, fields)
+	if not text then return false end
+	return rawSend(text) == 0
+end
+
 function C.Stop()
+	if active ~= "none" then ns.Fire("LM_COMM_STOPPING") end   -- last chance to withdraw things while we can still send
 	if ticker then ticker:Cancel(); ticker = nil end
 	if frame then frame:UnregisterEvent("CHAT_MSG_ADDON") end
 	queue = {}; active = "none"; channelId = nil
@@ -253,4 +264,9 @@ function C.ActiveTransport() return active end
 function C.IsReady() return active ~= "none" end
 
 ns.On("LM_LOADED", function() if ns.db.settings.share then C.Start() end end)
-ns.On("LM_LOGOUT", function() if C.IsReady() and not inInstance() then rawSend(C.Encode("bye", {})) end end)
+ns.On("LM_LOGOUT", function()
+	if C.IsReady() and not inInstance() then
+		ns.Fire("LM_BEFORE_BYE")   -- modules withdraw what they announced (group finder ad) before the goodbye
+		rawSend(C.Encode("bye", {}))
+	end
+end)

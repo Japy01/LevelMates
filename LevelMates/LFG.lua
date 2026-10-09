@@ -11,7 +11,6 @@ local DURATION, MIN_GAP, MAX_ADS, GROUP_FULL = 20 * 60, 30, 50, 5
 local ROLE_ORDER = { "T", "H", "D" }
 local lastPost = -math.huge
 local lastSeen = {}          -- player name -> { id, at } of the last new ad accepted from them
-local resendPending = false
 
 local function newId() return string.format("%04x%04x", math.random(0, 65535), math.random(0, 65535)):sub(1, 8) end
 
@@ -95,6 +94,7 @@ C.OnMessage("lfg", function(f, name)
 	if not D.Get(f.d) then return end           -- a dungeon this version does not know (newer addon): ignore silently
 	local now = GetTime()
 	local known = G.ads[f.id]
+	if known and known.name ~= name then return end   -- an id belongs to whoever posted it: nobody else can take it over
 	if not known then
 		local seen = lastSeen[name]
 		if seen and seen.id ~= f.id and now - seen.at < MIN_GAP then return end   -- one new ad per player every 30 s
@@ -104,7 +104,9 @@ C.OnMessage("lfg", function(f, name)
 		for id, a in pairs(G.ads) do if a.name == name then G.ads[id] = nil end end -- one ad per player
 		lastSeen[name] = { id = f.id, at = now }
 	end
-	G.ads[f.id] = { name = name, d = f.d, r = f.r, n = f.n, endsAt = now + f.m * 60 }
+	local endsAt = now + f.m * 60
+	if known then endsAt = math.min(known.endsAt, endsAt) end   -- a re-send never moves the clock forward
+	G.ads[f.id] = { name = name, d = f.d, r = f.r, n = f.n, endsAt = endsAt }
 	if not known and ns.db.settings.lfgNotices and D.Fits(f.d, UnitLevel("player")) then
 		ns.Say(L.LFG_NOTICE, name, D.Name(f.d), G.RolesText(f.r))
 	end
@@ -116,20 +118,33 @@ C.OnMessage("lfgx", function(f, name)
 	if ad and ad.name == name then G.ads[f.id] = nil; ns.Fire("LM_LFG_CHANGED") end   -- only the author withdraws it
 end)
 
--- A newcomer's ping: re-send my ad with the minutes that remain, jittered 0-5 s and coalesced into one answer.
-C.OnMessage("ping", function()
-	if not G.mine or resendPending then return end
-	resendPending = true
-	C_Timer.After(math.random() * 5, function()
-		resendPending = false
-		if not G.mine then return end
-		local left = math.ceil((G.mine.endsAt - GetTime()) / 60)
-		if left < 1 then return end
-		local fields = { d = G.mine.d, r = G.mine.r, id = G.mine.id, m = math.min(20, left) }
-		if G.mine.n then fields.n = G.mine.n end
-		C.Send("lfg", fields)
-	end)
+-- A newcomer's ping: the roster answers with my heartbeat (jittered, coalesced) and then fires LM_PING_ANSWERED;
+-- my ad goes out right after it, so the newcomer already knows me when the ad arrives. Whole minutes left, rounded down.
+ns.On("LM_PING_ANSWERED", function()
+	if not G.mine then return end
+	local left = math.floor((G.mine.endsAt - GetTime()) / 60)
+	if left < 1 then return end
+	local fields = { d = G.mine.d, r = G.mine.r, id = G.mine.id, m = math.min(20, left) }
+	if G.mine.n then fields.n = G.mine.n end
+	C.Send("lfg", fields)
 end)
+
+-- A poster who leaves takes the ad along.
+C.OnMessage("bye", function(_, name)
+	local changed = false
+	for id, a in pairs(G.ads) do if a.name == name then G.ads[id] = nil; changed = true end end
+	if changed then ns.Fire("LM_LFG_CHANGED") end
+end)
+
+-- Logging out or turning sharing off: withdraw my ad while the transport can still send.
+local function withdrawNow()
+	if not G.mine then return end
+	C.SendImmediate("lfgx", { id = G.mine.id })
+	G.mine = nil
+	ns.Fire("LM_LFG_CHANGED")
+end
+ns.On("LM_COMM_STOPPING", withdrawNow)
+ns.On("LM_BEFORE_BYE", withdrawNow)
 
 local groupFrame = CreateFrame("Frame")
 groupFrame:RegisterEvent("GROUP_ROSTER_UPDATE")

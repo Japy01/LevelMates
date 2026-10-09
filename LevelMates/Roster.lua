@@ -4,6 +4,7 @@ local R = {}
 ns.Roster = R
 local C = ns.Comm
 local HB_EVERY, EXPIRE, PING_JITTER = 30, 120, 5
+local KEEPALIVE = 80   -- an unchanged player still announces itself, well inside the 120 s expiry (ticks every 30 s -> ~90 s)
 
 R.mates = {}
 local lastSent, lastHb, lastQuestsSig = nil, -math.huge, nil
@@ -78,7 +79,7 @@ function R.SendHeartbeat(force)
 	local f = R.Snapshot()
 	local s = sig(f)
 	local now = GetTime()
-	if not force and s == lastSent then return false end
+	if not force and s == lastSent and now - lastHb < KEEPALIVE then return false end
 	if not force and now - lastHb < HB_EVERY then return false end
 	if C.Send("hb", f) then lastSent, lastHb = s, now; return true end
 	return false
@@ -135,6 +136,7 @@ C.OnMessage("ping", function()
 		pingPending = false
 		lastQuestsSig = nil
 		R.SendHeartbeat(true); R.SendQuests()
+		ns.Fire("LM_PING_ANSWERED")   -- others (the group finder) answer after the heartbeat, so the newcomer knows us first
 	end)
 end)
 C.OnMessage("q", function(f, name)
