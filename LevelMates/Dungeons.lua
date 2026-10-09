@@ -11,6 +11,8 @@ local LS = "Interface\\Glues\\LoadingScreens\\"
 local FDJ = "Interface\\AddOns\\ForeverDungeonJournal\\Media\\"
 local WIDE, TALL = { 0.02, 0.98, 0.25, 0.82 }, { 0.02, 0.98, 0.24, 0.82 }
 local NEW, OWN = { 0, 1, 0.12, 0.88 }, { 0.03, 0.97, 0.05, 0.95 }
+-- Both Monastery wings are one instance in game, named without the wing (as ForeverDungeonJournal notes too).
+local SM = { "Scarlet Monastery", "Monasterio Escarlata" }
 
 D.list = {
 	{ id = 1,  key = "DUNGEON_HALL_OF_THANES",      min = 13, max = 20, needs = "ForeverDungeonJournal", art = FDJ .. "HallOfThanes", coords = OWN },
@@ -25,9 +27,9 @@ D.list = {
 	{ id = 10, key = "DUNGEON_DALARAN",             min = 28, max = 33, art = 7963775, coords = NEW },
 	{ id = 11, key = "DUNGEON_GNOMEREGAN",          min = 29, max = 38, art = LS .. "LoadScreenGnomeregan", coords = TALL },
 	{ id = 12, key = "DUNGEON_RAZORFEN_KRAUL",      min = 29, max = 38, art = 131865, coords = TALL },
-	{ id = 13, key = "DUNGEON_SM_GRAVEYARD",        min = 30, max = 38, art = LS .. "LoadScreenScarletMonastery2", coords = TALL },
+	{ id = 13, key = "DUNGEON_SM_GRAVEYARD",        min = 30, max = 38, art = LS .. "LoadScreenScarletMonastery2", coords = TALL, instance = SM },
 	{ id = 14, key = "DUNGEON_SM_LIBRARY",          min = 33, max = 41, needs = "ForeverDungeonJournal", art = FDJ .. "ScarletMonasteryLibraryHome", coords = { 0, 1, 0.06, 0.94 },
-		fallback = LS .. "LoadScreenScarletMonastery2", fallbackCoords = TALL },
+		fallback = LS .. "LoadScreenScarletMonastery2", fallbackCoords = TALL, instance = SM },
 }
 
 local byId = {}
@@ -36,6 +38,16 @@ for _, d in ipairs(D.list) do byId[d.id] = d end
 function D.Get(id) return byId[id] end
 function D.Name(id) local d = byId[id]; return d and ns.L[d.key] or ("#" .. tostring(id)) end
 function D.Fits(id, level) local d = byId[id]; return d ~= nil and type(level) == "number" and level >= d.min and level <= d.max end
+
+-- Whether the instance name the game reports (GetInstanceInfo) is this dungeon: its own name or one of its
+-- in-game instance names (the Monastery wings share one).
+function D.Matches(id, instanceName)
+	local d = byId[id]
+	if not d or not instanceName then return false end
+	if instanceName == D.Name(id) then return true end
+	for _, n in ipairs(d.instance or {}) do if n == instanceName then return true end end
+	return false
+end
 
 -- By level range, for the cards.
 function D.Sorted()

@@ -14,7 +14,7 @@ B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
 B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 344, 1, 74 }   -- wishes: who, -, item, -, since (same total as B.COLS)
-B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 96, 58   -- dungeon cards
+B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
 B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes" }
 local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES" }
@@ -221,7 +221,7 @@ local function Build()
 		c.bg = c:CreateTexture(nil, "BACKGROUND"); c.bg:SetAllPoints()
 		c.art = c:CreateTexture(nil, "ARTWORK"); c.art:SetPoint("TOPLEFT", 3, -3); c.art:SetPoint("TOPRIGHT", -3, -3); c.art:SetHeight(B.ART_H)
 		c.name = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		c.name:SetPoint("TOPLEFT", 5, -(B.ART_H + 6)); c.name:SetWidth(B.CARD_W - 10); c.name:SetJustifyH("LEFT"); c.name:SetWordWrap(false)
+		c.name:SetPoint("TOPLEFT", 5, -(B.ART_H + 6)); c.name:SetWidth(B.CARD_W - 10); c.name:SetHeight(26); c.name:SetJustifyH("LEFT"); c.name:SetJustifyV("TOP"); c.name:SetWordWrap(true)   -- "Scarlet Monastery: Graveyard" needs two lines
 		c.levels = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); c.levels:SetPoint("BOTTOMLEFT", 5, 5)
 		c.count = c:CreateFontString(nil, "OVERLAY", "GameFontGreenSmall"); c.count:SetPoint("BOTTOMRIGHT", -5, 5)
 		c:SetScript("OnClick", function(self) B.OpenDungeonMenu(self.dungeonId) end)

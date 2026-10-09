@@ -66,7 +66,8 @@ function Region:SetMaxLetters() end
 function Region:SetTexCoord(l, r, t, b) self.texcoord = { l, r, t, b } end
 function Region:SetHighlightTexture() end
 function Region:SetJustifyH() end
-function Region:SetWordWrap() end
+function Region:SetWordWrap(v) self.wordWrap = v end
+function Region:SetJustifyV() end
 function Region:SetAlpha() end
 function Region:SetScale() end
 function Region:GetID() return self.id or 0 end

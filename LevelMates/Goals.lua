@@ -215,7 +215,7 @@ end)
 ns.On("LM_JOURNAL_ADDED", function(e)
 	if e.sim then return end   -- /lm sim diario: practice entries never complete a real goal
 	for _, g in ipairs(shared()) do
-		if g.ty == "dun" and not g.doneBy and e.k == "dungeon" and e.name == D.Name(g.a) and e.mates and #e.mates > 0 then
+		if g.ty == "dun" and not g.doneBy and e.k == "dungeon" and D.Matches(g.a, e.name) and e.mates and #e.mates > 0 then
 			g.doneBy = me()
 			C.Send("gd", { id = g.id }, "now")
 		end
