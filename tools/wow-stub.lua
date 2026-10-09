@@ -54,7 +54,9 @@ function Region:SetShown(v) self.shown = v and true or false end
 function Region:IsShown() return self.shown == true end
 function Region:SetText(t) self.text = t end
 function Region:GetText() return self.text end
-function Region:SetTextColor() end
+function Region:SetTextColor(r, g, b) self.color = { r, g, b } end
+function Region:SetAllPoints() end
+function Region:SetHighlightTexture() end
 function Region:SetJustifyH() end
 function Region:SetWordWrap() end
 function Region:SetAlpha() end

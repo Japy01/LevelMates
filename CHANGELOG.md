@@ -19,3 +19,4 @@ First version.
 - Board: click the level or zone header to sort, and a "near my level (±5)" filter. Both are remembered per character.
 - A key binding to show or hide the board (Key Bindings > AddOns > LevelMates).
 - A help request closes by itself when the asker groups with someone who pressed "On my way" (new message kind `helpgo`; older versions ignore it).
+- Board look: window height follows the list, title shows the count, the sorted header shows its direction, group and level are colour-coded, striped rows with hover highlight, and the filter checkbox is now visible.

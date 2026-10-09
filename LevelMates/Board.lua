@@ -3,7 +3,12 @@ local _, ns = ...
 local B = {}
 ns.Board = B
 local L, R = ns.L, ns.Roster
-local ROWS, ROW_H, HELP_ROWS = 20, 16, 3
+local ROWS, ROW_H, HELP_ROWS, MIN_ROWS = 20, 16, 3, 6
+local unpack = unpack or table.unpack   -- the client has unpack; table.unpack covers other Lua versions
+
+-- Colour coding: group state and how close a mate is to my level.
+B.GROUP_COLORS = { open = { 0.35, 0.9, 0.35 }, full = { 0.95, 0.35, 0.35 }, solo = { 0.7, 0.7, 0.7 } }
+B.LEVEL_COLORS = { near = { 0.4, 1, 0.4 }, far = { 0.75, 0.75, 0.75 } }
 
 local function ClassColor(class)
 	local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
@@ -43,8 +48,8 @@ local function Build()
 	Header("level", head[2]); Header("zone", head[3])
 
 	-- "Near my level (±5)" filter, bottom right.
-	local near = CreateFrame("CheckButton", nil, f)
-	near:SetSize(22, 22); near:SetPoint("BOTTOMRIGHT", -140, 8)
+	local near = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")   -- the template draws the box; a bare CheckButton is invisible
+	near:SetSize(24, 24); near:SetPoint("BOTTOMRIGHT", -150, 6)
 	near:SetChecked(ns.char.boardNear == true)
 	near:SetScript("OnClick", function(self) ns.char.boardNear = self:GetChecked() and true or false; B.Refresh() end)
 	local nearLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -57,7 +62,10 @@ local function Build()
 		btn:SetSize(400, ROW_H)
 		btn:SetPoint("TOPLEFT", 12, -30 - i * ROW_H)
 		btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-		local r = { button = btn, name = Col(btn, 120), level = Col(btn, 30, "CENTER"), zone = Col(btn, 150), group = Col(btn, 50, "CENTER"), xph = Col(btn, 50, "RIGHT") }
+		local bg = btn:CreateTexture(nil, "BACKGROUND")   -- zebra striping
+		bg:SetAllPoints(btn); bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0)
+		btn:SetHighlightTexture("Interface/QuestFrame/UI-QuestLogTitleHighlight", "ADD")
+		local r = { bg = bg, button = btn, name = Col(btn, 120), level = Col(btn, 30, "CENTER"), zone = Col(btn, 150), group = Col(btn, 50, "CENTER"), xph = Col(btn, 50, "RIGHT") }
 		r.name:SetPoint("LEFT", 0, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", 4, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", 4, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", 4, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", 4, 0)
 		btn:SetScript("OnClick", function(self, mouse)
 			local name = self.mate
@@ -143,6 +151,12 @@ function B.Refresh()
 	for key, fs in pairs({ level = B.headText[2], zone = B.headText[3] }) do
 		if key == sort.mode then fs:SetTextColor(1, 1, 1) else fs:SetTextColor(1, 0.82, 0) end
 	end
+	-- the sorted header carries its direction: v = high to low / z to a, ^ = low to high / a to z
+	B.headText[2]:SetText(L.COL_LEVEL .. (sort.mode == "level" and (sort.desc and " v" or " ^") or ""))
+	B.headText[3]:SetText(L.COL_ZONE .. (sort.mode == "zone" and (sort.desc and " v" or " ^") or ""))
+	B.frame:SetHeight(82 + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
+	if B.frame.TitleText then B.frame.TitleText:SetText(string.format("%s (%d)", L.BOARD_TITLE, #R.List())) end
+	local mine = UnitLevel("player")
 	for i = 1, ROWS do
 		local r, name = B.rows[i], list[i]
 		r.button.mate = name
@@ -150,9 +164,12 @@ function B.Refresh()
 			local m = R.mates[name]
 			r.name:SetText(name); r.name:SetTextColor(ClassColor(m.class))
 			r.level:SetText(m.level)
+			r.level:SetTextColor(unpack(math.abs((m.level or 0) - mine) <= NEAR_RANGE and B.LEVEL_COLORS.near or B.LEVEL_COLORS.far))
 			local info = m.mapId and C_Map.GetMapInfo(m.mapId)
 			r.zone:SetText(info and info.name or "")
-			r.group:SetText(m.inGroup and (m.hasSlot and L.GROUP_FREE or L.GROUP_FULL) or L.SOLO)
+			local state = m.inGroup and (m.hasSlot and "open" or "full") or "solo"
+			r.group:SetText(state == "open" and L.GROUP_FREE or state == "full" and L.GROUP_FULL or L.SOLO)
+			r.group:SetTextColor(unpack(B.GROUP_COLORS[state]))
 			r.xph:SetText(m.xph and m.xph > 0 and tostring(m.xph) or "")
 			r.button:Show()
 		else
