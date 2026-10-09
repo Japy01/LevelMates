@@ -57,7 +57,15 @@ local function simJournal()
 	J.Add("death", { level = 21, sim = true })
 end
 
+local function simGoals()
+	local G, day = ns.Goals, math.floor(time() / 86400)
+	G.AddSample({ id = "simgo01", ty = "lvl", a = 25, s = day, e = day + 3, by = "Jefa" })
+	G.AddSample({ id = "simgo02", ty = "dun", a = 5, s = day, e = day + 5, by = "Jefa" })
+	G.AddSample({ id = "simgo03", ty = "cnt", a = 50, w = "qst", s = day, e = day + 7, by = "Jefa", contrib = { Mario = 12, Luis = 7 } })
+end
+
 local function off()
+	ns.Goals.RemoveSamples()
 	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -72,5 +80,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "pal" or rest == "compa" then simPal()
 	elseif rest == "rested" or rest == "descanso" then simRested()
 	elseif rest == "diario" or rest == "journal" then simJournal()
+	elseif rest == "metas" or rest == "goals" then simGoals()
 	else run() end
 end)

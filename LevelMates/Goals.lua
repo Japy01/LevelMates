@@ -62,7 +62,7 @@ function G.UntilText(g) return date("%d/%m", g.e * 86400) end
 function G.MyContribution(g)
 	if g.ty ~= "cnt" then return 0 end
 	local from, n = g.s * 86400, 0
-	for _, e in ipairs(J.List(COUNT_KIND[g.w], "")) do if e.t >= from then n = n + 1 end end
+	for _, e in ipairs(J.List(COUNT_KIND[g.w], "")) do if e.t >= from and not e.sim then n = n + 1 end end
 	return n
 end
 
@@ -182,6 +182,7 @@ end)
 
 -- My journal: a dungeon with a guildmate completes a dungeon goal; any entry may move a counter.
 ns.On("LM_JOURNAL_ADDED", function(e)
+	if e.sim then return end   -- /lm sim diario: practice entries never complete a real goal
 	for _, g in ipairs(G.List()) do
 		if g.ty == "dun" and not g.doneBy and e.k == "dungeon" and e.name == D.Name(g.a) and e.mates and #e.mates > 0 then
 			g.doneBy = me()
@@ -217,3 +218,11 @@ ns.On("LM_PING_ANSWERED", function()
 		end
 	end
 end)
+
+-- Simulation support (/lm sim metas): local sample goals, never sent.
+function G.AddSample(g) g.sim = true; g.contrib = g.contrib or {}; store()[g.id] = g; ns.Fire("LM_GOALS_CHANGED") end
+function G.RemoveSamples()
+	local s = store()
+	for id, g in pairs(s) do if g.sim then s[id] = nil end end
+	ns.Fire("LM_GOALS_CHANGED")
+end
