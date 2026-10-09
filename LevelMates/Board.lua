@@ -9,6 +9,8 @@ local unpack = unpack or table.unpack   -- the client has unpack; table.unpack c
 -- Layout: one place for the widths so the columns always fit inside the window.
 B.COLS = { 120, 40, 140, 50, 50 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 12, 440
+B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
+B.CHROME = B.TOP + 16 + 36                  -- window height without the mate and help rows
 local ROW_W = B.COLS[1] + B.COLS[2] + B.COLS[3] + B.COLS[4] + B.COLS[5] + 4 * B.GAP
 
 -- Colour coding: group state and how close a mate is to my level.
@@ -22,21 +24,41 @@ local function ClassColor(class)
 end
 
 local function Build()
-	local f = CreateFrame("Frame", "LevelMatesBoard", UIParent, "BasicFrameTemplateWithInset")
+	-- The journal-style frame (gold border, dark inset) when the client has it; the basic frame otherwise.
+	local f
+	if ButtonFrameTemplate_HidePortrait then
+		local ok, frame = pcall(CreateFrame, "Frame", "LevelMatesBoard", UIParent, "ButtonFrameTemplate")
+		if ok and frame then f = frame; ButtonFrameTemplate_HidePortrait(f) end
+	end
+	f = f or CreateFrame("Frame", "LevelMatesBoard", UIParent, "BasicFrameTemplateWithInset")
 	B.frame = f
-	f:SetSize(B.WIDTH, 82 + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows
+	f:SetSize(B.WIDTH, B.CHROME + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving)
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); local p, _, rp, x, y = self:GetPoint(); ns.char.board = { p, rp, x, y } end)
 	local saved = ns.char.board
 	if saved then f:SetPoint(saved[1], UIParent, saved[2], saved[3], saved[4]) else f:SetPoint("CENTER") end
-	if f.TitleText then f.TitleText:SetText(L.BOARD_TITLE) end
+	B.SetTitle(L.BOARD_TITLE)
 	tinsert(UISpecialFrames, "LevelMatesBoard")
 	f:Hide()
 
+	-- Heading, subtitle, divider and the name search, in the style of the dungeon journal.
+	B.heading = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	B.heading:SetPoint("TOPLEFT", B.MARGIN, -34); B.heading:SetText(L.BOARD_HEADING); B.heading:SetJustifyH("LEFT")
+	B.subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -58); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
+	local divider = f:CreateTexture(nil, "ARTWORK")
+	divider:SetColorTexture(1, 0.82, 0, 0.35); divider:SetHeight(1)
+	divider:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 8)); divider:SetPoint("TOPRIGHT", -B.MARGIN, -(B.TOP - 8))
+	local search = CreateFrame("EditBox", nil, f, "SearchBoxTemplate")
+	search:SetSize(150, 20); search:SetPoint("TOPRIGHT", -B.MARGIN - 6, -36)
+	if search.Instructions then search.Instructions:SetText(L.SEARCH_HINT) end
+	search:SetScript("OnTextChanged", function(self) B.search = self:GetText() or ""; B.Refresh() end)
+	B.searchBox = search
+
 	local function Col(parent, w, justify) local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); fs:SetWidth(w); fs:SetJustifyH(justify or "LEFT"); fs:SetWordWrap(false); return fs end
 	local head = { Col(f, B.COLS[1]), Col(f, B.COLS[2], "CENTER"), Col(f, B.COLS[3]), Col(f, B.COLS[4], "CENTER"), Col(f, B.COLS[5], "RIGHT") }
-	head[1]:SetPoint("TOPLEFT", B.MARGIN, -30)
+	head[1]:SetPoint("TOPLEFT", B.MARGIN, -B.TOP)
 	for i = 2, 5 do head[i]:SetPoint("LEFT", head[i - 1], "RIGHT", B.GAP, 0) end
 	head[1]:SetText(L.COL_NAME); head[2]:SetText(L.COL_LEVEL); head[3]:SetText(L.COL_ZONE); head[4]:SetText(L.COL_GROUP); head[5]:SetText(L.COL_XPH)
 	for i = 1, 5 do head[i]:SetTextColor(1, 0.82, 0) end
@@ -65,7 +87,7 @@ local function Build()
 	for i = 1, ROWS do
 		local btn = CreateFrame("Button", nil, f)
 		btn:SetSize(ROW_W, ROW_H)
-		btn:SetPoint("TOPLEFT", B.MARGIN, -30 - i * ROW_H)
+		btn:SetPoint("TOPLEFT", B.MARGIN, -B.TOP - i * ROW_H)
 		btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		local bg = btn:CreateTexture(nil, "BACKGROUND")   -- zebra striping
 		bg:SetAllPoints(btn); bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0)
@@ -79,7 +101,7 @@ local function Build()
 		end)
 		B.rows[i] = r
 	end
-	f.empty = Col(f, B.WIDTH - 40, "CENTER"); f.empty:SetPoint("TOP", 0, -70)
+	f.empty = Col(f, B.WIDTH - 40, "CENTER"); f.empty:SetPoint("TOP", 0, -(B.TOP + 40))
 
 	local help = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	help:SetSize(120, 22); help:SetPoint("BOTTOMLEFT", 12, 8); help:SetText(L.BTN_HELP)
@@ -117,6 +139,10 @@ local function RefreshHelp()
 end
 
 local NEAR_RANGE = 5
+function B.SetTitle(text)
+	local fs = B.frame.TitleContainer and B.frame.TitleContainer.TitleText or B.frame.TitleText
+	if fs then fs:SetText(text) end
+end
 local function ZoneName(m) local info = m.mapId and C_Map.GetMapInfo(m.mapId); return info and info.name or "" end
 
 function B.SetSort(mode)
@@ -133,7 +159,9 @@ local function Visible()
 	local out = {}
 	for _, name in ipairs(R.List()) do
 		local m = R.mates[name]
-		if not ns.char.boardNear or math.abs((m.level or 0) - mine) <= NEAR_RANGE then out[#out + 1] = name end
+		local nearOk = not ns.char.boardNear or math.abs((m.level or 0) - mine) <= NEAR_RANGE
+		local searchOk = (B.search or "") == "" or name:lower():find(B.search:lower(), 1, true) ~= nil   -- plain text, not a pattern
+		if nearOk and searchOk then out[#out + 1] = name end
 	end
 	local function tie(a, b) local A, B2 = R.mates[a], R.mates[b]; if A.level ~= B2.level then return A.level > B2.level end; return a < b end
 	table.sort(out, function(a, b)
@@ -159,8 +187,8 @@ function B.Refresh()
 	-- the sorted header carries its direction: v = high to low / z to a, ^ = low to high / a to z
 	B.headText[2]:SetText(L.COL_LEVEL .. (sort.mode == "level" and (sort.desc and " v" or " ^") or ""))
 	B.headText[3]:SetText(L.COL_ZONE .. (sort.mode == "zone" and (sort.desc and " v" or " ^") or ""))
-	B.frame:SetHeight(82 + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
-	if B.frame.TitleText then B.frame.TitleText:SetText(string.format("%s (%d)", L.BOARD_TITLE, #R.List())) end
+	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
+	B.SetTitle(string.format("%s (%d)", L.BOARD_TITLE, #R.List()))
 	local mine = UnitLevel("player")
 	for i = 1, ROWS do
 		local r, name = B.rows[i], list[i]

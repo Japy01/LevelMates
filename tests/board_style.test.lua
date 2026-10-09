@@ -10,7 +10,7 @@ hb("Mario", 30, 1421, 1, 1); hb("Ana", 12, 1412); hb("Luis", 22, 1421, 1, 0)
 B.Toggle()
 
 local function same(a, b) return a and b and a[1] == b[1] and a[2] == b[2] and a[3] == b[3] end
-assert(B.frame:GetHeight() == 82 + (6 + 3) * 16, "compact with few mates: " .. tostring(B.frame:GetHeight()))
+assert(B.frame:GetHeight() == B.CHROME + (6 + 3) * 16, "compact with few mates: " .. tostring(B.frame:GetHeight()))
 assert(B.frame.TitleText.text == L.BOARD_TITLE .. " (3)", "title counts mates: " .. tostring(B.frame.TitleText.text))
 assert(B.headText[2].text == L.COL_LEVEL .. " v" and B.headText[3].text == L.COL_ZONE, "level header shows high-to-low: " .. tostring(B.headText[2].text))
 B.headers.level.scripts.OnClick(B.headers.level)
@@ -28,10 +28,10 @@ assert(B.rows[1].bg and B.rows[2].bg, "rows have a background texture for stripi
 -- grows with the list, capped at the 20 rows
 for i = 1, 9 do hb("Extra" .. i, 10 + i, 1421) end
 B.Refresh()
-assert(B.frame:GetHeight() == 82 + (12 + 3) * 16, "twelve mates: " .. tostring(B.frame:GetHeight()))
+assert(B.frame:GetHeight() == B.CHROME + (12 + 3) * 16, "twelve mates: " .. tostring(B.frame:GetHeight()))
 for i = 10, 30 do hb("Extra" .. i, 10, 1421) end
 B.Refresh()
-assert(B.frame:GetHeight() == 82 + (20 + 3) * 16, "capped at 20 rows: " .. tostring(B.frame:GetHeight()))
+assert(B.frame:GetHeight() == B.CHROME + (20 + 3) * 16, "capped at 20 rows: " .. tostring(B.frame:GetHeight()))
 -- every column fits inside the window (the XP/h column used to hang over the right edge)
 do
 	local total = B.MARGIN
