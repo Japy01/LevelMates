@@ -42,6 +42,27 @@ C.Send("ping", {})
 STUB.Advance(1)
 assert(#STUB.sent == r0 + 1, "sent although the restriction flag reads true")
 STUB.reportsRestricted = false
+-- inside an instance only help/helpok go out (spec 4.3): heartbeats, pings and quests are refused, not queued
+STUB.inInstance = true
+local i0 = #STUB.sent
+assert(C.Send("hb", { l = 22, z = 1421 }) == false, "hb refused in an instance")
+assert(C.Send("ping", {}) == false and C.Send("q", { i = "1/1", ids = "1" }) == false, "ping and q refused in an instance")
+assert(C.Send("help", { t = "x", z = 1, x = 1, y = 1, id = "in01" }) == true, "help allowed in an instance")
+assert(C.Send("helpok", { id = "in01" }) == true, "helpok allowed in an instance")
+STUB.Advance(2)
+assert(#STUB.sent == i0 + 2, "only help and helpok sent, got " .. (#STUB.sent - i0))
+STUB.inInstance = false
+C.Send("hb", { l = 22, z = 1421 }); STUB.Advance(1)
+assert(#STUB.sent == i0 + 3 and select(1, C.Decode(STUB.sent[#STUB.sent].msg)) == "hb", "hb flows again outside")
+-- a heartbeat queued just before entering is dropped, not sent from inside
+STUB.lockdown = true
+C.Send("hb", { l = 23, z = 1421 })
+STUB.inInstance = true
+STUB.lockdown = false
+local i1 = #STUB.sent
+STUB.Advance(2)
+assert(#STUB.sent == i1, "queued hb dropped once inside an instance")
+STUB.inInstance = false
 -- a throttled send (result 3) is retried on the same transport, not dropped and not a reason to switch
 STUB.throttleNext = 1
 local b = #STUB.sent

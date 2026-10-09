@@ -138,11 +138,20 @@ local function rawSend(text)
 	return C_ChatInfo.SendAddonMessage(C.PREFIX, text, "GUILD")
 end
 
+-- Inside an instance only help requests go out (spec 4.3): the group channels are the game's business there.
+local INSTANCE_OK = { help = true, helpok = true }
+local function inInstance() return IsInInstance and IsInInstance() == true end
+
 local function pump()
 	local now = GetTime()
 	allowance = math.min(10, allowance + (now - lastTick))
 	lastTick = now
 	if #queue == 0 then return end
+	if inInstance() then   -- entering an instance: whatever waited for a heartbeat is stale, drop it
+		for i = #queue, 1, -1 do if not INSTANCE_OK[queue[i].kind] then table.remove(queue, i) end end
+		C.stats.queued = #queue
+		if #queue == 0 then return end
+	end
 	-- No pre-check of the restriction flags: on Forever they read true outside combat while sends still work
 	-- (spike). SendAddonMessage returns 11 under a real lockdown and the loop below keeps the queue.
 	while #queue > 0 and allowance >= 1 do
@@ -166,6 +175,7 @@ end
 
 function C.Send(kind, fields, prio)
 	if active == "none" or not IsInGuild() then return false end
+	if inInstance() and not INSTANCE_OK[kind] then return false end
 	local text, why = C.Encode(kind, fields)
 	if not text then ns.Log("encode %s failed: %s", kind, tostring(why)); return false end
 	if kind == "hb" then   -- only the newest heartbeat waits in the queue
@@ -232,4 +242,4 @@ function C.ActiveTransport() return active end
 function C.IsReady() return active ~= "none" end
 
 ns.On("LM_LOADED", function() if ns.db.settings.share then C.Start() end end)
-ns.On("LM_LOGOUT", function() if C.IsReady() then rawSend(C.Encode("bye", {})) end end)
+ns.On("LM_LOGOUT", function() if C.IsReady() and not inInstance() then rawSend(C.Encode("bye", {})) end end)
