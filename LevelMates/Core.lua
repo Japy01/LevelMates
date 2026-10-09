@@ -3,8 +3,8 @@ local ADDON, ns = ...
 ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
 
 local DEFAULTS = {
-	share = true, sharePos = false, shareQuests = false, shareXp = false,
-	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, sound = true, minimap = true,
+	share = true, sharePos = false, shareQuests = false, shareXp = false, shareRested = false,
+	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, restedNotices = true, sound = true, minimap = true,
 	transport = "auto", debug = false,
 }
 

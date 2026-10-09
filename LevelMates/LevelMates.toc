@@ -26,4 +26,5 @@ Help.lua
 LFG.lua
 LfgDialog.lua
 Partner.lua
+Rested.lua
 Sim.lua

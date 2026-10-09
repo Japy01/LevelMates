@@ -213,6 +213,7 @@ C_Club = {
 }
 function UnitXP() return STUB.player.xp or 0 end
 function UnitXPMax() return 1000 end
+function GetXPExhaustion() return STUB.player.rested end
 RAID_CLASS_COLORS = {}
 C_Map.GetMapInfo = function(id) return { name = "Map " .. id, mapID = id } end
 MenuUtil = { CreateContextMenu = function(owner, fn) local root = { CreateTitle = function() end, CreateButton = function() end }; fn(owner, root) end }
