@@ -76,6 +76,15 @@ function G.MyContribution(g)
 	return n
 end
 
+-- A guildmate's level as I know it: online now, else last seen (up to 30 days).
+function G.KnownLevel(name)
+	if name == me() then return UnitLevel("player") end
+	local m = R.mates[name]
+	if m then return m.level end
+	local s = seen()[name]
+	return s and s.l
+end
+
 -- lvl: reached, total, missing names; dun: 1|0, 1, by; cnt: sum, target.
 function G.Progress(g)
 	if g.ty == "lvl" then

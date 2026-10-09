@@ -29,5 +29,6 @@ Partner.lua
 Rested.lua
 Journal.lua
 Goals.lua
+Personal.lua
 GoalDialog.lua
 Sim.lua
