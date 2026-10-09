@@ -21,3 +21,4 @@ First version.
 - A help request closes by itself when the asker groups with someone who pressed "On my way" (new message kind `helpgo`; older versions ignore it).
 - Board: journal-style frame, a heading with subtitle and a name search box. Board look: window height follows the list, title shows the count, the sorted header shows its direction, group and level are colour-coded, striped rows with hover highlight, and the filter checkbox is now visible.
 - A minimap button: left-click shows or hides the board, right-click opens the options, drag moves it. The "Minimap button" option shows or hides it right away.
+- Board rows show the class icon.

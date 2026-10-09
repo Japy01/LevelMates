@@ -5,8 +5,9 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, L = ns.Comm, ns.Board, ns.L
 STUB.player.level = 20
-local function hb(name, level, z, g, s) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = z, g = g or 0, s = s or 0 }), "GUILD", name .. "-Testrealm") end
-hb("Mario", 30, 1421, 1, 1); hb("Ana", 12, 1412); hb("Luis", 22, 1421, 1, 0)
+CLASS_ICON_TCOORDS = { MAGE = { 0.25, 0.5, 0, 0.25 } }
+local function hb(name, level, z, g, s, class) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = z, g = g or 0, s = s or 0, c = class }), "GUILD", name .. "-Testrealm") end
+hb("Mario", 30, 1421, 1, 1, "MAGE"); hb("Ana", 12, 1412); hb("Luis", 22, 1421, 1, 0)
 B.Toggle()
 
 local function same(a, b) return a and b and a[1] == b[1] and a[2] == b[2] and a[3] == b[3] end
@@ -51,3 +52,11 @@ STUB.player.guild = "Los Hermanos"; STUB.Fire("PLAYER_GUILD_UPDATE", "player")
 assert(B.frame.TitleText.text:find(" - Los Hermanos (", 1, true), "title follows a guild change: " .. tostring(B.frame.TitleText.text))
 -- bigger than before: readable rows and a wide window
 assert(B.ROW_H >= 20 and B.WIDTH >= 560 and B.MIN_ROWS >= 8, "roomier window")
+
+-- class icon: shown with the class's coordinates when known, hidden otherwise
+B.Refresh()
+local first = B.rows[1]
+assert(first.name.text == "Mario" and first.icon:IsShown(), "icon for a known class")
+assert(first.icon.texcoord and first.icon.texcoord[1] == 0.25 and first.icon.texcoord[2] == 0.5, "class coordinates applied")
+assert(not B.rows[2].icon:IsShown(), "no icon when the class is unknown")
+assert(not B.rows[#B.rows].icon:IsShown(), "no icon on an empty row")

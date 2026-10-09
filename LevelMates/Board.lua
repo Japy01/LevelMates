@@ -109,8 +109,10 @@ local function Build()
 		local bg = btn:CreateTexture(nil, "BACKGROUND")   -- zebra striping
 		bg:SetAllPoints(btn); bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0)
 		btn:SetHighlightTexture("Interface/QuestFrame/UI-QuestLogTitleHighlight", "ADD")
-		local r = { bg = bg, button = btn, name = Col(btn, B.COLS[1]), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
-		r.name:SetPoint("LEFT", 0, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
+		local icon = btn:CreateTexture(nil, "ARTWORK")   -- class icon, left of the name
+		icon:SetSize(ROW_H - 4, ROW_H - 4); icon:SetPoint("LEFT", 0, 0)
+		local r = { bg = bg, icon = icon, button = btn, name = Col(btn, B.COLS[1] - (ROW_H - 4) - 4), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
+		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
 			local name = self.mate
 			if not name then return end
@@ -220,6 +222,13 @@ function B.Refresh()
 		if name then
 			local m = R.mates[name]
 			r.name:SetText(name); r.name:SetTextColor(ClassColor(m.class))
+			local coords = m.class and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[m.class]
+			if coords then
+				r.icon:SetTexture("Interface/TargetingFrame/UI-Classes-Circles")
+				r.icon:SetTexCoord(unpack(coords)); r.icon:Show()
+			else
+				r.icon:Hide()
+			end
 			r.level:SetText(m.level)
 			r.level:SetTextColor(unpack(math.abs((m.level or 0) - mine) <= NEAR_RANGE and B.LEVEL_COLORS.near or B.LEVEL_COLORS.far))
 			local info = m.mapId and C_Map.GetMapInfo(m.mapId)
@@ -230,7 +239,7 @@ function B.Refresh()
 			r.xph:SetText(m.xph and m.xph > 0 and tostring(m.xph) or "")
 			r.button:Show()
 		else
-			r.name:SetText(""); r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
+			r.icon:Hide(); r.name:SetText(""); r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
 			r.button:Hide()
 		end
 	end

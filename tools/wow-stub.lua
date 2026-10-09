@@ -60,6 +60,7 @@ function Region:SetText(t) self.text = t end
 function Region:GetText() return self.text end
 function Region:SetTextColor(r, g, b) self.color = { r, g, b } end
 function Region:SetAllPoints() end
+function Region:SetTexCoord(l, r, t, b) self.texcoord = { l, r, t, b } end
 function Region:SetHighlightTexture() end
 function Region:SetJustifyH() end
 function Region:SetWordWrap() end
