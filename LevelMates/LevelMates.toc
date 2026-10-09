@@ -5,6 +5,7 @@
 ## Author: Diego and contributors
 ## Version: @project-version@
 ## SavedVariables: LevelMatesDB
+## OptionalDeps: Questie
 ## IconTexture: Interface\AddOns\LevelMates\Media\icon
 ## AllowLoadGameType: camelot
 ## X-License: MIT
@@ -17,6 +18,7 @@ Comm.lua
 Roster.lua
 Settings.lua
 Board.lua
+Questie.lua
 Match.lua
 Help.lua
 Sim.lua

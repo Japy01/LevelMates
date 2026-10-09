@@ -9,10 +9,14 @@ function M.ForQuest(questID)
 	local out = { has = {}, needs = {} }
 	for name, m in pairs(R.mates) do
 		if m.mapId == myMap then
-			if m.quests[questID] then out.has[#out.has + 1] = name end
+			if m.quests[questID] then
+				out.has[#out.has + 1] = name
+			elseif next(m.quests) ~= nil and ns.Questie and ns.Questie.CanTake(questID, m.level) == true then
+				out.needs[#out.needs + 1] = name   -- shares quests, lacks this one, and could take it (Questie)
+			end
 		end
 	end
-	table.sort(out.has)
+	table.sort(out.has); table.sort(out.needs)
 	return out
 end
 
@@ -39,6 +43,10 @@ ev:SetScript("OnEvent", function(_, _, questID)
 	local title = C_QuestLog.GetTitleForQuestID(questID) or tostring(questID)
 	local m = M.ForQuest(questID)
 	for _, name in ipairs(m.has) do M.Notice(L.MATCH_HAS, name, title) end
+	for i, name in ipairs(m.needs) do
+		if i > 3 then break end   -- a crowded zone must not flood the chat
+		M.Notice(L.MATCH_CAN, name, title)
+	end
 	ns.Fire("LM_MATCH", questID, m.has)
 end)
 
