@@ -79,3 +79,8 @@ L.GOAL_NOT_OFFICER = "Solo los oficiales y el maestro pueden crear metas de herm
 L.OPT_GOAL = "Avisos de metas de hermandad"; L.OPT_GOAL_TT = "Una línea en el chat cuando se crea o se cumple una meta de hermandad."
 L.TAB_GOALS = "Metas"; L.COL_BY = "Creada por"; L.COL_GOAL = "Meta"; L.COL_PROGRESS = "Progreso"; L.COL_UNTIL = "Hasta"
 L.GOAL_EMPTY = "No hay metas de hermandad ahora mismo."; L.GOAL_MISSING = "Falta: %s"; L.GOAL_DELETE = "Borrar meta"; L.BTN_GOAL_NEW = "Nueva meta"
+L.GOAL_DIALOG_TITLE = "Nueva meta de hermandad"; L.GOAL_PICK_TYPE = "Tipo..."
+L.GOAL_TYPE_LVL = "Todos a un nivel"; L.GOAL_TYPE_DUN = "Mazmorra juntos"; L.GOAL_TYPE_CNT = "Contador"
+L.GOAL_TARGET = "Objetivo"; L.GOAL_COUNT_WHAT = "Cuenta..."
+L.GOAL_WHAT_LVL = "Niveles"; L.GOAL_WHAT_QST = "Misiones"; L.GOAL_WHAT_DUN = "Mazmorras"
+L.GOAL_DAYS = "%d días"; L.GOAL_CREATE = "Crear"

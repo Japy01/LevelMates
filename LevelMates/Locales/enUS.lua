@@ -79,3 +79,8 @@ L.GOAL_NOT_OFFICER = "Only officers and the guild master can create guild goals.
 L.OPT_GOAL = "Guild goal notices"; L.OPT_GOAL_TT = "A chat line when a guild goal is created or reached."
 L.TAB_GOALS = "Goals"; L.COL_BY = "By"; L.COL_GOAL = "Goal"; L.COL_PROGRESS = "Progress"; L.COL_UNTIL = "Until"
 L.GOAL_EMPTY = "No guild goals right now."; L.GOAL_MISSING = "Missing: %s"; L.GOAL_DELETE = "Delete goal"; L.BTN_GOAL_NEW = "New goal"
+L.GOAL_DIALOG_TITLE = "New guild goal"; L.GOAL_PICK_TYPE = "Type..."
+L.GOAL_TYPE_LVL = "Everyone to a level"; L.GOAL_TYPE_DUN = "Dungeon together"; L.GOAL_TYPE_CNT = "Counter"
+L.GOAL_TARGET = "Target"; L.GOAL_COUNT_WHAT = "Counts..."
+L.GOAL_WHAT_LVL = "Levels"; L.GOAL_WHAT_QST = "Quests"; L.GOAL_WHAT_DUN = "Dungeons"
+L.GOAL_DAYS = "%d days"; L.GOAL_CREATE = "Create"
