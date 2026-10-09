@@ -4,7 +4,7 @@ A World of Warcraft: Forever guild addon. See which guildmates are online and wh
 
 ## What it does
 
-- **Board** (`/lm`): guildmates who also run LevelMates, with level, zone and group state. Click the Lv or Zone header to sort; tick "Near my level" to hide anyone more than 5 levels away. Right-click a row to invite, whisper or set a waypoint.
+- **Board** (`/lm`): guildmates who also run LevelMates, with level, zone and group state. Click the Lv or Zone header to sort; bind a key under Key Bindings > LevelMates; tick "Near my level" to hide anyone more than 5 levels away. Right-click a row to invite, whisper or set a waypoint.
 - **Quest matching**: when you accept a quest, a line tells you which guildmate on your map has it too. With Questie installed it also says who could pick it up.
 - **Help requests**: "Ask for help" tells guildmates what you need. They get a notice and a map waypoint, and an "On my way" button that whispers you.
 
@@ -26,7 +26,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Not in v1 (planned)
 
-A keybinding, "still needs" quest notices, a named map marker for help requests (v1 uses your map's user waypoint, which replaces your own pin), and ending a help request when the asker groups with a helper.
+"Still needs" quest notices, a named map marker for help requests (v1 uses your map's user waypoint, which replaces your own pin), and ending a help request when the asker groups with a helper.
 
 License: MIT.
 
@@ -60,6 +60,6 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Pendiente para después de v1
 
-Atajo de teclado, aviso "le falta" de misiones, marcador con nombre en el mapa para las peticiones de ayuda (v1 usa el punto de ruta del jugador, que sustituye al tuyo), y cerrar la petición cuando el que pide entra en grupo con quien dijo "Voy".
+Aviso "le falta" de misiones, marcador con nombre en el mapa para las peticiones de ayuda (v1 usa el punto de ruta del jugador, que sustituye al tuyo), y cerrar la petición cuando el que pide entra en grupo con quien dijo "Voy".
 
 Licencia: MIT.

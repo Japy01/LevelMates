@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="LEVELMATES_TOGGLE" category="LevelMates">
+		LevelMates_ToggleBoard()
+	</Binding>
+</Bindings>

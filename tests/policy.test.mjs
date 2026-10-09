@@ -18,4 +18,15 @@ for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.lua'))) {
     if (/COMBAT_LOG_EVENT|UNIT_SPELLCAST|UNIT_AURA|C_UnitAuras|C_Spell\.GetSpellCooldown/.test(line)) { bad++; console.error(`${f}:${i + 1}: combat API: ${line.trim()}`); }
   });
 }
+// Bindings.xml may only call global functions the addon defines.
+const bindingsFile = path.join(dir, 'Bindings.xml');
+if (fs.existsSync(bindingsFile)) {
+  const lua = fs.readdirSync(dir).filter(f => f.endsWith('.lua')).map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
+  const body = fs.readFileSync(bindingsFile, 'utf8');
+  for (const m of body.matchAll(/>\s*([A-Za-z_][\w.:]*)\s*\(/g)) {
+    const fn = m[1];
+    if (!new RegExp(`function\\s+${fn.replace('.', '\\.')}\\s*\\(`).test(lua)) { bad++; console.error(`Bindings.xml calls ${fn}(), which no Lua file defines`); }
+  }
+  if (!/<Binding\b[^>]*\bname="[A-Z0-9_]+"/.test(body)) { bad++; console.error('Bindings.xml has no <Binding name="...">'); }
+}
 if (bad) process.exit(1); else console.log('ok policy');

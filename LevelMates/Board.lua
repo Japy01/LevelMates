@@ -196,3 +196,7 @@ ns.On("LM_LOADED", function()
 		AddonCompartmentFrame:RegisterAddon({ text = L.BOARD_TITLE, icon = "Interface\\AddOns\\LevelMates\\Media\\icon", func = B.Toggle })
 	end
 end)
+
+-- Called by Bindings.xml (the assignable key).
+function LevelMates_ToggleBoard() B.Toggle() end
+BINDING_NAME_LEVELMATES_TOGGLE = L.BINDING_TOGGLE
