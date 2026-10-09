@@ -24,22 +24,11 @@ function H.WaypointTo(mapId, x, y)
 	return true
 end
 
--- At most max bytes, never cutting a multi-byte UTF-8 character in half (continuation bytes are 0x80-0xBF).
-local function cutUtf8(s, max)
-	if #s <= max then return s end
-	local at = max
-	while at > 0 do
-		local b = s:byte(at + 1)
-		if b and b >= 128 and b <= 191 then at = at - 1 else break end
-	end
-	return s:sub(1, at)
-end
-
 -- Called from a click (board button / slash command).
 function H.Ask(text)
 	text = strtrim(tostring(text or ""))
 	text = text:gsub("[%c|]", "")
-	text = cutUtf8(text, 60)
+	text = ns.CutUtf8(text, 60)
 	if text == "" then return false end
 	if not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	local mapId, x, y = myPosition()

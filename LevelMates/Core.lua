@@ -4,11 +4,22 @@ ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadat
 
 local DEFAULTS = {
 	share = true, sharePos = false, shareQuests = false, shareXp = false,
-	matchNotices = true, helpNotices = true, sound = true, minimap = true,
+	matchNotices = true, helpNotices = true, lfgNotices = true, sound = true, minimap = true,
 	transport = "auto", debug = false,
 }
 
 ns.DEFAULTS = DEFAULTS
+
+-- At most max bytes, never cutting a multi-byte UTF-8 character in half (continuation bytes are 0x80-0xBF).
+function ns.CutUtf8(s, max)
+	if #s <= max then return s end
+	local at = max
+	while at > 0 do
+		local b = s:byte(at + 1)
+		if b and b >= 128 and b <= 191 then at = at - 1 else break end
+	end
+	return s:sub(1, at)
+end
 
 local bus = {}
 function ns.On(event, fn) bus[event] = bus[event] or {}; table.insert(bus[event], fn) end

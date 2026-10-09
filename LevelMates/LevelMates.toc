@@ -23,4 +23,5 @@ MinimapButton.lua
 Questie.lua
 Match.lua
 Help.lua
+LFG.lua
 Sim.lua
