@@ -11,7 +11,7 @@ A World of Warcraft: Forever guild addon. See which guildmates are online and wh
 - **Leveling partner** (Guildmates tab): tick "Looking for a partner"; guildmates within 3 levels who also tick it appear at the top, tinted, with a chat line. It turns itself off when you group with one of them.
 - **Rested XP**: yours next to the board heading, with a chat line when it reaches the maximum; guildmates who opt in ("Share my rested XP", off by default) show theirs when you hover their name.
 - **Journal** (Journal tab, or `/lm diario`): a private record of your leveling — level-ups with the time each took, quests, dungeons with the guildmates who came, groups with guildmates, green-or-better items, profession milestones and deaths. Filter by type, search, pages, and a clear button. Nothing is sent to anyone.
-- **Guild goals** (Goals tab, or `/lm metas`): officers set goals for the guild — everyone to a level, a dungeon together, or a counter of levels, quests or dungeons between everyone — with live progress and who is missing. Kept across sessions; up to 5 at a time.
+- **Guild goals** (Goals tab, or `/lm metas`): officers set goals for the guild — everyone to a level, a dungeon together, or a counter of levels, quests or dungeons between everyone — with live progress and who is missing. Kept across sessions; up to 5 at a time. Anyone can also set a personal goal ("My goal": a level by a date) that the guild sees.
 
 ## Privacy
 
@@ -50,7 +50,7 @@ Addon de hermandad para World of Warcraft: Forever. Ve qué hermanos están cone
 - **Compañero de leveo** (pestaña Hermanos): marca "Busco compañero"; los hermanos a 3 niveles o menos que también lo marcan salen arriba, resaltados, con una línea en el chat. Se desmarca solo al agruparte con uno de ellos.
 - **XP descansada**: la tuya junto al título del tablón, con una línea en el chat cuando llega al máximo; los hermanos que lo activan ("Compartir mi XP descansada", apagado por defecto) muestran la suya al pasar el ratón por su nombre.
 - **Diario** (pestaña Diario, o `/lm diario`): un registro privado de tu subida — niveles con lo que tardaste en cada uno, misiones, mazmorras con los hermanos que fueron, grupos con hermanos, objetos verdes o mejores, hitos de profesiones y muertes. Filtro por tipo, búsqueda, páginas y botón para borrarlo. No se envía nada a nadie.
-- **Metas de hermandad** (pestaña Metas, o `/lm metas`): los oficiales marcan objetivos para la hermandad — todos a un nivel, una mazmorra juntos, o un contador de niveles, misiones o mazmorras entre todos — con el progreso en directo y quién falta. Se guardan entre sesiones; hasta 5 a la vez.
+- **Metas de hermandad** (pestaña Metas, o `/lm metas`): los oficiales marcan objetivos para la hermandad — todos a un nivel, una mazmorra juntos, o un contador de niveles, misiones o mazmorras entre todos — con el progreso en directo y quién falta. Se guardan entre sesiones; hasta 5 a la vez. Cualquiera puede poner además su meta personal ("Mi meta": un nivel para una fecha) y la hermandad la ve.
 
 ## Privacidad
 

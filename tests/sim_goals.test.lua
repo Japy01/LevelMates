@@ -7,9 +7,10 @@ local G = ns.Goals
 local sentBefore = #STUB.sent
 SlashCmdList["LEVELMATES"]("sim metas")
 assert(#G.List() == 3, "three sample goals: " .. #G.List())
+assert(#ns.Personal.List() == 1 and ns.Personal.List()[1].name == "Mario", "and Mario's personal goal")
 assert(#STUB.sent == sentBefore, "the simulation sends nothing")
 SlashCmdList["LEVELMATES"]("sim off")
-assert(#G.List() == 0, "sim off removes them")
+assert(#G.List() == 0 and #ns.Personal.List() == 0, "sim off removes them")
 
 -- a simulated journal never completes a real goal (nor tells the guild)
 STUB.iAmOfficer = true
