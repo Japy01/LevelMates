@@ -43,6 +43,13 @@ local function roles(v)
 	return true
 end
 
+-- one of a closed set of words
+local function oneOf(...)
+	local set = {}
+	for _, w in ipairs({ ... }) do set[w] = true end
+	return function(v) return type(v) == "string" and set[v] == true end
+end
+
 -- field validators; required fields are listed in REQUIRED
 C.SCHEMA = {
 	hb   = { l = int(1, 100), z = int(0, 100000), g = int(0, 1), s = int(0, 1), x = num(0, 100), y = num(0, 100), r = int(0, 999999), c = word(16), v = word(20) },
@@ -54,10 +61,14 @@ C.SCHEMA = {
 	lfgx = { id = word(8) },
 	pal  = { p = int(0, 1) },
 	rx   = { p = int(-1, 200) },
+	go   = { id = word(8), ty = oneOf("lvl", "dun", "cnt"), a = int(1, 100000), w = oneOf("lvl", "qst", "dun"), s = int(0, 100000), e = int(0, 100000) },
+	gx   = { id = word(8) },
+	gd   = { id = word(8) },
+	gc   = { id = word(8), n = int(0, 10000) },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]

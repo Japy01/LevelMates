@@ -209,7 +209,7 @@ STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
 C_Club = {
 	GetGuildClubId = function() return 1 end,
 	GetClubMembers = function() local out = {}; for k in pairs(STUB.guildMembers) do out[#out + 1] = k end; return out end,
-	GetMemberInfo = function(_, id) return { name = id, level = 1, presence = 1 } end,
+	GetMemberInfo = function(_, id) return { name = id, level = 1, presence = 1, role = STUB.guildRoles and STUB.guildRoles[id] or 4 } end,
 }
 function UnitXP() return STUB.player.xp or 0 end
 function UnitXPMax() return 1000 end
@@ -257,3 +257,7 @@ C_SkillInfo = {
 	GetNumSkillLines = function() return STUB.skills and #STUB.skills or 0 end,
 	GetSkillLineInfo = function(i) return STUB.skills and STUB.skills[i] end,
 }
+
+-- Guild ranks (community roles: 1 Owner, 2 Leader, 3 Moderator, 4 Member)
+function IsGuildLeader() return STUB.iAmLeader == true end
+C_GuildInfo = { IsGuildOfficer = function() return STUB.iAmOfficer == true end }

@@ -19,12 +19,12 @@ local function buildGuildSet()
 	if clubId then
 		for _, id in ipairs(C_Club.GetClubMembers(clubId) or {}) do
 			local info = C_Club.GetMemberInfo(clubId, id)
-			if info and info.name then set[ns.ShortName(info.name)] = true end
+			if info and info.name then set[ns.ShortName(info.name)] = info.role or 4 end
 		end
 	elseif GetNumGuildMembers and GetGuildRosterInfo then
 		for i = 1, GetNumGuildMembers() do
 			local full = GetGuildRosterInfo(i)
-			if full then set[ns.ShortName(full)] = true end
+			if full then set[ns.ShortName(full)] = 4 end
 		end
 	end
 	return set
@@ -32,7 +32,17 @@ end
 function R.InvalidateGuildRoster() guildSet = nil end
 function R.IsGuildmate(name)
 	if not guildSet or GetTime() - guildSetAt > ROSTER_TTL then guildSet = buildGuildSet(); guildSetAt = GetTime() end
-	return guildSet[name] == true   -- no roster available: nobody is trusted
+	return guildSet[name] ~= nil   -- no roster available: nobody is trusted
+end
+
+-- Officers: community role Owner (1, guild master) or Leader (2, officer), the rule Blizzard's own UI uses.
+function R.IsOfficer(name)
+	if not R.IsGuildmate(name) then return false end
+	local role = guildSet[name]
+	return role == 1 or role == 2
+end
+function R.IAmOfficer()
+	return (IsGuildLeader and IsGuildLeader()) or (C_GuildInfo and C_GuildInfo.IsGuildOfficer and C_GuildInfo.IsGuildOfficer()) or false
 end
 
 function R.MyQuests()
