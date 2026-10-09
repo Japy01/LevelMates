@@ -65,8 +65,13 @@ local function simGoals()
 	ns.Personal.AddSample("Mario", 32, day + 4)
 end
 
+local function simWishes()
+	ns.Wishlist.AddSample("Mario", { 2589, 2318 })
+	ns.Wishlist.AddSample("Ana", { 765, 2447 })
+end
+
 local function off()
-	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples()
+	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples(); ns.Wishlist.RemoveSamples()
 	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -82,5 +87,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "rested" or rest == "descanso" then simRested()
 	elseif rest == "diario" or rest == "journal" then simJournal()
 	elseif rest == "metas" or rest == "goals" then simGoals()
+	elseif rest == "deseos" or rest == "wishes" then simWishes()
 	else run() end
 end)
