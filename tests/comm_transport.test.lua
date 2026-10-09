@@ -17,6 +17,12 @@ assert(got and got.name == "Mario" and got.full == "Mario-Testrealm" and got.f.l
 got = nil
 STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "GUILD", "Tester-Testrealm")
 assert(got == nil, "own echo ignored")
+-- Forever shows the sender as "Name Realm" in the spike's echo (screenshot): own echo must be dropped in every spelling
+for _, spelled in ipairs({ "Tester Testrealm", "Tester-Testrealm", "Tester", "TesterTestrealm" }) do
+	got = nil
+	STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "GUILD", spelled)
+	assert(got == nil, "own echo ignored as '" .. spelled .. "'")
+end
 -- malformed counted, not dispatched
 STUB.Receive("LVLM", "v1\31hb\31l=9999", "GUILD", "Mario-Testrealm")
 assert(C.stats.bad == 1 and got == nil, "bad counted")

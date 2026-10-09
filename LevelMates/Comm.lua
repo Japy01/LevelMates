@@ -180,14 +180,20 @@ end
 
 function C.OnMessage(kind, fn) handlers[kind] = handlers[kind] or {}; table.insert(handlers[kind], fn) end
 
-local me
+-- My own echo comes back on GUILD/CHANNEL. Forever spells the sender "Name Realm" as well as "Name-Realm", so
+-- compare on letters and digits only, against both "Name" and "NameRealm".
+local function norm(s) return (tostring(s):lower():gsub("[^%w]", "")) end
+local meKeys = {}
+local function isMe(sender, name)
+	return meKeys[norm(sender)] or meKeys[norm(name)] or false
+end
 local function onAddonMessage(prefix, text, channel, sender)
 	if prefix ~= C.PREFIX then return end
 	if issecretvalue and (issecretvalue(text) or issecretvalue(sender)) then return end
 	if channel ~= "GUILD" and channel ~= "CHANNEL" then return end
 	if channel == "CHANNEL" and active ~= "channel" then return end
 	local name = Ambiguate(sender, "guild")
-	if name == me then return end
+	if isMe(sender, name) then return end
 	if channel == "CHANNEL" and ns.Roster and ns.Roster.IsGuildmate and not ns.Roster.IsGuildmate(name) then C.stats.bad = C.stats.bad + 1; return end
 	local kind, fields = C.Decode(text)
 	if not kind then C.stats.bad = C.stats.bad + 1; return end
@@ -197,7 +203,9 @@ end
 
 local frame
 function C.Start()
-	me = UnitName("player")
+	local myName, myRealm = UnitName("player")
+	myRealm = (myRealm and myRealm ~= "") and myRealm or GetRealmName()
+	meKeys = { [norm(myName)] = true, [norm(myName .. (myRealm or ""))] = true }
 	C_ChatInfo.RegisterAddonMessagePrefix(C.PREFIX)
 	active = pickTransport()
 	if active == "channel" then ensureChannel() end
