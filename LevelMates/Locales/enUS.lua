@@ -17,6 +17,7 @@ L.HELP_NO_POS = "Your position is not available here, so the request cannot be s
 L.HELP_NEEDS_SHARE = "Turn on \"Appear on the board\" to ask for help."
 L.HELP_NOTICE = "%s needs help with %s in %s."
 L.HELP_COMING = "On my way: %s"
+L.HELP_GROUPED = "%s joined your group: help request closed."
 L.HELP_DONE = "%s no longer needs help."
 L.MATCH_HAS = "%s also has %s."
 L.MATCH_CAN = "%s could pick up %s."

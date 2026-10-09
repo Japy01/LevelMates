@@ -46,7 +46,7 @@ function H.Ask(text)
 	if not mapId or not x then ns.Say(L.HELP_NO_POS); return false end
 	local id = newId()
 	if C.Send("help", { t = text, z = mapId, x = x, y = y, id = id }, "now") then
-		H.mine = { id = id, text = text, at = GetTime() }
+		H.mine = { id = id, text = text, at = GetTime(), helpers = {} }
 		ns.Fire("LM_HELP_CHANGED")
 		return true
 	end
@@ -84,6 +84,10 @@ C.OnMessage("help", function(f, name)
 	if f.z == C_Map.GetBestMapForUnit("player") then H.WaypointTo(f.z, f.x, f.y) end
 	ns.Fire("LM_HELP_CHANGED")
 end)
+-- Someone pressed "On my way" on my request: remember who, so grouping with them closes it.
+C.OnMessage("helpgo", function(f, name)
+	if H.mine and H.mine.id == f.id then H.mine.helpers[name] = true; ns.Fire("LM_HELP_CHANGED") end
+end)
 C.OnMessage("helpok", function(f, name)
 	local h = H.active[f.id]
 	if h and h.name == name then H.active[f.id] = nil; ns.Say(L.HELP_DONE, name); ns.Fire("LM_HELP_CHANGED") end   -- only the asker clears it
@@ -94,7 +98,22 @@ function H.Coming(id)
 	local h = H.active[id]
 	if not h then return end
 	SendChatMessage(string.format(L.HELP_COMING, (UnitName("player"))), "WHISPER", nil, h.name)
+	C.Send("helpgo", { id = id }, "now")   -- an addon message, not chat: tells the asker who is coming
 end
+
+-- Grouping with someone who said "On my way" ends my request for everyone.
+local groupFrame = CreateFrame("Frame")
+groupFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+groupFrame:SetScript("OnEvent", function()
+	if not H.mine then return end
+	for name in pairs(H.mine.helpers) do
+		if UnitInParty(name) or UnitInRaid(name) then
+			ns.Say(L.HELP_GROUPED, name)
+			H.Cancel()
+			return
+		end
+	end
+end)
 
 ns.Slash("help", function(rest) if H.mine then H.Cancel() else H.Ask(rest) end end)
 ns.Slash("ayuda", function(rest) if H.mine then H.Cancel() else H.Ask(rest) end end)

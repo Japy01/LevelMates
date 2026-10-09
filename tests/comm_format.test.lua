@@ -35,4 +35,8 @@ assert(C.Validate("hb", { l = " 22", z = 1 }) == false, "space refused")
 local kq, fq = C.Decode(C.Encode("q", { i = "1/1", ids = "1098,6562" }))
 assert(kq == "q" and fq.i == "1/1" and fq.ids == "1098,6562", "q chunk roundtrip: " .. tostring(kq))
 assert(C.Validate("q", { i = "x", ids = "1" }) == false, "q index must be index/total")
+-- helpgo: "I am on my way" for a request id
+local kg, fg = C.Decode(C.Encode("helpgo", { id = "ab12cd34" }))
+assert(kg == "helpgo" and fg.id == "ab12cd34", "helpgo roundtrip")
+assert(C.Validate("helpgo", {}) == false, "helpgo needs an id")
 print("ok")

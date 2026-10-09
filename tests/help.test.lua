@@ -27,6 +27,10 @@ STUB.lastChat = nil
 row.button.scripts.OnClick(row.button, "LeftButton")
 local chat = STUB.lastChat
 assert(chat and chat.chatType == "WHISPER" and chat.target == "Mario" and chat.msg == string.format(ns.L.HELP_COMING, "Tester"), "on my way whispers from the click: " .. tostring(chat and chat.msg))
+do
+	local kg, fg = C.Decode(STUB.sent[#STUB.sent].msg)
+	assert(kg == "helpgo" and fg.id == "zz11", "Voy also tells the asker (helpgo): " .. tostring(kg))
+end
 ns.Board.Toggle()
 -- another map: notice, no waypoint
 wp = nil
@@ -82,4 +86,23 @@ do
 	local k, ff = C.Decode(STUB.sent[#STUB.sent].msg)
 	assert(k == "help" and ff.t == string.rep("a", 59), "cut before the two-byte character, got " .. tostring(ff and #ff.t))
 	H.Cancel()
+end
+
+-- my request closes when I group with someone who pressed Voy
+do
+	ns.db.settings.share = true; C.Start(); STUB.Advance(1)
+	STUB.partyMembers = {}
+	H.Ask("Ogro Chamán")
+	local myId = H.mine.id
+	STUB.Receive("LVLM", C.Encode("helpgo", { id = "other999" }), "GUILD", "Luis-Testrealm")   -- not my request: ignored
+	STUB.Receive("LVLM", C.Encode("helpgo", { id = myId }), "GUILD", "Mario-Testrealm")
+	assert(H.mine.helpers.Mario and not H.mine.helpers.Luis, "helpers recorded for my request only")
+	STUB.Fire("GROUP_ROSTER_UPDATE")
+	assert(H.mine, "nobody who said Voy is in my group yet")
+	STUB.partyMembers.Mario = true
+	STUB.Fire("GROUP_ROSTER_UPDATE")
+	assert(H.mine == nil, "request closed once Mario joined")
+	STUB.Advance(1)
+	assert(select(1, C.Decode(STUB.sent[#STUB.sent].msg)) == "helpok", "everyone is told (helpok)")
+	assert(STUB.printed[#STUB.printed]:find("Mario"), "user is told who joined: " .. tostring(STUB.printed[#STUB.printed]))
 end

@@ -121,6 +121,9 @@ function GetZoneText() return STUB.player.zone end
 function IsInGuild() return STUB.player.guild ~= nil end
 function GetGuildInfo(u) return STUB.player.guild, "Member", 3, STUB.player.realm end
 function IsInGroup() return false end
+STUB.partyMembers = {}
+function UnitInParty(name) return STUB.partyMembers[name] == true end
+function UnitInRaid(name) return false end
 function IsInInstance() return STUB.inInstance == true, STUB.inInstance and "party" or "none" end
 -- Joining a channel is a server round-trip: the id is known only after the next Advance, as in the client.
 STUB.channels, STUB.pendingChannels, STUB.joinedChannelIds, STUB.nextChannelId = {}, {}, {}, 10
