@@ -49,6 +49,20 @@ local function oneOf(...)
 	for _, w in ipairs({ ... }) do set[w] = true end
 	return function(v) return type(v) == "string" and set[v] == true end
 end
+-- Item ids "12,345,…": 1 to max ids, each 1-999999.
+local function itemids(max)
+	return function(v)
+		if type(v) == "number" then v = tostring(v) end
+		if type(v) ~= "string" or not v:match("^%d+$") and not v:match("^%d+[%d,]*%d$") or v:find(",,", 1, true) then return false end
+		local n = 0
+		for id in v:gmatch("%d+") do
+			n = n + 1
+			local x = tonumber(id)
+			if x < 1 or x > 999999 then return false end
+		end
+		return n >= 1 and n <= max
+	end
+end
 
 -- field validators; required fields are listed in REQUIRED
 C.SCHEMA = {
@@ -66,10 +80,11 @@ C.SCHEMA = {
 	gd   = { id = word(8) },
 	gc   = { id = word(8), n = int(0, 10000) },
 	gp   = { l = int(0, 60), e = int(0, 100000) },
+	wl   = { ids = itemids(10) },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
@@ -198,6 +213,7 @@ local function pump()
 	C.stats.queued = #queue
 end
 
+local LATEST_ONLY = { wl = true, gp = true }
 function C.Send(kind, fields, prio)
 	if active == "none" or not IsInGuild() then return false end
 	if inInstance() and not INSTANCE_OK[kind] then return false end
@@ -214,6 +230,9 @@ function C.Send(kind, fields, prio)
 			pump()
 			return true
 		end
+	end
+	if LATEST_ONLY[kind] then   -- each one carries the whole state: an older copy still waiting would overwrite it
+		for i = #queue, 1, -1 do if queue[i].kind == kind then table.remove(queue, i) end end
 	end
 	if item.prio == "now" then table.insert(queue, 1, item) else queue[#queue + 1] = item end
 	C.stats.queued = #queue

@@ -269,3 +269,24 @@ function PanelTemplates_SetTab(frame, id)
 	for i, tab in ipairs(frame.Tabs or {}) do tab:SetEnabled(i ~= id) end
 end
 function PanelTemplates_TabResize() end
+
+-- Wishlist support
+function hooksecurefunc(a, b, c)
+	local tbl, key, fn = a, b, c
+	if type(a) == "string" then tbl, key, fn = _G, a, b end
+	local old = tbl[key]
+	tbl[key] = function(...) local r = { old(...) }; fn(...); return unpack(r) end
+end
+ChatFrameUtil.InsertLink = function() return false end
+STUB.tooltipPost = {}
+Enum.TooltipDataType = { Item = 0, Unit = 2 }
+TooltipDataProcessor = { AddTooltipPostCall = function(kind, fn) STUB.tooltipPost[#STUB.tooltipPost + 1] = { kind = kind, fn = fn } end }
+function STUB.TooltipPost(kind, tooltip, data) for _, p in ipairs(STUB.tooltipPost) do if p.kind == kind then p.fn(tooltip, data) end end end
+ItemRefTooltip = {}
+STUB.items, STUB.itemLoads = {}, {}
+function GetItemInfo(x)
+	local id = tonumber(x) or tonumber(tostring(x):match("item:(%d+)") or "")
+	local link = id and STUB.items[id]
+	if link then return link:match("%[(.-)%]"), link end
+end
+Item = { CreateFromItemID = function(_, id) return { ContinueOnItemLoad = function(_, fn) STUB.itemLoads[id] = fn end } end }

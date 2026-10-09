@@ -206,6 +206,7 @@ ev2:SetScript("OnEvent", function(_, event, ...)
 		if issecretvalue and (issecretvalue(text) or issecretvalue(sender) or issecretvalue(guid)) then return end
 		if type(text) ~= "string" or not isMine(guid, sender) then return end
 		local link = text:match("|c%x+|Hitem:.-|h.-|h|r")
+		if link then ns.Fire("LM_MY_LOOT", link) end   -- any item I loot (the wishlist listens)
 		local q = link and quality(link)
 		if q and q >= 2 then J.Add("item", { link = link, q = q }) end
 	elseif event == "SKILL_LINES_CHANGED" then

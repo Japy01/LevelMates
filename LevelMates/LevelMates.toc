@@ -30,5 +30,6 @@ Rested.lua
 Journal.lua
 Goals.lua
 Personal.lua
+Wishlist.lua
 GoalDialog.lua
 Sim.lua
