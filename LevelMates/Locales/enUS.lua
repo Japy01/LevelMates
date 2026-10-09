@@ -68,3 +68,6 @@ L.J_QUEST = "Quest completed: %s"; L.J_DUNGEON = "Dungeon: %s"; L.J_WITH = " wit
 L.J_ITEM = "Got %s"; L.J_SKILL_NEW = "Learned %s"; L.J_SKILL_UP = "%s reached %d"; L.J_DEATH = "Died at level %d"
 L.J_FILTER_ALL = "All"; L.J_FILTER_LEVEL = "Levels"; L.J_FILTER_QUEST = "Quests"; L.J_FILTER_DUNGEON = "Dungeons"
 L.J_FILTER_GROUP = "Groups"; L.J_FILTER_ITEM = "Items"; L.J_FILTER_SKILL = "Professions"; L.J_FILTER_DEATH = "Deaths"
+L.TAB_JOURNAL = "Journal"; L.COL_WHEN = "When"; L.COL_ENTRY = "Entry"
+L.J_PAGE = "Page %d of %d"; L.BTN_J_PREV = "< Previous"; L.BTN_J_NEXT = "Next >"; L.BTN_J_CLEAR = "Clear journal"
+L.J_CLEAR_CONFIRM = "Delete every journal entry of this character?"; L.J_EMPTY = "Nothing in the journal yet."

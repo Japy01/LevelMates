@@ -188,3 +188,13 @@ ev2:SetScript("OnEvent", function(_, event, ...)
 	end
 end)
 ns.On("LM_WORLD", function() checkInstance(); checkSkills() end)
+
+-- "Clear journal" (board button): confirm first.
+ns.On("LM_JOURNAL_CLEAR", function()
+	StaticPopupDialogs["LEVELMATES_JOURNAL_CLEAR"] = StaticPopupDialogs["LEVELMATES_JOURNAL_CLEAR"] or {
+		text = L.J_CLEAR_CONFIRM, button1 = YES or OKAY, button2 = NO or CANCEL,
+		timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function() J.Clear() end,
+	}
+	StaticPopup_Show("LEVELMATES_JOURNAL_CLEAR")
+end)

@@ -10,7 +10,8 @@ local unpack = unpack or table.unpack   -- the client has unpack; table.unpack c
 
 -- Layout: one place for the widths so the columns always fit inside the window.
 B.COLS = { 150, 50, 180, 70, 70 }   -- name, level, zone, group, xp/h
-B.GAP, B.MARGIN, B.WIDTH = 4, 12, 560
+B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
+B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
 B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
@@ -156,6 +157,8 @@ local function Build()
 			if B.tab == "lfg" and self.adId then   -- Dungeons tab: the whole note
 				local a = ns.LFG.ads[self.adId]
 				if a and a.n then GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(a.n, 1, 1, 1, true); GameTooltip:Show() end
+			elseif B.tab == "journal" and self.entry and self.entry.link then   -- journal: the item card
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink(self.entry.link); GameTooltip:Show()
 			elseif B.tab == "mates" and self.mate then   -- partner match and shared rested XP
 				local lines = {}
 				if ns.Partner and ns.Partner.Matches(self.mate) then lines[#lines + 1] = { L.PAL_TOOLTIP, 0.4, 1, 0.4 } end
@@ -186,12 +189,37 @@ local function Build()
 	B.tabs = {}
 	local function Tab(key, label, offset)
 		local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-		b:SetSize(96, 20); b:SetPoint("BOTTOM", offset, 3); b:SetText(label)
+		b:SetSize(80, 20); b:SetPoint("BOTTOM", offset, 3); b:SetText(label)
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.tabs[key] = b
 	end
-	Tab("mates", L.TAB_MATES, -52); Tab("lfg", L.TAB_LFG, 52)
-	B.tab = ns.char.boardTab == "lfg" and "lfg" or "mates"
+	Tab("mates", L.TAB_MATES, -84); Tab("lfg", L.TAB_LFG, 0); Tab("journal", L.TAB_JOURNAL, 84)
+	B.tab = (ns.char.boardTab == "lfg" or ns.char.boardTab == "journal") and ns.char.boardTab or "mates"
+
+	-- Journal tab: clear (bottom left), type filter (bottom right), pager in the help-rows area.
+	local clear = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	clear:SetSize(120, 20); clear:SetPoint("BOTTOMLEFT", 12, 3); clear:SetText(L.BTN_J_CLEAR)
+	clear:SetScript("OnClick", function() ns.Fire("LM_JOURNAL_CLEAR") end)
+	B.journalClear = clear
+	local filter = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	filter:SetSize(140, 20); filter:SetPoint("BOTTOMRIGHT", -12, 3)
+	filter:SetScript("OnClick", function(self)
+		MenuUtil.CreateContextMenu(self, function(_, root)
+			for _, kind in ipairs(ns.Journal.FILTERS) do
+				root:CreateButton(ns.Journal.FilterName(kind), function() B.journalFilter = kind; B.journalPage = 1; B.Refresh() end)
+			end
+		end)
+	end)
+	B.journalFilterButton = filter
+	local prev = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	prev:SetSize(110, 20); prev:SetPoint("BOTTOM", -160, B.BOTTOM + 8); prev:SetText(L.BTN_J_PREV)
+	prev:SetScript("OnClick", function() B.journalPage = (B.journalPage or 1) - 1; B.Refresh() end)
+	local nextb = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	nextb:SetSize(110, 20); nextb:SetPoint("BOTTOM", 160, B.BOTTOM + 8); nextb:SetText(L.BTN_J_NEXT)
+	nextb:SetScript("OnClick", function() B.journalPage = (B.journalPage or 1) + 1; B.Refresh() end)
+	local pageText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	pageText:SetPoint("BOTTOM", 0, B.BOTTOM + 12)
+	B.journalPrev, B.journalNext, B.journalPageText = prev, nextb, pageText
 
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
@@ -299,6 +327,12 @@ end
 -- Header texts and colours for the active tab; only the guildmates tab sorts.
 local function SetHeaders()
 	local lfg = B.tab == "lfg"
+	if B.tab == "journal" then
+		B.headText[1]:SetText(L.COL_WHEN); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ENTRY)
+		B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_ZONE)
+		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
+		return
+	end
 	local sort = ns.char.boardSort or { mode = "level", desc = true }
 	B.headText[1]:SetText(lfg and L.COL_PLAYER or L.COL_NAME)
 	B.headText[5]:SetText(lfg and L.COL_NOTE or L.COL_XPH)
@@ -373,41 +407,89 @@ local function FillLfg(list)
 	end
 end
 
--- Which controls belong to which tab.
+-- Column widths for the active tab (the row and header font strings are chained left to right).
+local function SetColumns(widths)
+	for i, w in ipairs(widths) do B.headText[i]:SetWidth(w) end
+	for _, r in ipairs(B.rows) do
+		r.name:SetWidth(widths[1] - (ROW_H - 4) - 4); r.level:SetWidth(widths[2]); r.zone:SetWidth(widths[3])
+		r.group:SetWidth(widths[4]); r.xph:SetWidth(widths[5])
+	end
+end
+
+local function FillJournal(list)
+	for i = 1, ROWS do
+		local r, e = B.rows[i], list[i]
+		r.button.mate, r.button.adId, r.button.entry = nil, nil, e
+		if e then
+			r.icon:Hide()
+			r.name:SetText(ns.Journal.When(e)); r.name:SetTextColor(0.7, 0.7, 0.7)
+			r.level:SetText("")
+			r.zone:SetText(ns.Journal.Text(e)); r.zone:SetTextColor(unpack(ns.Journal.Color(e)))
+			r.group:SetText("")
+			r.xph:SetText(e.zone or ""); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+
 local function RefreshTabs()
-	local lfg = B.tab == "lfg"
-	B.tabs.mates:SetEnabled(lfg); B.tabs.lfg:SetEnabled(not lfg)
-	B.helpButton:SetShown(not lfg); B.nearCheck:SetShown(not lfg)
-	B.nearLabel:SetShown(not lfg); B.palCheck:SetShown(not lfg); B.palLabel:SetShown(not lfg)
+	local lfg, journal = B.tab == "lfg", B.tab == "journal"
+	local mates = not lfg and not journal
+	B.tabs.mates:SetEnabled(not mates); B.tabs.lfg:SetEnabled(not lfg); B.tabs.journal:SetEnabled(not journal)
+	B.helpButton:SetShown(mates); B.nearCheck:SetShown(mates); B.nearLabel:SetShown(mates)
+	B.palCheck:SetShown(mates); B.palLabel:SetShown(mates)
 	B.palCheck:SetChecked(ns.Partner and ns.Partner.IsOn() or false)
 	B.lfgButton:SetShown(lfg)
 	B.lfgButton:SetText(ns.LFG.mine and L.BTN_LFG_CANCEL or L.BTN_LFG)
+	B.journalClear:SetShown(journal); B.journalFilterButton:SetShown(journal)
+	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 end
 
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
-	local lfg = B.tab == "lfg"
-	local list = lfg and LfgVisible() or Visible()
+	local lfg, journal = B.tab == "lfg", B.tab == "journal"
+	local list
+	if journal then
+		local all = ns.Journal.List(B.journalFilter or "all", B.search)
+		local pages = math.max(1, math.ceil(#all / ROWS))
+		B.journalPage = math.min(math.max(1, B.journalPage or 1), pages)
+		list = {}
+		for i = (B.journalPage - 1) * ROWS + 1, math.min(#all, B.journalPage * ROWS) do list[#list + 1] = all[i] end
+		B.journalPageText:SetText(string.format(L.J_PAGE, B.journalPage, pages))
+		B.journalPrev:SetEnabled(B.journalPage > 1); B.journalNext:SetEnabled(B.journalPage < pages)
+		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
+	else
+		list = lfg and LfgVisible() or Visible()
+	end
+	SetColumns(journal and B.JCOLS or B.COLS)
 	SetHeaders()
 	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
 	local rested = ns.Rested and ns.Rested.Mine()
 	B.restedText:SetText(rested and string.format(L.RESTED_MINE, rested) or "")
-	if lfg then FillLfg(list) else FillMates(list) end
+	if journal then FillJournal(list) elseif lfg then FillLfg(list) else FillMates(list) end
 	local emptyText = ""
 	if #list == 0 then
-		if not IsInGuild() then emptyText = L.NOT_IN_GUILD
+		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
+		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD
 		elseif lfg then emptyText = #ns.LFG.List() > 0 and L.EMPTY_FILTERED or L.LFG_EMPTY
 		elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED
 		else emptyText = L.EMPTY end
 	end
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
-	RefreshHelp()
+	if journal then
+		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
+	else
+		RefreshHelp()
+	end
 end
 
 function B.SetTab(key)
-	key = key == "lfg" and "lfg" or "mates"
+	key = (key == "lfg" or key == "journal") and key or "mates"
 	ns.char.boardTab, B.tab, B.search = key, key, ""
 	if B.searchBox then B.searchBox:SetText("") end
 	B.Refresh()
@@ -416,7 +498,7 @@ end
 -- Open the board on a given tab (slash command, minimap, binding).
 function B.ShowTab(key)
 	if not B.frame then Build() end
-	B.tab = key == "lfg" and "lfg" or "mates"
+	B.tab = (key == "lfg" or key == "journal") and key or "mates"
 	ns.char.boardTab = B.tab
 	B.frame:Show()
 	B.Refresh()
@@ -467,3 +549,7 @@ ns.Slash("grupo", function() B.ShowTab("lfg") end)
 ns.On("LM_PARTNER_CHANGED", B.Refresh)
 
 ns.On("LM_RESTED_CHANGED", B.Refresh)
+
+ns.On("LM_JOURNAL_CHANGED", B.Refresh)
+ns.Slash("diario", function() B.ShowTab("journal") end)
+ns.Slash("journal", function() B.ShowTab("journal") end)

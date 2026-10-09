@@ -241,6 +241,7 @@ Minimap = CreateFrame("Frame", "Minimap"); Minimap:SetSize(140, 140)
 STUB.cursor = { 0, 0 }
 function GetCursorPosition() return STUB.cursor[1], STUB.cursor[2] end
 GameTooltip = { lines = {}, hidden = true,
+	SetHyperlink = function(self, link) self.link = link end,
 	SetOwner = function(self) self.lines = {}; self.hidden = false end,
 	AddLine = function(self, t) self.lines[#self.lines + 1] = t end,
 	Show = function(self) self.hidden = false end, Hide = function(self) self.hidden = true end }
