@@ -51,3 +51,5 @@ L.COL_PLAYER = "Player"; L.COL_DUNGEON = "Dungeon"; L.COL_ROLES = "Roles"; L.COL
 L.TAB_MATES = "Guildmates"; L.TAB_LFG = "Dungeons"
 L.BTN_LFG = "Find a group"; L.BTN_LFG_CANCEL = "Cancel group request"
 L.LFG_EMPTY = "Nobody is looking for a group right now."
+L.LFG_DIALOG_TITLE = "Find a dungeon group"; L.LFG_PICK_DUNGEON = "Choose a dungeon..."; L.LFG_ROLES_LABEL = "Your role"
+L.LFG_NOTE_HINT = "Note (optional, up to 40 characters)"; L.LFG_PUBLISH = "Post"; L.LFG_CLOSE = "Close"

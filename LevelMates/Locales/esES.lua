@@ -51,3 +51,5 @@ L.COL_PLAYER = "Jugador"; L.COL_DUNGEON = "Mazmorra"; L.COL_ROLES = "Roles"; L.C
 L.TAB_MATES = "Hermanos"; L.TAB_LFG = "Mazmorras"
 L.BTN_LFG = "Buscar grupo"; L.BTN_LFG_CANCEL = "Cancelar anuncio"
 L.LFG_EMPTY = "Nadie busca grupo ahora mismo."
+L.LFG_DIALOG_TITLE = "Buscar grupo de mazmorra"; L.LFG_PICK_DUNGEON = "Elige una mazmorra..."; L.LFG_ROLES_LABEL = "Tu rol"
+L.LFG_NOTE_HINT = "Nota (opcional, hasta 40 caracteres)"; L.LFG_PUBLISH = "Publicar"; L.LFG_CLOSE = "Cerrar"

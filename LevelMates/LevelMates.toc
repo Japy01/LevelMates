@@ -24,4 +24,5 @@ Questie.lua
 Match.lua
 Help.lua
 LFG.lua
+LfgDialog.lua
 Sim.lua
