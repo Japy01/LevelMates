@@ -261,3 +261,11 @@ C_SkillInfo = {
 -- Guild ranks (community roles: 1 Owner, 2 Leader, 3 Moderator, 4 Member)
 function IsGuildLeader() return STUB.iAmLeader == true end
 C_GuildInfo = { IsGuildOfficer = function() return STUB.iAmOfficer == true end }
+
+-- Panel tabs (SharedUIPanelTemplates): the selected tab is the disabled one, as PanelTemplates_SelectTab does.
+function PanelTemplates_SetNumTabs(frame, n) frame.numTabs = n end
+function PanelTemplates_SetTab(frame, id)
+	frame.selectedTab = id
+	for i, tab in ipairs(frame.Tabs or {}) do tab:SetEnabled(i ~= id) end
+end
+function PanelTemplates_TabResize() end

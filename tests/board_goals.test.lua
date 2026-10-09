@@ -18,7 +18,7 @@ local function visible()
 end
 
 assert(B.tabs.goals, "fourth tab")
-for _, key in ipairs({ "mates", "lfg", "journal", "goals" }) do assert(B.tabs[key]:GetWidth() == 70, "tab width 70: " .. key) end
+assert(B.frame.Tabs[4] == B.tabs.goals, "goals is the fourth classic tab")
 B.tabs.goals.scripts.OnClick(B.tabs.goals)
 assert(B.tab == "goals" and ns.char.boardTab == "goals", "goals tab, remembered")
 assert(B.headText[1].text == L.COL_BY and B.headText[3].text == L.COL_GOAL and B.headText[4].text == L.COL_PROGRESS and B.headText[5].text == L.COL_UNTIL, "headers")

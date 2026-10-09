@@ -13,6 +13,11 @@ B.COLS = { 150, 50, 180, 70, 70 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
 B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
+-- Tabs, in order; each key's label is L[TAB_LABELS[key]].
+B.TAB_KEYS = { "mates", "lfg", "journal", "goals" }
+local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS" }
+B.TAB_LABELS = TAB_LABELS
+local function KnownTab(key) for _, k in ipairs(B.TAB_KEYS) do if k == key then return key end end; return "mates" end
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
 B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
@@ -198,21 +203,25 @@ local function Build()
 	help:SetScript("OnClick", function() ns.Fire("LM_HELP_BUTTON") end)
 	B.helpButton = help
 
-	-- Dungeons tab: its own action button in the same spot as "Ask for help", and the two tab buttons in the bottom bar.
+	-- Dungeons tab: its own action button in the same spot as "Ask for help".
 	local lfg = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	lfg:SetSize(140, 20); lfg:SetPoint("BOTTOMLEFT", 12, 3); lfg:SetText(L.BTN_LFG)
 	lfg:SetScript("OnClick", function() ns.Fire("LM_LFG_BUTTON") end)
 	B.lfgButton = lfg
+	-- Tabs: WoW's classic tabs hanging under the window (as the Dungeon Journal's), so the bottom bar keeps the buttons.
 	B.tabs = {}
-	local function Tab(key, label, offset)
-		local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-		b:SetSize(70, 20); b:SetPoint("BOTTOM", offset, 3); b:SetText(label)
+	local tabList, prevTab = {}, nil
+	for i, key in ipairs(B.TAB_KEYS) do
+		local b = CreateFrame("Button", "LevelMatesBoardTab" .. i, f, "PanelTabButtonTemplate")
+		b:SetID(i); b:SetText(L[TAB_LABELS[key]])
+		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", -16, 0) else b:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 11, 2) end
+		if PanelTemplates_TabResize then PanelTemplates_TabResize(b, 0) end
 		b:SetScript("OnClick", function() B.SetTab(key) end)
-		B.tabs[key] = b
+		B.tabs[key], tabList[i], prevTab = b, b, b
 	end
-	Tab("mates", L.TAB_MATES, -111); Tab("lfg", L.TAB_LFG, -37); Tab("journal", L.TAB_JOURNAL, 37); Tab("goals", L.TAB_GOALS, 111)
-	local saved = ns.char.boardTab
-	B.tab = (saved == "lfg" or saved == "journal" or saved == "goals") and saved or "mates"
+	f.Tabs = tabList   -- the template's parentArray, set here so the order is ours
+	if PanelTemplates_SetNumTabs then PanelTemplates_SetNumTabs(f, #tabList) end
+	B.tab = KnownTab(ns.char.boardTab)
 
 	-- Journal tab: clear (bottom left), type filter (bottom right), pager in the help-rows area.
 	local clear = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
@@ -520,7 +529,10 @@ end
 local function RefreshTabs()
 	local lfg, journal, goals = B.tab == "lfg", B.tab == "journal", B.tab == "goals"
 	local mates = not lfg and not journal and not goals
-	B.tabs.mates:SetEnabled(not mates); B.tabs.lfg:SetEnabled(not lfg); B.tabs.journal:SetEnabled(not journal); B.tabs.goals:SetEnabled(not goals)
+	local index = 1
+	for i, key in ipairs(B.TAB_KEYS) do if key == B.tab then index = i end end
+	if PanelTemplates_SetTab then PanelTemplates_SetTab(B.frame, index)
+	else for i, key in ipairs(B.TAB_KEYS) do B.tabs[key]:SetEnabled(i ~= index) end end
 	B.helpButton:SetShown(mates); B.nearCheck:SetShown(mates); B.nearLabel:SetShown(mates)
 	B.palCheck:SetShown(mates); B.palLabel:SetShown(mates)
 	B.palCheck:SetChecked(ns.Partner and ns.Partner.IsOn() or false)
@@ -577,7 +589,7 @@ function B.Refresh()
 end
 
 function B.SetTab(key)
-	key = (key == "lfg" or key == "journal" or key == "goals") and key or "mates"
+	key = KnownTab(key)
 	ns.char.boardTab, B.tab, B.search = key, key, ""
 	if B.searchBox then B.searchBox:SetText("") end
 	B.Refresh()
@@ -586,7 +598,7 @@ end
 -- Open the board on a given tab (slash command, minimap, binding).
 function B.ShowTab(key)
 	if not B.frame then Build() end
-	B.tab = (key == "lfg" or key == "journal" or key == "goals") and key or "mates"
+	B.tab = KnownTab(key)
 	ns.char.boardTab = B.tab
 	B.frame:Show()
 	B.Refresh()
