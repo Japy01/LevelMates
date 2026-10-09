@@ -33,4 +33,5 @@ Personal.lua
 Wishlist.lua
 GoalDialog.lua
 WishDialog.lua
+DiscordCopy.lua
 Sim.lua

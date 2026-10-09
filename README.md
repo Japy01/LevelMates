@@ -13,6 +13,7 @@ A World of Warcraft: Forever guild addon. See which guildmates are online and wh
 - **Journal** (Journal tab, or `/lm diario`): a private record of your leveling — level-ups with the time each took, quests, dungeons with the guildmates who came, groups with guildmates, green-or-better items, profession milestones and deaths. Filter by type, search, pages, and a clear button. Nothing is sent to anyone.
 - **Guild goals** (Goals tab, or `/lm metas`): officers set goals for the guild — everyone to a level, a dungeon together, or a counter of levels, quests or dungeons between everyone — with live progress and who is missing. Kept across sessions; up to 5 at a time. Anyone can also set a personal goal ("My goal": a level by a date) that the guild sees.
 - **Wishlist** (Wishes tab, or `/lm deseos`): up to 10 items you want, added with Shift+click; guildmates see them, item tooltips say who wants an item, and looting something a guildmate wants tells you who to pass it to.
+- **Copy for Discord** ("Discord" button on the board): the current tab as ready-to-paste Discord text (Ctrl+C, Ctrl+V). Nothing is sent anywhere.
 
 ## Privacy
 
@@ -53,6 +54,7 @@ Addon de hermandad para World of Warcraft: Forever. Ve qué hermanos están cone
 - **Diario** (pestaña Diario, o `/lm diario`): un registro privado de tu subida — niveles con lo que tardaste en cada uno, misiones, mazmorras con los hermanos que fueron, grupos con hermanos, objetos verdes o mejores, hitos de profesiones y muertes. Filtro por tipo, búsqueda, páginas y botón para borrarlo. No se envía nada a nadie.
 - **Metas de hermandad** (pestaña Metas, o `/lm metas`): los oficiales marcan objetivos para la hermandad — todos a un nivel, una mazmorra juntos, o un contador de niveles, misiones o mazmorras entre todos — con el progreso en directo y quién falta. Se guardan entre sesiones; hasta 5 a la vez. Cualquiera puede poner además su meta personal ("Mi meta": un nivel para una fecha) y la hermandad la ve.
 - **Lista de deseos** (pestaña Deseos, o `/lm deseos`): hasta 10 objetos que quieres, añadidos con Mayús+clic; la hermandad los ve, el tooltip de un objeto dice quién lo quiere y, si te cae algo que quiere un hermano, te avisa para que se lo pases.
+- **Copiar para Discord** (botón "Discord" del tablón): la pestaña actual como texto listo para pegar en Discord (Ctrl+C, Ctrl+V). No se envía nada a ningún sitio.
 
 ## Privacidad
 

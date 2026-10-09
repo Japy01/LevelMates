@@ -290,3 +290,11 @@ function GetItemInfo(x)
 	if link then return link:match("%[(.-)%]"), link end
 end
 Item = { CreateFromItemID = function(_, id) return { ContinueOnItemLoad = function(_, fn) STUB.itemLoads[id] = fn end } end }
+
+-- Copy for Discord support (multi-line edit box in a scroll frame)
+function Region:SetMultiLine() end
+function Region:SetFontObject() end
+function Region:SetScrollChild(child) self.child = child end
+function Region:HighlightText() self.highlighted = true end
+function Region:SetFocus() self.focused = true end
+function Region:ClearFocus() self.focused = false end

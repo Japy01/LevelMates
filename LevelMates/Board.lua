@@ -98,6 +98,11 @@ local function Build()
 	search:SetSize(150, 20); search:SetPoint("TOPRIGHT", -B.MARGIN - 6, -(insetTop + 12))
 	if search.Instructions then search.Instructions:SetText(L.SEARCH_HINT) end
 	search:SetScript("OnTextChanged", function(self) B.search = self:GetText() or ""; B.Refresh() end)
+	-- "Discord": the current tab as text to paste in Discord (every tab).
+	local discord = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	discord:SetSize(80, 20); discord:SetPoint("RIGHT", search, "LEFT", -12, 0); discord:SetText(L.BTN_DISCORD)
+	discord:SetScript("OnClick", function() ns.Fire("LM_DISCORD_COPY", B.tab) end)
+	B.discordButton = discord
 	B.searchBox = search
 
 	local function Col(parent, w, justify, font) local fs = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight"); fs:SetWidth(w); fs:SetJustifyH(justify or "LEFT"); fs:SetWordWrap(false); return fs end

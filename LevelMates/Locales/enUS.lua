@@ -94,3 +94,7 @@ L.OPT_WISH = "Wishlist notices"; L.OPT_WISH_TT = "A chat line when you loot an i
 L.TAB_WISHES = "Wishes"; L.COL_WHO = "Who"; L.COL_ITEM = "Item"; L.COL_SINCE = "Since"
 L.WISH_EMPTY = "Nobody has wishes yet. Add yours with \"Add wish\"."; L.WISH_UNKNOWN = "Item #%d"; L.WISH_REMOVE = "Remove from my list"
 L.BTN_WISH_ADD = "Add wish"; L.WISH_DIALOG_TITLE = "Add a wish"; L.WISH_HINT = "Shift+click an item (bags, chat, loot...)"; L.WISH_ADD = "Add"
+L.BTN_DISCORD = "Discord"; L.DC_TITLE = "Copy for Discord"; L.DC_HINT = "Ctrl+C to copy it, then paste it in Discord with Ctrl+V."
+L.DC_LEVEL = "level %d"; L.DC_LFG = "%s is looking for a group for %s"; L.DC_ROLES = "plays %s"; L.DC_UNTIL = "until %s"
+L.DC_PERSONAL = "Personal goals"; L.DC_NOTHING = "Nothing to show right now."; L.DC_MORE = "…and %d more"
+L.DC_J_TITLE = "%s's week"; L.DC_J_LEVELS = "Levels: %d → %d"; L.DC_J_QUESTS = "Quests: %d"; L.DC_J_DUNGEONS = "Dungeons: %s"; L.DC_J_ITEMS = "Items: %s"; L.DC_J_DEATHS = "Deaths: %d"

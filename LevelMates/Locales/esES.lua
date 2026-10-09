@@ -94,3 +94,7 @@ L.OPT_WISH = "Avisos de deseos"; L.OPT_WISH_TT = "Una línea en el chat cuando t
 L.TAB_WISHES = "Deseos"; L.COL_WHO = "Quién"; L.COL_ITEM = "Objeto"; L.COL_SINCE = "Desde"
 L.WISH_EMPTY = "Nadie tiene deseos todavía. Añade los tuyos con \"Añadir deseo\"."; L.WISH_UNKNOWN = "Objeto #%d"; L.WISH_REMOVE = "Quitar de la lista"
 L.BTN_WISH_ADD = "Añadir deseo"; L.WISH_DIALOG_TITLE = "Añadir deseo"; L.WISH_HINT = "Mayús+clic en un objeto (bolsas, chat, botín...)"; L.WISH_ADD = "Añadir"
+L.BTN_DISCORD = "Discord"; L.DC_TITLE = "Copiar para Discord"; L.DC_HINT = "Ctrl+C para copiarlo y pégalo en Discord con Ctrl+V."
+L.DC_LEVEL = "nivel %d"; L.DC_LFG = "%s busca grupo para %s"; L.DC_ROLES = "va de %s"; L.DC_UNTIL = "hasta el %s"
+L.DC_PERSONAL = "Metas personales"; L.DC_NOTHING = "Nada que mostrar ahora mismo."; L.DC_MORE = "…y %d más"
+L.DC_J_TITLE = "La semana de %s"; L.DC_J_LEVELS = "Niveles: %d → %d"; L.DC_J_QUESTS = "Misiones: %d"; L.DC_J_DUNGEONS = "Mazmorras: %s"; L.DC_J_ITEMS = "Objetos: %s"; L.DC_J_DEATHS = "Muertes: %d"
