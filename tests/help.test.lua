@@ -56,6 +56,20 @@ StaticPopupDialogs.LEVELMATES_HELP.EditBoxOnEnterPressed(STUB.lastDialog.EditBox
 kind, f = C.Decode(STUB.sent[#STUB.sent].msg)
 assert(kind == "help" and f.t == "Troll" and not STUB.lastDialog:IsShown(), "popup Enter asks and closes")
 H.Cancel()
+-- the prompt tells the user that asking shares their position
+ns.Fire("LM_HELP_BUTTON")
+assert(StaticPopupDialogs.LEVELMATES_HELP.text:find(ns.L.HELP_POS_WARNING, 1, true), "prompt warns that position is shared")
+-- only the asker can clear a request
+STUB.Receive("LVLM", C.Encode("help", { t = "Elite W", z = 1412, x = 1, y = 1, id = "own01" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM", C.Encode("helpok", { id = "own01" }), "GUILD", "Ana-Testrealm")
+assert(H.active.own01, "someone else cannot clear Mario's request")
+STUB.Receive("LVLM", C.Encode("helpok", { id = "own01" }), "GUILD", "Mario-Testrealm")
+assert(H.active.own01 == nil, "the asker can")
+-- no position available (instance, cinematic): say so, not the generic prompt
+local realPos = C_Map.GetPlayerMapPosition
+C_Map.GetPlayerMapPosition = function() return nil end
+assert(H.Ask("Elite V") == false and STUB.printed[#STUB.printed]:find(ns.L.HELP_NO_POS, 1, true), "position unavailable message: " .. tostring(STUB.printed[#STUB.printed]))
+C_Map.GetPlayerMapPosition = realPos
 -- sharing off: asking does nothing but tell the user why
 ns.db.settings.share = false; C.Stop()
 local sentBefore = #STUB.sent

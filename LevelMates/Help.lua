@@ -30,7 +30,7 @@ function H.Ask(text)
 	if text == "" then return false end
 	if not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	local mapId, x, y = myPosition()
-	if not mapId or not x then ns.Say(L.HELP_PROMPT); return false end
+	if not mapId or not x then ns.Say(L.HELP_NO_POS); return false end
 	local id = newId()
 	if C.Send("help", { t = text, z = mapId, x = x, y = y, id = id }, "now") then
 		H.mine = { id = id, text = text, at = GetTime() }
@@ -72,7 +72,8 @@ C.OnMessage("help", function(f, name)
 	ns.Fire("LM_HELP_CHANGED")
 end)
 C.OnMessage("helpok", function(f, name)
-	if H.active[f.id] then H.active[f.id] = nil; ns.Say(L.HELP_DONE, name); ns.Fire("LM_HELP_CHANGED") end
+	local h = H.active[f.id]
+	if h and h.name == name then H.active[f.id] = nil; ns.Say(L.HELP_DONE, name); ns.Fire("LM_HELP_CHANGED") end   -- only the asker clears it
 end)
 
 -- "On my way": whispers the asker (spec §7). Runs only from the board button's click handler.
@@ -88,7 +89,7 @@ ns.Slash("cancel", H.Cancel); ns.Slash("cancelar", H.Cancel)
 ns.On("LM_HELP_BUTTON", function()
 	if H.mine then H.Cancel(); return end
 	StaticPopupDialogs["LEVELMATES_HELP"] = StaticPopupDialogs["LEVELMATES_HELP"] or {
-		text = L.HELP_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 60, timeout = 0, whileDead = true, hideOnEscape = true,
+		text = L.HELP_PROMPT .. "\n\n" .. L.HELP_POS_WARNING, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 60, timeout = 0, whileDead = true, hideOnEscape = true,
 		-- Mainline dialogs carry the edit box as dialog.EditBox / dialog:GetEditBox() (GameDialog.xml); there is no `editBox`.
 		OnAccept = function(self) local eb = self.GetEditBox and self:GetEditBox() or self.EditBox; H.Ask(eb and eb:GetText()) end,
 		EditBoxOnEnterPressed = function(self) local dialog = self:GetParent(); H.Ask(self:GetText()); dialog:Hide() end,

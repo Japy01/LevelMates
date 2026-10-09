@@ -14,3 +14,5 @@ First version.
   messages travel; nothing from combat.
 - English and Spanish.
 - `/lm sim` shows fake guildmates, locally, to try the addon alone.
+- Inside instances only help requests are sent.
+- The help prompt says that asking for help shares your position; only the asker can clear a request.
