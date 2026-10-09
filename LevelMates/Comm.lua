@@ -201,6 +201,9 @@ local function onAddonMessage(prefix, text, channel, sender)
 	for _, fn in ipairs(handlers[kind] or {}) do fn(fields, name, sender) end
 end
 
+-- Feed a message into the receive path as if it had arrived (used by /lm sim). Sends nothing.
+function C.Inject(text, sender) onAddonMessage(C.PREFIX, text, "GUILD", sender) end
+
 local frame
 function C.Start()
 	local myName, myRealm = UnitName("player")
