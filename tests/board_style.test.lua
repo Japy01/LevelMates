@@ -10,8 +10,8 @@ hb("Mario", 30, 1421, 1, 1); hb("Ana", 12, 1412); hb("Luis", 22, 1421, 1, 0)
 B.Toggle()
 
 local function same(a, b) return a and b and a[1] == b[1] and a[2] == b[2] and a[3] == b[3] end
-assert(B.frame:GetHeight() == B.CHROME + (6 + 3) * 16, "compact with few mates: " .. tostring(B.frame:GetHeight()))
-assert(B.frame.TitleText.text == L.BOARD_TITLE .. " (3)", "title counts mates: " .. tostring(B.frame.TitleText.text))
+assert(B.frame:GetHeight() == B.CHROME + (B.MIN_ROWS + 3) * B.ROW_H, "compact with few mates: " .. tostring(B.frame:GetHeight()))
+assert(B.frame.TitleText.text == L.BOARD_TITLE .. " - Test Guild (3)", "title counts mates: " .. tostring(B.frame.TitleText.text))
 assert(B.headText[2].text == L.COL_LEVEL .. " v" and B.headText[3].text == L.COL_ZONE, "level header shows high-to-low: " .. tostring(B.headText[2].text))
 B.headers.level.scripts.OnClick(B.headers.level)
 assert(B.headText[2].text == L.COL_LEVEL .. " ^", "ascending marker: " .. tostring(B.headText[2].text))
@@ -28,10 +28,10 @@ assert(B.rows[1].bg and B.rows[2].bg, "rows have a background texture for stripi
 -- grows with the list, capped at the 20 rows
 for i = 1, 9 do hb("Extra" .. i, 10 + i, 1421) end
 B.Refresh()
-assert(B.frame:GetHeight() == B.CHROME + (12 + 3) * 16, "twelve mates: " .. tostring(B.frame:GetHeight()))
+assert(B.frame:GetHeight() == B.CHROME + (12 + 3) * B.ROW_H, "twelve mates: " .. tostring(B.frame:GetHeight()))
 for i = 10, 30 do hb("Extra" .. i, 10, 1421) end
 B.Refresh()
-assert(B.frame:GetHeight() == B.CHROME + (20 + 3) * 16, "capped at 20 rows: " .. tostring(B.frame:GetHeight()))
+assert(B.frame:GetHeight() == B.CHROME + (B.ROWS + 3) * B.ROW_H, "capped at 20 rows: " .. tostring(B.frame:GetHeight()))
 -- every column fits inside the window (the XP/h column used to hang over the right edge)
 do
 	local total = B.MARGIN
@@ -43,3 +43,11 @@ end
 -- bottom controls stay inside the inset's bottom margin instead of overlapping its border
 assert(B.helpButton:GetHeight() + 4 <= B.BOTTOM, "help button fits under the inset: " .. B.helpButton:GetHeight() .. " vs " .. B.BOTTOM)
 assert(B.nearCheck:GetHeight() + 3 <= B.BOTTOM, "filter box fits under the inset")
+
+-- the guild name follows the player: no guild, a new guild
+STUB.player.guild = nil; B.Refresh()
+assert(B.frame.TitleText.text:find("^" .. L.BOARD_TITLE .. " %(") , "no guild: just the addon name: " .. tostring(B.frame.TitleText.text))
+STUB.player.guild = "Los Hermanos"; STUB.Fire("PLAYER_GUILD_UPDATE", "player")
+assert(B.frame.TitleText.text:find(" - Los Hermanos (", 1, true), "title follows a guild change: " .. tostring(B.frame.TitleText.text))
+-- bigger than before: readable rows and a wide window
+assert(B.ROW_H >= 20 and B.WIDTH >= 560 and B.MIN_ROWS >= 8, "roomier window")

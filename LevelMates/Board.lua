@@ -3,15 +3,16 @@ local _, ns = ...
 local B = {}
 ns.Board = B
 local L, R = ns.L, ns.Roster
-local ROWS, ROW_H, HELP_ROWS, MIN_ROWS = 20, 16, 3, 6
+local ROWS, ROW_H, HELP_ROWS, MIN_ROWS = 20, 20, 3, 8
+B.ROWS, B.ROW_H, B.MIN_ROWS = ROWS, ROW_H, MIN_ROWS
 local unpack = unpack or table.unpack   -- the client has unpack; table.unpack covers other Lua versions
 
 -- Layout: one place for the widths so the columns always fit inside the window.
-B.COLS = { 120, 40, 140, 50, 50 }   -- name, level, zone, group, xp/h
-B.GAP, B.MARGIN, B.WIDTH = 4, 12, 440
+B.COLS = { 150, 50, 180, 70, 70 }   -- name, level, zone, group, xp/h
+B.GAP, B.MARGIN, B.WIDTH = 4, 12, 560
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
-B.CHROME = B.TOP + 16 + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
+B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
 local ROW_W = B.COLS[1] + B.COLS[2] + B.COLS[3] + B.COLS[4] + B.COLS[5] + 4 * B.GAP
 
 -- Colour coding: group state and how close a mate is to my level.
@@ -29,7 +30,11 @@ local function Build()
 	local f
 	if ButtonFrameTemplate_HidePortrait then
 		local ok, frame = pcall(CreateFrame, "Frame", "LevelMatesBoard", UIParent, "ButtonFrameTemplate")
-		if ok and frame then f = frame; ButtonFrameTemplate_HidePortrait(f) end
+		if ok and frame then
+			f = frame
+			ButtonFrameTemplate_HidePortrait(f)
+			if ButtonFrameTemplate_HideAttic then ButtonFrameTemplate_HideAttic(f) end   -- the template reserves an empty 60px band above the inset
+		end
 	end
 	f = f or CreateFrame("Frame", "LevelMatesBoard", UIParent, "BasicFrameTemplateWithInset")
 	B.frame = f
@@ -42,21 +47,21 @@ local function Build()
 		if type(y2) == "number" and y2 > 0 then insetBottom = y2 end
 	end
 	B.TOP, B.BOTTOM = insetTop + 60, insetBottom
-	B.CHROME = B.TOP + 16 + B.BOTTOM + 10
+	B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10
 	f:SetSize(B.WIDTH, B.CHROME + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving)
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); local p, _, rp, x, y = self:GetPoint(); ns.char.board = { p, rp, x, y } end)
 	local saved = ns.char.board
 	if saved then f:SetPoint(saved[1], UIParent, saved[2], saved[3], saved[4]) else f:SetPoint("CENTER") end
-	B.SetTitle(L.BOARD_TITLE)
+	B.SetTitle(B.TitleString())
 	tinsert(UISpecialFrames, "LevelMatesBoard")
 	f:Hide()
 
 	-- Heading, subtitle, divider and the name search, in the style of the dungeon journal.
 	B.heading = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	B.heading:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 10)); B.heading:SetText(L.BOARD_HEADING); B.heading:SetJustifyH("LEFT")
-	B.subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	B.subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 34)); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
 	local divider = f:CreateTexture(nil, "ARTWORK")
 	divider:SetColorTexture(1, 0.82, 0, 0.35); divider:SetHeight(1)
@@ -67,8 +72,9 @@ local function Build()
 	search:SetScript("OnTextChanged", function(self) B.search = self:GetText() or ""; B.Refresh() end)
 	B.searchBox = search
 
-	local function Col(parent, w, justify) local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); fs:SetWidth(w); fs:SetJustifyH(justify or "LEFT"); fs:SetWordWrap(false); return fs end
-	local head = { Col(f, B.COLS[1]), Col(f, B.COLS[2], "CENTER"), Col(f, B.COLS[3]), Col(f, B.COLS[4], "CENTER"), Col(f, B.COLS[5], "RIGHT") }
+	local function Col(parent, w, justify, font) local fs = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight"); fs:SetWidth(w); fs:SetJustifyH(justify or "LEFT"); fs:SetWordWrap(false); return fs end
+	local HN = "GameFontNormal"
+	local head = { Col(f, B.COLS[1], nil, HN), Col(f, B.COLS[2], "CENTER", HN), Col(f, B.COLS[3], nil, HN), Col(f, B.COLS[4], "CENTER", HN), Col(f, B.COLS[5], "RIGHT", HN) }
 	head[1]:SetPoint("TOPLEFT", B.MARGIN, -B.TOP)
 	for i = 2, 5 do head[i]:SetPoint("LEFT", head[i - 1], "RIGHT", B.GAP, 0) end
 	head[1]:SetText(L.COL_NAME); head[2]:SetText(L.COL_LEVEL); head[3]:SetText(L.COL_ZONE); head[4]:SetText(L.COL_GROUP); head[5]:SetText(L.COL_XPH)
@@ -122,7 +128,7 @@ local function Build()
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
 	for i = 1, HELP_ROWS do
-		local text = Col(f, 300)
+		local text = Col(f, B.WIDTH - 110)
 		text:SetPoint("BOTTOMLEFT", 12, B.BOTTOM + 8 + (i - 1) * ROW_H)
 		local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 		btn:SetSize(60, ROW_H); btn:SetPoint("LEFT", text, "RIGHT", 4, 0); btn:SetText(L.BTN_COMING)
@@ -150,6 +156,13 @@ local function RefreshHelp()
 end
 
 local NEAR_RANGE = 5
+-- "LevelMates - <guild> (3)": the addon, the guild it is showing, and how many mates are online.
+function B.TitleString()
+	local guild = GetGuildInfo and GetGuildInfo("player")
+	local base = (guild and guild ~= "") and (L.BOARD_TITLE .. " - " .. guild) or L.BOARD_TITLE
+	return string.format("%s (%d)", base, #R.List())
+end
+
 function B.SetTitle(text)
 	local fs = B.frame.TitleContainer and B.frame.TitleContainer.TitleText or B.frame.TitleText
 	if fs then fs:SetText(text) end
@@ -199,7 +212,7 @@ function B.Refresh()
 	B.headText[2]:SetText(L.COL_LEVEL .. (sort.mode == "level" and (sort.desc and " v" or " ^") or ""))
 	B.headText[3]:SetText(L.COL_ZONE .. (sort.mode == "zone" and (sort.desc and " v" or " ^") or ""))
 	B.frame:SetHeight(B.CHROME + (math.max(MIN_ROWS, math.min(ROWS, #list)) + HELP_ROWS) * ROW_H)
-	B.SetTitle(string.format("%s (%d)", L.BOARD_TITLE, #R.List()))
+	B.SetTitle(B.TitleString())
 	local mine = UnitLevel("player")
 	for i = 1, ROWS do
 		local r, name = B.rows[i], list[i]
@@ -261,3 +274,8 @@ end)
 -- Called by Bindings.xml (the assignable key).
 function LevelMates_ToggleBoard() B.Toggle() end
 BINDING_NAME_LEVELMATES_TOGGLE = L.BINDING_TOGGLE
+
+-- The title carries the guild name: refresh when the player's guild changes.
+local guildFrame = CreateFrame("Frame")
+guildFrame:RegisterEvent("PLAYER_GUILD_UPDATE")
+guildFrame:SetScript("OnEvent", function() B.Refresh() end)
