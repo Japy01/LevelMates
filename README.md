@@ -26,7 +26,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Not in v1 (planned)
 
-Level/zone sorting and a level filter on the board, a keybinding, "still needs" quest notices, a named map marker for help requests (v1 uses your map's user waypoint, which replaces your own pin), ending a help request when the asker groups with a helper.
+Level/zone sorting and a level filter on the board, a keybinding, "still needs" quest notices, a named map marker for help requests (v1 uses your map's user waypoint, which replaces your own pin), and ending a help request when the asker groups with a helper.
 
 License: MIT.
 
@@ -60,6 +60,6 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Pendiente para después de v1
 
-Ordenar el tablón por nivel/zona y filtrar por nivel, atajo de teclado, aviso "le falta" de misiones, marcador con nombre en el mapa para las peticiones de ayuda (v1 usa el punto de ruta del jugador, que sustituye al tuyo), cerrar la petición cuando el que pide entra en grupo con quien dijo "Voy".
+Ordenar el tablón por nivel/zona y filtrar por nivel, atajo de teclado, aviso "le falta" de misiones, marcador con nombre en el mapa para las peticiones de ayuda (v1 usa el punto de ruta del jugador, que sustituye al tuyo), y cerrar la petición cuando el que pide entra en grupo con quien dijo "Voy".
 
 Licencia: MIT.
