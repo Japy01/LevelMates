@@ -116,7 +116,19 @@ local function Build()
 	near:SetScript("OnClick", function(self) ns.char.boardNear = self:GetChecked() and true or false; B.Refresh() end)
 	local nearLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	nearLabel:SetPoint("LEFT", near, "RIGHT", 2, 0); nearLabel:SetText(L.FILTER_NEAR)
+	B.nearLabel = nearLabel
 	B.nearCheck = near
+
+	-- "Looking for a partner" (guildmates tab), in the header under the search box.
+	local pal = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
+	pal:SetSize(22, 22); pal:SetPoint("TOPRIGHT", -(B.MARGIN + 130), -(insetTop + 32))
+	pal:SetScript("OnClick", function(self)
+		if not ns.Partner.SetOn(self:GetChecked() and true or false) then self:SetChecked(ns.Partner.IsOn()) end
+		B.Refresh()
+	end)
+	local palLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	palLabel:SetPoint("LEFT", pal, "RIGHT", 2, 0); palLabel:SetText(L.FILTER_PAL)
+	B.palCheck, B.palLabel = pal, palLabel
 
 	B.rows = {}
 	for i = 1, ROWS do
@@ -136,10 +148,14 @@ local function Build()
 			if not name then return end
 			if mouse == "RightButton" then B.OpenMenu(name) else ns.Fire("LM_ROW_CLICK", name) end
 		end)
-		btn:SetScript("OnEnter", function(self)   -- Dungeons tab: the whole note on hover
-			if B.tab ~= "lfg" or not self.adId or not GameTooltip then return end
-			local a = ns.LFG.ads[self.adId]
-			if a and a.n then GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(a.n, 1, 1, 1, true); GameTooltip:Show() end
+		btn:SetScript("OnEnter", function(self)
+			if not GameTooltip then return end
+			if B.tab == "lfg" and self.adId then   -- Dungeons tab: the whole note
+				local a = ns.LFG.ads[self.adId]
+				if a and a.n then GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(a.n, 1, 1, 1, true); GameTooltip:Show() end
+			elseif B.tab == "mates" and self.mate and ns.Partner and ns.Partner.Matches(self.mate) then   -- a partner match
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(L.PAL_TOOLTIP, 0.4, 1, 0.4); GameTooltip:Show()
+			end
 		end)
 		btn:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 		B.rows[i] = r
@@ -240,6 +256,21 @@ local function Visible()
 		if A.level ~= B2.level then if sort.desc then return A.level > B2.level end; return A.level < B2.level end
 		return a < b
 	end)
+	-- Partner matches go to the top: same zone first, then level high to low, then name; the rest keeps its order.
+	if ns.Partner and ns.Partner.IsOn() then
+		local myMap = C_Map.GetBestMapForUnit("player")
+		local top, rest = {}, {}
+		for _, name in ipairs(out) do if ns.Partner.Matches(name) then top[#top + 1] = name else rest[#rest + 1] = name end end
+		table.sort(top, function(a, b)
+			local A, B2 = R.mates[a], R.mates[b]
+			local za, zb = A.mapId == myMap, B2.mapId == myMap
+			if za ~= zb then return za end
+			if A.level ~= B2.level then return A.level > B2.level end
+			return a < b
+		end)
+		for _, name in ipairs(rest) do top[#top + 1] = name end
+		out = top
+	end
 	return out
 end
 
@@ -272,6 +303,12 @@ end
 
 local function ClearRow(r) r.icon:Hide(); r.name:SetText(""); r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText(""); r.button:Hide() end
 
+B.PAL_TINT = { 0.2, 0.8, 0.3, 0.15 }
+-- Row background: the partner tint for a match, otherwise the zebra stripe.
+local function RowBg(r, i, tint)
+	if tint then r.bg:SetColorTexture(unpack(B.PAL_TINT)) else r.bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0) end
+end
+
 local function FillMates(list)
 	local mine = UnitLevel("player")
 	for i = 1, ROWS do
@@ -290,6 +327,7 @@ local function FillMates(list)
 			r.group:SetTextColor(unpack(B.GROUP_COLORS[state]))
 			r.xph:SetText(m.xph and m.xph > 0 and tostring(m.xph) or "")
 			r.button:Show()
+			RowBg(r, i, ns.Partner and ns.Partner.Matches(name))
 		else
 			r.button.mate = nil
 			ClearRow(r)
@@ -316,6 +354,7 @@ local function FillLfg(list)
 			if #n > 12 then n = ns.CutUtf8(n, 10) .. "..." end   -- the column is narrow; the tooltip has the whole note
 			r.xph:SetText(n)
 			r.button:Show()
+			RowBg(r, i, false)
 		else
 			r.button.mate = nil
 			ClearRow(r)
@@ -328,6 +367,8 @@ local function RefreshTabs()
 	local lfg = B.tab == "lfg"
 	B.tabs.mates:SetEnabled(lfg); B.tabs.lfg:SetEnabled(not lfg)
 	B.helpButton:SetShown(not lfg); B.nearCheck:SetShown(not lfg)
+	B.nearLabel:SetShown(not lfg); B.palCheck:SetShown(not lfg); B.palLabel:SetShown(not lfg)
+	B.palCheck:SetChecked(ns.Partner and ns.Partner.IsOn() or false)
 	B.lfgButton:SetShown(lfg)
 	B.lfgButton:SetText(ns.LFG.mine and L.BTN_LFG_CANCEL or L.BTN_LFG)
 end
@@ -409,3 +450,5 @@ guildFrame:SetScript("OnEvent", function() B.Refresh() end)
 ns.On("LM_LFG_CHANGED", B.Refresh)
 ns.Slash("lfg", function() B.ShowTab("lfg") end)
 ns.Slash("grupo", function() B.ShowTab("lfg") end)
+
+ns.On("LM_PARTNER_CHANGED", B.Refresh)

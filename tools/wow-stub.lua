@@ -80,7 +80,7 @@ function Region:RegisterForDrag() end
 function Region:StartMoving() end
 function Region:StopMovingOrSizing() end
 function Region:SetBackdrop() end
-function Region:SetColorTexture() end
+function Region:SetColorTexture(r, g, b, a) self.colorTexture = { r, g, b, a } end
 function Region:SetTexture(t) self.atlas = nil end
 function Region:SetAtlas(a) self.atlas = a; self.texcoord = nil end
 function Region:SetChecked(v) self.checked = v end
