@@ -39,6 +39,7 @@ end
 
 function J.Duration(sec)
 	if sec < 60 then return L.J_DUR_LT end
+	if sec >= 86400 then return string.format(L.J_DUR_DH, math.floor(sec / 86400), math.floor(sec % 86400 / 3600)) end
 	local h, m = math.floor(sec / 3600), math.floor(sec % 3600 / 60)
 	if h > 0 then return string.format(L.J_DUR_HM, h, m) end
 	return string.format(L.J_DUR_M, m)
@@ -46,7 +47,7 @@ end
 
 function J.Text(e)
 	if e.k == "level" then
-		return string.format(L.J_LEVEL, e.level) .. (e.took and string.format(L.J_TOOK, J.Duration(e.took), e.level - 1) or "")
+		return string.format(L.J_LEVEL, e.level) .. ((e.took and e.from) and string.format(L.J_TOOK, J.Duration(e.took), e.from) or "")
 	elseif e.k == "quest" then return string.format(L.J_QUEST, e.name)
 	elseif e.k == "dungeon" then
 		return string.format(L.J_DUNGEON, e.name) .. ((e.mates and #e.mates > 0) and string.format(L.J_WITH, table.concat(e.mates, ", ")) or "")
@@ -88,8 +89,10 @@ local ev = CreateFrame("Frame")
 ev:RegisterEvent("PLAYER_LEVEL_UP"); ev:RegisterEvent("QUEST_TURNED_IN"); ev:RegisterEvent("PLAYER_DEAD")
 ev:SetScript("OnEvent", function(_, event, a1)
 	if event == "PLAYER_LEVEL_UP" then
+		-- time per level only between consecutive recorded levels (levels gained with the addon off break the chain)
 		local prev = lastLevelEntry()
-		J.Add("level", { level = a1, took = prev and (time() - prev.t) or nil })
+		local consecutive = prev and prev.level == a1 - 1
+		J.Add("level", { level = a1, from = consecutive and prev.level or nil, took = consecutive and (time() - prev.t) or nil })
 	elseif event == "QUEST_TURNED_IN" then
 		J.Add("quest", { id = a1, name = C_QuestLog.GetTitleForQuestID(a1) or ("#" .. tostring(a1)) })
 	elseif event == "PLAYER_DEAD" then
@@ -99,8 +102,12 @@ end)
 
 ns.On("LM_LOADED", function() entries() end)
 
--- Recorders: groups with guildmates (once per person per session).
-local grouped = {}
+-- Recorders: groups with guildmates (once per person per session; a /reload is the same session, so the set is saved
+-- and only wiped at a real login).
+local function grouped()
+	ns.char.journalGrouped = ns.char.journalGrouped or {}
+	return ns.char.journalGrouped
+end
 local function inMyGroup(name) return UnitInParty(name) or UnitInRaid(name) end
 local function guildmatesInGroup()
 	local out = {}
@@ -140,20 +147,34 @@ end
 -- Professions: the twelve profession skill IDs (locale-independent).
 local PROFESSIONS = { [171] = true, [164] = true, [333] = true, [202] = true, [182] = true, [165] = true,
 	[186] = true, [393] = true, [197] = true, [129] = true, [185] = true, [356] = true }
-local function readProfessions()
+-- The skills window can collapse headers, which removes their lines from the enumeration: look professions up by ID
+-- when the client can; otherwise treat lines hidden under a collapsed header as unknown (kept), never as unlearned.
+local function readProfessions(before)
 	local n = C_SkillInfo and C_SkillInfo.GetNumSkillLines() or 0
 	if n == 0 then return nil end   -- not loaded yet
 	local out = {}
+	if C_SkillInfo.GetSkillLineInfoByID then
+		for id in pairs(PROFESSIONS) do
+			local s = C_SkillInfo.GetSkillLineInfoByID(id)
+			if s and s.name and s.name ~= "" and (s.rank or 0) > 0 then out[id] = { name = s.name, rank = s.rank } end
+		end
+		return out
+	end
+	local collapsed = false
 	for i = 1, n do
 		local s = C_SkillInfo.GetSkillLineInfo(i)
+		if s and s.isHeader and s.isCollapsed then collapsed = true end
 		if s and not s.isHeader and PROFESSIONS[s.skillID] then out[s.skillID] = { name = s.name, rank = s.rank } end
+	end
+	if collapsed and before then
+		for id, old in pairs(before) do if not out[id] then out[id] = old end end
 	end
 	return out
 end
 local function checkSkills()
-	local now = readProfessions()
-	if not now then return end
 	local before = ns.char.skills
+	local now = readProfessions(before)
+	if not now then return end
 	ns.char.skills = now
 	if not before then return end   -- first readable sight: snapshot only
 	for id, s in pairs(now) do
@@ -171,14 +192,17 @@ ev2:RegisterEvent("GROUP_ROSTER_UPDATE"); ev2:RegisterEvent("ZONE_CHANGED_NEW_AR
 ev2:RegisterEvent("CHAT_MSG_LOOT"); ev2:RegisterEvent("SKILL_LINES_CHANGED")
 ev2:SetScript("OnEvent", function(_, event, ...)
 	if event == "GROUP_ROSTER_UPDATE" then
+		local seen = grouped()
 		for _, name in ipairs(guildmatesInGroup()) do
-			if not grouped[name] then grouped[name] = true; J.Add("group", { name = name }) end
+			if not seen[name] then seen[name] = true; J.Add("group", { name = name }) end
 		end
 	elseif event == "ZONE_CHANGED_NEW_AREA" then
 		checkInstance()
 	elseif event == "CHAT_MSG_LOOT" then
 		local text, sender = ...
 		local guid = select(12, ...)
+		-- during encounters the client hands out protected values: touching them errors, so skip the line
+		if issecretvalue and (issecretvalue(text) or issecretvalue(sender) or issecretvalue(guid)) then return end
 		if type(text) ~= "string" or not isMine(guid, sender) then return end
 		local link = text:match("|c%x+|Hitem:.-|h.-|h|r")
 		local q = link and quality(link)
@@ -187,7 +211,10 @@ ev2:SetScript("OnEvent", function(_, event, ...)
 		checkSkills()
 	end
 end)
-ns.On("LM_WORLD", function() checkInstance(); checkSkills() end)
+ns.On("LM_WORLD", function(isInitial)
+	if isInitial then wipe(grouped()) end   -- a new session: groups can be recorded again
+	checkInstance(); checkSkills()
+end)
 
 -- "Clear journal" (board button): confirm first.
 ns.On("LM_JOURNAL_CLEAR", function()
