@@ -4,7 +4,7 @@ A World of Warcraft: Forever guild addon. See which guildmates are online and wh
 
 ## What it does
 
-- **Board** (`/lm`): guildmates who also run LevelMates, with level, zone and group state. Click the Lv or Zone header to sort; bind a key under Key Bindings > LevelMates; tick "Near my level" to hide anyone more than 5 levels away. Right-click a row to invite, whisper or set a waypoint.
+- **Board** (`/lm`): guildmates who also run LevelMates, with level, zone and group state. Click the Lv or Zone header to sort; bind a key under Key Bindings > LevelMates, or use the minimap button (drag to move, right-click for options); tick "Near my level" to hide anyone more than 5 levels away. Right-click a row to invite, whisper or set a waypoint.
 - **Quest matching**: when you accept a quest, a line tells you which guildmate on your map has it too. With Questie installed it also says who could pick it up.
 - **Help requests**: "Ask for help" tells guildmates what you need. They get a notice and a map waypoint, and an "On my way" button that whispers you.
 

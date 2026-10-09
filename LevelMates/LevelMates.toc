@@ -18,6 +18,7 @@ Comm.lua
 Roster.lua
 Settings.lua
 Board.lua
+MinimapButton.lua
 Questie.lua
 Match.lua
 Help.lua

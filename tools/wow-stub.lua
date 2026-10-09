@@ -42,7 +42,11 @@ end
 
 local Region = {}
 Region.__index = Region
-function Region:SetPoint() end
+function Region:SetPoint(...) self.point = { ... } end
+function Region:ClearAllPoints() self.point = nil end
+function Region:GetEffectiveScale() return 1 end
+function Region:GetCenter() local c = STUB.minimapCenter or { 100, 100 }; return c[1], c[2] end
+function Region:GetFrameLevel() return 1 end
 function Region:SetSize(w, h) self.w, self.h = w, h end
 function Region:SetWidth(w) self.w = w end
 function Region:SetHeight(h) self.h = h end
@@ -225,3 +229,12 @@ end
 OKAY = "Okay"; CANCEL = "Cancel"
 function PlaySound() end
 function SendChatMessage(msg, chatType, lang, target) STUB.lastChat = { msg = msg, chatType = chatType or "SAY", lang = lang, target = target } end
+
+-- Minimap button support
+Minimap = CreateFrame("Frame", "Minimap"); Minimap:SetSize(140, 140)
+STUB.cursor = { 0, 0 }
+function GetCursorPosition() return STUB.cursor[1], STUB.cursor[2] end
+GameTooltip = { lines = {}, hidden = true,
+	SetOwner = function(self) self.lines = {}; self.hidden = false end,
+	AddLine = function(self, t) self.lines[#self.lines + 1] = t end,
+	Show = function(self) self.hidden = false end, Hide = function(self) self.hidden = true end }

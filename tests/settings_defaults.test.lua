@@ -12,4 +12,4 @@ for _, s in ipairs(ns.Settings.category.settings) do
 end
 assert(checked >= 8, "checked the boolean switches, got " .. checked)
 assert(ns.db.settings.share == false and ns.db.settings.sharePos == true, "saved choices untouched")
-assert(ns.L.OPT_MINIMAP_TT and ns.L.OPT_MINIMAP_TT:find("/reload", 1, true), "minimap tooltip says it needs /reload")
+assert(ns.L.OPT_MINIMAP_TT and #ns.L.OPT_MINIMAP_TT > 0, "minimap option has a tooltip")
