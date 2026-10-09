@@ -49,7 +49,41 @@ Un jugador tiene como mucho un anuncio. Uno nuevo suyo con otro `id` sustituye a
 
 ## 7. Lista de mazmorras
 
-Una tabla dentro del addon: id, clave de nombre (textos en inglés y español), nivel mínimo y máximo. La lista inicial sale de lo que se ve en el diario de mazmorras de Forever (captura del usuario): Salón de los Feudales 13-20, Sima Ígnea 13-18, Ruinas de Lordaeron 15-22, Minas de la Muerte 17-26, Cuevas de los Lamentos 15-24, Castillo de Colmillo Oscuro 20-30. Las demás se añaden cuando el usuario las confirme en el diario. No se lee la lista del juego en ejecución porque no hemos podido verificar esa API en Forever.
+Una tabla dentro del addon: id, clave de nombre (textos en inglés y español), nivel mínimo y máximo. No se lee la lista del juego en ejecución porque no hemos podido verificar esa API en Forever.
+
+**Fuente de los datos.** Los rangos de las seis mazmorras que se ven en el diario del usuario (captura) mandan sobre cualquier web: Salón de los Feudales 13-20, Sima Ígnea 13-18, Ruinas de Lordaeron 15-22, Minas de la Muerte 17-26, Cuevas de los Lamentos 15-24, Castillo de Colmillo Oscuro 20-30. El resto sale de [warcrafttavern.com](https://www.warcrafttavern.com/forever/guides/dungeons/), que coincide con el diario en cinco de esas seis (difiere solo en Sima Ígnea, donde la web dice 13-20 y el diario 13-18). Otras webs dan rangos distintos para varias mazmorras, y Forever está en beta, así que **todo rango que no esté en la captura es provisional hasta compararlo con el diario en el juego**.
+
+Lista provisional (35 entradas; las alas de Scarlet Monastery, Stratholme y Dire Maul cuentan por separado). Nombres en inglés tal como los da la fuente; los nombres en español se toman del diario del juego y hasta entonces el addon muestra el inglés:
+
+| Mazmorra | Niveles |
+|---|---|
+| Hall of Thanes (diario: Salón de los Feudales) | 13-20 |
+| Ragefire Chasm (diario: Sima Ígnea) | 13-18 (la web dice 13-20) |
+| Ruins of Lordaeron (diario: Ruinas de Lordaeron) | 15-22 |
+| Wailing Caverns (diario: Cuevas de los Lamentos) | 15-24 |
+| The Deadmines (diario: Minas de la Muerte) | 17-26 |
+| Shadowfang Keep (diario: Castillo de Colmillo Oscuro) | 20-30 |
+| Blackfathom Deeps, The Stockade | 24-32 |
+| Excavation Site: Wetlands | 26-33 |
+| City of Dalaran | 28-33 |
+| Gnomeregan, Razorfen Kraul | 29-38 |
+| Scarlet Monastery: Graveyard / Library / Armory / Cathedral | 30-38 / 33-41 / 36-44 / 38-46 |
+| The Drowned City | 35-40 |
+| Razorfen Downs | 37-46 |
+| Krol'dok Stronghold | 40-45 |
+| Zul'Farrak | 40-47 |
+| Uldaman | 41-51 |
+| Maraudon | 45-51 |
+| Alcaz Island Prison | 48-53 |
+| Temple of Atal'Hakkar | 50-55 |
+| Blackrock Depths | 52-60 |
+| Blackmaw Hold | 55-60 |
+| Lower Blackrock Spire / Upper Blackrock Spire | 57-60 / 60 |
+| Shaper's Terrace | 58-60 |
+| Dire Maul East / West / North | 58-60 / 60 / 60 |
+| Stratholme Living / Undead, Scholomance | 58-60 |
+
+El selector del cuadro "Buscar grupo" agrupa por tramo de nivel para no mostrar 35 líneas seguidas.
 
 ## 8. Pruebas
 
