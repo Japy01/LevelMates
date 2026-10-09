@@ -22,3 +22,4 @@ First version.
 - Board: journal-style frame, a heading with subtitle and a name search box. Board look: window height follows the list, title shows the count, the sorted header shows its direction, group and level are colour-coded, striped rows with hover highlight, and the filter checkbox is now visible.
 - A minimap button: left-click shows or hides the board, right-click opens the options, drag moves it. The "Minimap button" option shows or hides it right away.
 - Board rows show the class icon.
+- Dungeon groups: a "Dungeons" tab on the board and a "Find a group" dialog (dungeon, roles, short note). Ads last 20 minutes, one per player, only the author can withdraw it; a chat line shows when an ad fits your level (option in the settings). Starts with six dungeons. New message kinds `lfg` and `lfgx`; older versions ignore them.

@@ -29,12 +29,22 @@ local function simHelp()
 	inject("help", { t = "Fuerte Colmillo (elite)", z = map, x = 42.5, y = 61.0, id = "sim00001" }, "Mario")
 end
 
+local function simLfg()
+	if not R.mates.Mario then run() end   -- the ads need their posters in the roster
+	inject("lfg", { d = 2, r = "TD", n = "con agua y paciencia", id = "simlfg01", m = 20 }, "Mario")
+	inject("lfg", { d = 5, r = "H", id = "simlfg02", m = 20 }, "Luis")
+end
+
 local function off()
 	inject("helpok", { id = "sim00001" }, "Mario")
+	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
 	for _, who in ipairs(FAKES) do inject("bye", {}, who) end
 end
 
 ns.Slash("sim", function(rest)
 	rest = strlower(strtrim(rest or ""))
-	if rest == "off" then off() elseif rest == "help" or rest == "ayuda" then simHelp() else run() end
+	if rest == "off" then off()
+	elseif rest == "help" or rest == "ayuda" then simHelp()
+	elseif rest == "lfg" or rest == "grupo" then simLfg()
+	else run() end
 end)
