@@ -192,7 +192,7 @@ local function onAddonMessage(prefix, text, channel, sender)
 	if issecretvalue and (issecretvalue(text) or issecretvalue(sender)) then return end
 	if channel ~= "GUILD" and channel ~= "CHANNEL" then return end
 	if channel == "CHANNEL" and active ~= "channel" then return end
-	local name = Ambiguate(sender, "guild")
+	local name = ns.ShortName(sender)
 	if isMe(sender, name) then return end
 	if channel == "CHANNEL" and ns.Roster and ns.Roster.IsGuildmate and not ns.Roster.IsGuildmate(name) then C.stats.bad = C.stats.bad + 1; return end
 	local kind, fields = C.Decode(text)

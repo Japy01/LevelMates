@@ -18,12 +18,12 @@ local function buildGuildSet()
 	if clubId then
 		for _, id in ipairs(C_Club.GetClubMembers(clubId) or {}) do
 			local info = C_Club.GetMemberInfo(clubId, id)
-			if info and info.name then set[Ambiguate(info.name, "guild")] = true end
+			if info and info.name then set[ns.ShortName(info.name)] = true end
 		end
 	elseif GetNumGuildMembers and GetGuildRosterInfo then
 		for i = 1, GetNumGuildMembers() do
 			local full = GetGuildRosterInfo(i)
-			if full then set[Ambiguate(full, "guild")] = true end
+			if full then set[ns.ShortName(full)] = true end
 		end
 	end
 	return set

@@ -137,6 +137,7 @@ function STUB.ResolveChannelJoins()
 end
 -- Like the client: only my own realm (spelled without spaces) is stripped; other realms stay in the name.
 function Ambiguate(name, ctx)
+	if STUB.ambiguateKeepsRealm then return name end   -- observed on Forever: own realm is not stripped
 	local mine = (STUB.player.realm or ""):gsub("%s", "")
 	local n, r = name:match("^(.-)%-(.+)$")
 	if n and r == mine then return n end

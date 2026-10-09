@@ -23,6 +23,19 @@ function ns.PlayerKey()
 	return name .. "-" .. realm
 end
 
+-- "Mario-ClassicBetaPvP" -> "Mario" when the realm is mine. Ambiguate() left my own realm in place on Forever,
+-- so strip it here by comparing letters and digits only. One function for every place that compares names.
+function ns.ShortName(full)
+	local name = Ambiguate(full, "guild")
+	local base, realm = name:match("^(.-)%-(.+)$")
+	if base then
+		local function norm(s) return (tostring(s or ""):lower():gsub("[^%w]", "")) end
+		local mine = norm(GetRealmName())
+		if norm(realm) == mine or (GetNormalizedRealmName and norm(realm) == norm(GetNormalizedRealmName())) then return base end
+	end
+	return name
+end
+
 local subs = {}
 function ns.Slash(sub, fn) subs[sub] = fn end
 SLASH_LEVELMATES1 = "/lm"; SLASH_LEVELMATES2 = "/levelmates"
