@@ -46,6 +46,7 @@ Gifts.lua
 Professions.lua
 Builds.lua
 Macros.lua
+Ask.lua
 Feed.lua
 MateCard.lua
 GoalDialog.lua

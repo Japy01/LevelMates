@@ -183,3 +183,8 @@ L.OPT_TRAINER = "Recordatorio de entrenador"; L.OPT_TRAINER_TT = "Al subir de ni
 L.GROUPXP_TITLE = "XP del grupo"; L.OPT_GROUPXP = "Barras de XP del grupo"; L.OPT_GROUPXP_TT = "En grupo con hermanos, una ventanita muestra la XP de todos. Tu % de XP va a tu hermandad solo mientras vas en grupo con algún hermano."
 L.CARD_NO_QUESTS = "No comparte sus misiones, así que LevelMates no sabe cuáles de las tuyas le faltan."; L.CARD_MISSING = "Misiones tuyas que no tiene:"; L.CARD_SHARE_QUEST = "Compartir: %s"
 L.GROUPXP_PAUSED = "XP del grupo (en pausa en mazmorras)"
+
+-- Pregunta a tu clase
+L.ASK_ANSWER = "Responder"; L.ASK_ANSWER_TO = "Responder a %s (susurro)"; L.ASK_NOTICE = "%s pregunta a tu clase: %s"; L.ASK_WAIT = "Una pregunta por minuto."; L.ASK_FAILED = "La pregunta no se ha podido enviar ahora (¿estás en una mazmorra?)."
+L.ASK_PROMPT = "Tu pregunta para los hermanos de tu clase:"; L.BTN_ASK = "Preguntar a mi clase"; L.CLASS_SECTION_ASK = "Preguntas"; L.CLASS_EMPTY_ASK = "Ninguna pregunta en el último día."
+L.OPT_ASK = "Preguntas de mi clase"; L.OPT_ASK_TT = "Un aviso cuando un hermano de tu clase pregunta algo, con un enlace [Responder]."

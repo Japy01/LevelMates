@@ -352,6 +352,10 @@ local function Build()
 	classShare:SetSize(140, 20); classShare:SetPoint("BOTTOMLEFT", 12, 3); classShare:SetText(L.BTN_SHARE_MACRO)
 	classShare:SetScript("OnClick", function(self) B.OpenShareMacroMenu(self) end)
 	B.classShare = classShare
+	local classAsk = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	classAsk:SetSize(160, 20); classAsk:SetPoint("BOTTOMRIGHT", -12, 3); classAsk:SetText(L.BTN_ASK)
+	classAsk:SetScript("OnClick", function() ns.Ask.OpenBox() end)
+	B.classAsk = classAsk
 
 	-- Recruit tab (officers): three templates, which one, the channel, a preview, the status and Publish.
 	local rp = CreateFrame("Frame", nil, f)
@@ -902,6 +906,9 @@ local function ClassVisible()
 	local guild = {}
 	for _, m in ipairs(ns.Macros.Guild(B.search)) do guild[#guild + 1] = { kind = "guild", m = m } end
 	section("guild", guild)
+	local asks = {}
+	for _, q in ipairs(ns.Ask.List(B.search)) do asks[#asks + 1] = { kind = "ask", q = q } end
+	section("ask", asks)
 	return out
 end
 
@@ -919,6 +926,16 @@ local function FillClass(list)
 			r.group:SetText(""); r.xph:SetText("")
 			r.button:Show()
 			r.bg:SetColorTexture(1, 0.82, 0, 0.08)
+		elseif c and c.kind == "ask" then
+			local q = c.q
+			r.icon:Hide()
+			r.name:SetText(q.by); if q.mine then r.name:SetTextColor(ClassColor(MyClass())) else r.name:SetTextColor(1, 1, 1) end
+			r.level:SetText("")
+			r.zone:SetText(q.x); r.zone:SetTextColor(1, 1, 1)
+			r.group:SetText("")
+			r.xph:SetText(ns.Journal.Duration(math.max(0, time() - q.t))); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show()
+			RowBg(r, i, false)
 		elseif c and c.kind == "build" then
 			local e = c.e
 			r.icon:Hide()
@@ -948,7 +965,10 @@ end
 -- A row's click: view a build, create a macro, whisper its owner.
 function B.OpenClassMenu(c)
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
-		if c.kind == "build" then
+		if c.kind == "ask" then
+			root:CreateTitle(c.q.by)
+			if not c.q.mine then root:CreateButton(string.format(L.ASK_ANSWER_TO, c.q.by), function() B.Whisper(c.q.by) end) end
+		elseif c.kind == "build" then
 			local e = c.e
 			root:CreateTitle(e.name)
 			if e.b then root:CreateButton(L.CLASS_VIEW_BUILD, function() ns.Builds.Open(e) end) end
@@ -1027,6 +1047,7 @@ local function RefreshTabs()
 	B.myGoal:SetShown(goals)
 	B.wishAdd:SetShown(wishes)
 	B.classShare:SetShown(class)
+	B.classAsk:SetShown(class)
 	B.feedCemetery:SetShown(feed)
 	B.feedCemetery:SetText(B.feedDeaths and L.BTN_WALL_ALL or L.BTN_CEMETERY)
 	B.giftAdd:SetShown(wishes)
@@ -1205,5 +1226,6 @@ ns.Slash("recruit", function() B.ShowTab("recruit") end)
 
 ns.On("LM_BUILDS_CHANGED", B.Refresh)
 ns.On("LM_MACROS_CHANGED", B.Refresh)
+ns.On("LM_QUESTIONS_CHANGED", B.Refresh)
 ns.Slash("clase", function() B.ShowTab("class") end)
 ns.Slash("class", function() B.ShowTab("class") end)

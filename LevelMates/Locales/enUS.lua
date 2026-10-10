@@ -182,3 +182,8 @@ L.OPT_TRAINER = "Trainer reminder"; L.OPT_TRAINER_TT = "When you level up, tells
 L.GROUPXP_TITLE = "Group XP"; L.OPT_GROUPXP = "Group XP bars"; L.OPT_GROUPXP_TT = "While grouped with guildmates, a small window shows everyone's XP. Your XP percent goes to your guild only while you are grouped with a guildmate."
 L.CARD_NO_QUESTS = "They do not share their quests, so LevelMates cannot tell which of yours they lack."; L.CARD_MISSING = "Your quests they do not have:"; L.CARD_SHARE_QUEST = "Share: %s"
 L.GROUPXP_PAUSED = "Group XP (paused in dungeons)"
+
+-- Ask your class
+L.ASK_ANSWER = "Answer"; L.ASK_ANSWER_TO = "Answer %s (whisper)"; L.ASK_NOTICE = "%s asks your class: %s"; L.ASK_WAIT = "One question a minute."; L.ASK_FAILED = "The question could not be sent now (in a dungeon?)."
+L.ASK_PROMPT = "Your question for guildmates of your class:"; L.BTN_ASK = "Ask my class"; L.CLASS_SECTION_ASK = "Questions"; L.CLASS_EMPTY_ASK = "No questions in the last day."
+L.OPT_ASK = "Questions from my class"; L.OPT_ASK_TT = "A notice when a guildmate of your class asks something, with an [Answer] link."
