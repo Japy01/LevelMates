@@ -63,8 +63,7 @@ end
 local function Build()
 	-- The journal-style frame (gold border, dark inset) when the client has it; the basic frame otherwise.
 	local f
-	if ns.Skin.On() then f = ns.Skin.Window("LevelMatesBoard", UIParent)   -- LevelMates' own brown and gold window
-	elseif ButtonFrameTemplate_HidePortrait then
+	if ButtonFrameTemplate_HidePortrait then   -- the game's own frame in both styles (as its character sheet)
 		local ok, frame = pcall(CreateFrame, "Frame", "LevelMatesBoard", UIParent, "ButtonFrameTemplate")
 		if ok and frame then
 			f = frame
@@ -108,9 +107,10 @@ local function Build()
 	end
 	B.divider = divider
 	if ns.Skin.On() then   -- a box behind the heading and subtitle, and a dark strip behind the column names
-		local head = ns.Skin.Box(f, ns.Skin.C.box, ns.Skin.C.boxBorder)
+		local on = f.Inset and f.Inset.CreateTexture and f.Inset or f
+		local head = ns.Skin.Box(on, ns.Skin.C.box, ns.Skin.C.boxBorder)
 		head:SetPoint("TOPLEFT", B.MARGIN - 4, -(insetTop + 4)); head:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP - 12))
-		local strip = ns.Skin.Box(f, ns.Skin.C.strip)
+		local strip = ns.Skin.Box(on, ns.Skin.C.strip)
 		strip:SetPoint("TOPLEFT", B.MARGIN - 4, -(B.TOP - 4)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 2))
 		B.headBox, B.colStrip = head, strip
 		divider:Hide()   -- the box's border does its job
@@ -627,8 +627,9 @@ end
 -- A section header row: in this style the character sheet's plaque with the text centred in white.
 local function SectionHeader(r)
 	if r.plaque then
-		r.bg:SetColorTexture(unpack(ns.Skin.C.header)); r.stripe:Hide(); r.plaque:Show()   -- a soft dark band, gold text, a fading gold line
-		r.name:SetWidth(ROW_W - (ROW_H - 4) - 4); r.name:SetTextColor(1, 0.82, 0)
+		r.bg:SetColorTexture(0, 0, 0, 0); r.stripe:Hide(); r.plaque:Show()   -- the character sheet's plaque, centred white text
+		r.name:SetWidth(ROW_W - (ROW_H - 4) - 4 - 30); r.name:SetJustifyH("CENTER"); r.name:SetTextColor(1, 1, 1)
+		r.button.tall = true
 	else
 		r.bg:SetColorTexture(1, 0.82, 0, 0.08)
 	end
@@ -665,7 +666,7 @@ local function SetColumns(widths)
 	for i, w in ipairs(widths) do B.headText[i]:SetWidth(w) end
 	for _, r in ipairs(B.rows) do
 		r.name:SetWidth(widths[1] - (ROW_H - 4) - 4); r.level:SetWidth(widths[2]); r.zone:SetWidth(widths[3])
-		r.name:SetJustifyH("LEFT"); if r.plaque then r.plaque:Hide() end   -- a section header (plaque) is set again by its fill
+		r.name:SetJustifyH("LEFT"); r.button.tall = nil; if r.plaque then r.plaque:Hide() end   -- a section header (plaque) is set again by its fill
 		r.group:SetWidth(widths[4]); r.xph:SetWidth(widths[5])
 	end
 end
@@ -1296,6 +1297,14 @@ function B.Refresh()
 	if recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) else FillGrid(list) end else FillMates(list) end
 	if not lfg or B.lfgCalendar then for _, c in ipairs(B.cards) do c:Hide() end end
 	if not crafts then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
+	-- rows one under another; a section header (plaque) takes more height, and the window grows with it
+	local y, extra = 0, 0
+	for _, r in ipairs(B.rows) do
+		local h = r.button.tall and r.button:IsShown() and ns.Skin.HEAD_H or ROW_H
+		r.button:SetHeight(h); r.button:ClearAllPoints(); r.button:SetPoint("TOPLEFT", B.MARGIN, -B.TOP - ROW_H - y)
+		y, extra = y + h, extra + (h - ROW_H)
+	end
+	if extra > 0 then B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H + extra) end
 	B.recruitPanel:SetShown(recruit and B.recruitView ~= "inactive")
 	if recruit and B.recruitView ~= "inactive" then RefreshRecruit() end
 	local emptyText = ""

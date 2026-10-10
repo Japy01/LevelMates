@@ -34,6 +34,17 @@ end
 -- A window: a title, a close button and an inner panel (f.Inset) like the game's own frames.
 function SK.Window(name, parent)
 	if not SK.On() then return CreateFrame("Frame", name, parent or UIParent, "BasicFrameTemplateWithInset") end
+	-- the game's own frame, as its character sheet: metal border, title bar, dark inset
+	if ButtonFrameTemplate_HidePortrait then
+		local ok, gf = pcall(CreateFrame, "Frame", name, parent or UIParent, "ButtonFrameTemplate")
+		if ok and gf then
+			ButtonFrameTemplate_HidePortrait(gf)
+			if ButtonFrameTemplate_HideAttic then ButtonFrameTemplate_HideAttic(gf) end
+			gf.TitleText = gf.TitleContainer and gf.TitleContainer.TitleText or gf.TitleText
+			gf.gameFrame = true
+			return gf
+		end
+	end
 	local f = CreateFrame("Frame", name, parent or UIParent, "BackdropTemplate")
 	SK.Backdrop(f, SK.C.frame, SK.C.frameBorder, 16, SK.ROCK)
 	-- a darker title bar with a gold line under it
@@ -90,13 +101,11 @@ function SK.Stripe(b)
 	return t
 end
 -- A section header's underline: a thin gold line under the row, fading out to the right.
+SK.HEAD_H, SK.PLAQUE_W = 32, 240   -- a section header row and its plaque, near the character sheet's own size
 function SK.Plaque(b)
 	if not SK.On() then return nil end
-	local t = b:CreateTexture(nil, "ARTWORK")
-	t:SetColorTexture(1, 0.82, 0, 0.6); t:SetHeight(1)
-	t:SetPoint("BOTTOMLEFT", 0, 0); t:SetPoint("BOTTOMRIGHT", 0, 0)
-	if t.SetGradient and CreateColor then t:SetColorTexture(1, 1, 1, 1); t:SetGradient("HORIZONTAL", CreateColor(1, 0.82, 0, 0.75), CreateColor(1, 0.82, 0, 0)) end
-	t:Hide()
+	local t = b:CreateTexture(nil, "BACKGROUND", nil, 2)
+	t:SetAtlas("UI-Character-Info-Title"); t:SetSize(SK.PLAQUE_W, SK.HEAD_H + 6); t:SetPoint("CENTER", 0, 0); t:Hide()
 	return t
 end
 
