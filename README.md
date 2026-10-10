@@ -59,6 +59,8 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 To try it alone (fake guildmates, local only, nothing is sent): `/lm sim`, and `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`; `/lm sim off` clears them.
 
+Made by Diego (Japy01) with the help of AI (Claude, by Anthropic).
+
 License: MIT.
 
 ---
@@ -123,5 +125,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 `/lm` (tablón), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm muro`, `/lm reclutar` (abren una pestaña), `/lm ayuda <texto>` (pedir ayuda), `/lm cancelar`, `/lm panico`, `/lm opciones`, `/lm debug`.
 
 Para probarlo solo (hermanos falsos, solo en local, no se envía nada): `/lm sim`, y `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`; `/lm sim off` los quita.
+
+Hecho por Diego (Japy01) con ayuda de IA (Claude, de Anthropic).
 
 Licencia: MIT.
