@@ -37,7 +37,7 @@ assert(MC.waypoint:IsShown() and MC.build:IsShown(), "waypoint and build when th
 local ref
 SetItemRef = function(link) ref = link end
 MC.build.scripts.OnClick(MC.build)
-assert(ref == "talentbuild:71:24:CODEmario", "view build")
+assert((STUB.printed[#STUB.printed] or ""):find("|Htalentbuild:71:24:CODEmario|h", 1, true), "view build")
 
 -- someone with nothing shared: just the basics, no waypoint or build
 STUB.Receive("LVLM", C.Encode("hb", { l = 12, z = 1412, c = "MAGE" }), "GUILD", "Ana-Testrealm")

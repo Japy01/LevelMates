@@ -60,6 +60,12 @@ end
 local function code()
 	local tf = PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame
 	if not (tf and tf.GetLoadoutExportString) then return nil end
+	-- the window exports what it shows: not mine while it shows a linked build or a loadout that is not the active one
+	local okI, inspecting = pcall(function() return tf.IsInspecting and tf:IsInspecting() end)
+	if not okI or inspecting then return nil end
+	local active = select(2, pcall(C_ClassTalents.GetActiveConfigID))
+	local okC, shown = pcall(function() return tf.GetConfigID and tf:GetConfigID() end)
+	if not okC or (shown and active and shown ~= active) then return nil end
 	local ok, s = pcall(tf.GetLoadoutExportString, tf)
 	if ok and type(s) == "string" and #s <= 150 and s:match("^[%w%+/=]+$") then return s end
 end
@@ -109,10 +115,13 @@ ns.On("LM_HB_SENT", function() if ns.char.buildPending then send() end end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "tb" then ns.char.buildPending = true end end)
 
 C.OnMessage("tb", function(f, name)
-	if not R.mates[name] then return end
+	local m = R.mates[name]
+	if not m then return end
 	local t = store()
 	if f.p == nil then t[name] = nil
-	else t[name] = { c = f.c, s = f.s, l = f.l, p = f.p, b = f.b, t = time() } end
+	elseif type(f.l) == "number" and type(f.s) == "number" then   -- the class is the roster's, not what the message claims
+		t[name] = { c = m.class or f.c, s = f.s, l = f.l, p = f.p, b = f.b, t = time() }
+	else return end
 	ns.Fire("LM_BUILDS_CHANGED")
 end)
 
@@ -123,7 +132,7 @@ end
 -- A guildmate's build, when they are of my class.
 function BU.Of(name)
 	local e = store()[name]
-	if e and fresh(name, e) then return e end
+	if e and fresh(name, e) then return { name = name, c = e.c, s = e.s, l = e.l, p = e.p, b = e.b, t = e.t } end
 end
 
 -- Mine first, then guildmates of my class (highest level first).
@@ -151,12 +160,12 @@ function BU.PointsText(e)
 	return table.concat(parts, " / ")
 end
 
--- The game's build viewer. Runs only from a click (menu entry).
+-- "View build": the build's link in my chat window (only on my screen, nothing is posted). Its click goes through
+-- the game's own chat handler, which opens the build viewer; opening that window from addon code could taint it.
 function BU.Open(e)
 	if not (e and e.b and e.s and e.l) then return false end
-	local opts = e.s .. ":" .. e.l .. ":" .. e.b
-	local link = "|Htalentbuild:" .. opts .. "|h[" .. L.BUILD_LINK .. "]|h"
-	pcall(SetItemRef, "talentbuild:" .. opts, link, "LeftButton")
+	local link = "|cff71d5ff|Htalentbuild:" .. e.s .. ":" .. e.l .. ":" .. e.b .. "|h[" .. string.format(L.BUILD_LINK, e.name or "?") .. "]|h|r"
+	ns.Say(L.BUILD_CLICK, link)
 	return true
 end
 

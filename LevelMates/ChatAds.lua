@@ -15,9 +15,9 @@ local ALIASES = {
 	[5]  = { "deadmines", "dm", "vc", "minas de la muerte", "minas" },
 	[6]  = { "shadowfang keep", "shadowfang", "sfk", "castillo de colmillo oscuro", "colmillo oscuro" },
 	[7]  = { "blackfathom deeps", "blackfathom", "bfd", "cavernas de brazanegra", "brazanegra" },
-	[8]  = { "stockade", "stockades", "stocks", "las mazmorras" },
-	[9]  = { "excavation site", "excavation", "excavacion" },
-	[10] = { "city of dalaran", "ciudad de dalaran", "dalaran" },
+	[8]  = { "stockade", "stockades", "stocks" },   -- "las mazmorras" is also just "the dungeons"
+	[9]  = { "excavation site", "wetlands excavation", "excavacion los humedales", "excavacion de los humedales" },
+	[10] = { "city of dalaran", "ciudad de dalaran" },   -- plain "Dalaran" is also the crater in Alterac
 	[11] = { "gnomeregan", "gnomer" },
 	[12] = { "razorfen kraul", "rfk", "kraul", "horado rajacieno", "rajacieno", "horado" },
 	[13] = { "sm graveyard", "sm gy", "graveyard", "gy", "sm cementerio", "cementerio" },
@@ -25,6 +25,9 @@ local ALIASES = {
 }
 local GROUP = {}
 for w in ("lfm lfg lf lf1m lf2m lf3m lf4m need needs busco buscamos buscando falta faltan tank tanque heal heals healer healers sanador dps grupo group run runs inv"):gmatch("%S+") do GROUP[w] = true end
+
+local RECRUIT = {}
+for w in ("guild hermandad recruit recruiting recruits recluta reclutando reclutamos reclutar"):gmatch("%S+") do RECRUIT[w] = true end
 
 local ACCENTS = { ["á"] = "a", ["é"] = "e", ["í"] = "i", ["ó"] = "o", ["ú"] = "u", ["ü"] = "u", ["ñ"] = "n",
 	["Á"] = "a", ["É"] = "e", ["Í"] = "i", ["Ó"] = "o", ["Ú"] = "u", ["Ü"] = "u", ["Ñ"] = "n" }
@@ -42,6 +45,9 @@ function CA.Parse(text)
 	local grouped = false
 	for w in s:gmatch("%S+") do if GROUP[w] then grouped = true; break end end
 	if not grouped then return nil end
+	-- guild recruitment ("LF tanks and heals, dm me for inv") is not a dungeon group
+	for w in s:gmatch("%S+") do if RECRUIT[w] then return nil end end
+	s = s:gsub(" dm me ", " "):gsub(" dm for ", " ")
 	local best, at
 	for id, list in pairs(ALIASES) do
 		for _, alias in ipairs(list) do
@@ -72,6 +78,7 @@ end
 -- The live ads for a dungeon, newest first.
 function CA.For(id)
 	local out, now = {}, GetTime()
+	if not (ns.db and ns.db.settings.readChatAds) then return out end   -- off hides what was already read
 	for key, a in pairs(ads) do
 		if now - a.t > CA.LIFETIME then ads[key] = nil
 		elseif a.id == id then out[#out + 1] = a end

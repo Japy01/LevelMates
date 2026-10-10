@@ -55,10 +55,9 @@ STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:0
 
 -- View build: the game's own window, from a click
 local ref
-SetItemRef = function(link, text, button) ref = { link = link, text = text, button = button } end
-assert(BU.Open(BU.Of("Mario")) and ref.link == "talentbuild:71:24:CODEmario" and ref.text:find("|Htalentbuild:71:24:CODEmario|h", 1, true), "opens the build: " .. tostring(ref and ref.link))
-ref = nil
-assert(not BU.Open({ s = 71, l = 20, p = "1001:1" }) and ref == nil, "nothing to open without a code")
+assert(BU.Open(BU.Of("Mario")) and (STUB.printed[#STUB.printed] or ""):find("|Htalentbuild:71:24:CODEmario|h", 1, true), "the build link, to click")
+local printed = #STUB.printed
+assert(not BU.Open({ s = 71, l = 20, p = "1001:1" }) and #STUB.printed == printed, "nothing to open without a code")
 
 -- sharing off withdraws
 ns.db.settings.shareBuild = false

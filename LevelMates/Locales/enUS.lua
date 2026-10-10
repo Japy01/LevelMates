@@ -168,3 +168,4 @@ L.BTN_SHARE_MACRO = "Share macro"; L.CLASS_SHARED_MARK = "%s (shared: click to w
 -- Guildmate card
 L.CARD_BASICS = "%s, level %d · %s · %s"; L.CARD_BUILD = "Build: %s"; L.CARD_PROFS = "Professions: %s"; L.CARD_WANTS = "Wants: %s"; L.CARD_GIVES = "Gives away: %s"
 L.CARD_GOAL = "Goal: %s (%s)"; L.CARD_WALL = "On the wall: %s (%s)"; L.CARD_MEETUP = "Meetup: %s, %s"
+L.BUILD_LINK = "%s's build"; L.BUILD_CLICK = "Click to view: %s"

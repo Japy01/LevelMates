@@ -45,7 +45,7 @@ local ref
 SetItemRef = function(link) ref = link end
 mario.button.scripts.OnClick(mario.button, "LeftButton")
 pick(L.CLASS_VIEW_BUILD).fn()
-assert(ref == "talentbuild:71:24:CODEmario", "View build")
+assert((STUB.printed[#STUB.printed] or ""):find("|Htalentbuild:71:24:CODEmario|h", 1, true), "View build")
 assert(pick(string.format(L.LFG_WHISPER, "Mario")), "whisper")
 tank.button.scripts.OnClick(tank.button, "LeftButton")
 pick(L.CLASS_CREATE_MACRO).fn()
