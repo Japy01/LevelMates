@@ -92,7 +92,8 @@ end
 function SK.Plaque(b)
 	if not SK.On() then return nil end
 	local t = b:CreateTexture(nil, "BACKGROUND", nil, 2)
-	t:SetAtlas("UI-Character-Info-Title"); t:SetPoint("TOPLEFT", 0, 1); t:SetPoint("BOTTOMRIGHT", 0, -1); t:Hide()
+	t:SetAtlas("UI-Character-Info-Title"); t:SetPoint("TOPLEFT", 18, 1);   -- after the row's icon
+	 t:SetPoint("BOTTOMRIGHT", 0, -1); t:Hide()
 	return t
 end
 

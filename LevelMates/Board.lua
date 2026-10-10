@@ -296,7 +296,7 @@ local function Build()
 			c.top:SetPoint("TOPLEFT", 4, -4); c.top:SetPoint("TOPRIGHT", -4, -4); c.top:SetHeight(32)
 			c.bottom = c:CreateTexture(nil, "ARTWORK", nil, 1); c.bottom:SetColorTexture(unpack(ns.Skin.C.band))
 			c.bottom:SetPoint("BOTTOMLEFT", 4, 4); c.bottom:SetPoint("BOTTOMRIGHT", -4, 4); c.bottom:SetHeight(18)
-			c.name:ClearAllPoints(); c.name:SetPoint("TOPLEFT", 8, -7); c.name:SetWidth(B.CARD_W - 16); c.name:SetHeight(26)
+			c.name:SetFontObject("GameFontNormal"); c.name:ClearAllPoints(); c.name:SetPoint("TOPLEFT", 8, -6); c.name:SetWidth(B.CARD_W - 16); c.name:SetHeight(28)
 			c.levels:ClearAllPoints(); c.levels:SetPoint("BOTTOMLEFT", 8, 7)
 			c.count:ClearAllPoints(); c.count:SetPoint("BOTTOMRIGHT", -8, 7)
 			c.badge:ClearAllPoints(); c.badge:SetPoint("TOPRIGHT", -8, -38)
@@ -876,7 +876,7 @@ local function FillGrid(list)
 			local tex, coords = ns.Dungeons.Art(id)
 			if tex and c.skin then   -- a taller picture: the same scene, more of it, so it is not stretched
 				local mid = (coords[3] + coords[4]) / 2
-				c.art:SetTexture(tex); c.art:SetTexCoord(coords[1], coords[2], math.max(0, mid - 0.36), math.min(1, mid + 0.36)); c.art:SetAlpha(c.fits and 1 or 0.55); c.art:Show()
+				c.art:SetTexture(tex); c.art:SetTexCoord(coords[1], coords[2], math.max(0, mid - 0.31), math.min(1, mid + 0.31)); c.art:SetAlpha(c.fits and 1 or 0.55); c.art:Show()
 			elseif tex then c.art:SetTexture(tex); c.art:SetTexCoord(unpack(coords)); c.art:SetAlpha(c.fits and 1 or 0.45); c.art:Show() else c.art:Hide() end
 			if c.skin then c:SetBackdropBorderColor(unpack(c.fits and ns.Skin.C.card or ns.Skin.C.cardDim))
 			else c.bg:SetColorTexture(unpack(c.fits and { 0.35, 0.27, 0.05, 0.9 } or { 0.08, 0.08, 0.08, 0.9 })) end
