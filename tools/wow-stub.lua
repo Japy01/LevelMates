@@ -349,3 +349,7 @@ function UnitIsPlayer(u) return STUB.units[u] and STUB.units[u].player or false 
 local realUnitName = UnitName
 function UnitName(u) if STUB.units[u] then return STUB.units[u].name end; return realUnitName(u) end
 C_Map.GetPlayerMapPosition = function() return { GetXY = function() return STUB.pos and STUB.pos[1] or 0.5, STUB.pos and STUB.pos[2] or 0.5 end } end
+
+-- Quest objectives
+STUB.objectives = {}
+C_QuestLog.GetQuestObjectives = function(id) return STUB.objectives[id] end

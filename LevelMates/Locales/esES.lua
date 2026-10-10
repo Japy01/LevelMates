@@ -133,3 +133,4 @@ L.MEET_LINE = "Quedada %s (%s)"; L.MEET_NEW = "%s ha quedado para %s el %s."; L.
 L.MEET_SOON = "¡Tu quedada de %s (%s) empieza en 15 minutos!"; L.MEET_BAD_TIME = "Elige una hora de ahora a 7 días vista."; L.MEET_FULL = "Demasiadas quedadas: como mucho 2 tuyas y 10 en la hermandad."
 L.GIFT_ASKED = "Reserva pedida a %s para %s; te la confirmará."; L.GIFT_CONFIRMED = "%s confirma: %s está reservado para ti."; L.MEET_NOT_NOW = "Ahora no: estás en una instancia o \"Aparecer en el tablón\" está apagado."
 L.RARE_SEEN = "%s ha visto a %s en %s"; L.WAYPOINT = "Ruta"; L.OPT_RARE = "Avistamiento de raros"; L.OPT_RARE_TT = "Avisa a la hermandad cuando ves un raro, y te avisa de los que ven tus hermanos donde estás."
+L.QUEST_SHARED = "Misiones en común:"; L.QUEST_DONE = "%s ya tiene completa: %s"

@@ -216,6 +216,11 @@ local function Build()
 				if ns.Partner and ns.Partner.Matches(self.mate) then lines[#lines + 1] = { L.PAL_TOOLTIP, 0.4, 1, 0.4 } end
 				local rx = ns.Rested and ns.Rested.Of(self.mate)
 				if rx then lines[#lines + 1] = { string.format(L.RESTED_THEIRS, rx), 0.6, 0.8, 1 } end
+				local shared = ns.QuestProgress and ns.QuestProgress.Shared(self.mate) or {}
+				if #shared > 0 then
+					lines[#lines + 1] = { L.QUEST_SHARED, 1, 0.82, 0 }
+					for _, q in ipairs(shared) do lines[#lines + 1] = { q.title .. ": " .. (q.o:gsub(",", ", ")), 1, 1, 1 } end
+				end
 				if #lines > 0 then
 					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 					for _, l in ipairs(lines) do GameTooltip:AddLine(l[1], l[2], l[3], l[4]) end

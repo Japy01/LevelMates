@@ -24,6 +24,7 @@ Board.lua
 MinimapButton.lua
 Questie.lua
 Match.lua
+QuestProgress.lua
 Help.lua
 Rares.lua
 LFG.lua
