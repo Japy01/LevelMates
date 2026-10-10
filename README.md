@@ -18,7 +18,7 @@ Everyone who wants to appear needs the addon. English and Spanish: the game's la
 - **Dungeons tab**: a card with artwork for each of the 14 dungeons, highlighted when it fits your level, with how many are looking for a group. Click a card to join a group ("Join Mario as healer"), whisper, invite, look for a group there, or set up a **meetup** ("Saturday 21:00", with a reminder 15 minutes before). Cards also count group ads read from Trade, General and other public channels ("2 looking · 3 in chat"), which you can whisper from the card.
 
 ### Class
-- **Class tab**: guild talent builds of your class (points per branch and level) with "View build", which opens the game's own viewer; a macro library for each class with spell names in your language, created with a click; and macros your guildmates share with "Share macro".
+- **Class tab**: guild talent builds of your class (points per branch and level) with "View build", which puts the build's link in your chat (only you see it) to open it in the game's own viewer; a macro library for each class with spell names in your language, created with a click; and macros your guildmates share with "Share macro".
 
 ### Goals and progress
 - **Goals tab**: officers set guild goals (everyone to a level, a dungeon together, a counter of levels, quests or dungeons) with live progress and who is missing. Anyone can set a personal goal.
@@ -89,7 +89,7 @@ Todos los que quieran salir necesitan el addon. En español e inglés: el idioma
 - **Pestaña Mazmorras**: una tarjeta con imagen para cada una de las 14 mazmorras, resaltada si es de tu nivel, con cuántos buscan grupo. Clic en una tarjeta para apuntarte a un grupo ("Me apunto con Mario como sanador"), susurrar, invitar, buscar grupo ahí o crear una **quedada** ("sábado 21:00", con recordatorio 15 minutos antes). Las tarjetas cuentan también los anuncios de grupo de Comercio, General y otros canales públicos ("2 buscan · 3 en el chat"), y puedes susurrarles desde la tarjeta.
 
 ### Clase
-- **Pestaña Clase**: las builds de talentos de los hermanos de tu clase (puntos por rama y nivel) con "Ver build", que abre la ventana del propio juego; una biblioteca de macros por clase con los nombres de hechizo en tu idioma, que se crean con un clic; y las macros que comparten tus hermanos con "Compartir macro".
+- **Pestaña Clase**: las builds de talentos de los hermanos de tu clase (puntos por rama y nivel) con "Ver build", que pone el enlace de la build en tu chat (solo lo ves tú) para abrirla en la ventana del propio juego; una biblioteca de macros por clase con los nombres de hechizo en tu idioma, que se crean con un clic; y las macros que comparten tus hermanos con "Compartir macro".
 
 ### Metas y progreso
 - **Pestaña Metas**: los oficiales marcan metas de hermandad (todos a un nivel, una mazmorra juntos, un contador de niveles, misiones o mazmorras) con el progreso en directo y quién falta. Cualquiera puede ponerse una meta personal.
