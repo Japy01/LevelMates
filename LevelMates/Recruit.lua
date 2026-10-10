@@ -89,3 +89,39 @@ ns.On("LM_PING_ANSWERED", function()
 	local l = store().last
 	if l and time() - l.at < RC.GAP then C.Send("rc", { t = math.floor(l.at / 60) }) end
 end)
+
+
+-- The reminder: every 10 minutes (when the shared wait is over) a small prompt offers Publish; it never posts by itself.
+local snoozeUntil = 0
+function RC.Snooze() snoozeUntil = time() + RC.GAP; if RC.prompt then RC.prompt:Hide() end end
+
+function RC.ShowPrompt()
+	if not RC.prompt then
+		local p = CreateFrame("Frame", "LevelMatesRecruitPrompt", UIParent, "BasicFrameTemplateWithInset")
+		p:SetSize(320, 96); p:SetPoint("TOP", 0, -140); p:SetFrameStrata("DIALOG")
+		if p.TitleText then p.TitleText:SetText(L.HEAD_RECRUIT) end
+		local text = p:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+		text:SetPoint("TOP", 0, -32); text:SetText(L.RECRUIT_PROMPT)
+		local post = CreateFrame("Button", nil, p, "UIPanelButtonTemplate")
+		post:SetSize(130, 22); post:SetPoint("BOTTOMLEFT", 16, 12); post:SetText(L.RECRUIT_POST)
+		post:SetScript("OnClick", function()   -- a click: the post
+			local msg, ch = RC.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2)
+			if msg then SendChatMessage(msg, "CHANNEL", nil, ch); RC.Posted() end
+			p:Hide()
+		end)
+		local later = CreateFrame("Button", nil, p, "UIPanelButtonTemplate")
+		later:SetSize(130, 22); later:SetPoint("BOTTOMRIGHT", -16, 12); later:SetText(L.RECRUIT_LATER)
+		later:SetScript("OnClick", function() RC.Snooze() end)
+		RC.prompt, RC.promptPost, RC.promptLater = p, post, later
+	end
+	RC.prompt:Show()
+	ns.Screen(L.RECRUIT_PROMPT)
+end
+
+function RC.Tick()
+	if not ns.char.recruitRemind or not R.IAmOfficer() then return end
+	if RC.Wait() > 0 or time() < snoozeUntil then return end
+	if RC.prompt and RC.prompt:IsShown() then return end
+	RC.ShowPrompt()
+end
+ns.On("LM_WORLD", function() if not RC.ticker then RC.ticker = C_Timer.NewTicker(30, RC.Tick) end end)

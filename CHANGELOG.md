@@ -38,3 +38,4 @@ First version.
 - Giveaways on the Wishes tab, matched with wishes both ways; reservations; new kinds `gv`, `gr`.
 - Dungeon meetups from the cards: day and time, join with a role, reminder 15 minutes before; new kinds `qd`, `qdx`, `qj`, `qjx`.
 - Rare sightings with a [Waypoint] link (new kind `rr`); group quest progress in tooltips with completion notices (new kind `qo`); guildmates on the world map and the busiest zone; a panic key binding (`/lm panico`); `/lm sim raro`.
+- Recruitment tab for officers: three shared templates with placeholders, post to channel 2 or 1 with a click, a 10-minute wait shared by officers, an optional reminder prompt; new kinds `rt`, `rc`.

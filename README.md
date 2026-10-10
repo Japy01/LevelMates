@@ -18,6 +18,7 @@ A World of Warcraft: Forever guild addon. See which guildmates are online and wh
 - **Guild wall** (Wall tab, or `/lm muro`): level-ups, dungeons with guildmates, rare loot and goals of the last 7 days; what you missed arrives when you log in.
 - **Giveaways** on the Wishes tab ("Give away"): matched with wishes both ways, and a guildmate can reserve one.
 - **Meetups** on dungeon cards ("Meet here..."): a day and time, joined with a role, with a reminder 15 minutes before.
+- **Recruitment** (Recruit tab, officers and guild master only): three shared templates with placeholders ({guild}, {online}, {level}), posted to channel 2 (Trade) or 1 (General) with a click; a 10-minute wait shared by all officers; an optional reminder every 10 minutes that offers a one-click Post (nothing is ever posted without a click).
 - **Rare sightings**: a rare you see is announced to guildmates in that zone, with a [Waypoint] link.
 - **Quests in common**: grouped with guildmates, their progress on the quests you share shows in their tooltip, with a notice when they complete one.
 - **Guild map**: guildmates who share their position appear on the world map; the Guildmates tab shows the busiest zone.
@@ -39,7 +40,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Commands
 
-`/lm` (board), `/lm lfg` (Dungeons tab), `/lm diario` (Journal tab), `/lm metas` (Goals tab), `/lm deseos` (Wishes tab), `/lm oficios` (Professions tab), `/lm muro` (Wall tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim nivel`, `/lm sim muro`, `/lm sim mercadillo`, `/lm sim quedada`, `/lm sim raro`, `/lm sim off`.
+`/lm` (board), `/lm lfg` (Dungeons tab), `/lm diario` (Journal tab), `/lm metas` (Goals tab), `/lm deseos` (Wishes tab), `/lm oficios` (Professions tab), `/lm muro` (Wall tab), `/lm reclutar` (Recruit tab, officers), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim nivel`, `/lm sim muro`, `/lm sim mercadillo`, `/lm sim quedada`, `/lm sim raro`, `/lm sim off`.
 
 ## Not in v1 (planned)
 
@@ -69,6 +70,7 @@ Addon de hermandad para World of Warcraft: Forever. Ve qué hermanos están cone
 - **Muro de la hermandad** (pestaña Muro, o `/lm muro`): subidas de nivel, mazmorras con hermanos, botín raro y metas de los últimos 7 días; lo que te perdiste llega al entrar.
 - **Mercadillo** en la pestaña Deseos ("Regalar"): se cruza con los deseos en los dos sentidos y un hermano puede reservar un regalo.
 - **Quedadas** en las tarjetas de mazmorra ("Quedar aquí..."): día y hora, apuntarse con un rol y recordatorio 15 minutos antes.
+- **Reclutamiento** (pestaña Reclutar, solo oficiales y maestro): tres plantillas compartidas con comodines ({hermandad}, {conectados}, {nivel}), publicadas en el canal 2 (Comercio) o 1 (General) con un clic; espera de 10 minutos compartida entre oficiales; recordatorio opcional cada 10 minutos que ofrece Publicar con un clic (nunca se publica nada sin un clic).
 - **Avistamiento de raros**: un raro que ves se avisa a los hermanos de esa zona, con un enlace [Ruta].
 - **Misiones en común**: en grupo con hermanos, su progreso en las misiones que compartís sale en su tooltip, con aviso cuando completan una.
 - **Mapa de la hermandad**: los hermanos que comparten su posición salen en el mapa del mundo; la pestaña Hermanos muestra la zona con más hermanos.
@@ -90,7 +92,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Comandos
 
-`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm diario` (pestaña Diario), `/lm metas` (pestaña Metas), `/lm deseos` (pestaña Deseos), `/lm oficios` (pestaña Oficios), `/lm muro` (pestaña Muro), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim nivel`, `/lm sim muro`, `/lm sim mercadillo`, `/lm sim quedada`, `/lm sim raro`, `/lm sim off`.
+`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm diario` (pestaña Diario), `/lm metas` (pestaña Metas), `/lm deseos` (pestaña Deseos), `/lm oficios` (pestaña Oficios), `/lm muro` (pestaña Muro), `/lm reclutar` (pestaña Reclutar, oficiales), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim nivel`, `/lm sim muro`, `/lm sim mercadillo`, `/lm sim quedada`, `/lm sim raro`, `/lm sim off`.
 
 ## Pendiente para después de v1
 
