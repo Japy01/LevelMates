@@ -192,3 +192,8 @@ L.OPT_ASK = "Preguntas de mi clase"; L.OPT_ASK_TT = "Un aviso cuando un hermano 
 -- Calendario de quedadas
 L.BTN_CALENDAR = "Calendario"; L.BTN_CARDS = "Mazmorras"; L.HEAD_CALENDAR = "Calendario de quedadas"; L.SUB_CALENDAR = "Los próximos 7 días. Clic en una quedada para apuntarte, borrarte o cancelarla."
 L.CAL_EMPTY = "No hay quedadas en los próximos 7 días. Crea una desde una tarjeta de mazmorra."; L.CAL_MINE = "tuya"
+
+-- Miembros inactivos (oficiales)
+L.BTN_INACTIVE = "Inactivos"; L.BTN_TEMPLATES = "Plantillas"; L.HEAD_INACTIVE = "Miembros inactivos"; L.SUB_INACTIVE = "Miembros que llevan tiempo sin entrar. No se les hace nada: solo informa."
+L.INACTIVE_DAYS = "%d+ días"; L.INACTIVE_AWAY = "hace %d días"; L.INACTIVE_SINCE = "desde %s"; L.INACTIVE_BEFORE = "antes del %s"; L.INACTIVE_EMPTY = "Nadie lleva tanto tiempo sin entrar."
+L.COL_RANK_GUILD = "Rango"; L.COL_AWAY = "Última vez"; L.COL_JOINED = "Ingreso"

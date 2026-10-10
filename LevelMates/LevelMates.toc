@@ -23,6 +23,7 @@ Settings.lua
 Board.lua
 GuildMap.lua
 Recruit.lua
+Inactive.lua
 MinimapButton.lua
 Questie.lua
 Match.lua

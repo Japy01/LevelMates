@@ -17,7 +17,8 @@ B.WCOLS = { 100, 1, 360, 65, 74 }   -- wishes and gifts: who, -, item, wants/giv
 B.CCOLS = { 150, 1, 319, 60, 70 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
 B.BAR_W = 160
 B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
-B.KCOLS = { 150, 1, 339, 50, 60 }   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
+B.KCOLS = { 150, 1, 339, 50, 60 }
+B.ICOLS = { 150, 50, 160, 110, 130 }   -- inactive members: name, level, rank, away, joined (same total as B.COLS)   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
 B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts", "class", "feed", "recruit" }
@@ -409,6 +410,15 @@ local function Build()
 	local remindLabel = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	remindLabel:SetPoint("LEFT", remind, "RIGHT", 2, 0); remindLabel:SetText(L.RECRUIT_REMIND)
 	B.recruitRemind = remind
+	-- Recruit tab: "Inactive" (bottom left) swaps the templates for members who have not logged in; 14 or 30 days.
+	local view = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	view:SetSize(120, 20); view:SetPoint("BOTTOMLEFT", 12, 3); view:SetText(L.BTN_INACTIVE)
+	view:SetScript("OnClick", function() B.recruitView = B.recruitView ~= "inactive" and "inactive" or nil; B.recruitPage = 1; if B.recruitView then ns.Inactive.Scan() end; B.Refresh() end)
+	B.recruitViewButton = view
+	local days = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	days:SetSize(120, 20); days:SetPoint("BOTTOMRIGHT", -12, 3)
+	days:SetScript("OnClick", function() ns.char.inactiveDays = (ns.char.inactiveDays or 14) == 14 and 30 or 14; B.recruitPage = 1; B.Refresh() end)
+	B.recruitDaysButton = days
 
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
@@ -506,7 +516,16 @@ end
 local function SetHeaders()
 	local lfg = B.tab == "lfg"
 	if lfg then for i = 1, 5 do B.headText[i]:SetText("") end; return end   -- the grid has no columns
-	if B.tab == "recruit" then for i = 1, 5 do B.headText[i]:SetText("") end; return end
+	if B.tab == "recruit" then
+		if B.recruitView == "inactive" then
+			B.headText[1]:SetText(L.COL_NAME); B.headText[2]:SetText(L.COL_LEVEL); B.headText[3]:SetText(L.COL_RANK_GUILD)
+			B.headText[4]:SetText(L.COL_AWAY); B.headText[5]:SetText(L.COL_JOINED)
+			for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
+		else
+			for i = 1, 5 do B.headText[i]:SetText("") end
+		end
+		return
+	end
 	if B.tab == "class" then
 		B.headText[1]:SetText(""); B.headText[2]:SetText(""); B.headText[3]:SetText(""); B.headText[4]:SetText(L.COL_LEVEL); B.headText[5]:SetText("")
 		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
@@ -849,6 +868,26 @@ function B.DungeonTooltip(card)
 	GameTooltip:Show()
 end
 
+-- Recruit tab, inactive view.
+local function FillInactive(list)
+	for i = 1, ROWS do
+		local r, e = B.rows[i], list[i]
+		r.button.mate, r.button.adId = nil, nil
+		if e then
+			r.icon:Hide()
+			r.name:SetText(e.name); r.name:SetTextColor(1, 1, 1)
+			r.level:SetText(tostring(e.level)); r.level:SetTextColor(0.75, 0.75, 0.75)
+			r.zone:SetText(e.rank); r.zone:SetTextColor(0.75, 0.75, 0.75)
+			r.group:SetText(ns.Inactive.AwayText(e)); r.group:SetTextColor(1, 0.5, 0.4)
+			r.xph:SetText(ns.Inactive.JoinedText(e)); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+
 -- Dungeons tab, calendar view: the next 7 days of meetups, a header per day.
 B.CAL_DAYS = 7
 local function CalendarVisible()
@@ -1067,7 +1106,7 @@ function B.OpenShareMacroMenu(owner)
 end
 
 -- Pages of ROWS for the long tabs (journal, goals, wishes); the pager sits in the help-rows area.
-local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", feed = "feedPage" }
+local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", feed = "feedPage" }
 local function Page(all)
 	local key = PAGE_KEY[B.tab]
 	local pages = math.max(1, math.ceil(#all / ROWS))
@@ -1126,6 +1165,10 @@ local function RefreshTabs()
 	B.feedCemetery:SetText(B.feedDeaths and L.BTN_WALL_ALL or L.BTN_CEMETERY)
 	B.giftAdd:SetShown(wishes)
 	B.tabs.recruit:SetShown(R.IAmOfficer())
+	B.recruitViewButton:SetShown(recruit)
+	B.recruitViewButton:SetText(B.recruitView == "inactive" and L.BTN_TEMPLATES or L.BTN_INACTIVE)
+	B.recruitDaysButton:SetShown(recruit and B.recruitView == "inactive")
+	B.recruitDaysButton:SetText(string.format(L.INACTIVE_DAYS, ns.char.inactiveDays or 14))
 end
 
 function B.Refresh()
@@ -1139,6 +1182,7 @@ function B.Refresh()
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
 	elseif recruit then
 		list = {}
+		if B.recruitView == "inactive" then list, pages = Page(ns.Inactive.List(ns.char.inactiveDays or 14, B.search)) end
 	elseif feed then
 		local all = ns.Feed.List(B.search, B.feedDeaths)
 		B.feedDeathCount = #all
@@ -1159,12 +1203,13 @@ function B.Refresh()
 	else
 		list = lfg and (B.lfgCalendar and CalendarVisible() or GridVisible()) or Visible()
 	end
-	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or B.COLS)
+	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
 	SetHeaders()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
 	B.subtitle:SetText(journal and ns.Journal.PaceText() or feed and B.feedDeaths and string.format(L.FEED_CEMETERY_SUB, B.feedDeathCount or 0) or L["SUB_" .. hk])
 	if lfg and B.lfgCalendar then B.heading:SetText(L.HEAD_CALENDAR); B.subtitle:SetText(L.SUB_CALENDAR) end
+	if recruit and B.recruitView == "inactive" then B.heading:SetText(L.HEAD_INACTIVE); B.subtitle:SetText(L.SUB_INACTIVE) end
 	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
@@ -1181,11 +1226,11 @@ function B.Refresh()
 		end
 	end
 	B.restedText:SetText(top)
-	if journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) else FillGrid(list) end else FillMates(list) end
+	if recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) else FillGrid(list) end else FillMates(list) end
 	if not lfg or B.lfgCalendar then for _, c in ipairs(B.cards) do c:Hide() end end
 	if not crafts then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
-	B.recruitPanel:SetShown(recruit)
-	if recruit then RefreshRecruit() end
+	B.recruitPanel:SetShown(recruit and B.recruitView ~= "inactive")
+	if recruit and B.recruitView ~= "inactive" then RefreshRecruit() end
 	local emptyText = ""
 	if #list == 0 then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
@@ -1198,10 +1243,10 @@ function B.Refresh()
 		elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED
 		else emptyText = L.EMPTY end
 	end
-	if recruit then emptyText = "" end   -- the panel fills this tab
+	if recruit then emptyText = B.recruitView == "inactive" and #list == 0 and L.INACTIVE_EMPTY or "" end   -- the panel fills this tab
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
-	if (goals or wishes or crafts or feed or class) and pages > 1 then   -- the pager only when there is more than one page
+	if (goals or wishes or crafts or feed or class or recruit) and pages and pages > 1 then   -- the pager only when there is more than one page
 		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
 	end
 	if journal or goals or wishes or crafts or feed or recruit or class then

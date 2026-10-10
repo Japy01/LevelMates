@@ -191,3 +191,8 @@ L.OPT_ASK = "Questions from my class"; L.OPT_ASK_TT = "A notice when a guildmate
 -- Meetup calendar
 L.BTN_CALENDAR = "Calendar"; L.BTN_CARDS = "Dungeons"; L.HEAD_CALENDAR = "Meetup calendar"; L.SUB_CALENDAR = "The next 7 days. Click a meetup to join, leave or cancel it."
 L.CAL_EMPTY = "No meetups in the next 7 days. Set one up from a dungeon card."; L.CAL_MINE = "yours"
+
+-- Inactive members (officers)
+L.BTN_INACTIVE = "Inactive"; L.BTN_TEMPLATES = "Templates"; L.HEAD_INACTIVE = "Inactive members"; L.SUB_INACTIVE = "Members who have not logged in for a while. Nothing is done to them: it only informs."
+L.INACTIVE_DAYS = "%d+ days"; L.INACTIVE_AWAY = "%d days ago"; L.INACTIVE_SINCE = "since %s"; L.INACTIVE_BEFORE = "before %s"; L.INACTIVE_EMPTY = "Nobody has been away that long."
+L.COL_RANK_GUILD = "Rank"; L.COL_AWAY = "Last seen"; L.COL_JOINED = "Joined"
