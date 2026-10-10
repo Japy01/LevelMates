@@ -37,3 +37,4 @@ First version.
 - Guild wall: a seventh tab with the last 7 days of level-ups, dungeons with guildmates, rare-or-better loot and goals; new kind `fe` (options to stop sharing, and to leave loot out).
 - Giveaways on the Wishes tab, matched with wishes both ways; reservations; new kinds `gv`, `gr`.
 - Dungeon meetups from the cards: day and time, join with a role, reminder 15 minutes before; new kinds `qd`, `qdx`, `qj`, `qjx`.
+- Rare sightings with a [Waypoint] link (new kind `rr`); group quest progress in tooltips with completion notices (new kind `qo`); guildmates on the world map and the busiest zone; a panic key binding (`/lm panico`); `/lm sim raro`.

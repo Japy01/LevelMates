@@ -118,3 +118,15 @@ ns.On("LM_HELP_BUTTON", function()
 	StaticPopup_Show("LEVELMATES_HELP")
 end)
 ns.On("LM_WORLD", function(isInitial) if isInitial then C_Timer.NewTicker(60, H.Expire) end end)
+
+-- The panic key: a help request at once with a fixed text, at most every 30 seconds.
+H.PANIC_GAP = 30
+local lastPanic = -math.huge
+function H.Panic()
+	if GetTime() - lastPanic < H.PANIC_GAP then ns.Say(L.PANIC_WAIT); return false end
+	if H.Ask(L.PANIC_TEXT) then lastPanic = GetTime(); return true end
+	return false
+end
+function LevelMates_Panic() H.Panic() end
+BINDING_NAME_LEVELMATES_PANIC = L.BINDING_PANIC
+ns.Slash("panico", H.Panic); ns.Slash("panic", H.Panic)

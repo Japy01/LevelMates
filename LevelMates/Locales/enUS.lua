@@ -135,3 +135,4 @@ L.GIFT_ASKED = "Reservation asked to %s for %s; they confirm it."; L.GIFT_CONFIR
 L.RARE_SEEN = "%s spotted %s in %s"; L.WAYPOINT = "Waypoint"; L.OPT_RARE = "Rare sightings"; L.OPT_RARE_TT = "Tell the guild when you see a rare, and hear about the ones guildmates see where you are."
 L.QUEST_SHARED = "Quests in common:"; L.QUEST_DONE = "%s has completed: %s"
 L.ZONE_BUSY = "%d guildmates in %s"; L.OPT_MAP = "Guildmates on the map"; L.OPT_MAP_TT = "Guildmates who share their position appear on the world map."
+L.PANIC_TEXT = "Help! I'm being killed"; L.PANIC_WAIT = "Help already asked; wait a few seconds."; L.BINDING_PANIC = "Ask for help now"

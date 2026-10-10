@@ -47,6 +47,12 @@ local function simMeetups()
 	ns.Meetups.AddSample("Ana", 4, 24 * 60, {})
 end
 
+local function simRare()
+	if not R.mates.Mario then run() end
+	local map = C_Map.GetBestMapForUnit("player") or 1
+	inject("rr", { n = "Mangaleta", z = map, x = 42.5, y = 61.0 }, "Mario")
+end
+
 local function simHelp()
 	local map = C_Map.GetBestMapForUnit("player") or 1
 	inject("help", { t = "Fuerte Colmillo (elite)", z = map, x = 42.5, y = 61.0, id = "sim00001" }, "Mario")
@@ -122,5 +128,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "muro" or rest == "wall" then simWall()
 	elseif rest == "mercadillo" or rest == "gifts" then simGifts()
 	elseif rest == "quedada" or rest == "meetup" then simMeetups()
+	elseif rest == "raro" or rest == "rare" then simRare()
 	else run() end
 end)

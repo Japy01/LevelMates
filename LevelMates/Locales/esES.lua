@@ -135,3 +135,4 @@ L.GIFT_ASKED = "Reserva pedida a %s para %s; te la confirmará."; L.GIFT_CONFIRM
 L.RARE_SEEN = "%s ha visto a %s en %s"; L.WAYPOINT = "Ruta"; L.OPT_RARE = "Avistamiento de raros"; L.OPT_RARE_TT = "Avisa a la hermandad cuando ves un raro, y te avisa de los que ven tus hermanos donde estás."
 L.QUEST_SHARED = "Misiones en común:"; L.QUEST_DONE = "%s ya tiene completa: %s"
 L.ZONE_BUSY = "%d hermanos en %s"; L.OPT_MAP = "Hermanos en el mapa"; L.OPT_MAP_TT = "Los hermanos que comparten su posición salen en el mapa del mundo."
+L.PANIC_TEXT = "¡Ayuda! Me están matando"; L.PANIC_WAIT = "Ya has pedido ayuda; espera unos segundos."; L.BINDING_PANIC = "Pedir ayuda ya"
