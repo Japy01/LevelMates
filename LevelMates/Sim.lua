@@ -127,13 +127,14 @@ local function simArt()
 		tinsert(UISpecialFrames, "LevelMatesArtPreview")
 		local list = {}
 		for id = 7963768, 7963785 do list[#list + 1] = { tex = id, label = tostring(id) } end
+		list[#list + 1] = { tex = 131865, label = "131865 (RFK, entera)", full = true }
 		for _, name in ipairs(ART) do list[#list + 1] = { tex = "Interface\\Glues\\LoadingScreens\\" .. name, label = name } end
 		f.thumbs = {}
 		for i, c in ipairs(list) do
 			local col, row = (i - 1) % 6, math.floor((i - 1) / 6)
 			local tex = f:CreateTexture(nil, "ARTWORK")
 			tex:SetSize(146, 92); tex:SetPoint("TOPLEFT", 14 + col * 152, -30 - row * 118)
-			tex:SetTexture(c.tex); tex:SetTexCoord(0.02, 0.98, 0.12, 0.88)
+			tex:SetTexture(c.tex); if c.full then tex:SetTexCoord(0, 1, 0, 1) else tex:SetTexCoord(0.02, 0.98, 0.12, 0.88) end
 			local label = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 			label:SetPoint("TOP", tex, "BOTTOM", 0, -2); label:SetText(c.label)
 			f.thumbs[i] = { tex = tex, label = label }
