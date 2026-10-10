@@ -104,9 +104,24 @@ local function simCrafts()
 	ns.Professions.AddSample("Ana", { { id = 197, rank = 90 } })
 end
 
+-- Class tab and chat ads: builds of my class (with my own build code when the game has given it, to try View build),
+-- a shared macro and a chat ad on the Deadmines card.
+local function simClass()
+	if not R.mates.Mario then run() end
+	local BU, class = ns.Builds, select(2, UnitClass("player"))
+	local parts = {}
+	for i, g in ipairs(BU.Groups()) do parts[#parts + 1] = g.id .. ":" .. (i == 1 and 12 or 3) end
+	local mine = BU.Mine()
+	BU.AddSample("Mario", { c = class, s = mine.s, l = 31, p = #parts > 0 and table.concat(parts, ",") or "1:12", b = mine.b })
+	BU.AddSample("Luis", { c = class, s = mine.s, l = 22, p = #parts > 0 and table.concat(parts, ","):gsub(":%d+", ":5") or "1:5" })
+	ns.Macros.AddSample("Mario", "Pull", "#showtooltip\n/startattack\n/say Pull!", class)
+	ns.ChatAds.AddSample(5, "Pepe", "LFM DM need heal", 90)
+end
+
 local function off()
 	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples(); ns.Wishlist.RemoveSamples(); ns.Professions.RemoveSamples()
 	ns.Feed.RemoveSamples(); ns.Gifts.RemoveSamples(); ns.Meetups.RemoveSamples()
+	ns.Builds.RemoveSamples(); ns.Macros.RemoveSamples(); ns.ChatAds.RemoveSamples()
 	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -160,5 +175,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "quedada" or rest == "meetup" then simMeetups()
 	elseif rest == "raro" or rest == "rare" then simRare()
 	elseif rest == "arte" or rest == "art" then simArt()
+	elseif rest == "clase" or rest == "class" then simClass()
 	else run() end
 end)

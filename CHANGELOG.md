@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+- **Class tab**: talent builds of guildmates of your class (points per branch and level), opened in the game's build viewer with "View build"; a macro library for each class, written for LevelMates with spell names in your language, created with a click; and macros guildmates share ("Share macro", up to 5).
+- **Guildmate card**: click a name on the board to see their class, level, zone, build, professions, wishes and giveaways, personal goal, latest on the wall and meetups, with Whisper, Invite, Waypoint and View build.
+- **Chat ads on the dungeon cards**: group ads posted in Trade, General and other public channels ("LFM DM need heal", "busco grupo minas") are counted on their dungeon's card ("2 looking · 3 in chat"), shown in its tooltip and can be whispered from its menu. Only read on your computer; option "Read group ads from chat".
+- The window is a little wider, for nine tabs.
+- `/lm clase` opens the Class tab; `/lm sim clase` tries it alone.
+
 ## 0.1.2
 
 - Language option: automatic (the game's), English or Spanish, whatever the game client's language; a change offers to reload the interface.
