@@ -112,3 +112,6 @@ L.HEAD_WISHES = "Deseos"; L.SUB_WISHES = "Mayús+clic en un objeto para añadirl
 L.HEAD_CRAFTS = "Oficios"; L.SUB_CRAFTS = "Quién tiene cada profesión y a qué nivel. Clic derecho: susurrar."; L.SEARCH_CRAFTS = "Profesión o nombre..."
 L.PACE = "Ritmo: %s por nivel · el más rápido: nivel %d en %s"; L.PACE_TO_MAX = " · nivel 60 en ~%s"
 L.LEVELUP_NOTICE = "¡%s ha llegado a nivel %d!"; L.CHEER = "Felicitar"; L.CHEER_TEXT = "¡Felicidades por el nivel %d!"
+L.OPT_PROFS = "Compartir mis profesiones"; L.OPT_PROFS_TT = "Los hermanos ven tus profesiones y su nivel en la pestaña Oficios."
+L.PROF_171 = "Alquimia"; L.PROF_164 = "Herrería"; L.PROF_333 = "Encantamiento"; L.PROF_202 = "Ingeniería"; L.PROF_182 = "Herboristería"; L.PROF_165 = "Peletería"
+L.PROF_186 = "Minería"; L.PROF_393 = "Desuello"; L.PROF_197 = "Sastrería"; L.PROF_129 = "Primeros auxilios"; L.PROF_185 = "Cocina"; L.PROF_356 = "Pesca"

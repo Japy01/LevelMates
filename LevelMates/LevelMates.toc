@@ -33,6 +33,7 @@ Journal.lua
 Goals.lua
 Personal.lua
 Wishlist.lua
+Professions.lua
 GoalDialog.lua
 WishDialog.lua
 DiscordCopy.lua

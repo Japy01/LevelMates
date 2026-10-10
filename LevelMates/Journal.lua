@@ -199,6 +199,7 @@ local function checkSkills()
 	local now = readProfessions(before)
 	if not now then return end
 	ns.char.skills = now
+	ns.Fire("LM_SKILLS_CHANGED")
 	if not before then return end   -- first readable sight: snapshot only
 	for id, s in pairs(now) do
 		local old = before[id]

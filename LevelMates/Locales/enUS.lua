@@ -112,3 +112,6 @@ L.HEAD_WISHES = "Wishes"; L.SUB_WISHES = "Shift+click an item to add it; right-c
 L.HEAD_CRAFTS = "Professions"; L.SUB_CRAFTS = "Who has each profession and at what rank. Right-click: whisper."; L.SEARCH_CRAFTS = "Profession or name..."
 L.PACE = "Pace: %s per level · fastest: level %d in %s"; L.PACE_TO_MAX = " · level 60 in ~%s"
 L.LEVELUP_NOTICE = "%s reached level %d!"; L.CHEER = "Congratulate"; L.CHEER_TEXT = "Congratulations on level %d!"
+L.OPT_PROFS = "Share my professions"; L.OPT_PROFS_TT = "Guildmates see your professions and ranks on the Professions tab."
+L.PROF_171 = "Alchemy"; L.PROF_164 = "Blacksmithing"; L.PROF_333 = "Enchanting"; L.PROF_202 = "Engineering"; L.PROF_182 = "Herbalism"; L.PROF_165 = "Leatherworking"
+L.PROF_186 = "Mining"; L.PROF_393 = "Skinning"; L.PROF_197 = "Tailoring"; L.PROF_129 = "First Aid"; L.PROF_185 = "Cooking"; L.PROF_356 = "Fishing"

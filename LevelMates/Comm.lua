@@ -63,6 +63,19 @@ local function itemids(max)
 		return n >= 1 and n <= max
 	end
 end
+-- Professions "171:120,182:95": 1-6 pairs of skill id (1-999) and rank (1-450).
+local function profs(v)
+	if type(v) ~= "string" or v == "" or v:find(",,", 1, true) or v:sub(-1) == "," then return false end
+	local n = 0
+	for pair in v:gmatch("[^,]+") do
+		local id, rank = pair:match("^(%d+):(%d+)$")
+		if not id then return false end
+		id, rank = tonumber(id), tonumber(rank)
+		if id < 1 or id > 999 or rank < 1 or rank > 450 then return false end
+		n = n + 1
+	end
+	return n <= 6
+end
 
 -- field validators; required fields are listed in REQUIRED
 C.SCHEMA = {
@@ -81,10 +94,11 @@ C.SCHEMA = {
 	gc   = { id = word(8), n = int(0, 10000) },
 	gp   = { l = int(0, 60), e = int(0, 100000) },
 	wl   = { ids = itemids(10) },
+	pf   = { p = profs },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
@@ -216,7 +230,7 @@ local function pump()
 	C.stats.queued = #queue
 end
 
-local LATEST_ONLY = { wl = true, gp = true }
+local LATEST_ONLY = { wl = true, gp = true, pf = true }
 function C.Send(kind, fields, prio)
 	if active == "none" or not IsInGuild() then return false end
 	if inInstance() and not INSTANCE_OK[kind] then return false end
