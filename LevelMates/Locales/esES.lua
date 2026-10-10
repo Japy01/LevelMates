@@ -188,3 +188,7 @@ L.GROUPXP_PAUSED = "XP del grupo (en pausa en mazmorras)"
 L.ASK_ANSWER = "Responder"; L.ASK_ANSWER_TO = "Responder a %s (susurro)"; L.ASK_NOTICE = "%s pregunta a tu clase: %s"; L.ASK_WAIT = "Una pregunta por minuto."; L.ASK_FAILED = "La pregunta no se ha podido enviar ahora (¿estás en una mazmorra?)."
 L.ASK_PROMPT = "Tu pregunta para los hermanos de tu clase:"; L.BTN_ASK = "Preguntar a mi clase"; L.CLASS_SECTION_ASK = "Preguntas"; L.CLASS_EMPTY_ASK = "Ninguna pregunta en el último día."
 L.OPT_ASK = "Preguntas de mi clase"; L.OPT_ASK_TT = "Un aviso cuando un hermano de tu clase pregunta algo, con un enlace [Responder]."
+
+-- Calendario de quedadas
+L.BTN_CALENDAR = "Calendario"; L.BTN_CARDS = "Mazmorras"; L.HEAD_CALENDAR = "Calendario de quedadas"; L.SUB_CALENDAR = "Los próximos 7 días. Clic en una quedada para apuntarte, borrarte o cancelarla."
+L.CAL_EMPTY = "No hay quedadas en los próximos 7 días. Crea una desde una tarjeta de mazmorra."; L.CAL_MINE = "tuya"

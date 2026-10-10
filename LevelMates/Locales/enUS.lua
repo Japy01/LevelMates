@@ -187,3 +187,7 @@ L.GROUPXP_PAUSED = "Group XP (paused in dungeons)"
 L.ASK_ANSWER = "Answer"; L.ASK_ANSWER_TO = "Answer %s (whisper)"; L.ASK_NOTICE = "%s asks your class: %s"; L.ASK_WAIT = "One question a minute."; L.ASK_FAILED = "The question could not be sent now (in a dungeon?)."
 L.ASK_PROMPT = "Your question for guildmates of your class:"; L.BTN_ASK = "Ask my class"; L.CLASS_SECTION_ASK = "Questions"; L.CLASS_EMPTY_ASK = "No questions in the last day."
 L.OPT_ASK = "Questions from my class"; L.OPT_ASK_TT = "A notice when a guildmate of your class asks something, with an [Answer] link."
+
+-- Meetup calendar
+L.BTN_CALENDAR = "Calendar"; L.BTN_CARDS = "Dungeons"; L.HEAD_CALENDAR = "Meetup calendar"; L.SUB_CALENDAR = "The next 7 days. Click a meetup to join, leave or cancel it."
+L.CAL_EMPTY = "No meetups in the next 7 days. Set one up from a dungeon card."; L.CAL_MINE = "yours"
