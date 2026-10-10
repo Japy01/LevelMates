@@ -27,7 +27,7 @@ D.list = {
 	{ id = 9,  key = "DUNGEON_EXCAVATION_WETLANDS", min = 26, max = 33, art = 7963777, coords = NEW },
 	{ id = 10, key = "DUNGEON_DALARAN",             min = 28, max = 33, art = 7963775, coords = NEW },
 	{ id = 11, key = "DUNGEON_GNOMEREGAN",          min = 29, max = 38, art = LS .. "LoadScreenGnomeregan", coords = TALL },
-	{ id = 12, key = "DUNGEON_RAZORFEN_KRAUL",      min = 29, max = 38, art = 131865, coords = TALL },
+	{ id = 12, key = "DUNGEON_RAZORFEN_KRAUL",      min = 29, max = 38, art = 131865, coords = { 0.02, 0.98, 0.20, 0.62 } },   -- its scene sits high; lower down it washes out
 	{ id = 13, key = "DUNGEON_SM_GRAVEYARD",        min = 30, max = 38, art = LS .. "LoadScreenScarletMonastery2", coords = TALL, instance = SM },
 	{ id = 14, key = "DUNGEON_SM_LIBRARY",          min = 33, max = 41, art = LS .. "LoadScreenScarletHalls", coords = TALL, instance = SM },
 }
