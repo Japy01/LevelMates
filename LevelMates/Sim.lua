@@ -31,6 +31,22 @@ local function simLevel()
 	inject("hb", { l = math.min(60, (m and m.level or 30) + 1), z = m and m.mapId or 1, c = "MAGE", v = "sim" }, "Mario")
 end
 
+local function simWall()
+	local F = ns.Feed
+	F.AddSample("Mario", "lvl", 31, nil, 20)
+	F.AddSample("Ana", "dun", 0, "Minas de la Muerte · Mario, Luis", 95)
+	F.AddSample("Luis", "itm", 2318, nil, 180)
+	F.AddSample("Ana", "pgl", 25, nil, 400)
+end
+local function simGifts()
+	ns.Gifts.AddSample("Ana", { 2589, 765 })
+	ns.Gifts.AddSample("Luis", { 2318 })
+end
+local function simMeetups()
+	ns.Meetups.AddSample("Mario", 5, 90, { Ana = "H" })
+	ns.Meetups.AddSample("Ana", 4, 24 * 60, {})
+end
+
 local function simHelp()
 	local map = C_Map.GetBestMapForUnit("player") or 1
 	inject("help", { t = "Fuerte Colmillo (elite)", z = map, x = 42.5, y = 61.0, id = "sim00001" }, "Mario")
@@ -84,6 +100,7 @@ end
 
 local function off()
 	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples(); ns.Wishlist.RemoveSamples(); ns.Professions.RemoveSamples()
+	ns.Feed.RemoveSamples(); ns.Gifts.RemoveSamples(); ns.Meetups.RemoveSamples()
 	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -102,5 +119,8 @@ ns.Slash("sim", function(rest)
 	elseif rest == "deseos" or rest == "wishes" then simWishes()
 	elseif rest == "oficios" or rest == "professions" then simCrafts()
 	elseif rest == "nivel" or rest == "level" then simLevel()
+	elseif rest == "muro" or rest == "wall" then simWall()
+	elseif rest == "mercadillo" or rest == "gifts" then simGifts()
+	elseif rest == "quedada" or rest == "meetup" then simMeetups()
 	else run() end
 end)

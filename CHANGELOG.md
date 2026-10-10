@@ -34,3 +34,6 @@ First version.
 - Screen notices for the important events (option), a notice when a guildmate runs a newer LevelMates, and a [Congratulate] link on guildmates' level-ups (option).
 - Professions: a sixth tab with who has each profession and its rank, shared in the new kind `pf` (option to stop sharing); in Copy for Discord too.
 - Join a dungeon group from its card (new kinds `lfj`/`lfjx`): the poster is told, sees who joined, invites them, and hears when the group is full.
+- Guild wall: a seventh tab with the last 7 days of level-ups, dungeons with guildmates, rare-or-better loot and goals; new kind `fe` (options to stop sharing, and to leave loot out).
+- Giveaways on the Wishes tab, matched with wishes both ways; reservations; new kinds `gv`, `gr`.
+- Dungeon meetups from the cards: day and time, join with a role, reminder 15 minutes before; new kinds `qd`, `qdx`, `qj`, `qjx`.
