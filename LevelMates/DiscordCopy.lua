@@ -6,7 +6,7 @@ ns.DiscordCopy = D
 local L = ns.L
 D.MAX = 2000   -- one Discord message
 local ROLE_EMOJI = { T = ":shield:", H = ":green_heart:", D = ":crossed_swords:" }
-local TAB_TITLE = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS" }
+local TAB_TITLE = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", feed = "TAB_FEED" }
 
 local function me() return (UnitName("player")) end
 -- "[Name]" from a game link; Discord shows the codes as they are.
@@ -97,6 +97,15 @@ function builders.crafts()
 		table.insert(byProf[c.id], c.name .. " " .. c.rank)
 	end
 	for _, id in ipairs(order) do lines[#lines + 1] = string.format("• **%s**: %s", P.Name(id), table.concat(byProf[id], ", ")) end
+	return lines
+end
+
+function builders.feed()
+	local F, lines = ns.Feed, {}
+	for _, e in ipairs(F.List()) do
+		local what = F.Text(e):gsub("|c[^|]-|H.-|h%[(.-)%]|h|r", "[%1]")
+		lines[#lines + 1] = string.format("• **%s** %s (%s)", F.Who(e), what, F.Ago(e))
+	end
 	return lines
 end
 

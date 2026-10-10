@@ -34,6 +34,7 @@ Goals.lua
 Personal.lua
 Wishlist.lua
 Professions.lua
+Feed.lua
 GoalDialog.lua
 WishDialog.lua
 DiscordCopy.lua

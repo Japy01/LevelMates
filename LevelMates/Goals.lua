@@ -127,6 +127,7 @@ end
 function G.CheckDone(g)
 	if not g.announced and G.IsDone(g) then
 		g.announced = true
+		ns.Fire("LM_GOAL_REACHED", g)
 		if ns.db.settings.goalNotices then ns.Notice(L.GOAL_REACHED, G.Text(g)) end
 	end
 end

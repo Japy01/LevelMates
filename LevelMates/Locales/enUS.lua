@@ -117,3 +117,8 @@ L.PROF_171 = "Alchemy"; L.PROF_164 = "Blacksmithing"; L.PROF_333 = "Enchanting";
 L.PROF_186 = "Mining"; L.PROF_393 = "Skinning"; L.PROF_197 = "Tailoring"; L.PROF_129 = "First Aid"; L.PROF_185 = "Cooking"; L.PROF_356 = "Fishing"
 L.TAB_CRAFTS = "Professions"; L.COL_PROFESSION = "Profession"; L.COL_RANK = "Rank"; L.COL_SEEN = "Seen"; L.ONLINE = "online"; L.CRAFTS_EMPTY = "Nobody has shared professions yet."
 L.LFJ_JOIN = "Join %s as %s"; L.LFJ_LEAVE = "Leave %s's group"; L.LFJ_INVITE = "Invite %s (%s)"; L.LFJ_JOINED = "joined: %s"; L.LFJ_NOTICE = "%s joins your %s group as %s."; L.LFJ_FULL = "Your %s group is full! Invite them from the card."
+L.TAB_FEED = "Wall"; L.HEAD_FEED = "Guild wall"; L.SUB_FEED = "What has been happening in the guild (last 7 days)."; L.SEARCH_FEED = "Name or text..."
+L.COL_WHAT = "What"; L.COL_WHEN = "When"; L.FEED_EMPTY = "Nothing on the wall yet."; L.FEED_GUILD = "Guild"; L.FEED_AGO = "%s ago"
+L.FEED_LVL = "reached level %d"; L.FEED_DUN = "went to %s"; L.FEED_ITM = "got %s"; L.FEED_PGL = "reached their goal: level %d"; L.FEED_GOL = "goal reached: %s"
+L.OPT_FEED = "Share on the wall"; L.OPT_FEED_TT = "Your level-ups, dungeons with guildmates and goals appear on guildmates' wall."
+L.OPT_FEED_LOOT = "Loot on the wall"; L.OPT_FEED_LOOT_TT = "Rare (blue) or better items you loot appear on the wall."

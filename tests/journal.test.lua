@@ -1,5 +1,6 @@
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.db.settings.shareFeed = false   -- the wall (fe) has its own test
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local J, L = ns.Journal, ns.L
 local sent0 = #STUB.sent
