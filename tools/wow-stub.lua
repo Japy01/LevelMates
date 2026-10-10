@@ -374,3 +374,8 @@ function Region:SetHighlightFontObject() end
 function Region:SetDisabledFontObject() end
 function Region:SetBackdropColor(r, g, b, a) self.backdropColor = { r, g, b, a } end
 function Region:SetBackdropBorderColor(r, g, b, a) self.backdropBorder = { r, g, b, a } end
+function Region:SetHorizTile() end
+function Region:SetVertTile() end
+function Region:SetVertexColor(r, g, b, a) self.vertexColor = { r, g, b, a } end
+function Region:SetGradient(o, a, b) self.gradient = { o, a, b } end
+function CreateColor(r, g, b, a) return { r = r, g = g, b = b, a = a } end

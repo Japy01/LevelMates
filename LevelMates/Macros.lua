@@ -79,7 +79,8 @@ function MA.Library(class)
 			if not name then missing = true end
 			return name or ""
 		end)
-		if not missing then out[#out + 1] = { name = MA.Title(m), body = body, library = true } end
+		local first = tonumber(m.body:match("{s:(%d+)}"))
+		if not missing then out[#out + 1] = { name = MA.Title(m), body = body, library = true, icon = first and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(first) } end
 	end
 	return out
 end
@@ -116,6 +117,13 @@ function MA.Risky(body)
 	local b = tostring(body or ""):lower()
 	for _, cmd in ipairs({ "/run", "/script", "/console", "/gquit", "/guildquit", "/gdisband" }) do if b:find(cmd, 1, true) then return true end end
 	return false
+end
+
+-- A shared macro's icon: the first spell it casts, as this client draws it.
+function MA.IconOf(body)
+	local spell = tostring(body or ""):match("/cast%s+%b[]%s*([^\n;%[]+)") or tostring(body or ""):match("/cast%s+!?([^\n;%[]+)")
+	spell = spell and strtrim(spell)
+	return spell and spell ~= "" and C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(spell) or nil
 end
 
 function MA.IsShared(name) for _, n in ipairs(shared()) do if n == name then return true end end; return false end
@@ -194,7 +202,7 @@ function MA.Guild(search)
 			if e.t < cutoff then list[n] = nil
 			elseif by ~= me() and e.c == myClass() and (e.sim or R.IsGuildmate(by))
 				and (q == "" or by:lower():find(q, 1, true) or n:lower():find(q, 1, true)) then
-				out[#out + 1] = { by = by, name = n, body = e.x }
+				out[#out + 1] = { by = by, name = n, body = e.x, icon = MA.IconOf(e.x) }
 			end
 		end
 	end

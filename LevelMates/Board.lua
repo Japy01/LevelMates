@@ -103,6 +103,10 @@ local function Build()
 	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 34)); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
 	local divider = f:CreateTexture(nil, "ARTWORK")
 	divider:SetColorTexture(1, 0.82, 0, 0.35); divider:SetHeight(1)
+	if ns.Skin.On() and divider.SetGradient and CreateColor then   -- gold fading out to the right
+		divider:SetColorTexture(1, 1, 1, 1); divider:SetGradient("HORIZONTAL", CreateColor(1, 0.82, 0, 0.8), CreateColor(1, 0.82, 0, 0))
+	end
+	B.divider = divider
 	divider:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 8)); divider:SetPoint("TOPRIGHT", -B.MARGIN, -(B.TOP - 8))
 	local search = CreateFrame("EditBox", nil, f, "SearchBoxTemplate")
 	search:SetSize(150, 20); search:SetPoint("TOPRIGHT", -B.MARGIN - 6, -(insetTop + 12))
@@ -1058,13 +1062,16 @@ end
 
 local function OneLine(body) return (tostring(body or ""):gsub("\n", "  ·  ")) end
 
+local CLASS_ICONS = { library = "Interface\\Icons\\INV_Misc_Book_09", guild = "Interface\\Icons\\INV_Misc_Note_01", ask = "Interface\\Icons\\INV_Misc_QuestionMark" }
+
 local function FillClass(list)
 	for i = 1, ROWS do
 		local r, c = B.rows[i], list[i]
 		r.button.mate, r.button.adId, r.button.entry, r.button.goalId, r.button.personalMine = nil, nil, nil, nil, nil
 		r.button.classEntry = c
 		if c and c.header then
-			r.icon:Hide()
+			if c.header == "builds" then SetClassIcon(r.icon, MyClass())
+			else r.icon:SetTexture(CLASS_ICONS[c.header]); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:Show() end
 			-- the header spans the row (SetColumns gives the name column back on the next redraw)
 			local label = L["CLASS_SECTION_" .. c.header:upper()] .. " (" .. c.count .. ")"
 			if c.count == 0 then label = label .. "  |cffb3b3b3" .. L["CLASS_EMPTY_" .. c.header:upper()] .. "|r" end
@@ -1075,7 +1082,8 @@ local function FillClass(list)
 			r.bg:SetColorTexture(1, 0.82, 0, 0.08)
 		elseif c and c.kind == "ask" then
 			local q = c.q
-			r.icon:Hide()
+			local m = R.mates[q.by]
+			SetClassIcon(r.icon, q.mine and MyClass() or m and m.class)
 			r.name:SetText(q.by); if q.mine then r.name:SetTextColor(ClassColor(MyClass())) else r.name:SetTextColor(1, 1, 1) end
 			r.level:SetText("")
 			r.zone:SetText(q.x); r.zone:SetTextColor(1, 1, 1)
@@ -1085,7 +1093,7 @@ local function FillClass(list)
 			RowBg(r, i, false)
 		elseif c and c.kind == "build" then
 			local e = c.e
-			r.icon:Hide()
+			SetClassIcon(r.icon, e.c)
 			r.name:SetText(e.name); r.name:SetTextColor(ClassColor(e.c))
 			r.level:SetText("")
 			r.zone:SetText(ns.Builds.PointsText(e)); r.zone:SetTextColor(1, 1, 1)
@@ -1095,7 +1103,7 @@ local function FillClass(list)
 			RowBg(r, i, false)
 		elseif c then
 			local m = c.m
-			r.icon:Hide()
+			r.icon:SetTexture(m.icon or "Interface\\Icons\\INV_Misc_QuestionMark"); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:Show()
 			r.name:SetText(m.name); r.name:SetTextColor(0.6, 0.8, 1)
 			r.level:SetText("")
 			r.zone:SetText(c.kind == "guild" and (m.by .. ": " .. OneLine(m.body)) or OneLine(m.body)); r.zone:SetTextColor(0.85, 0.85, 0.85)

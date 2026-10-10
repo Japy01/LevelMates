@@ -85,3 +85,17 @@ for _, r in ipairs(B.rows) do
 	local c = r.button:IsShown() and r.button.classEntry
 	if c and not c.header then assert(r.name:GetWidth() < 200, "entries keep the name column") end
 end
+
+-- icons: the class on builds and questions, the spell on macros, one per section
+C_Spell.GetSpellTexture = function(x) return "icon:" .. tostring(x) end
+STUB.atlases["classicon-warrior"] = true
+B.Refresh()
+for _, r in ipairs(B.rows) do
+	local c = r.button:IsShown() and r.button.classEntry
+	if c then
+		assert(r.icon:IsShown(), "an icon on every row: " .. tostring(c.kind or c.header))
+		if c.kind == "build" then assert(r.icon.atlas == "classicon-warrior", "class icon") end
+		if c.kind == "lib" then assert(tostring(r.icon.texture):find("^icon:%d+"), "the macro's spell: " .. tostring(r.icon.texture)) end
+		if c.kind == "guild" then assert(r.icon.texture == "icon:Taunt", "the shared macro's spell: " .. tostring(r.icon.texture)) end
+	end
+end

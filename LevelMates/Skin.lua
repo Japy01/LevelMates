@@ -7,21 +7,24 @@ ns.Skin = SK
 local unpack = unpack or table.unpack
 
 SK.FLAT, SK.EDGE = "Interface\\Buttons\\WHITE8X8", "Interface\\Tooltips\\UI-Tooltip-Border"
+-- the game's own tiled backgrounds (its frames use them most): stone for the window, marble for the inner panel
+SK.ROCK, SK.MARBLE = "Interface\\FrameGeneral\\UI-Background-Rock", "Interface\\FrameGeneral\\UI-Background-Marble"
 SK.C = {
-	frame = { 0.24, 0.17, 0.10, 0.97 }, frameBorder = { 0.86, 0.67, 0.32, 1 },
-	panel = { 0.32, 0.23, 0.13, 0.94 }, panelBorder = { 0.58, 0.44, 0.22, 1 },
+	frame = { 1, 0.80, 0.58, 1 }, frameBorder = { 0.86, 0.67, 0.32, 1 },
+	panel = { 0.92, 0.74, 0.52, 0.92 }, panelBorder = { 0.58, 0.44, 0.22, 1 },
 	button = { 0.42, 0.29, 0.13, 1 }, buttonBorder = { 0.86, 0.67, 0.32, 1 },
 	tab = { 0.30, 0.21, 0.11, 1 }, tabActive = { 0.58, 0.42, 0.17, 1 },
 	row = { 1, 0.85, 0.55, 0.07 }, header = { 1, 0.82, 0.25, 0.14 }, hover = { 1, 0.85, 0.45, 0.16 },
+	bar = { 0.08, 0.05, 0.02, 0.55 }, barLine = { 0.86, 0.67, 0.32, 0.7 },
 	card = { 0.86, 0.67, 0.32, 1 }, cardDim = { 0.40, 0.33, 0.24, 1 }, band = { 0.10, 0.06, 0.02, 0.62 },
 }
 
 function SK.On() return not (ns.db and ns.db.settings.style == "classic") end
 
 -- Background and border on a frame made with BackdropTemplate.
-function SK.Backdrop(f, bg, border, edge)
-	if not f.SetBackdrop and Mixin and BackdropTemplateMixin then Mixin(f, BackdropTemplateMixin) end
-	f:SetBackdrop({ bgFile = SK.FLAT, edgeFile = SK.EDGE, edgeSize = edge or 14, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
+-- With `bgFile` the background is that texture, tiled and tinted by `bg`.
+function SK.Backdrop(f, bg, border, edge, bgFile)
+	f:SetBackdrop({ bgFile = bgFile or SK.FLAT, tile = bgFile ~= nil, tileSize = 256, edgeFile = SK.EDGE, edgeSize = edge or 14, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
 	f:SetBackdropColor(unpack(bg))
 	f:SetBackdropBorderColor(unpack(border))
 end
@@ -30,7 +33,13 @@ end
 function SK.Window(name, parent)
 	if not SK.On() then return CreateFrame("Frame", name, parent or UIParent, "BasicFrameTemplateWithInset") end
 	local f = CreateFrame("Frame", name, parent or UIParent, "BackdropTemplate")
-	SK.Backdrop(f, SK.C.frame, SK.C.frameBorder, 16)
+	SK.Backdrop(f, SK.C.frame, SK.C.frameBorder, 16, SK.ROCK)
+	-- a darker title bar with a gold line under it
+	local bar = f:CreateTexture(nil, "BACKGROUND", nil, 2)
+	bar:SetColorTexture(unpack(SK.C.bar)); bar:SetPoint("TOPLEFT", 4, -4); bar:SetPoint("TOPRIGHT", -4, -4); bar:SetHeight(20)
+	local barLine = f:CreateTexture(nil, "BORDER")
+	barLine:SetColorTexture(unpack(SK.C.barLine)); barLine:SetPoint("TOPLEFT", bar, "BOTTOMLEFT"); barLine:SetPoint("TOPRIGHT", bar, "BOTTOMRIGHT"); barLine:SetHeight(1)
+	f.TitleBar = bar
 	f.TitleText = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	f.TitleText:SetPoint("TOP", 0, -8)
 	local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
@@ -40,7 +49,8 @@ function SK.Window(name, parent)
 	-- the inner panel is drawn with textures on the window itself: a child frame would cover the window's own texts
 	local inset = f:CreateTexture(nil, "BACKGROUND", nil, 1)
 	inset:SetPoint("TOPLEFT", 8, -26); inset:SetPoint("BOTTOMRIGHT", -8, 28)
-	inset:SetColorTexture(unpack(SK.C.panel))
+	inset:SetTexture(SK.MARBLE, "REPEAT", "REPEAT"); inset:SetHorizTile(true); inset:SetVertTile(true)
+	inset:SetVertexColor(unpack(SK.C.panel))
 	local function line(p1, p2, w, h)
 		local t = f:CreateTexture(nil, "BORDER")
 		t:SetColorTexture(unpack(SK.C.panelBorder)); t:SetPoint(p1, inset, p1); t:SetPoint(p2, inset, p2)

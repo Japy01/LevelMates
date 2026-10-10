@@ -6,7 +6,8 @@ assert(ns.db.settings.style == "gold" and SK.On(), "LevelMates' own style by def
 B.Toggle()
 local f = B.frame
 assert(f.template == "BackdropTemplate" and f.backdropColor and f.backdropColor[1] == SK.C.frame[1], "a brown window")
-assert(f.Inset and f.Inset.colorTexture[1] == SK.C.panel[1], "a lighter inner panel, drawn under the window's texts")
+assert(f.TitleBar, "a title bar")
+assert(f.Inset and f.Inset.texture == SK.MARBLE and f.Inset.vertexColor[1] == SK.C.panel[1], "a lighter inner panel, drawn under the window's texts")
 assert(f.TitleText.text == B.TitleString(), "its title")
 assert(B.helpButton.template == "BackdropTemplate" and B.helpButton.backdropBorder[1] == SK.C.buttonBorder[1], "gold-bordered buttons")
 assert(B.tabs.mates.template == "BackdropTemplate" and B.tabs.mates.enabled == false and B.tabs.lfg.enabled ~= false, "flat tabs, the active one marked")
