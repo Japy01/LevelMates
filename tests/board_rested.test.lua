@@ -9,11 +9,11 @@ STUB.Receive("LVLM", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Ana-Testrea
 B.Toggle()
 local function rowOf(name) for i = 1, #B.rows do if B.rows[i].name.text == name then return B.rows[i] end end end
 
-assert(B.restedText and B.restedText.text == string.format(L.RESTED_MINE, 45), "my rested next to the heading: " .. tostring(B.restedText and B.restedText.text))
+assert(B.restedText and B.restedText.text:sub(1, #string.format(L.RESTED_MINE, 45)) == string.format(L.RESTED_MINE, 45), "my rested next to the heading: " .. tostring(B.restedText and B.restedText.text))
 STUB.player.rested = 1000; STUB.Fire("UPDATE_EXHAUSTION")
-assert(B.restedText.text == string.format(L.RESTED_MINE, 100), "updates on the event")
+assert(B.restedText.text:sub(1, #string.format(L.RESTED_MINE, 100)) == string.format(L.RESTED_MINE, 100), "updates on the event")
 B.tabs.lfg.scripts.OnClick(B.tabs.lfg)
-assert(B.restedText.text == string.format(L.RESTED_MINE, 100), "also on the Dungeons tab")
+assert(B.restedText.text:sub(1, #string.format(L.RESTED_MINE, 100)) == string.format(L.RESTED_MINE, 100), "also on the Dungeons tab")
 B.tabs.mates.scripts.OnClick(B.tabs.mates)
 
 local mario = rowOf("Mario")
@@ -25,4 +25,4 @@ ana.button.scripts.OnEnter(ana.button)
 assert(GameTooltip.hidden, "no tooltip when there is nothing to say")
 
 STUB.player.level = 60; STUB.Fire("PLAYER_LEVEL_UP", 60)
-assert(B.restedText.text == "", "hidden at max level")
+assert(not B.restedText.text:find(L.RESTED_MINE:match("^[^%%]+"), 1, true), "hidden at max level (the busiest zone may remain)")

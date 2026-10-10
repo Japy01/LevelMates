@@ -353,3 +353,11 @@ C_Map.GetPlayerMapPosition = function() return { GetXY = function() return STUB.
 -- Quest objectives
 STUB.objectives = {}
 C_QuestLog.GetQuestObjectives = function(id) return STUB.objectives[id] end
+
+-- World map
+STUB.worldMapId = 1412
+WorldMapFrame = CreateFrame("Frame", "WorldMapFrame")
+local canvas = CreateFrame("Frame"); canvas:SetSize(1000, 700)
+function WorldMapFrame:GetCanvas() return canvas end
+function WorldMapFrame:GetMapID() return STUB.worldMapId end
+function WorldMapFrame:OnMapChanged() end

@@ -871,7 +871,15 @@ function B.Refresh()
 	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
 	local rested = ns.Rested and ns.Rested.Mine()
-	B.restedText:SetText(rested and string.format(L.RESTED_MINE, rested) or "")
+	local top = rested and string.format(L.RESTED_MINE, rested) or ""
+	if B.tab == "mates" and ns.GuildMap then
+		local n, mapId = ns.GuildMap.Busiest()
+		if mapId then
+			local info = C_Map.GetMapInfo(mapId)
+			top = top .. (top ~= "" and "  ·  " or "") .. string.format(L.ZONE_BUSY, n, info and info.name or tostring(mapId))
+		end
+	end
+	B.restedText:SetText(top)
 	if journal then FillJournal(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillGrid(list) else FillMates(list) end
 	if not lfg then for _, c in ipairs(B.cards) do c:Hide() end end
 	if not crafts then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end

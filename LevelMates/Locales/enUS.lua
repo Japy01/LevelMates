@@ -134,3 +134,4 @@ L.MEET_SOON = "Your %s meetup (%s) starts in 15 minutes!"; L.MEET_BAD_TIME = "Pi
 L.GIFT_ASKED = "Reservation asked to %s for %s; they confirm it."; L.GIFT_CONFIRMED = "%s confirms: %s is reserved for you."; L.MEET_NOT_NOW = "Not now: you are in an instance or \"Appear on the board\" is off."
 L.RARE_SEEN = "%s spotted %s in %s"; L.WAYPOINT = "Waypoint"; L.OPT_RARE = "Rare sightings"; L.OPT_RARE_TT = "Tell the guild when you see a rare, and hear about the ones guildmates see where you are."
 L.QUEST_SHARED = "Quests in common:"; L.QUEST_DONE = "%s has completed: %s"
+L.ZONE_BUSY = "%d guildmates in %s"; L.OPT_MAP = "Guildmates on the map"; L.OPT_MAP_TT = "Guildmates who share their position appear on the world map."
