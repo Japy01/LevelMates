@@ -14,7 +14,7 @@ B.GAP, B.MARGIN, B.WIDTH = 4, 12, 680
 B.JCOLS = { 100, 1, 395, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 364, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 360, 65, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
-B.CCOLS = { 150, 1, 319, 60, 70 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
+B.CCOLS = { 150, 1, 289, 60, 100 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
 B.BAR_W = 160
 B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
 B.KCOLS = { 150, 1, 339, 50, 60 }   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
@@ -627,8 +627,8 @@ end
 -- A section header row: in this style the character sheet's plaque with the text centred in white.
 local function SectionHeader(r)
 	if r.plaque then
-		r.bg:SetColorTexture(0, 0, 0, 0); r.stripe:Hide(); r.plaque:Show()
-		r.name:SetWidth(ROW_W - (ROW_H - 4) - 4 - 30); r.name:SetJustifyH("CENTER"); r.name:SetTextColor(1, 1, 1)
+		r.bg:SetColorTexture(unpack(ns.Skin.C.header)); r.stripe:Hide(); r.plaque:Show()   -- a soft dark band, gold text, a fading gold line
+		r.name:SetWidth(ROW_W - (ROW_H - 4) - 4); r.name:SetTextColor(1, 0.82, 0)
 	else
 		r.bg:SetColorTexture(1, 0.82, 0, 0.08)
 	end

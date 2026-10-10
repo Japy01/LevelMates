@@ -14,7 +14,7 @@ SK.C = {
 	panel = { 0.30, 0.21, 0.12, 0.96 }, panelBorder = { 0.58, 0.44, 0.22, 1 },
 	button = { 0.42, 0.29, 0.13, 1 }, buttonBorder = { 0.86, 0.67, 0.32, 1 },
 	tab = { 0.30, 0.21, 0.11, 1 }, tabActive = { 0.58, 0.42, 0.17, 1 },
-	row = { 1, 0.85, 0.55, 0.07 }, header = { 1, 0.82, 0.25, 0.14 }, hover = { 1, 0.85, 0.45, 0.16 },
+	row = { 1, 0.85, 0.55, 0.07 }, header = { 0.10, 0.065, 0.03, 0.45 }, hover = { 1, 0.85, 0.45, 0.16 },
 	bar = { 0.08, 0.05, 0.02, 0.55 }, barLine = { 0.86, 0.67, 0.32, 0.7 },
 	box = { 0.17, 0.115, 0.06, 0.88 }, boxBorder = { 0.62, 0.46, 0.22, 1 }, strip = { 0.10, 0.065, 0.03, 0.55 },
 	line = { 0.21, 0.145, 0.08, 0.92 }, lineBorder = { 0.46, 0.33, 0.15, 1 },
@@ -89,11 +89,14 @@ function SK.Stripe(b)
 	t:SetAtlas("UI-Character-Info-Line-Bounce"); t:SetAllPoints(); t:Hide()
 	return t
 end
+-- A section header's underline: a thin gold line under the row, fading out to the right.
 function SK.Plaque(b)
 	if not SK.On() then return nil end
-	local t = b:CreateTexture(nil, "BACKGROUND", nil, 2)
-	t:SetAtlas("UI-Character-Info-Title"); t:SetPoint("TOPLEFT", 18, 1);   -- after the row's icon
-	 t:SetPoint("BOTTOMRIGHT", 0, -1); t:Hide()
+	local t = b:CreateTexture(nil, "ARTWORK")
+	t:SetColorTexture(1, 0.82, 0, 0.6); t:SetHeight(1)
+	t:SetPoint("BOTTOMLEFT", 0, 0); t:SetPoint("BOTTOMRIGHT", 0, 0)
+	if t.SetGradient and CreateColor then t:SetColorTexture(1, 1, 1, 1); t:SetGradient("HORIZONTAL", CreateColor(1, 0.82, 0, 0.75), CreateColor(1, 0.82, 0, 0)) end
+	t:Hide()
 	return t
 end
 
