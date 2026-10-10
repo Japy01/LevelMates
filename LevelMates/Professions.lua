@@ -51,10 +51,21 @@ local function resend() if sentAt ~= GetTime() then send() end end
 -- The settings check box: on shares mine, off withdraws them.
 function P.SetSharing() send("now") end
 
-ns.On("LM_SKILLS_CHANGED", function() if encode() ~= lastSent then send() end end)
-ns.On("LM_ANNOUNCED", function() if encode() ~= "" then resend() end end)
+-- What changed decides when it goes out: a profession learned or dropped at once; rank points at most once a
+-- minute, with a heartbeat (a herbing or fishing session would otherwise send one message per point).
+local announced, dirty = false, false
+local function ids(p) return (tostring(p or ""):gsub(":%d+", "")) end
+ns.On("LM_SKILLS_CHANGED", function()
+	if not announced then return end   -- the first share goes with my announce
+	local p = encode()
+	if p == lastSent then return end
+	if ids(p) ~= ids(lastSent) then send() else dirty = true end
+end)
+ns.On("LM_ANNOUNCED", function() announced = true; if encode() ~= "" then resend() end end)
 ns.On("LM_PING_ANSWERED", function() if encode() ~= "" then resend() end end)
-ns.On("LM_HB_SENT", function() if ns.char.profPending then send() end end)
+ns.On("LM_HB_SENT", function()
+	if ns.char.profPending or (dirty and GetTime() - (sentAt or -math.huge) >= 60) then dirty = false; send() end
+end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "pf" then ns.char.profPending = true end end)
 
 C.OnMessage("pf", function(f, name)

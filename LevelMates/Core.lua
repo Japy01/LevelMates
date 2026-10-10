@@ -34,7 +34,7 @@ function ns.Say(fmt, ...) print("|cff7ec8ffLevelMates|r " .. string.format(fmt, 
 -- (links shown as their plain "[name]").
 function ns.Screen(text)
 	if not (ns.db and ns.db.settings.screenNotices and UIErrorsFrame) then return end
-	local plain = text:gsub("|H.-|h(.-)|h", "%1"):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+	local plain = text:gsub("|H.-|h(.-)|h", "%1"):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|cn[^:]-:", ""):gsub("|r", "")
 	UIErrorsFrame:AddMessage(plain, 1, 0.82, 0)
 end
 function ns.Notice(fmt, ...)

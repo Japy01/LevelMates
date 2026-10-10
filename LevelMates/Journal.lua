@@ -47,9 +47,11 @@ function J.Duration(sec)
 end
 
 -- Pace from the levels with a recorded time: the average of the last five, the fastest, and a rough time to 60.
+J.PACE_MAX = 8 * 3600
 function J.Pace()
 	local times = {}
-	for _, e in ipairs(J.List("level", "")) do if e.took and not e.sim then times[#times + 1] = e end end   -- newest first
+	-- newest first; a level that spans hours or days offline says nothing about the pace
+	for _, e in ipairs(J.List("level", "")) do if e.took and e.took <= J.PACE_MAX and not e.sim then times[#times + 1] = e end end
 	if #times < 2 then return nil end
 	local n, sum = math.min(5, #times), 0
 	for i = 1, n do sum = sum + times[i].took end

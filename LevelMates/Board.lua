@@ -140,7 +140,8 @@ local function Build()
 	-- "Looking for a partner" (guildmates tab), in the header under the search box.
 	local pal = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
 	pal:SetSize(20, 20); pal:SetPoint("TOPRIGHT", -(B.MARGIN + 130), -(insetTop + 30))   -- ends above the divider
-	B.subtitle:SetWidth(B.WIDTH - (B.MARGIN + 130) - 20 - 4 - B.MARGIN); B.subtitle:SetWordWrap(false)   -- stops before the box
+	B.SUB_NARROW = B.WIDTH - (B.MARGIN + 130) - 20 - 4 - B.MARGIN
+	B.subtitle:SetWidth(B.SUB_NARROW); B.subtitle:SetWordWrap(false)   -- stops before the box
 	pal:SetScript("OnClick", function(self)
 		if not ns.Partner.SetOn(self:GetChecked() and true or false) then self:SetChecked(ns.Partner.IsOn()) end
 		B.Refresh()
@@ -757,6 +758,7 @@ function B.Refresh()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
 	B.subtitle:SetText(journal and ns.Journal.PaceText() or L["SUB_" .. hk])
+	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
 	if lfg then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
