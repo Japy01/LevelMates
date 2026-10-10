@@ -169,3 +169,7 @@ L.BTN_SHARE_MACRO = "Share macro"; L.CLASS_SHARED_MARK = "%s (shared: click to w
 L.CARD_BASICS = "%s, level %d · %s · %s"; L.CARD_BUILD = "Build: %s"; L.CARD_PROFS = "Professions: %s"; L.CARD_WANTS = "Wants: %s"; L.CARD_GIVES = "Gives away: %s"
 L.CARD_GOAL = "Goal: %s (%s)"; L.CARD_WALL = "On the wall: %s (%s)"; L.CARD_MEETUP = "Meetup: %s, %s"
 L.BUILD_LINK = "%s's build"; L.BUILD_CLICK = "Click to view: %s"
+
+-- Cemetery
+L.FEED_DTH = "died at level %d in %s"; L.BTN_CEMETERY = "Cemetery"; L.BTN_WALL_ALL = "Whole wall"; L.FEED_CEMETERY_SUB = "Cemetery: %d deaths in the guild this week."
+L.OPT_DEATHS = "My deaths on the wall"; L.OPT_DEATHS_TT = "Your deaths appear on the guild wall with your level and zone. Nothing from combat."

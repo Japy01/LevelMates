@@ -341,6 +341,12 @@ local function Build()
 	giftAdd:SetScript("OnClick", function() ns.Fire("LM_GIFT_ADD") end)
 	B.giftAdd = giftAdd
 
+	-- Wall: "Cemetery" (bottom right) shows only deaths; a second click shows everything again.
+	local cemetery = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	cemetery:SetSize(120, 20); cemetery:SetPoint("BOTTOMRIGHT", -12, 3); cemetery:SetText(L.BTN_CEMETERY)
+	cemetery:SetScript("OnClick", function() B.feedDeaths = not B.feedDeaths; B.feedPage = 1; B.Refresh() end)
+	B.feedCemetery = cemetery
+
 	-- Class tab: "Share macro" (bottom left) lists my macros; a click shares or withdraws one.
 	local classShare = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	classShare:SetSize(140, 20); classShare:SetPoint("BOTTOMLEFT", 12, 3); classShare:SetText(L.BTN_SHARE_MACRO)
@@ -1021,6 +1027,8 @@ local function RefreshTabs()
 	B.myGoal:SetShown(goals)
 	B.wishAdd:SetShown(wishes)
 	B.classShare:SetShown(class)
+	B.feedCemetery:SetShown(feed)
+	B.feedCemetery:SetText(B.feedDeaths and L.BTN_WALL_ALL or L.BTN_CEMETERY)
 	B.giftAdd:SetShown(wishes)
 	B.tabs.recruit:SetShown(R.IAmOfficer())
 end
@@ -1037,7 +1045,9 @@ function B.Refresh()
 	elseif recruit then
 		list = {}
 	elseif feed then
-		list, pages = Page(ns.Feed.List(B.search))
+		local all = ns.Feed.List(B.search, B.feedDeaths)
+		B.feedDeathCount = #all
+		list, pages = Page(all)
 	elseif class then
 		list, pages = Page(ClassVisible())
 	elseif crafts then
@@ -1058,7 +1068,7 @@ function B.Refresh()
 	SetHeaders()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
-	B.subtitle:SetText(journal and ns.Journal.PaceText() or L["SUB_" .. hk])
+	B.subtitle:SetText(journal and ns.Journal.PaceText() or feed and B.feedDeaths and string.format(L.FEED_CEMETERY_SUB, B.feedDeathCount or 0) or L["SUB_" .. hk])
 	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))

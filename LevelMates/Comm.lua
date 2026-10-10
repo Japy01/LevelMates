@@ -127,7 +127,7 @@ C.SCHEMA = {
 	gro  = { i = int(1, 999999), by = text(24) },
 	qo   = { i = int(1, 999999), o = objectives },
 	rr   = { n = text(40), z = int(1, 100000), x = num(0, 100), y = num(0, 100) },
-	fe   = { k = oneOf("lvl", "dun", "itm", "pgl"), a = int(0, 999999), b = text(60), t = int(0, 100000000) },
+	fe   = { k = oneOf("lvl", "dun", "itm", "pgl", "dth"), a = int(0, 999999), b = text(60), t = int(0, 100000000) },
 	tb   = { c = word(16), s = int(0, 100000), l = int(1, 100), p = branchPoints, b = buildCode },
 	mc   = { n = text(16), x = macroBody },
 	mcx  = { n = text(16) },

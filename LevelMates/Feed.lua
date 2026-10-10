@@ -41,17 +41,18 @@ function F.Text(e)
 	elseif e.k == "dun" then return string.format(L.FEED_DUN, e.b or "")
 	elseif e.k == "itm" then return string.format(L.FEED_ITM, ns.Wishlist.Link(e.a) or string.format(L.WISH_UNKNOWN, e.a))
 	elseif e.k == "pgl" then return string.format(L.FEED_PGL, e.a)
-	elseif e.k == "gol" then return string.format(L.FEED_GOL, e.b or "") end
+	elseif e.k == "gol" then return string.format(L.FEED_GOL, e.b or "")
+	elseif e.k == "dth" then return string.format(L.FEED_DTH, e.a, e.b or "?") end
 	return ""
 end
 function F.Ago(e) return string.format(L.FEED_AGO, ns.Journal.Duration(math.max(0, F.Now() - e.t) * 60)) end
 
--- Newest first, the last 7 days, of people still in the guild; filtered by name or text.
-function F.List(search)
+-- Newest first, the last 7 days, of people still in the guild; filtered by name or text, or to deaths only.
+function F.List(search, deathsOnly)
 	local s, out, cutoff, q = store(), {}, F.Now() - F.DAYS * 1440, (search or ""):lower()
 	for i = #s, 1, -1 do if s[i].t < cutoff then table.remove(s, i) end end
 	for _, e in ipairs(s) do
-		if (e.k == "gol" or e.sim or e.who == me() or R.IsGuildmate(e.who))
+		if (not deathsOnly or e.k == "dth") and (e.k == "gol" or e.sim or e.who == me() or R.IsGuildmate(e.who))
 			and (q == "" or (F.Who(e) .. " " .. F.Text(e)):lower():find(q, 1, true)) then out[#out + 1] = e end
 	end
 	return out
@@ -88,6 +89,8 @@ ns.On("LM_JOURNAL_ADDED", function(e)
 	if e.k == "level" then share("lvl", e.level)
 	elseif e.k == "dungeon" and e.mates and #e.mates > 0 then
 		share("dun", 0, ns.CutUtf8(e.name .. " · " .. table.concat(e.mates, ", "), 60))
+	elseif e.k == "death" and ns.db.settings.shareDeaths then   -- level and zone only: nothing from combat
+		share("dth", e.level or UnitLevel("player"), e.zone and e.zone ~= "" and ns.CutUtf8(e.zone, 60) or nil)
 	elseif e.k == "item" and (e.q or 0) >= 3 and ns.db.settings.feedLoot then
 		local id = ns.Wishlist.ItemId(e.link)
 		if id then share("itm", id) end

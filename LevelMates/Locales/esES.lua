@@ -170,3 +170,7 @@ L.BTN_SHARE_MACRO = "Compartir macro"; L.CLASS_SHARED_MARK = "%s (compartida: cl
 L.CARD_BASICS = "%s, nivel %d · %s · %s"; L.CARD_BUILD = "Build: %s"; L.CARD_PROFS = "Oficios: %s"; L.CARD_WANTS = "Quiere: %s"; L.CARD_GIVES = "Regala: %s"
 L.CARD_GOAL = "Meta: %s (%s)"; L.CARD_WALL = "En el muro: %s (%s)"; L.CARD_MEETUP = "Quedada: %s, %s"
 L.BUILD_LINK = "Build de %s"; L.BUILD_CLICK = "Haz clic para verla: %s"
+
+-- Cementerio
+L.FEED_DTH = "murió a nivel %d en %s"; L.BTN_CEMETERY = "Cementerio"; L.BTN_WALL_ALL = "Todo el muro"; L.FEED_CEMETERY_SUB = "Cementerio: %d muertes en la hermandad esta semana."
+L.OPT_DEATHS = "Mis muertes en el muro"; L.OPT_DEATHS_TT = "Tus muertes salen en el muro de la hermandad con tu nivel y zona. Nada de combate."
