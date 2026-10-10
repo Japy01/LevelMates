@@ -109,6 +109,10 @@ end
 local function simClass()
 	if not R.mates.Mario then run() end
 	local BU, class = ns.Builds, select(2, UnitClass("player"))
+	-- Mario and Luis become my class, so their builds and macros make sense next to mine
+	local map = C_Map.GetBestMapForUnit("player") or 1
+	inject("hb", { l = 31, z = map, g = 1, s = 1, c = class, x = 42.5, y = 61.0, v = "sim" }, "Mario")
+	inject("hb", { l = 22, z = map, g = 1, s = 0, c = class, v = "sim" }, "Luis")
 	local parts = {}
 	for i, g in ipairs(BU.Groups()) do parts[#parts + 1] = g.id .. ":" .. (i == 1 and 12 or 3) end
 	local mine = BU.Mine()

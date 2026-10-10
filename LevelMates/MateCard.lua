@@ -100,7 +100,7 @@ local function Build()
 	end
 	MC.whisper = Btn(L.MENU_WHISPER, 12, function() ns.Board.Whisper(MC.name) end)
 	MC.invite = Btn(L.MENU_INVITE, 100, function() ns.Board.Invite(MC.name) end)
-	MC.waypoint = Btn(L.MENU_WAYPOINT, 188, function()
+	MC.waypoint = Btn(L.CARD_WAYPOINT, 188, function()
 		local m = R.mates[MC.name]
 		if m and m.x and m.y and m.mapId then ns.Help.WaypointTo(m.mapId, m.x, m.y) end
 	end)
