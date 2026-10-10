@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Language option: automatic (the game's), English or Spanish, whatever the game client's language; a change offers to reload the interface.
+
 ## 0.1.1
 
 - Published on CurseForge too.

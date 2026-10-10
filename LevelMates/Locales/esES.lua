@@ -1,7 +1,8 @@
 local _, ns = ...
-local loc = GetLocale()
-if loc ~= "esES" and loc ~= "esMX" then return end
-local L = ns.L
+-- Spanish strings, kept apart: Core applies them over the English ones when the client is Spanish (option
+-- "Automatic") or when Spanish is chosen in the options.
+local L = {}
+ns.LocaleES = L
 L.COL_NAME = "Nombre"; L.COL_LEVEL = "Niv"; L.COL_ZONE = "Zona"; L.COL_GROUP = "Grupo"; L.COL_XPH = "XP/h"
 L.GROUP_FREE = "hueco"; L.GROUP_FULL = "lleno"; L.SOLO = "solo"
 L.EMPTY = "Ningún hermano con LevelMates conectado ahora mismo."
@@ -142,3 +143,5 @@ L.RECRUIT_CHANNEL_2 = "Canal 2 (Comercio)"; L.RECRUIT_CHANNEL_1 = "Canal 1 (Gene
 L.RECRUIT_LAST = "Último anuncio: hace %s (%s)"; L.RECRUIT_NONE = "Nadie ha publicado todavía."; L.RECRUIT_WAIT = "Espera %d min para volver a publicar (compartido entre oficiales)."
 L.RECRUIT_READY = "Ya puedes publicar."; L.RECRUIT_EMPTY = "Esa plantilla está vacía."; L.RECRUIT_NO_CHANNEL = "No estás en el canal %d (el de Comercio solo está en las ciudades)."
 L.RECRUIT_PROMPT = "Toca publicar el reclutamiento de la hermandad."; L.RECRUIT_LATER = "Ahora no"
+L.OPT_LANGUAGE = "Idioma"; L.OPT_LANGUAGE_TT = "El idioma del addon. El cambio se aplica al recargar la interfaz."; L.LANGUAGE_AUTO = "Automático (el del juego)"
+L.LANGUAGE_RELOAD = "LevelMates usará el nuevo idioma al recargar la interfaz. ¿Recargar ahora?"; L.BTN_RELOAD = "Recargar"

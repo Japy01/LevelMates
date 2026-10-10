@@ -45,9 +45,28 @@ ns.On("LM_LOADED", function()
 	Radio("transport", "auto", L.OPT_TRANSPORT .. ": " .. L.TRANSPORT_AUTO)
 	Radio("transport", "guild", L.OPT_TRANSPORT .. ": " .. L.TRANSPORT_GUILD)
 	Radio("transport", "channel", L.OPT_TRANSPORT .. ": " .. L.TRANSPORT_CHANNEL)
+	-- language: three radio-like checkboxes; a change asks for a reload (the texts are read at load)
+	local function Lang(value, name)
+		local proxy = Settings.RegisterProxySetting(category, "LevelMates_language_" .. value, Settings.VarType.Boolean, name, (ns.db.settings.language or "auto") == value,
+			function() return (ns.db.settings.language or "auto") == value end,
+			function(v) if v and ns.db.settings.language ~= value then ns.db.settings.language = value; S.OfferReload() end end)
+		Settings.CreateCheckbox(category, proxy, L.OPT_LANGUAGE_TT)
+	end
+	Lang("auto", L.OPT_LANGUAGE .. ": " .. L.LANGUAGE_AUTO)
+	Lang("enUS", L.OPT_LANGUAGE .. ": English")
+	Lang("esES", L.OPT_LANGUAGE .. ": Español")
 	Bool(category, "debug", L.OPT_DEBUG)
 	Settings.RegisterAddOnCategory(category)
 end)
+
+function S.OfferReload()
+	StaticPopupDialogs["LEVELMATES_RELOAD"] = StaticPopupDialogs["LEVELMATES_RELOAD"] or {
+		text = L.LANGUAGE_RELOAD, button1 = L.BTN_RELOAD, button2 = CANCEL,
+		timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function() ReloadUI() end,
+	}
+	StaticPopup_Show("LEVELMATES_RELOAD")
+end
 
 function S.Open() if S.category then Settings.OpenToCategory(S.category:GetID()) end end
 ns.Slash("options", S.Open); ns.Slash("opciones", S.Open)

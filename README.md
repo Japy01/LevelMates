@@ -2,7 +2,7 @@
 
 A guild companion for leveling together in World of Warcraft: Forever. See which guildmates are online and where, find dungeon groups, set guild goals, share wishlists and professions, and keep up with what happens in the guild.
 
-Everyone who wants to appear needs the addon. English and Spanish.
+Everyone who wants to appear needs the addon. English and Spanish: the game's language, or the one you choose in `/lm options`.
 
 ## What it does
 
@@ -69,7 +69,7 @@ License: MIT.
 
 Un compañero de hermandad para subir de nivel juntos en World of Warcraft: Forever. Ve qué hermanos están conectados y dónde, encuentra grupo para mazmorras, marca metas de hermandad, comparte listas de deseos y profesiones, y entérate de lo que pasa en la hermandad.
 
-Todos los que quieran salir necesitan el addon. En español e inglés.
+Todos los que quieran salir necesitan el addon. En español e inglés: el idioma del juego, o el que elijas en `/lm opciones`.
 
 ## Qué hace
 

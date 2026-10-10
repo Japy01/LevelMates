@@ -142,3 +142,5 @@ L.RECRUIT_CHANNEL_2 = "Channel 2 (Trade)"; L.RECRUIT_CHANNEL_1 = "Channel 1 (Gen
 L.RECRUIT_LAST = "Last post: %s ago (%s)"; L.RECRUIT_NONE = "Nobody has posted yet."; L.RECRUIT_WAIT = "Wait %d min before posting again (shared by all officers)."
 L.RECRUIT_READY = "You can post now."; L.RECRUIT_EMPTY = "That template is empty."; L.RECRUIT_NO_CHANNEL = "You are not in channel %d (Trade is only in cities)."
 L.RECRUIT_PROMPT = "Time to post the guild recruitment."; L.RECRUIT_LATER = "Not now"
+L.OPT_LANGUAGE = "Language"; L.OPT_LANGUAGE_TT = "The addon's language. A change takes effect after reloading the interface."; L.LANGUAGE_AUTO = "Automatic (the game's)"
+L.LANGUAGE_RELOAD = "LevelMates will use the new language after reloading the interface. Reload now?"; L.BTN_RELOAD = "Reload"

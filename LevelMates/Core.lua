@@ -5,7 +5,7 @@ ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadat
 local DEFAULTS = {
 	share = true, sharePos = false, shareQuests = false, shareXp = false, shareRested = false,
 	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, restedNotices = true, goalNotices = true, wishNotices = true, screenNotices = true, levelNotices = true, shareProfessions = true, shareFeed = true, feedLoot = true, rareNotices = true, mapPins = true, sound = true, minimap = true,
-	transport = "auto", debug = false,
+	transport = "auto", debug = false, language = "auto",
 }
 
 ns.DEFAULTS = DEFAULTS
@@ -19,6 +19,15 @@ function ns.CutUtf8(s, max)
 		if b and b >= 128 and b <= 191 then at = at - 1 else break end
 	end
 	return s:sub(1, at)
+end
+
+-- The addon's language: the game's ("auto") or the one chosen in the options. Spanish overrides English.
+function ns.ApplyLocale()
+	local choice, loc = ns.db and ns.db.settings.language or "auto", GetLocale()
+	local spanish = choice == "esES" or (choice == "auto" and (loc == "esES" or loc == "esMX"))
+	if spanish and ns.LocaleES then for k, v in pairs(ns.LocaleES) do ns.L[k] = v end end
+	BINDING_NAME_LEVELMATES_TOGGLE = ns.L.BINDING_TOGGLE
+	BINDING_NAME_LEVELMATES_PANIC = ns.L.BINDING_PANIC
 end
 
 local bus = {}
@@ -87,6 +96,7 @@ f:SetScript("OnEvent", function(_, event, arg1, ...)
 		local key = ns.PlayerKey()
 		ns.db.chars[key] = ns.db.chars[key] or {}
 		ns.char = ns.db.chars[key]
+		ns.ApplyLocale()
 		ns.Fire("LM_LOADED")
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		ns.Fire("LM_WORLD", arg1, ...)   -- isInitialLogin, isReloadingUi
