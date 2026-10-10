@@ -106,7 +106,7 @@ L.LFG_SEARCHING = "%d buscan"; L.LFG_SEARCHING_ONE = "1 busca"; L.LFG_WHISPER = 
 L.OPT_SCREEN = "Avisos en pantalla"; L.OPT_SCREEN_TT = "Los avisos importantes también en el centro de la pantalla."; L.OPT_LEVELUP = "Subidas de nivel de hermanos"; L.OPT_LEVELUP_TT = "Una línea en el chat con un enlace [Felicitar] cuando un hermano sube de nivel."
 L.VERSION_NEW = "Hay una versión nueva de LevelMates (%s). Actualiza cuando puedas."
 L.HEAD_MATES = "Hermanos conectados"; L.SUB_MATES = "Clic derecho: invitar, susurrar o punto de ruta."; L.SEARCH_MATES = "Buscar nombre..."
-L.HEAD_LFG = "Mazmorras"; L.SUB_LFG = "Clic en una tarjeta: apuntarte, susurrar, invitar o buscar grupo ahí."; L.SEARCH_LFG = "Mazmorra o nombre..."
+L.HEAD_LFG = "Mazmorras"; L.SUB_LFG = "Clic en una tarjeta: apuntarte, susurrar, invitar o buscar grupo ahí."; L.SEARCH_LFG = "Buscar..."
 L.HEAD_JOURNAL = "Mi diario"; L.SUB_JOURNAL = "Tu viaje: niveles, misiones, mazmorras, botín..."; L.SEARCH_JOURNAL = "Buscar texto..."
 L.HEAD_GOALS = "Metas"; L.SUB_GOALS = "Metas de la hermandad y metas personales."; L.SEARCH_GOALS = "Buscar..."
 L.HEAD_WISHES = "Deseos"; L.SUB_WISHES = "Mayús+clic en un objeto para añadirlo; clic derecho en el tuyo para quitarlo."; L.SEARCH_WISHES = "Objeto o nombre..."

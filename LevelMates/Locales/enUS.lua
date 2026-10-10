@@ -105,7 +105,7 @@ L.LFG_SEARCHING = "%d looking"; L.LFG_SEARCHING_ONE = "1 looking"; L.LFG_WHISPER
 L.OPT_SCREEN = "Screen notices"; L.OPT_SCREEN_TT = "Important notices also in the middle of the screen."; L.OPT_LEVELUP = "Guildmates' level-ups"; L.OPT_LEVELUP_TT = "A chat line with a [Congratulate] link when a guildmate levels up."
 L.VERSION_NEW = "There is a newer LevelMates (%s). Update when you can."
 L.HEAD_MATES = "Guildmates online"; L.SUB_MATES = "Right-click a name: invite, whisper or waypoint."; L.SEARCH_MATES = "Search name..."
-L.HEAD_LFG = "Dungeons"; L.SUB_LFG = "Click a card: join, whisper, invite or look for a group there."; L.SEARCH_LFG = "Dungeon or player..."
+L.HEAD_LFG = "Dungeons"; L.SUB_LFG = "Click a card: join, whisper, invite or look for a group there."; L.SEARCH_LFG = "Search..."
 L.HEAD_JOURNAL = "My journal"; L.SUB_JOURNAL = "Your journey: levels, quests, dungeons, loot..."; L.SEARCH_JOURNAL = "Search text..."
 L.HEAD_GOALS = "Goals"; L.SUB_GOALS = "Guild goals and personal goals."; L.SEARCH_GOALS = "Search..."
 L.HEAD_WISHES = "Wishes"; L.SUB_WISHES = "Shift+click an item to add it; right-click yours to remove it."; L.SEARCH_WISHES = "Item or name..."
