@@ -34,9 +34,7 @@ assert(rfc.name.text == D.Name(2) and rfc.levels.text == "13-18" and rfc.count.t
 assert(cardOf(6).count.text == "", "nobody for Shadowfang")
 assert(rfc.fits and not cardOf(6).fits, "my level fits Ragefire, not Shadowfang")
 assert(rfc.art:IsShown() and rfc.art.texture == "Interface\\Glues\\LoadingScreens\\LoadScreenRagefireChasm" and rfc.art.texcoord[3] == 0.25, "the loading screen, cropped")
-assert(not cardOf(1).art:IsShown(), "Hall of Thanes: no art without the journal addon")
-STUB.loadedAddons = { ForeverDungeonJournal = true }; B.Refresh()
-assert(cardOf(1).art:IsShown() and cardOf(1).art.texture == "Interface\\AddOns\\ForeverDungeonJournal\\Media\\HallOfThanes", "its art while the journal addon is loaded")
+assert(cardOf(1).art:IsShown() and cardOf(1).art.texture == 7963781, "Hall of Thanes: Forever's own loading screen")
 
 -- hover: every ad
 rfc = cardOf(2)

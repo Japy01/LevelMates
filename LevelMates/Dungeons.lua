@@ -5,19 +5,20 @@ local _, ns = ...
 local D = {}
 ns.Dungeons = D
 
--- Card art: the game's own loading screens, cropped as the dungeon journal does. ForeverDungeonJournal's own
--- pictures are used from its folder only while it is loaded; they are never copied here.
+-- Card art: only the game's own loading screens (classic ones by path, Forever's new ones by file id), cropped to
+-- the card. Nothing is copied from anyone; the textures already ship with the game.
+-- Forever's ids (community listfile, camelot160/main): 7963775 loadscreen_camelot_dalaran, 7963777 _excavation,
+-- 7963781 _oldironforge (Hall of Thanes), 7963782 _ruinsoflordaeron.
 local LS = "Interface\\Glues\\LoadingScreens\\"
-local FDJ = "Interface\\AddOns\\ForeverDungeonJournal\\Media\\"
 local WIDE, TALL = { 0.02, 0.98, 0.25, 0.82 }, { 0.02, 0.98, 0.24, 0.82 }
-local NEW, OWN = { 0, 1, 0.12, 0.88 }, { 0.03, 0.97, 0.05, 0.95 }
+local NEW = { 0, 1, 0.12, 0.88 }
 -- Both Monastery wings are one instance in game, named without the wing (as ForeverDungeonJournal notes too).
 local SM = { "Scarlet Monastery", "Monasterio Escarlata" }
 
 D.list = {
-	{ id = 1,  key = "DUNGEON_HALL_OF_THANES",      min = 13, max = 20, needs = "ForeverDungeonJournal", art = FDJ .. "HallOfThanes", coords = OWN },
+	{ id = 1,  key = "DUNGEON_HALL_OF_THANES",      min = 13, max = 20, art = 7963781, coords = NEW },
 	{ id = 2,  key = "DUNGEON_RAGEFIRE_CHASM",      min = 13, max = 18, art = LS .. "LoadScreenRagefireChasm", coords = WIDE },
-	{ id = 3,  key = "DUNGEON_RUINS_OF_LORDAERON",  min = 15, max = 22, needs = "ForeverDungeonJournal", art = FDJ .. "RuinsOfLordaeron", coords = OWN },
+	{ id = 3,  key = "DUNGEON_RUINS_OF_LORDAERON",  min = 15, max = 22, art = 7963782, coords = NEW },
 	{ id = 4,  key = "DUNGEON_WAILING_CAVERNS",     min = 15, max = 24, art = LS .. "LoadScreenWailingCaverns", coords = WIDE },
 	{ id = 5,  key = "DUNGEON_DEADMINES",           min = 17, max = 26, art = LS .. "LoadScreenDeadmines", coords = WIDE },
 	{ id = 6,  key = "DUNGEON_SHADOWFANG_KEEP",     min = 20, max = 30, art = LS .. "LoadScreenShadowFangKeep", coords = TALL },
@@ -28,8 +29,7 @@ D.list = {
 	{ id = 11, key = "DUNGEON_GNOMEREGAN",          min = 29, max = 38, art = LS .. "LoadScreenGnomeregan", coords = TALL },
 	{ id = 12, key = "DUNGEON_RAZORFEN_KRAUL",      min = 29, max = 38, art = 131865, coords = TALL },
 	{ id = 13, key = "DUNGEON_SM_GRAVEYARD",        min = 30, max = 38, art = LS .. "LoadScreenScarletMonastery2", coords = TALL, instance = SM },
-	{ id = 14, key = "DUNGEON_SM_LIBRARY",          min = 33, max = 41, needs = "ForeverDungeonJournal", art = FDJ .. "ScarletMonasteryLibraryHome", coords = { 0, 1, 0.06, 0.94 },
-		fallback = LS .. "LoadScreenScarletMonastery2", fallbackCoords = TALL, instance = SM },
+	{ id = 14, key = "DUNGEON_SM_LIBRARY",          min = 33, max = 41, art = LS .. "LoadScreenScarletMonastery2", coords = TALL, instance = SM },
 }
 
 local byId = {}
@@ -65,6 +65,5 @@ end
 function D.Art(id)
 	local d = byId[id]
 	if not d then return nil end
-	if d.needs and not (C_AddOns and C_AddOns.IsAddOnLoaded and C_AddOns.IsAddOnLoaded(d.needs)) then return d.fallback, d.fallbackCoords end
 	return d.art, d.coords
 end

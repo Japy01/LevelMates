@@ -116,7 +116,7 @@ end
 -- /lm sim arte: a window with candidate game textures for the dungeon cards (file ids near Forever's own loading
 -- screens, and classic loading screens), to pick art that ships with the game instead of anyone's files.
 local ART = { "LoadScreenUldaman", "LoadScreenStratholme", "LoadScreenScholomance", "LoadScreenScarletMonastery",
-	"LoadScreenScarletMonastery2", "LoadScreenRazorfenDowns", "LoadScreenBlackrockDepths", "LoadScreenEasternKingdom" }
+	"LoadScreenScarletMonastery2", "LoadScreenScarletHalls", "LoadScreenRazorfenDowns", "LoadScreenBlackrockDepths", "LoadScreenEasternKingdom" }
 local function simArt()
 	local f = _G.LevelMatesArtPreview
 	if not f then

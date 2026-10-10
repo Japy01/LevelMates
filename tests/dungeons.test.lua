@@ -18,8 +18,10 @@ end
 local tex, coords = D.Art(2)
 assert(tex == "Interface\\Glues\\LoadingScreens\\LoadScreenRagefireChasm" and coords[3] == 0.25, "game loading screen, cropped")
 assert(D.Art(8) == 131870, "file ids work too")
-assert(D.Art(1) == nil and D.Art(3) == nil, "the journal addon's own art: not without it")
-assert(D.Art(14) == "Interface\\Glues\\LoadingScreens\\LoadScreenScarletMonastery2", "the Library falls back to the Graveyard")
-STUB.loadedAddons = { ForeverDungeonJournal = true }
-assert(D.Art(1) == "Interface\\AddOns\\ForeverDungeonJournal\\Media\\HallOfThanes", "its art while it is loaded")
-assert(D.Art(14) == "Interface\\AddOns\\ForeverDungeonJournal\\Media\\ScarletMonasteryLibraryHome", "the Library's own art")
+-- only the game's own art: Forever's loading screens for its new dungeons, the Monastery screen for the Library
+assert(D.Art(1) == 7963781 and D.Art(3) == 7963782, "Forever's own loading screens")
+assert(D.Art(14) == "Interface\\Glues\\LoadingScreens\\LoadScreenScarletMonastery2", "the Library uses the Monastery screen")
+for _, d in ipairs(D.list) do
+	local tex = D.Art(d.id)
+	assert(tex and not tostring(tex):find("AddOns", 1, true), "never another addon's files: " .. d.key)
+end
