@@ -177,3 +177,6 @@ L.OPT_DEATHS = "My deaths on the wall"; L.OPT_DEATHS_TT = "Your deaths appear on
 -- Trainer
 L.TRAINER_NEW = "Level %d: %d new spells at your trainer (%s)."; L.TRAINER_EVEN = "Level %d: visit your trainer for new spells."
 L.OPT_TRAINER = "Trainer reminder"; L.OPT_TRAINER_TT = "When you level up, tells you which spells are waiting at your class trainer (it learns them from your last visit)."
+
+-- Group XP bars
+L.GROUPXP_TITLE = "Group XP"; L.OPT_GROUPXP = "Group XP bars"; L.OPT_GROUPXP_TT = "While grouped with guildmates, a small window shows everyone's XP. Your XP percent goes to your guild only while you are grouped with a guildmate."

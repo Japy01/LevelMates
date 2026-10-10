@@ -37,6 +37,7 @@ MeetDialog.lua
 Partner.lua
 Rested.lua
 Trainer.lua
+GroupXP.lua
 Journal.lua
 Goals.lua
 Personal.lua

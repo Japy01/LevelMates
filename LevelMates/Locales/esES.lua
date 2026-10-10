@@ -178,3 +178,6 @@ L.OPT_DEATHS = "Mis muertes en el muro"; L.OPT_DEATHS_TT = "Tus muertes salen en
 -- Entrenador
 L.TRAINER_NEW = "Nivel %d: %d hechizos nuevos en tu entrenador (%s)."; L.TRAINER_EVEN = "Nivel %d: pasa por tu entrenador a por hechizos nuevos."
 L.OPT_TRAINER = "Recordatorio de entrenador"; L.OPT_TRAINER_TT = "Al subir de nivel te dice qué hechizos te esperan en tu entrenador de clase (lo sabe por tu última visita)."
+
+-- Barras de XP del grupo
+L.GROUPXP_TITLE = "XP del grupo"; L.OPT_GROUPXP = "Barras de XP del grupo"; L.OPT_GROUPXP_TT = "En grupo con hermanos, una ventanita muestra la XP de todos. Tu % de XP va a tu hermandad solo mientras vas en grupo con algún hermano."
