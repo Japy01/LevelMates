@@ -17,6 +17,7 @@ B.WCOLS = { 100, 1, 360, 65, 74 }   -- wishes and gifts: who, -, item, wants/giv
 B.CCOLS = { 150, 1, 319, 60, 70 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
 B.BAR_W = 160
 B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
+B.KCOLS = { 150, 1, 339, 50, 60 }   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
 B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts", "class", "feed", "recruit" }
@@ -172,6 +173,10 @@ local function Build()
 		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
 			if B.tab == "feed" then return end
+			if B.tab == "class" then
+				if self.classEntry and not self.classEntry.header then B.OpenClassMenu(self.classEntry) end
+				return
+			end
 			if B.tab == "crafts" then
 				if mouse == "RightButton" and self.craftName and not self.craftMine then B.OpenCraftMenu(self.craftName) end
 				return
@@ -207,6 +212,18 @@ local function Build()
 				end
 			elseif B.tab == "wishes" and self.wishId then   -- wishes: the item card
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink("item:" .. self.wishId); GameTooltip:Show()
+			elseif B.tab == "class" and self.classEntry and not self.classEntry.header then   -- class: the whole macro, or the build
+				local e = self.classEntry
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				if e.kind == "build" then
+					GameTooltip:AddLine(e.e.name .. " · " .. string.format(L.LEVEL_N, e.e.l), 1, 0.82, 0)
+					GameTooltip:AddLine(ns.Builds.PointsText(e.e), 1, 1, 1, true)
+					if not e.e.b then GameTooltip:AddLine(L.CLASS_NO_CODE, 0.7, 0.7, 0.7, true) end
+				else
+					GameTooltip:AddLine(e.m.name, 1, 0.82, 0)
+					for line in (e.m.body .. "\n"):gmatch("(.-)\n") do GameTooltip:AddLine(line, 1, 1, 1) end
+				end
+				GameTooltip:Show()
 			elseif B.tab == "feed" and self.feedItem then   -- wall: the item card
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink("item:" .. self.feedItem); GameTooltip:Show()
 			elseif B.tab == "journal" and self.entry and self.entry.link then   -- journal: the item card
@@ -323,6 +340,12 @@ local function Build()
 	giftAdd:SetSize(120, 20); giftAdd:SetPoint("BOTTOMRIGHT", -12, 3); giftAdd:SetText(L.BTN_GIFT_ADD)
 	giftAdd:SetScript("OnClick", function() ns.Fire("LM_GIFT_ADD") end)
 	B.giftAdd = giftAdd
+
+	-- Class tab: "Share macro" (bottom left) lists my macros; a click shares or withdraws one.
+	local classShare = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	classShare:SetSize(140, 20); classShare:SetPoint("BOTTOMLEFT", 12, 3); classShare:SetText(L.BTN_SHARE_MACRO)
+	classShare:SetScript("OnClick", function(self) B.OpenShareMacroMenu(self) end)
+	B.classShare = classShare
 
 	-- Recruit tab (officers): three templates, which one, the channel, a preview, the status and Publish.
 	local rp = CreateFrame("Frame", nil, f)
@@ -464,6 +487,11 @@ local function SetHeaders()
 	local lfg = B.tab == "lfg"
 	if lfg then for i = 1, 5 do B.headText[i]:SetText("") end; return end   -- the grid has no columns
 	if B.tab == "recruit" then for i = 1, 5 do B.headText[i]:SetText("") end; return end
+	if B.tab == "class" then
+		B.headText[1]:SetText(""); B.headText[2]:SetText(""); B.headText[3]:SetText(""); B.headText[4]:SetText(L.COL_LEVEL); B.headText[5]:SetText("")
+		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
+		return
+	end
 	if B.tab == "feed" then
 		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_WHAT)
 		B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_WHEN)
@@ -850,6 +878,96 @@ function B.OpenMyGoalMenu()
 	end)
 end
 
+-- Class tab: three sections (builds of my class, the macro library, guildmates' macros), each under a header.
+local function ClassVisible()
+	local q, out = (B.search or ""):lower(), {}
+	local function section(key, items)
+		out[#out + 1] = { header = key, count = #items }
+		for _, it in ipairs(items) do out[#out + 1] = it end
+	end
+	local builds = {}
+	for _, e in ipairs(ns.Builds.List(B.search)) do builds[#builds + 1] = { kind = "build", e = e } end
+	section("builds", builds)
+	local lib = {}
+	for _, m in ipairs(ns.Macros.Library(MyClass())) do
+		if q == "" or m.name:lower():find(q, 1, true) then lib[#lib + 1] = { kind = "lib", m = m } end
+	end
+	section("library", lib)
+	local guild = {}
+	for _, m in ipairs(ns.Macros.Guild(B.search)) do guild[#guild + 1] = { kind = "guild", m = m } end
+	section("guild", guild)
+	return out
+end
+
+local function OneLine(body) return (tostring(body or ""):gsub("\n", "  ·  ")) end
+
+local function FillClass(list)
+	for i = 1, ROWS do
+		local r, c = B.rows[i], list[i]
+		r.button.mate, r.button.adId, r.button.entry, r.button.goalId, r.button.personalMine = nil, nil, nil, nil, nil
+		r.button.classEntry = c
+		if c and c.header then
+			r.icon:Hide()
+			r.name:SetText(L["CLASS_SECTION_" .. c.header:upper()] .. " (" .. c.count .. ")"); r.name:SetTextColor(1, 0.82, 0)
+			r.level:SetText(""); r.zone:SetText(c.count == 0 and L["CLASS_EMPTY_" .. c.header:upper()] or ""); r.zone:SetTextColor(0.7, 0.7, 0.7)
+			r.group:SetText(""); r.xph:SetText("")
+			r.button:Show()
+			r.bg:SetColorTexture(1, 0.82, 0, 0.08)
+		elseif c and c.kind == "build" then
+			local e = c.e
+			r.icon:Hide()
+			r.name:SetText(e.name); r.name:SetTextColor(ClassColor(e.c))
+			r.level:SetText("")
+			r.zone:SetText(ns.Builds.PointsText(e)); r.zone:SetTextColor(1, 1, 1)
+			r.group:SetText(tostring(e.l)); r.group:SetTextColor(1, 1, 1)
+			r.xph:SetText(e.b and L.CLASS_VIEW or ""); r.xph:SetTextColor(0.4, 1, 0.4)
+			r.button:Show()
+			RowBg(r, i, false)
+		elseif c then
+			local m = c.m
+			r.icon:Hide()
+			r.name:SetText(m.name); r.name:SetTextColor(0.6, 0.8, 1)
+			r.level:SetText("")
+			r.zone:SetText(c.kind == "guild" and (m.by .. ": " .. OneLine(m.body)) or OneLine(m.body)); r.zone:SetTextColor(0.85, 0.85, 0.85)
+			r.group:SetText("")
+			r.xph:SetText(L.CLASS_CREATE); r.xph:SetTextColor(0.4, 1, 0.4)
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+
+-- A row's click: view a build, create a macro, whisper its owner.
+function B.OpenClassMenu(c)
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		if c.kind == "build" then
+			local e = c.e
+			root:CreateTitle(e.name)
+			if e.b then root:CreateButton(L.CLASS_VIEW_BUILD, function() ns.Builds.Open(e) end) end
+			if not e.mine then root:CreateButton(string.format(L.LFG_WHISPER, e.name), function() B.Whisper(e.name) end) end
+		else
+			local m = c.m
+			root:CreateTitle(m.name)
+			root:CreateButton(L.CLASS_CREATE_MACRO, function() ns.Macros.Create(m.name, m.body) end)
+			if c.kind == "guild" then root:CreateButton(string.format(L.LFG_WHISPER, m.by), function() B.Whisper(m.by) end) end
+		end
+	end)
+end
+
+-- "Share macro": my macros; a shared one is marked, and its click withdraws it.
+function B.OpenShareMacroMenu(owner)
+	MenuUtil.CreateContextMenu(owner or B.frame, function(_, root)
+		local mine = ns.Macros.Mine()
+		root:CreateTitle(#mine == 0 and L.CLASS_NO_MACROS or L.BTN_SHARE_MACRO)
+		for _, m in ipairs(mine) do
+			if m.shared then root:CreateButton(string.format(L.CLASS_SHARED_MARK, m.name), function() ns.Macros.Unshare(m.name); B.Refresh() end)
+			else root:CreateButton(m.name, function() ns.Macros.Share(m.name); B.Refresh() end) end
+		end
+	end)
+end
+
 -- Pages of ROWS for the long tabs (journal, goals, wishes); the pager sits in the help-rows area.
 local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", feed = "feedPage" }
 local function Page(all)
@@ -886,6 +1004,7 @@ end
 local function RefreshTabs()
 	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "mates"; ns.char.boardTab = "mates" end
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
+	local class = B.tab == "class"
 	local mates = B.tab == "mates"
 	local index = 1
 	for i, key in ipairs(B.TAB_KEYS) do if key == B.tab then index = i end end
@@ -901,6 +1020,7 @@ local function RefreshTabs()
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
 	B.wishAdd:SetShown(wishes)
+	B.classShare:SetShown(class)
 	B.giftAdd:SetShown(wishes)
 	B.tabs.recruit:SetShown(R.IAmOfficer())
 end
@@ -909,6 +1029,7 @@ function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
 	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "mates"; ns.char.boardTab = "mates" end
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
+	local class = B.tab == "class"
 	local list, pages
 	if journal then
 		list = Page(ns.Journal.List(B.journalFilter or "all", B.search))
@@ -917,6 +1038,8 @@ function B.Refresh()
 		list = {}
 	elseif feed then
 		list, pages = Page(ns.Feed.List(B.search))
+	elseif class then
+		list, pages = Page(ClassVisible())
 	elseif crafts then
 		list, pages = Page(CraftsVisible())
 	elseif wishes then
@@ -931,7 +1054,7 @@ function B.Refresh()
 	else
 		list = lfg and GridVisible() or Visible()
 	end
-	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or B.COLS)
+	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or B.COLS)
 	SetHeaders()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
@@ -952,7 +1075,7 @@ function B.Refresh()
 		end
 	end
 	B.restedText:SetText(top)
-	if journal then FillJournal(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillGrid(list) else FillMates(list) end
+	if journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillGrid(list) else FillMates(list) end
 	if not lfg then for _, c in ipairs(B.cards) do c:Hide() end end
 	if not crafts then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
 	B.recruitPanel:SetShown(recruit)
@@ -972,10 +1095,10 @@ function B.Refresh()
 	if recruit then emptyText = "" end   -- the panel fills this tab
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
-	if (goals or wishes or crafts or feed) and pages > 1 then   -- the pager only when there is more than one page
+	if (goals or wishes or crafts or feed or class) and pages > 1 then   -- the pager only when there is more than one page
 		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
 	end
-	if journal or goals or wishes or crafts or feed or recruit then
+	if journal or goals or wishes or crafts or feed or recruit or class then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else
 		RefreshHelp()
@@ -1069,3 +1192,8 @@ ns.On("LM_MEETUPS_CHANGED", B.Refresh)
 ns.On("LM_RECRUIT_CHANGED", B.Refresh)
 ns.Slash("reclutar", function() B.ShowTab("recruit") end)
 ns.Slash("recruit", function() B.ShowTab("recruit") end)
+
+ns.On("LM_BUILDS_CHANGED", B.Refresh)
+ns.On("LM_MACROS_CHANGED", B.Refresh)
+ns.Slash("clase", function() B.ShowTab("class") end)
+ns.Slash("class", function() B.ShowTab("class") end)

@@ -160,3 +160,8 @@ L.BUILD_LINK = "LevelMates: build"; L.OPT_BUILD = "Compartir mi build de talento
 L.MACRO_COMBAT = "No se pueden crear macros en combate."; L.MACRO_EXISTS = "Ya tienes una macro llamada %s."; L.MACRO_FULL = "No queda hueco para otra macro de personaje."
 L.MACRO_MADE = "Macro %s creada: arrástrala a tus barras desde la ventana de macros (/macro)."; L.MACRO_MAX = "Puedes compartir hasta %d macros."
 L.MACRO_LONG = "%s es demasiado larga para compartirla."; L.MACRO_BAD = "%s tiene códigos de color o enlaces y no se puede compartir."
+L.CLASS_SECTION_BUILDS = "Builds de la hermandad"; L.CLASS_SECTION_LIBRARY = "Biblioteca de macros"; L.CLASS_SECTION_GUILD = "Macros de la hermandad"
+L.CLASS_EMPTY_BUILDS = "Nadie de tu clase ha compartido su build todavía."; L.CLASS_EMPTY_LIBRARY = "No hay macros de tu clase en este cliente."; L.CLASS_EMPTY_GUILD = "Comparte una con el botón de abajo."
+L.CLASS_VIEW = "Ver"; L.CLASS_CREATE = "Crear"; L.CLASS_VIEW_BUILD = "Ver build"; L.CLASS_CREATE_MACRO = "Crear macro"
+L.CLASS_NO_CODE = "Aún no hay código de build: llega cuando abre su ventana de talentos."; L.LEVEL_N = "nivel %d"
+L.BTN_SHARE_MACRO = "Compartir macro"; L.CLASS_SHARED_MARK = "%s (compartida: clic para retirarla)"; L.CLASS_NO_MACROS = "Todavía no tienes macros"
