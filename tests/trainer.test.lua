@@ -35,7 +35,7 @@ services = {
 	{ name = "Blink", rank = "", type = "unavailable", level = 24 },
 	{ name = "Polymorph", rank = "Rank 2", type = "used", level = 20 },
 }
-STUB.Fire("TRAINER_SHOW")
+STUB.Fire("TRAINER_SHOW"); STUB.Advance(0.1)
 assert(filterUnavailable == false, "filter restored")
 local p = T.Pending()
 assert(#p == 3, "three to come: " .. #p)
@@ -52,7 +52,7 @@ assert(#T.Pending() == 1, "told once")
 -- profession trainers do not count; the option stops it
 tradeskill = true
 services = { { name = "Iron Buckle", type = "unavailable", level = 30 } }
-STUB.Fire("TRAINER_SHOW")
+STUB.Fire("TRAINER_SHOW"); STUB.Advance(0.1)
 assert(#T.Pending() == 1, "a profession trainer changes nothing")
 ns.db.settings.trainerNotices = false
 STUB.printed = {}

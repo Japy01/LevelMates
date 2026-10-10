@@ -21,13 +21,16 @@ function T.Record()
 	local was = GetTrainerServiceTypeFilter and GetTrainerServiceTypeFilter("unavailable")
 	if not was and SetTrainerServiceTypeFilter then SetTrainerServiceTypeFilter("unavailable", true) end
 	local spells, mine = {}, UnitLevel("player")
-	for i = 1, GetNumTrainerServices() do
-		local name, kind, _, level, rank = GetTrainerServiceInfo(i)
-		if name and kind == "unavailable" and type(level) == "number" and level > mine then
-			spells[#spells + 1] = { name = name, rank = rank ~= "" and rank or nil, level = level }
+	local ok = pcall(function()
+		for i = 1, GetNumTrainerServices() do
+			local name, kind, _, level, rank = GetTrainerServiceInfo(i)
+			if name and kind == "unavailable" and type(level) == "number" and level > mine then
+				spells[#spells + 1] = { name = name, rank = rank ~= "" and rank or nil, level = level }
+			end
 		end
-	end
-	if not was and SetTrainerServiceTypeFilter then SetTrainerServiceTypeFilter("unavailable", false) end
+	end)
+	if not was and SetTrainerServiceTypeFilter then SetTrainerServiceTypeFilter("unavailable", false) end   -- back as the player had it, always
+	if not ok then return end
 	local d = data()
 	d.seen, d.spells = true, spells
 end
@@ -53,5 +56,7 @@ end
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("TRAINER_SHOW"); ev:RegisterEvent("PLAYER_LEVEL_UP")
 ev:SetScript("OnEvent", function(_, event, level)
-	if event == "TRAINER_SHOW" then T.Record() else T.LevelUp(level) end
+	if event == "TRAINER_SHOW" then   -- after the game's own trainer window has finished opening, and never in combat
+		C_Timer.After(0, function() if not (InCombatLockdown and InCombatLockdown()) then T.Record() end end)
+	else T.LevelUp(level) end
 end)

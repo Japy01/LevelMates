@@ -117,7 +117,10 @@ function MC.Refresh()
 	for i, qb in ipairs(MC.questButtons) do
 		local q = missing[i]
 		qb.questId = q and q.id
-		if q then qb:SetText(string.format(L.CARD_SHARE_QUEST, q.title)); qb:Show() else qb:Hide() end
+		if q then
+			qb:SetText(string.format(L.CARD_SHARE_QUEST, q.title)); qb:Show()
+			qb:ClearAllPoints(); qb:SetPoint("BOTTOMLEFT", 16, 40 + (#missing - i) * 24)   -- stacked right above the action buttons
+		else qb:Hide() end
 	end
 	MC.frame:SetHeight(260 + #missing * 24)
 end

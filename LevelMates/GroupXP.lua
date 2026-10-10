@@ -7,7 +7,9 @@ ns.GroupXP = GX
 local L, C, R = ns.L, ns.Comm, ns.Roster
 GX.BAR_W, GX.GAP, GX.FRESH = 110, 30, 300
 
-local function grouped(name) return UnitInParty(name) or UnitInRaid(name) or (GX.sim and R.mates[name] and R.mates[name].xpSim) end
+-- The last value from each guildmate, kept here: inside a dungeon nothing arrives and the roster forgets them.
+local seen = {}   -- name -> { pct, level, class, at, sim }
+local function grouped(name) return UnitInParty(name) or UnitInRaid(name) or (seen[name] and seen[name].sim) end
 local function anyMate() for name in pairs(R.mates) do if UnitInParty(name) or UnitInRaid(name) then return true end end; return false end   -- real groups only: the sim sends nothing
 local function myPct()
 	local max = UnitXPMax("player") or 0
@@ -32,7 +34,7 @@ end
 C.OnMessage("xp", function(f, name)
 	local m = R.mates[name]
 	if not m then return end
-	m.xpPct, m.xpLevel, m.xpAt = f.p, f.l, GetTime()
+	seen[name] = { pct = f.p, level = f.l, class = m.class, at = GetTime() }
 	GX.Refresh()
 end)
 
@@ -40,10 +42,10 @@ end)
 function GX.Rows()
 	local _, class = UnitClass("player")
 	local out = { { name = (UnitName("player")), level = UnitLevel("player"), pct = myPct(), rested = ns.Rested.Mine(), class = class, mine = true } }
-	local others = {}
-	for name, m in pairs(R.mates) do
-		if grouped(name) and m.xpAt and GetTime() - m.xpAt <= GX.FRESH then
-			others[#others + 1] = { name = name, level = m.xpLevel or m.level, pct = m.xpPct, rested = ns.Rested.Of(name), class = m.class }
+	local others, inside = {}, IsInInstance and IsInInstance() == true
+	for name, s in pairs(seen) do
+		if grouped(name) and (inside or GetTime() - s.at <= GX.FRESH) then   -- in a dungeon nothing can arrive: keep the last value
+			others[#others + 1] = { name = name, level = s.level, pct = s.pct, rested = ns.Rested.Of(name), class = s.class }
 		end
 	end
 	table.sort(others, function(a, b) if a.level ~= b.level then return a.level > b.level end; return a.name < b.name end)
@@ -52,8 +54,8 @@ function GX.Rows()
 end
 
 -- /lm sim xp: fake guildmates in my group (local only; nothing is sent for them).
-function GX.AddSample(name, level, pct) local m = R.mates[name]; if not m then return end; GX.sim = true; m.xpSim, m.xpPct, m.xpLevel, m.xpAt = true, pct, level, GetTime(); GX.Refresh() end
-function GX.RemoveSamples() GX.sim = false; for _, m in pairs(R.mates) do m.xpSim = nil end; GX.Refresh() end
+function GX.AddSample(name, level, pct) local m = R.mates[name]; seen[name] = { pct = pct, level = level, class = m and m.class, at = GetTime(), sim = true }; GX.Refresh() end
+function GX.RemoveSamples() for name, s in pairs(seen) do if s.sim then seen[name] = nil end end; GX.Refresh() end
 
 local ROW_H = 18
 local function Build()
@@ -68,6 +70,7 @@ local function Build()
 	local bg = f:CreateTexture(nil, "BACKGROUND"); bg:SetAllPoints(); bg:SetColorTexture(0, 0, 0, 0.55)
 	local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	title:SetPoint("TOPLEFT", 8, -6); title:SetText(L.GROUPXP_TITLE)
+	f.title = title
 	f.rows = {}
 	for i = 1, 5 do
 		local y = -(20 + (i - 1) * ROW_H)
@@ -104,23 +107,40 @@ function GX.Refresh()
 			for _, p in ipairs(parts) do p:Hide() end
 		end
 	end
+	f.title:SetText(IsInInstance and IsInInstance() == true and L.GROUPXP_PAUSED or L.GROUPXP_TITLE)   -- addon messages cannot go out in dungeons
 	f:SetHeight(24 + #rows * ROW_H)
 	f:Show()
 end
 
+-- Roster updates come in storms (raids, loot changes): one check after they settle, and mine goes out at once
+-- only when the set of grouped guildmates changed.
+local rosterPending, lastSet = false, ""
+local function rosterSettled()
+	rosterPending = false
+	if IsInInstance and IsInInstance() == true then lastSet = ""; GX.Refresh(); return end   -- out again, the set counts as new
+	local names = {}
+	for name in pairs(R.mates) do if UnitInParty(name) or UnitInRaid(name) then names[#names + 1] = name end end
+	table.sort(names)
+	local set = table.concat(names, ",")
+	if set ~= lastSet then lastSet = set; if set ~= "" then GX.Send(true) end end
+	GX.Refresh()
+end
+
+function GX.Settle() if not rosterPending then rosterPending = true; C_Timer.After(2, rosterSettled) end end
+
 local ev = CreateFrame("Frame")
-ev:RegisterEvent("PLAYER_XP_UPDATE"); ev:RegisterEvent("GROUP_ROSTER_UPDATE"); ev:RegisterEvent("PLAYER_LEVEL_UP")
+ev:RegisterEvent("PLAYER_XP_UPDATE"); ev:RegisterEvent("GROUP_ROSTER_UPDATE"); ev:RegisterEvent("PLAYER_LEVEL_UP"); ev:RegisterEvent("PLAYER_ENTERING_WORLD")
 ev:SetScript("OnEvent", function(_, event, unit)
 	if event == "PLAYER_XP_UPDATE" then
 		if unit and unit ~= "player" then return end
 		GX.Send()
-	elseif event == "GROUP_ROSTER_UPDATE" then   -- joining: the others learn mine at once (after the roster settles)
-		C_Timer.After(2, function() GX.Send(true); GX.Refresh() end)
+	elseif event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
+		GX.Settle()
 	else
 		C_Timer.After(1, function() GX.Send(true) end)
 	end
 	GX.Refresh()
 end)
 ns.On("LM_PING_ANSWERED", function() if anyMate() then GX.Send(true) end end)
-ns.On("LM_ROSTER_CHANGED", GX.Refresh)
+ns.On("LM_ROSTER_CHANGED", function() GX.Settle(); GX.Refresh() end)   -- guildmates back on the board after a dungeon
 ns.On("LM_RESTED_CHANGED", GX.Refresh)

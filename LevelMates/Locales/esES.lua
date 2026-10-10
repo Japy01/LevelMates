@@ -182,3 +182,4 @@ L.OPT_TRAINER = "Recordatorio de entrenador"; L.OPT_TRAINER_TT = "Al subir de ni
 -- Barras de XP del grupo
 L.GROUPXP_TITLE = "XP del grupo"; L.OPT_GROUPXP = "Barras de XP del grupo"; L.OPT_GROUPXP_TT = "En grupo con hermanos, una ventanita muestra la XP de todos. Tu % de XP va a tu hermandad solo mientras vas en grupo con algún hermano."
 L.CARD_NO_QUESTS = "No comparte sus misiones, así que LevelMates no sabe cuáles de las tuyas le faltan."; L.CARD_MISSING = "Misiones tuyas que no tiene:"; L.CARD_SHARE_QUEST = "Compartir: %s"
+L.GROUPXP_PAUSED = "XP del grupo (en pausa en mazmorras)"
