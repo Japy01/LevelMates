@@ -102,3 +102,5 @@ L.DUNGEON_BLACKFATHOM_DEEPS = "Blackfathom Deeps"; L.DUNGEON_STOCKADE = "The Sto
 L.DUNGEON_DALARAN = "City of Dalaran"; L.DUNGEON_GNOMEREGAN = "Gnomeregan"; L.DUNGEON_RAZORFEN_KRAUL = "Razorfen Kraul"
 L.DUNGEON_SM_GRAVEYARD = "Scarlet Monastery: Graveyard"; L.DUNGEON_SM_LIBRARY = "Scarlet Monastery: Library"
 L.LFG_SEARCHING = "%d looking"; L.LFG_SEARCHING_ONE = "1 looking"; L.LFG_WHISPER = "Whisper %s"; L.LFG_INVITE = "Invite %s"; L.LFG_HERE = "Look for a group here"; L.LFG_CANCEL_MINE = "Withdraw my ad"
+L.OPT_SCREEN = "Screen notices"; L.OPT_SCREEN_TT = "Important notices also in the middle of the screen."; L.OPT_LEVELUP = "Guildmates' level-ups"; L.OPT_LEVELUP_TT = "A chat line with a [Congratulate] link when a guildmate levels up."
+L.VERSION_NEW = "There is a newer LevelMates (%s). Update when you can."

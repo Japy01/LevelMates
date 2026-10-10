@@ -127,7 +127,7 @@ end
 function G.CheckDone(g)
 	if not g.announced and G.IsDone(g) then
 		g.announced = true
-		if ns.db.settings.goalNotices then ns.Say(L.GOAL_REACHED, G.Text(g)) end
+		if ns.db.settings.goalNotices then ns.Notice(L.GOAL_REACHED, G.Text(g)) end
 	end
 end
 
@@ -163,7 +163,7 @@ C.OnMessage("go", function(f, name)
 		if #G.List() >= G.MAX then return end
 		g = { id = f.id, contrib = {}, by = name }
 		s[f.id] = g
-		if ns.db.settings.goalNotices then ns.Say(L.GOAL_NEW, name, G.Text({ ty = f.ty, a = f.a, w = f.w })) end
+		if ns.db.settings.goalNotices then ns.Notice(L.GOAL_NEW, name, G.Text({ ty = f.ty, a = f.a, w = f.w })) end
 	end
 	g.ty, g.a, g.w, g.s, g.e = f.ty, f.a, f.w, f.s, f.e
 	ns.Fire("LM_GOALS_CHANGED")

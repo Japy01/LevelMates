@@ -108,7 +108,7 @@ C.OnMessage("lfg", function(f, name)
 	if known then endsAt = math.min(known.endsAt, endsAt) end   -- a re-send never moves the clock forward
 	G.ads[f.id] = { name = name, d = f.d, r = f.r, n = f.n, endsAt = endsAt }
 	if not known and ns.db.settings.lfgNotices and D.Fits(f.d, UnitLevel("player")) then
-		ns.Say(L.LFG_NOTICE, name, D.Name(f.d), G.RolesText(f.r))
+		ns.Notice(L.LFG_NOTICE, name, D.Name(f.d), G.RolesText(f.r))
 	end
 	ns.Fire("LM_LFG_CHANGED")
 end)

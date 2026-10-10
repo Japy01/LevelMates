@@ -124,14 +124,14 @@ ns.On("LM_MY_LOOT", function(link)
 	if not id then return end
 	if W.Has(id) then
 		W.Remove(id)
-		ns.Say(L.WISH_GOT, link)
+		ns.Notice(L.WISH_GOT, link)
 	end
 	if not ns.db.settings.wishNotices then return end
 	for _, o in ipairs(others()) do
 		for _, x in ipairs(o.ids) do
 			if x == id and not told[o.name .. ":" .. id] then
 				told[o.name .. ":" .. id] = true
-				ns.Say(L.WISH_THEY_WANT, o.name, link)
+				ns.Notice(L.WISH_THEY_WANT, o.name, link)
 			end
 		end
 	end

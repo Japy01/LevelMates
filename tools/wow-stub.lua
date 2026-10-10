@@ -300,3 +300,6 @@ function Region:SetScrollChild(child) self.child = child end
 function Region:HighlightText() self.highlighted = true end
 function Region:SetFocus() self.focused = true end
 function Region:ClearFocus() self.focused = false end
+
+-- Screen notices
+UIErrorsFrame = { messages = {}, AddMessage = function(self, text) self.messages[#self.messages + 1] = text end }

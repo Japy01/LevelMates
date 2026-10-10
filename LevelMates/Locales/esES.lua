@@ -102,3 +102,5 @@ L.DUNGEON_BLACKFATHOM_DEEPS = "Cavernas de Brazanegra"; L.DUNGEON_STOCKADE = "La
 L.DUNGEON_DALARAN = "Ciudad de Dalaran"; L.DUNGEON_GNOMEREGAN = "Gnomeregan"; L.DUNGEON_RAZORFEN_KRAUL = "Horado Rajacieno"
 L.DUNGEON_SM_GRAVEYARD = "Monasterio Escarlata: Cementerio"; L.DUNGEON_SM_LIBRARY = "Monasterio Escarlata: Biblioteca"
 L.LFG_SEARCHING = "%d buscan"; L.LFG_SEARCHING_ONE = "1 busca"; L.LFG_WHISPER = "Susurrar a %s"; L.LFG_INVITE = "Invitar a %s"; L.LFG_HERE = "Buscar grupo aquí"; L.LFG_CANCEL_MINE = "Retirar mi anuncio"
+L.OPT_SCREEN = "Avisos en pantalla"; L.OPT_SCREEN_TT = "Los avisos importantes también en el centro de la pantalla."; L.OPT_LEVELUP = "Subidas de nivel de hermanos"; L.OPT_LEVELUP_TT = "Una línea en el chat con un enlace [Felicitar] cuando un hermano sube de nivel."
+L.VERSION_NEW = "Hay una versión nueva de LevelMates (%s). Actualiza cuando puedas."

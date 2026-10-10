@@ -39,7 +39,7 @@ local function recompute()
 		if not notified[name] and P.Matches(name) and ns.db.settings.palNotices then
 			notified[name] = true
 			local m = R.mates[name]
-			ns.Say(L.PAL_NOTICE, name, m.level, zoneName(m))
+			ns.Notice(L.PAL_NOTICE, name, m.level, zoneName(m))
 		end
 	end
 end

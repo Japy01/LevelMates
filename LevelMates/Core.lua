@@ -4,7 +4,7 @@ ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadat
 
 local DEFAULTS = {
 	share = true, sharePos = false, shareQuests = false, shareXp = false, shareRested = false,
-	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, restedNotices = true, goalNotices = true, wishNotices = true, sound = true, minimap = true,
+	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, restedNotices = true, goalNotices = true, wishNotices = true, screenNotices = true, levelNotices = true, shareProfessions = true, sound = true, minimap = true,
 	transport = "auto", debug = false,
 }
 
@@ -29,6 +29,19 @@ function ns.Log(fmt, ...)
 	if ns.db and ns.db.settings.debug then print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
 end
 function ns.Say(fmt, ...) print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
+
+-- Important notices: the chat line, and the same text in the middle of the screen when the option is on
+-- (links shown as their plain "[name]").
+function ns.Screen(text)
+	if not (ns.db and ns.db.settings.screenNotices and UIErrorsFrame) then return end
+	local plain = text:gsub("|H.-|h(.-)|h", "%1"):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+	UIErrorsFrame:AddMessage(plain, 1, 0.82, 0)
+end
+function ns.Notice(fmt, ...)
+	local text = string.format(fmt, ...)
+	ns.Say("%s", text)
+	ns.Screen(text)
+end
 
 function ns.PlayerKey()
 	local name, realm = UnitName("player")

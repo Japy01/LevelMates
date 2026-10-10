@@ -86,7 +86,7 @@ local function check(level)
 	local g = P.Mine()
 	if g and not g.announced and math.max(UnitLevel("player"), level or 0) >= g.l then
 		g.announced = true
-		if ns.db.settings.goalNotices then ns.Say(L.MYGOAL_REACHED, g.l) end
+		if ns.db.settings.goalNotices then ns.Notice(L.MYGOAL_REACHED, g.l) end
 		ns.Fire("LM_GOALS_CHANGED")
 	end
 end
