@@ -196,3 +196,7 @@ L.CAL_EMPTY = "No meetups in the next 7 days. Set one up from a dungeon card."; 
 L.BTN_INACTIVE = "Inactive"; L.BTN_TEMPLATES = "Templates"; L.HEAD_INACTIVE = "Inactive members"; L.SUB_INACTIVE = "Members who have not logged in for a while. Nothing is done to them: it only informs."
 L.INACTIVE_DAYS = "%d+ days"; L.INACTIVE_AWAY = "%d days ago"; L.INACTIVE_SINCE = "since %s"; L.INACTIVE_BEFORE = "before %s"; L.INACTIVE_EMPTY = "Nobody has been away that long."
 L.COL_RANK_GUILD = "Rank"; L.COL_AWAY = "Last seen"; L.COL_JOINED = "Joined"
+
+-- Alts
+L.CARD_ALTS = "Alts: %s"; L.CARD_MY_CHARS = "Your characters in this guild:"; L.CARD_CHAR = "%s, level %d %s"
+L.OPT_ALTS = "Share my alts"; L.OPT_ALTS_TT = "Guildmates see which of your other characters in this same guild are yours. Characters outside the guild are never shared."

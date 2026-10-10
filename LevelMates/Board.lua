@@ -236,6 +236,8 @@ local function Build()
 			elseif B.tab == "mates" and self.mate then   -- partner match and shared rested XP
 				local lines = {}
 				if ns.Partner and ns.Partner.Matches(self.mate) then lines[#lines + 1] = { L.PAL_TOOLTIP, 0.4, 1, 0.4 } end
+				local alts = ns.Alts and ns.Alts.Of(self.mate) or {}
+				if #alts > 0 then lines[#lines + 1] = { string.format(L.CARD_ALTS, table.concat(alts, ", ")), 0.8, 0.8, 0.8 } end
 				local rx = ns.Rested and ns.Rested.Of(self.mate)
 				if rx then lines[#lines + 1] = { string.format(L.RESTED_THEIRS, rx), 0.6, 0.8, 1 } end
 				local shared = ns.QuestProgress and ns.QuestProgress.Shared(self.mate) or {}

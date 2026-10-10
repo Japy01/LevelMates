@@ -133,10 +133,11 @@ C.SCHEMA = {
 	mcx  = { n = text(16) },
 	xp   = { p = int(0, 100), l = int(1, 100) },
 	ask  = { id = word(8), x = text(120) },
+	al   = { n = text(120) },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
@@ -268,7 +269,7 @@ local function pump()
 	C.stats.queued = #queue
 end
 
-local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true, xp = true }
+local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true, xp = true, al = true }
 function C.Send(kind, fields, prio)
 	if active == "none" or not IsInGuild() then return false end
 	if inInstance() and not INSTANCE_OK[kind] then return false end

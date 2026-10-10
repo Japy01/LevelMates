@@ -50,6 +50,7 @@ Macros.lua
 Ask.lua
 Feed.lua
 MateCard.lua
+Alts.lua
 GoalDialog.lua
 WishDialog.lua
 DiscordCopy.lua

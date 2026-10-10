@@ -34,12 +34,27 @@ end
 -- The card's text, one line per thing known about them.
 function MC.Lines(name)
 	local m, lines = R.mates[name], {}
+	if name == UnitName("player") and ns.Alts then   -- my own card: my characters in this guild
+		lines[#lines + 1] = L.CARD_MY_CHARS
+		local all = ns.Alts.MyAlts()
+		local here = ns.Alts.Chars()[ns.PlayerKey()]
+		if here then table.insert(all, 1, here) end
+		for _, c in ipairs(all) do
+			local class = c.class and (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[c.class] or c.class) or "?"
+			local profs = {}
+			for _, p in ipairs(c.profs or {}) do profs[#profs + 1] = ns.Professions.Name(p.id) .. " " .. p.rank end
+			lines[#lines + 1] = string.format(L.CARD_CHAR, c.name, c.level or 0, class) .. (#profs > 0 and (" · " .. table.concat(profs, ", ")) or "")
+		end
+		return lines
+	end
 	if m then
 		local class = m.class and (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[m.class] or m.class) or "?"
 		local info = m.mapId and C_Map.GetMapInfo(m.mapId)
 		local state = m.inGroup and (m.hasSlot and L.GROUP_FREE or L.GROUP_FULL) or L.SOLO
 		lines[#lines + 1] = string.format(L.CARD_BASICS, class, m.level or 0, info and info.name or "?", state)
 	end
+	local alts = ns.Alts and ns.Alts.Of(name) or {}
+	if #alts > 0 then lines[#lines + 1] = string.format(L.CARD_ALTS, table.concat(alts, ", ")) end
 	local b = ns.Builds.Of(name)
 	if b then lines[#lines + 1] = string.format(L.CARD_BUILD, ns.Builds.PointsText(b)) end
 	local profs = {}
@@ -107,6 +122,8 @@ end
 function MC.Refresh()
 	if not (MC.frame and MC.frame:IsShown() and MC.name) then return end
 	local name, m = MC.name, R.mates[MC.name]
+	local mine = name == UnitName("player")
+	MC.whisper:SetShown(not mine); MC.invite:SetShown(not mine)
 	local fs = MC.frame.TitleContainer and MC.frame.TitleContainer.TitleText or MC.frame.TitleText
 	if fs then fs:SetText(name) end
 	MC.frame.body:SetText(table.concat(MC.Lines(name), "\n"))
@@ -133,4 +150,4 @@ function MC.Show(name)
 end
 
 ns.On("LM_ROW_CLICK", MC.Show)
-for _, e in ipairs({ "LM_MATE_QUESTS", "LM_ROSTER_CHANGED", "LM_BUILDS_CHANGED", "LM_PROFESSIONS_CHANGED", "LM_WISHES_CHANGED", "LM_FEED_CHANGED", "LM_MEETUPS_CHANGED", "LM_GOALS_CHANGED" }) do ns.On(e, MC.Refresh) end
+for _, e in ipairs({ "LM_ALTS_CHANGED", "LM_MATE_QUESTS", "LM_ROSTER_CHANGED", "LM_BUILDS_CHANGED", "LM_PROFESSIONS_CHANGED", "LM_WISHES_CHANGED", "LM_FEED_CHANGED", "LM_MEETUPS_CHANGED", "LM_GOALS_CHANGED" }) do ns.On(e, MC.Refresh) end
