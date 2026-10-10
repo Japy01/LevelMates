@@ -19,6 +19,7 @@ B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (r
 B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes" }
 local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES" }
 B.TAB_LABELS = TAB_LABELS
+local HEAD_KEY = { mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS" }
 local function KnownTab(key) for _, k in ipairs(B.TAB_KEYS) do if k == key then return key end end; return "mates" end
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
@@ -688,6 +689,10 @@ function B.Refresh()
 	end
 	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or B.COLS)
 	SetHeaders()
+	local hk = HEAD_KEY[B.tab] or "MATES"
+	B.heading:SetText(L["HEAD_" .. hk])
+	B.subtitle:SetText(journal and ns.Journal.PaceText() or L["SUB_" .. hk])
+	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
 	if lfg then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
 	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H)

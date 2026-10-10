@@ -46,6 +46,26 @@ function J.Duration(sec)
 	return string.format(L.J_DUR_M, m)
 end
 
+-- Pace from the levels with a recorded time: the average of the last five, the fastest, and a rough time to 60.
+function J.Pace()
+	local times = {}
+	for _, e in ipairs(J.List("level", "")) do if e.took and not e.sim then times[#times + 1] = e end end   -- newest first
+	if #times < 2 then return nil end
+	local n, sum = math.min(5, #times), 0
+	for i = 1, n do sum = sum + times[i].took end
+	local fastest = times[1]
+	for _, e in ipairs(times) do if e.took < fastest.took then fastest = e end end
+	local avg, left = sum / n, math.max(0, 60 - UnitLevel("player"))
+	return { avg = avg, fastest = fastest.level, fastestTook = fastest.took, toMax = left > 0 and avg * left or nil }
+end
+function J.PaceText()
+	local p = J.Pace()
+	if not p then return nil end
+	local text = string.format(L.PACE, J.Duration(p.avg), p.fastest, J.Duration(p.fastestTook))
+	if p.toMax then text = text .. string.format(L.PACE_TO_MAX, J.Duration(p.toMax)) end
+	return text
+end
+
 function J.Text(e)
 	if e.k == "level" then
 		return string.format(L.J_LEVEL, e.level) .. ((e.took and e.from) and string.format(L.J_TOOK, J.Duration(e.took), e.from) or "")
