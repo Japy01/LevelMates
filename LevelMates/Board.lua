@@ -107,6 +107,14 @@ local function Build()
 		divider:SetColorTexture(1, 1, 1, 1); divider:SetGradient("HORIZONTAL", CreateColor(1, 0.82, 0, 0.8), CreateColor(1, 0.82, 0, 0))
 	end
 	B.divider = divider
+	if ns.Skin.On() then   -- a box behind the heading and subtitle, and a dark strip behind the column names
+		local head = ns.Skin.Box(f, ns.Skin.C.box, ns.Skin.C.boxBorder)
+		head:SetPoint("TOPLEFT", B.MARGIN - 4, -(insetTop + 4)); head:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP - 12))
+		local strip = ns.Skin.Box(f, ns.Skin.C.strip)
+		strip:SetPoint("TOPLEFT", B.MARGIN - 4, -(B.TOP - 4)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 2))
+		B.headBox, B.colStrip = head, strip
+		divider:Hide()   -- the box's border does its job
+	end
 	divider:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 8)); divider:SetPoint("TOPRIGHT", -B.MARGIN, -(B.TOP - 8))
 	local search = CreateFrame("EditBox", nil, f, "SearchBoxTemplate")
 	search:SetSize(150, 20); search:SetPoint("TOPRIGHT", -B.MARGIN - 6, -(insetTop + 12))
@@ -172,7 +180,7 @@ local function Build()
 		btn:SetHighlightTexture("Interface/QuestFrame/UI-QuestLogTitleHighlight", "ADD")
 		local icon = btn:CreateTexture(nil, "ARTWORK")   -- class icon, left of the name
 		icon:SetSize(ROW_H - 4, ROW_H - 4); icon:SetPoint("LEFT", 0, 0)
-		local r = { bg = bg, icon = icon, button = btn, name = Col(btn, B.COLS[1] - (ROW_H - 4) - 4), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
+		local r = { bg = bg, icon = icon, button = btn, stripe = ns.Skin.Stripe(btn), plaque = ns.Skin.Plaque(btn), name = Col(btn, B.COLS[1] - (ROW_H - 4) - 4), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
 		-- Professions tab: a rank bar in the third column
 		r.barBg = btn:CreateTexture(nil, "ARTWORK"); r.barBg:SetColorTexture(1, 1, 1, 0.12); r.barBg:SetSize(B.BAR_W, 8); r.barBg:Hide()
 		r.barFill = btn:CreateTexture(nil, "OVERLAY"); r.barFill:SetColorTexture(0.9, 0.7, 0.15, 0.9); r.barFill:SetHeight(8); r.barFill:Hide()
@@ -612,8 +620,18 @@ B.PAL_TINT = { 0.2, 0.8, 0.3, 0.15 }
 -- Row background: the partner tint for a match, otherwise the zebra stripe.
 local function RowBg(r, i, tint)
 	if tint then r.bg:SetColorTexture(unpack(B.PAL_TINT))
-	elseif ns.Skin.On() then local c = ns.Skin.C.row; r.bg:SetColorTexture(c[1], c[2], c[3], i % 2 == 0 and c[4] or 0)   -- warm stripes
+	elseif ns.Skin.On() then r.bg:SetColorTexture(0, 0, 0, 0); if r.stripe then r.stripe:SetShown(i % 2 == 1) end   -- the character sheet's stripes
 	else r.bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0) end
+end
+
+-- A section header row: in this style the character sheet's plaque with the text centred in white.
+local function SectionHeader(r)
+	if r.plaque then
+		r.bg:SetColorTexture(0, 0, 0, 0); r.stripe:Hide(); r.plaque:Show()
+		r.name:SetWidth(ROW_W - (ROW_H - 4) - 4 - 30); r.name:SetJustifyH("CENTER"); r.name:SetTextColor(1, 1, 1)
+	else
+		r.bg:SetColorTexture(1, 0.82, 0, 0.08)
+	end
 end
 
 local function FillMates(list)
@@ -647,6 +665,7 @@ local function SetColumns(widths)
 	for i, w in ipairs(widths) do B.headText[i]:SetWidth(w) end
 	for _, r in ipairs(B.rows) do
 		r.name:SetWidth(widths[1] - (ROW_H - 4) - 4); r.level:SetWidth(widths[2]); r.zone:SetWidth(widths[3])
+		r.name:SetJustifyH("LEFT"); if r.plaque then r.plaque:Hide() end   -- a section header (plaque) is set again by its fill
 		r.group:SetWidth(widths[4]); r.xph:SetWidth(widths[5])
 	end
 end
@@ -747,7 +766,7 @@ local function FillCrafts(list)
 			r.name:SetText(ns.Professions.Name(c.header) .. " (" .. c.count .. ")"); r.name:SetTextColor(1, 0.82, 0)
 			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
 			r.button:Show()
-			r.bg:SetColorTexture(1, 0.82, 0, 0.08)
+			SectionHeader(r)
 		elseif c then
 			local m = R.mates[c.name]
 			r.icon:Hide()
@@ -950,7 +969,7 @@ local function FillCalendar(list)
 			r.name:SetText(string.format("%s %02d/%02d", L["DAY_" .. c.t.wday], c.t.day, c.t.month)); r.name:SetTextColor(1, 0.82, 0)
 			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
 			r.button:Show()
-			r.bg:SetColorTexture(1, 0.82, 0, 0.08)
+			SectionHeader(r)
 		elseif c then
 			local m, n = c.meet, 1
 			for _ in pairs(c.meet.joined or {}) do n = n + 1 end
@@ -1079,7 +1098,7 @@ local function FillClass(list)
 			r.level:SetText(""); r.zone:SetText("")
 			r.group:SetText(""); r.xph:SetText("")
 			r.button:Show()
-			r.bg:SetColorTexture(1, 0.82, 0, 0.08)
+			SectionHeader(r)
 		elseif c and c.kind == "ask" then
 			local q = c.q
 			local m = R.mates[q.by]
