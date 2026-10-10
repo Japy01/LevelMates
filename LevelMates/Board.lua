@@ -607,7 +607,7 @@ end
 -- Dungeons tab: the ads for a dungeon (mine first), the visible cards, and filling them.
 function B.AdsFor(id)
 	local out, LFG = {}, ns.LFG
-	if LFG.mine and LFG.mine.d == id then out[1] = { name = (UnitName("player")), r = LFG.mine.r, n = LFG.mine.n, mine = true } end
+	if LFG.mine and LFG.mine.d == id then out[1] = { name = (UnitName("player")), r = LFG.mine.r, n = LFG.mine.n, mine = true, joined = LFG.mine.joined, id = LFG.mine.id } end
 	for _, adId in ipairs(LFG.List()) do
 		local a = LFG.ads[adId]
 		if a.d == id and not (LFG.mine and adId == LFG.mine.id) then out[#out + 1] = a end
@@ -656,6 +656,9 @@ function B.DungeonTooltip(card)
 	GameTooltip:AddLine(string.format("%s (%d-%d)", ns.Dungeons.Name(d.id), d.min, d.max), 1, 0.82, 0)
 	for _, a in ipairs(B.AdsFor(d.id)) do
 		GameTooltip:AddLine(a.name .. " · " .. ns.LFG.RolesShort(a.r) .. (a.n and (": " .. a.n) or ""), 1, 1, 1, true)
+		local who = {}
+		for name, role in pairs(a.joined or {}) do who[#who + 1] = name .. " (" .. L["ROLE_" .. role] .. ")" end
+		if #who > 0 then table.sort(who); GameTooltip:AddLine("   " .. string.format(L.LFJ_JOINED, table.concat(who, ", ")), 0.4, 1, 0.4, true) end
 	end
 	GameTooltip:Show()
 end
@@ -667,8 +670,19 @@ function B.OpenDungeonMenu(id)
 		root:CreateTitle(ns.Dungeons.Name(id))
 		for _, a in ipairs(B.AdsFor(id)) do
 			if a.mine then
+				local who = {}
+				for name, role in pairs(a.joined or {}) do who[#who + 1] = { name = name, role = role } end
+				table.sort(who, function(x, y) return x.name < y.name end)
+				for _, w in ipairs(who) do root:CreateButton(string.format(L.LFJ_INVITE, w.name, L["ROLE_" .. w.role]), function() B.Invite(w.name) end) end
 				root:CreateButton(L.LFG_CANCEL_MINE, function() ns.LFG.Cancel() end)
 			else
+				if ns.LFG.myJoins[a.id] then
+					root:CreateButton(string.format(L.LFJ_LEAVE, a.name), function() ns.LFG.Leave(a.id) end)
+				else
+					for _, role in ipairs({ "T", "H", "D" }) do
+						root:CreateButton(string.format(L.LFJ_JOIN, a.name, L["ROLE_" .. role]), function() ns.LFG.Join(a.id, role) end)
+					end
+				end
 				root:CreateButton(string.format(L.LFG_WHISPER, a.name), function() B.Whisper(a.name) end)
 				root:CreateButton(string.format(L.LFG_INVITE, a.name), function() B.Invite(a.name) end)
 			end

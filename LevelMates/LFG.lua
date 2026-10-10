@@ -56,7 +56,7 @@ function G.Post(dungeonId, roles, note)
 	end
 	if not C.Send("lfg", fields, "now") then ns.Fire("LM_LFG_CHANGED"); return false end
 	lastPost = now
-	G.mine = { id = id, d = dungeonId, r = r, n = fields.n, endsAt = now + DURATION }
+	G.mine = { id = id, d = dungeonId, r = r, n = fields.n, endsAt = now + DURATION, joined = {} }
 	ns.Fire("LM_LFG_CHANGED")
 	return true
 end
@@ -106,7 +106,7 @@ C.OnMessage("lfg", function(f, name)
 	end
 	local endsAt = now + f.m * 60
 	if known then endsAt = math.min(known.endsAt, endsAt) end   -- a re-send never moves the clock forward
-	G.ads[f.id] = { name = name, d = f.d, r = f.r, n = f.n, endsAt = endsAt }
+	G.ads[f.id] = { id = f.id, name = name, d = f.d, r = f.r, n = f.n, endsAt = endsAt, joined = known and known.joined or {} }   -- a re-send keeps its joins
 	if not known and ns.db.settings.lfgNotices and D.Fits(f.d, UnitLevel("player")) then
 		ns.Notice(L.LFG_NOTICE, name, D.Name(f.d), G.RolesText(f.r))
 	end
@@ -162,4 +162,59 @@ local ticker
 ns.On("LM_WORLD", function(isInitial, isReloading)
 	if not (isInitial or isReloading) or ticker then return end
 	ticker = C_Timer.NewTicker(60, G.Expire)
+end)
+
+
+-- "Join": who joins which ad. Everyone keeps them (the card tooltip shows them); the poster gets the notices.
+G.myJoins = {}   -- ad id -> my role
+local function adById(id) if G.mine and G.mine.id == id then return G.mine end; return G.ads[id] end
+local function joinedCount(ad) local n = 0; for _ in pairs(ad.joined or {}) do n = n + 1 end; return n end
+local function me() return (UnitName("player")) end
+
+-- Called from a click (a card's menu).
+function G.Join(id, role)
+	local ad = G.ads[id]
+	if not ad or not (role == "T" or role == "H" or role == "D") then return false end
+	if not C.Send("lfj", { id = id, r = role }, "now") then ns.Say(L.HELP_NEEDS_SHARE); return false end
+	G.myJoins[id] = role
+	ad.joined = ad.joined or {}
+	ad.joined[me()] = role
+	ns.Fire("LM_LFG_CHANGED")
+	return true
+end
+
+function G.Leave(id)
+	if not G.myJoins[id] then return false end
+	C.Send("lfjx", { id = id }, "now")
+	G.myJoins[id] = nil
+	local ad = G.ads[id]
+	if ad and ad.joined then ad.joined[me()] = nil end
+	ns.Fire("LM_LFG_CHANGED")
+	return true
+end
+
+C.OnMessage("lfj", function(f, name)
+	if not R.mates[name] then return end   -- only people the roster knows
+	local ad = adById(f.id)
+	if not ad or ad.name == name then return end
+	ad.joined = ad.joined or {}
+	local new = ad.joined[name] == nil
+	ad.joined[name] = f.r
+	if ad == G.mine then
+		if new then ns.Notice(L.LFJ_NOTICE, name, D.Name(ad.d), L["ROLE_" .. f.r]) end
+		if not ad.fullTold and joinedCount(ad) >= 4 then ad.fullTold = true; ns.Notice(L.LFJ_FULL, D.Name(ad.d)) end
+	end
+	ns.Fire("LM_LFG_CHANGED")
+end)
+
+C.OnMessage("lfjx", function(f, name)
+	local ad = adById(f.id)
+	if ad and ad.joined and ad.joined[name] then ad.joined[name] = nil; ns.Fire("LM_LFG_CHANGED") end
+end)
+
+-- A newcomer (or a poster back from a /reload) gets my joins again, while their ads live.
+ns.On("LM_PING_ANSWERED", function()
+	for id, role in pairs(G.myJoins) do
+		if G.ads[id] then C.Send("lfj", { id = id, r = role }) else G.myJoins[id] = nil end
+	end
 end)

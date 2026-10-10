@@ -116,3 +116,4 @@ L.OPT_PROFS = "Compartir mis profesiones"; L.OPT_PROFS_TT = "Los hermanos ven tu
 L.PROF_171 = "Alquimia"; L.PROF_164 = "Herrería"; L.PROF_333 = "Encantamiento"; L.PROF_202 = "Ingeniería"; L.PROF_182 = "Herboristería"; L.PROF_165 = "Peletería"
 L.PROF_186 = "Minería"; L.PROF_393 = "Desuello"; L.PROF_197 = "Sastrería"; L.PROF_129 = "Primeros auxilios"; L.PROF_185 = "Cocina"; L.PROF_356 = "Pesca"
 L.TAB_CRAFTS = "Oficios"; L.COL_PROFESSION = "Profesión"; L.COL_RANK = "Nivel"; L.COL_SEEN = "Visto"; L.ONLINE = "conectado"; L.CRAFTS_EMPTY = "Nadie ha compartido profesiones todavía."
+L.LFJ_JOIN = "Me apunto con %s como %s"; L.LFJ_LEAVE = "Me borro del grupo de %s"; L.LFJ_INVITE = "Invitar a %s (%s)"; L.LFJ_JOINED = "apuntados: %s"; L.LFJ_NOTICE = "%s se apunta a tu grupo de %s como %s."; L.LFJ_FULL = "¡Tu grupo de %s está completo! Invítalos desde la tarjeta."

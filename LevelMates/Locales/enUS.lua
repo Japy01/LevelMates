@@ -116,3 +116,4 @@ L.OPT_PROFS = "Share my professions"; L.OPT_PROFS_TT = "Guildmates see your prof
 L.PROF_171 = "Alchemy"; L.PROF_164 = "Blacksmithing"; L.PROF_333 = "Enchanting"; L.PROF_202 = "Engineering"; L.PROF_182 = "Herbalism"; L.PROF_165 = "Leatherworking"
 L.PROF_186 = "Mining"; L.PROF_393 = "Skinning"; L.PROF_197 = "Tailoring"; L.PROF_129 = "First Aid"; L.PROF_185 = "Cooking"; L.PROF_356 = "Fishing"
 L.TAB_CRAFTS = "Professions"; L.COL_PROFESSION = "Profession"; L.COL_RANK = "Rank"; L.COL_SEEN = "Seen"; L.ONLINE = "online"; L.CRAFTS_EMPTY = "Nobody has shared professions yet."
+L.LFJ_JOIN = "Join %s as %s"; L.LFJ_LEAVE = "Leave %s's group"; L.LFJ_INVITE = "Invite %s (%s)"; L.LFJ_JOINED = "joined: %s"; L.LFJ_NOTICE = "%s joins your %s group as %s."; L.LFJ_FULL = "Your %s group is full! Invite them from the card."
