@@ -32,7 +32,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Commands
 
-`/lm` (board), `/lm lfg` (Dungeons tab), `/lm diario` (Journal tab), `/lm metas` (Goals tab), `/lm deseos` (Wishes tab), `/lm oficios` (Professions tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim off`.
+`/lm` (board), `/lm lfg` (Dungeons tab), `/lm diario` (Journal tab), `/lm metas` (Goals tab), `/lm deseos` (Wishes tab), `/lm oficios` (Professions tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim nivel`, `/lm sim off`.
 
 ## Not in v1 (planned)
 
@@ -76,7 +76,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Comandos
 
-`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm diario` (pestaña Diario), `/lm metas` (pestaña Metas), `/lm deseos` (pestaña Deseos), `/lm oficios` (pestaña Oficios), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim off`.
+`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm diario` (pestaña Diario), `/lm metas` (pestaña Metas), `/lm deseos` (pestaña Deseos), `/lm oficios` (pestaña Oficios), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim nivel`, `/lm sim off`.
 
 ## Pendiente para después de v1
 

@@ -24,6 +24,13 @@ local function run()
 	ns.Say("sim: %d guildmates (local only, nothing sent). /lm sim help, /lm sim off", #R.List())
 end
 
+-- Mario goes up one level (runs /lm sim first if he is not there), to try the [Congratulate] link.
+local function simLevel()
+	if not R.mates.Mario then run() end
+	local m = R.mates.Mario
+	inject("hb", { l = math.min(60, (m and m.level or 30) + 1), z = m and m.mapId or 1, c = "MAGE", v = "sim" }, "Mario")
+end
+
 local function simHelp()
 	local map = C_Map.GetBestMapForUnit("player") or 1
 	inject("help", { t = "Fuerte Colmillo (elite)", z = map, x = 42.5, y = 61.0, id = "sim00001" }, "Mario")
@@ -94,5 +101,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "metas" or rest == "goals" then simGoals()
 	elseif rest == "deseos" or rest == "wishes" then simWishes()
 	elseif rest == "oficios" or rest == "professions" then simCrafts()
+	elseif rest == "nivel" or rest == "level" then simLevel()
 	else run() end
 end)
