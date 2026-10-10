@@ -14,10 +14,11 @@ B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
 B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 344, 1, 74 }   -- wishes: who, -, item, -, since (same total as B.COLS)
+B.CCOLS = { 150, 1, 239, 60, 70 }   -- professions: who, -, profession, rank, online or last seen (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
-B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes" }
-local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES" }
+B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts" }
+local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS" }
 B.TAB_LABELS = TAB_LABELS
 local HEAD_KEY = { mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS" }
 local function KnownTab(key) for _, k in ipairs(B.TAB_KEYS) do if k == key then return key end end; return "mates" end
@@ -162,6 +163,10 @@ local function Build()
 		local r = { bg = bg, icon = icon, button = btn, name = Col(btn, B.COLS[1] - (ROW_H - 4) - 4), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
 		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
+			if B.tab == "crafts" then
+				if mouse == "RightButton" and self.craftName and not self.craftMine then B.OpenCraftMenu(self.craftName) end
+				return
+			end
 			if B.tab == "wishes" then
 				if mouse == "RightButton" and self.wishMine then B.OpenWishMenu(self.wishId) end
 				return
@@ -394,6 +399,12 @@ end
 local function SetHeaders()
 	local lfg = B.tab == "lfg"
 	if lfg then for i = 1, 5 do B.headText[i]:SetText("") end; return end   -- the grid has no columns
+	if B.tab == "crafts" then
+		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_PROFESSION)
+		B.headText[4]:SetText(L.COL_RANK); B.headText[5]:SetText(L.COL_SEEN)
+		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
+		return
+	end
 	if B.tab == "wishes" then
 		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ITEM)
 		B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_SINCE)
@@ -528,6 +539,44 @@ function B.OpenGoalMenu(id)
 	end)
 end
 
+local function FillCrafts(list)
+	for i = 1, ROWS do
+		local r, c = B.rows[i], list[i]
+		r.button.mate, r.button.adId, r.button.entry, r.button.goalId, r.button.personalMine = nil, nil, nil, nil, nil
+		r.button.craftName, r.button.craftMine = c and c.name or nil, c and c.mine or nil
+		if c then
+			local m = R.mates[c.name]
+			r.icon:Hide()
+			r.name:SetText(c.name); r.name:SetTextColor(ClassColor(m and m.class))
+			r.level:SetText("")
+			r.zone:SetText(ns.Professions.Name(c.id)); r.zone:SetTextColor(1, 0.82, 0)
+			r.group:SetText(tostring(c.rank)); r.group:SetTextColor(1, 1, 1)
+			local online = c.mine or m ~= nil
+			r.xph:SetText(online and L.ONLINE or date("%d/%m", c.t)); r.xph:SetTextColor(unpack(online and B.GROUP_COLORS.open or { 0.7, 0.7, 0.7 }))
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+
+function B.OpenCraftMenu(name)
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		root:CreateTitle(name)
+		root:CreateButton(L.MENU_WHISPER, function() B.Whisper(name) end)
+		if R.mates[name] then root:CreateButton(L.MENU_INVITE, function() B.Invite(name) end) end
+	end)
+end
+
+local function CraftsVisible()
+	local out, q = {}, (B.search or ""):lower()
+	for _, c in ipairs(ns.Professions.List()) do
+		if q == "" or c.name:lower():find(q, 1, true) or ns.Professions.Name(c.id):lower():find(q, 1, true) then out[#out + 1] = c end
+	end
+	return out
+end
+
 local function FillWishes(list)
 	for i = 1, ROWS do
 		local r, w = B.rows[i], list[i]
@@ -636,7 +685,7 @@ function B.OpenMyGoalMenu()
 end
 
 -- Pages of ROWS for the long tabs (journal, goals, wishes); the pager sits in the help-rows area.
-local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage" }
+local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage" }
 local function Page(all)
 	local key = PAGE_KEY[B.tab]
 	local pages = math.max(1, math.ceil(#all / ROWS))
@@ -653,7 +702,7 @@ function B.TurnPage(step)
 end
 
 local function RefreshTabs()
-	local lfg, journal, goals, wishes = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes"
+	local lfg, journal, goals, wishes, crafts = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts"
 	local mates = B.tab == "mates"
 	local index = 1
 	for i, key in ipairs(B.TAB_KEYS) do if key == B.tab then index = i end end
@@ -673,11 +722,13 @@ end
 
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
-	local lfg, journal, goals, wishes = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes"
+	local lfg, journal, goals, wishes, crafts = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts"
 	local list, pages
 	if journal then
 		list = Page(ns.Journal.List(B.journalFilter or "all", B.search))
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
+	elseif crafts then
+		list, pages = Page(CraftsVisible())
 	elseif wishes then
 		list, pages = Page(ns.Wishlist.List())
 	elseif goals then
@@ -687,7 +738,7 @@ function B.Refresh()
 	else
 		list = lfg and GridVisible() or Visible()
 	end
-	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or B.COLS)
+	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or B.COLS)
 	SetHeaders()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
@@ -699,12 +750,13 @@ function B.Refresh()
 	B.SetTitle(B.TitleString())
 	local rested = ns.Rested and ns.Rested.Mine()
 	B.restedText:SetText(rested and string.format(L.RESTED_MINE, rested) or "")
-	if journal then FillJournal(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillGrid(list) else FillMates(list) end
+	if journal then FillJournal(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillGrid(list) else FillMates(list) end
 	if not lfg then for _, c in ipairs(B.cards) do c:Hide() end end
 	local emptyText = ""
 	if #list == 0 then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
 		elseif goals then emptyText = L.GOAL_EMPTY
+		elseif crafts then emptyText = #ns.Professions.List() > 0 and L.EMPTY_FILTERED or L.CRAFTS_EMPTY
 		elseif wishes then emptyText = L.WISH_EMPTY
 		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD
 		elseif lfg then emptyText = L.EMPTY_FILTERED   -- every dungeon has a card: empty only when the search hides them all
@@ -713,10 +765,10 @@ function B.Refresh()
 	end
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
-	if (goals or wishes) and pages > 1 then   -- the pager only when there is more than one page
+	if (goals or wishes or crafts) and pages > 1 then   -- the pager only when there is more than one page
 		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
 	end
-	if journal or goals or wishes then
+	if journal or goals or wishes or crafts then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else
 		RefreshHelp()
@@ -796,3 +848,7 @@ ns.Slash("goals", function() B.ShowTab("goals") end)
 ns.On("LM_WISHES_CHANGED", B.Refresh)
 ns.Slash("deseos", function() B.ShowTab("wishes") end)
 ns.Slash("wishlist", function() B.ShowTab("wishes") end)
+
+ns.On("LM_PROFESSIONS_CHANGED", B.Refresh)
+ns.Slash("oficios", function() B.ShowTab("crafts") end)
+ns.Slash("professions", function() B.ShowTab("crafts") end)

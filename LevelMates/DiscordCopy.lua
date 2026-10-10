@@ -6,7 +6,7 @@ ns.DiscordCopy = D
 local L = ns.L
 D.MAX = 2000   -- one Discord message
 local ROLE_EMOJI = { T = ":shield:", H = ":green_heart:", D = ":crossed_swords:" }
-local TAB_TITLE = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES" }
+local TAB_TITLE = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS" }
 
 local function me() return (UnitName("player")) end
 -- "[Name]" from a game link; Discord shows the codes as they are.
@@ -87,6 +87,16 @@ function builders.wishes()
 		table.insert(byName[w.name], l and plain(l) or string.format(L.WISH_UNKNOWN, w.id))
 	end
 	for _, name in ipairs(order) do lines[#lines + 1] = string.format("• **%s**: %s", name, table.concat(byName[name], ", ")) end
+	return lines
+end
+
+function builders.crafts()
+	local P, lines, byProf, order = ns.Professions, {}, {}, {}
+	for _, c in ipairs(P.List()) do
+		if not byProf[c.id] then byProf[c.id] = {}; order[#order + 1] = c.id end
+		table.insert(byProf[c.id], c.name .. " " .. c.rank)
+	end
+	for _, id in ipairs(order) do lines[#lines + 1] = string.format("• **%s**: %s", P.Name(id), table.concat(byProf[id], ", ")) end
 	return lines
 end
 

@@ -115,3 +115,4 @@ L.LEVELUP_NOTICE = "%s reached level %d!"; L.CHEER = "Congratulate"; L.CHEER_TEX
 L.OPT_PROFS = "Share my professions"; L.OPT_PROFS_TT = "Guildmates see your professions and ranks on the Professions tab."
 L.PROF_171 = "Alchemy"; L.PROF_164 = "Blacksmithing"; L.PROF_333 = "Enchanting"; L.PROF_202 = "Engineering"; L.PROF_182 = "Herbalism"; L.PROF_165 = "Leatherworking"
 L.PROF_186 = "Mining"; L.PROF_393 = "Skinning"; L.PROF_197 = "Tailoring"; L.PROF_129 = "First Aid"; L.PROF_185 = "Cooking"; L.PROF_356 = "Fishing"
+L.TAB_CRAFTS = "Professions"; L.COL_PROFESSION = "Profession"; L.COL_RANK = "Rank"; L.COL_SEEN = "Seen"; L.ONLINE = "online"; L.CRAFTS_EMPTY = "Nobody has shared professions yet."

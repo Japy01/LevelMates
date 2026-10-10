@@ -115,3 +115,4 @@ L.LEVELUP_NOTICE = "¡%s ha llegado a nivel %d!"; L.CHEER = "Felicitar"; L.CHEER
 L.OPT_PROFS = "Compartir mis profesiones"; L.OPT_PROFS_TT = "Los hermanos ven tus profesiones y su nivel en la pestaña Oficios."
 L.PROF_171 = "Alquimia"; L.PROF_164 = "Herrería"; L.PROF_333 = "Encantamiento"; L.PROF_202 = "Ingeniería"; L.PROF_182 = "Herboristería"; L.PROF_165 = "Peletería"
 L.PROF_186 = "Minería"; L.PROF_393 = "Desuello"; L.PROF_197 = "Sastrería"; L.PROF_129 = "Primeros auxilios"; L.PROF_185 = "Cocina"; L.PROF_356 = "Pesca"
+L.TAB_CRAFTS = "Oficios"; L.COL_PROFESSION = "Profesión"; L.COL_RANK = "Nivel"; L.COL_SEEN = "Visto"; L.ONLINE = "conectado"; L.CRAFTS_EMPTY = "Nadie ha compartido profesiones todavía."
