@@ -43,6 +43,7 @@ Wishlist.lua
 Gifts.lua
 Professions.lua
 Builds.lua
+Macros.lua
 Feed.lua
 GoalDialog.lua
 WishDialog.lua

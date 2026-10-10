@@ -25,6 +25,7 @@ end
 function ns.ApplyLocale()
 	local choice, loc = ns.db and ns.db.settings.language or "auto", GetLocale()
 	local spanish = choice == "esES" or (choice == "auto" and (loc == "esES" or loc == "esMX"))
+	ns.spanish = spanish
 	if spanish and ns.LocaleES then for k, v in pairs(ns.LocaleES) do ns.L[k] = v end end
 	BINDING_NAME_LEVELMATES_TOGGLE = ns.L.BINDING_TOGGLE
 	BINDING_NAME_LEVELMATES_PANIC = ns.L.BINDING_PANIC

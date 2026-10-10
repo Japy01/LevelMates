@@ -154,3 +154,8 @@ L.OPT_CHAT_ADS = "Read group ads from chat"; L.OPT_CHAT_ADS_TT = "Dungeon cards 
 
 -- Builds
 L.BUILD_LINK = "LevelMates: build"; L.OPT_BUILD = "Share my talent build"; L.OPT_BUILD_TT = "Guildmates of your class see your points per branch and level, and can open your build in the game's viewer."
+
+-- Macros
+L.MACRO_COMBAT = "Macros cannot be created in combat."; L.MACRO_EXISTS = "You already have a macro called %s."; L.MACRO_FULL = "No room for another character macro."
+L.MACRO_MADE = "Macro %s created: drag it to your bars from the macro window (/macro)."; L.MACRO_MAX = "You can share up to %d macros."
+L.MACRO_LONG = "%s is too long to share."; L.MACRO_BAD = "%s has colour or link codes and cannot be shared."

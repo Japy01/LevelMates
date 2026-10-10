@@ -155,3 +155,8 @@ L.OPT_CHAT_ADS = "Leer anuncios del chat"; L.OPT_CHAT_ADS_TT = "Las tarjetas de 
 
 -- Builds
 L.BUILD_LINK = "LevelMates: build"; L.OPT_BUILD = "Compartir mi build de talentos"; L.OPT_BUILD_TT = "Los hermanos de tu clase ven tus puntos por rama y tu nivel, y pueden abrir tu build en la ventana del juego."
+
+-- Macros
+L.MACRO_COMBAT = "No se pueden crear macros en combate."; L.MACRO_EXISTS = "Ya tienes una macro llamada %s."; L.MACRO_FULL = "No queda hueco para otra macro de personaje."
+L.MACRO_MADE = "Macro %s creada: arrástrala a tus barras desde la ventana de macros (/macro)."; L.MACRO_MAX = "Puedes compartir hasta %d macros."
+L.MACRO_LONG = "%s es demasiado larga para compartirla."; L.MACRO_BAD = "%s tiene códigos de color o enlaces y no se puede compartir."
