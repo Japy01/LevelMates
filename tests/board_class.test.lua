@@ -69,3 +69,19 @@ B.ShowTab("mates")
 assert(not B.classShare:IsShown(), "only on the Class tab")
 local text = ns.DiscordCopy.Text("class")
 assert(text:find(L.TAB_CLASS, 1, true) and text:find("**Mario** (24)", 1, true), "copy for Discord: " .. text)
+
+-- section headers span the row: never cut to the name column
+B.ShowTab("class")
+for _, r in ipairs(B.rows) do
+	local c = r.button:IsShown() and r.button.classEntry
+	if c and c.header then
+		assert(r.name:GetWidth() >= 400 and r.name.text:find("(" .. c.count .. ")", 1, true), "a whole-row header: " .. tostring(r.name.text))
+		if c.count == 0 then assert(r.name.text:find(L["CLASS_EMPTY_" .. c.header:upper()], 1, true), "the empty note beside it") end
+		assert(r.zone.text == "", "nothing under it in the other columns")
+	end
+end
+B.ShowTab("crafts"); B.ShowTab("class")
+for _, r in ipairs(B.rows) do
+	local c = r.button:IsShown() and r.button.classEntry
+	if c and not c.header then assert(r.name:GetWidth() < 200, "entries keep the name column") end
+end

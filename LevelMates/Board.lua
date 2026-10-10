@@ -1037,8 +1037,11 @@ local function FillClass(list)
 		r.button.classEntry = c
 		if c and c.header then
 			r.icon:Hide()
-			r.name:SetText(L["CLASS_SECTION_" .. c.header:upper()] .. " (" .. c.count .. ")"); r.name:SetTextColor(1, 0.82, 0)
-			r.level:SetText(""); r.zone:SetText(c.count == 0 and L["CLASS_EMPTY_" .. c.header:upper()] or ""); r.zone:SetTextColor(0.7, 0.7, 0.7)
+			-- the header spans the row (SetColumns gives the name column back on the next redraw)
+			local label = L["CLASS_SECTION_" .. c.header:upper()] .. " (" .. c.count .. ")"
+			if c.count == 0 then label = label .. "  |cffb3b3b3" .. L["CLASS_EMPTY_" .. c.header:upper()] .. "|r" end
+			r.name:SetWidth(ROW_W - (ROW_H - 4) - 4); r.name:SetText(label); r.name:SetTextColor(1, 0.82, 0)
+			r.level:SetText(""); r.zone:SetText("")
 			r.group:SetText(""); r.xph:SetText("")
 			r.button:Show()
 			r.bg:SetColorTexture(1, 0.82, 0, 0.08)
