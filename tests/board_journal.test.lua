@@ -12,7 +12,7 @@ local function visible()
 	return out
 end
 
-assert(B.WIDTH == 600, "the board is 600 wide")
+assert(B.WIDTH == 680, "the board is 680 wide")
 assert(B.tabs.journal, "third tab")
 B.tabs.journal.scripts.OnClick(B.tabs.journal)
 assert(B.tab == "journal" and ns.char.boardTab == "journal", "journal tab, remembered")

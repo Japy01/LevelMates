@@ -145,3 +145,6 @@ L.RECRUIT_READY = "Ya puedes publicar."; L.RECRUIT_EMPTY = "Esa plantilla está 
 L.RECRUIT_PROMPT = "Toca publicar el reclutamiento de la hermandad."; L.RECRUIT_LATER = "Ahora no"
 L.OPT_LANGUAGE = "Idioma"; L.OPT_LANGUAGE_TT = "El idioma del addon. El cambio se aplica al recargar la interfaz."; L.LANGUAGE_AUTO = "Automático (el del juego)"
 L.LANGUAGE_RELOAD = "LevelMates usará el nuevo idioma al recargar la interfaz. ¿Recargar ahora?"; L.BTN_RELOAD = "Recargar"
+
+-- Class tab
+L.TAB_CLASS = "Clase"; L.HEAD_CLASS = "Tu clase"; L.SUB_CLASS = "Builds y macros de tu clase en la hermandad. Clic en una fila para sus opciones."; L.SEARCH_CLASS = "Nombre o macro..."

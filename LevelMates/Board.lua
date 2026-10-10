@@ -9,20 +9,20 @@ B.tab = "mates"
 local unpack = unpack or table.unpack   -- the client has unpack; table.unpack covers other Lua versions
 
 -- Layout: one place for the widths so the columns always fit inside the window.
-B.COLS = { 150, 50, 180, 70, 70 }   -- name, level, zone, group, xp/h
-B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
-B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
-B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
-B.WCOLS = { 100, 1, 280, 65, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
-B.CCOLS = { 150, 1, 239, 60, 70 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
+B.COLS = { 150, 50, 260, 70, 70 }   -- name, level, zone, group, xp/h
+B.GAP, B.MARGIN, B.WIDTH = 4, 12, 680
+B.JCOLS = { 100, 1, 395, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
+B.GCOLS = { 100, 1, 364, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
+B.WCOLS = { 100, 1, 360, 65, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
+B.CCOLS = { 150, 1, 319, 60, 70 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
 B.BAR_W = 160
-B.FCOLS = { 110, 1, 313, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
+B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
-B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts", "feed", "recruit" }
-local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", feed = "TAB_FEED", recruit = "TAB_RECRUIT" }
+B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts", "class", "feed", "recruit" }
+local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT" }
 B.TAB_LABELS = TAB_LABELS
-local HEAD_KEY = { mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", feed = "FEED", recruit = "RECRUIT" }
+local HEAD_KEY = { mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT" }
 local function KnownTab(key) for _, k in ipairs(B.TAB_KEYS) do if k == key then return key end end; return "mates" end
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
@@ -844,7 +844,7 @@ function B.OpenMyGoalMenu()
 end
 
 -- Pages of ROWS for the long tabs (journal, goals, wishes); the pager sits in the help-rows area.
-local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", feed = "feedPage" }
+local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", feed = "feedPage" }
 local function Page(all)
 	local key = PAGE_KEY[B.tab]
 	local pages = math.max(1, math.ceil(#all / ROWS))

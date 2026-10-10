@@ -144,3 +144,6 @@ L.RECRUIT_READY = "You can post now."; L.RECRUIT_EMPTY = "That template is empty
 L.RECRUIT_PROMPT = "Time to post the guild recruitment."; L.RECRUIT_LATER = "Not now"
 L.OPT_LANGUAGE = "Language"; L.OPT_LANGUAGE_TT = "The addon's language. A change takes effect after reloading the interface."; L.LANGUAGE_AUTO = "Automatic (the game's)"
 L.LANGUAGE_RELOAD = "LevelMates will use the new language after reloading the interface. Reload now?"; L.BTN_RELOAD = "Reload"
+
+-- Class tab
+L.TAB_CLASS = "Class"; L.HEAD_CLASS = "Your class"; L.SUB_CLASS = "Guild builds and macros for your class. Click a row for its options."; L.SEARCH_CLASS = "Name or macro..."

@@ -72,7 +72,7 @@ for _, e in ipairs(F.List()) do assert(not (e.who == "Ana" and e.a == 10), "prun
 
 -- the tab
 B.ShowTab("feed")
-assert(B.frame.Tabs[7] == B.tabs.feed and B.heading.text == L.HEAD_FEED, "seventh tab")
+assert(B.frame.Tabs[8] == B.tabs.feed and B.heading.text == L.HEAD_FEED, "eighth tab, after Class")
 local rows = {}
 for i = 1, #B.rows do if B.rows[i].button:IsShown() then rows[#rows + 1] = B.rows[i] end end
 assert(#rows == #F.List() and rows[1].zone.text == F.Text(F.List()[1]) and rows[1].xph.text == F.Ago(F.List()[1]), "rows: who, what, when")
