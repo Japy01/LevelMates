@@ -6,7 +6,7 @@ L.COL_NAME = "Name"; L.COL_LEVEL = "Lv"; L.COL_ZONE = "Zone"; L.COL_GROUP = "Gro
 L.GROUP_FREE = "open"; L.GROUP_FULL = "full"; L.SOLO = "solo"
 L.EMPTY = "No guildmates with LevelMates online right now."
 L.EMPTY_FILTERED = "Nobody matches your filters. Clear them to see everyone."
-L.BOARD_HEADING = "Guildmates online"; L.BOARD_SUBTITLE = "Right-click a name: invite, whisper or waypoint."; L.SEARCH_HINT = "Search name..."
+L.BOARD_HEADING = "Guildmates online"; L.BOARD_SUBTITLE = "Click a name for their card; right-click: invite, whisper or waypoint."; L.SEARCH_HINT = "Search name..."
 L.FILTER_NEAR = "Near my level (±5)"
 L.NOT_IN_GUILD = "You are not in a guild."
 L.BINDING_TOGGLE = "Show or hide the LevelMates board"
@@ -104,7 +104,7 @@ L.DUNGEON_SM_GRAVEYARD = "Scarlet Monastery: Graveyard"; L.DUNGEON_SM_LIBRARY = 
 L.LFG_SEARCHING = "%d looking"; L.LFG_SEARCHING_ONE = "1 looking"; L.LFG_WHISPER = "Whisper %s"; L.LFG_INVITE = "Invite %s"; L.LFG_HERE = "Look for a group here"; L.LFG_CANCEL_MINE = "Withdraw my ad"
 L.OPT_SCREEN = "Screen notices"; L.OPT_SCREEN_TT = "Important notices also in the middle of the screen."; L.OPT_LEVELUP = "Guildmates' level-ups"; L.OPT_LEVELUP_TT = "A chat line with a [Congratulate] link when a guildmate levels up."
 L.VERSION_NEW = "There is a newer LevelMates (%s). Update when you can."
-L.HEAD_MATES = "Guildmates online"; L.SUB_MATES = "Right-click a name: invite, whisper or waypoint."; L.SEARCH_MATES = "Search name..."
+L.HEAD_MATES = "Guildmates online"; L.SUB_MATES = "Click a name for their card; right-click: invite, whisper or waypoint."; L.SEARCH_MATES = "Search name..."
 L.HEAD_LFG = "Dungeons"; L.SUB_LFG = "Click a card: join, whisper, invite or look for a group there."; L.SEARCH_LFG = "Search..."
 L.HEAD_JOURNAL = "My journal"; L.SUB_JOURNAL = "Your journey: levels, quests, dungeons, loot..."; L.SEARCH_JOURNAL = "Search text..."
 L.HEAD_GOALS = "Goals"; L.SUB_GOALS = "Guild goals and personal goals."; L.SEARCH_GOALS = "Search..."
@@ -164,3 +164,7 @@ L.CLASS_EMPTY_BUILDS = "Nobody of your class has shared a build yet."; L.CLASS_E
 L.CLASS_VIEW = "View"; L.CLASS_CREATE = "Create"; L.CLASS_VIEW_BUILD = "View build"; L.CLASS_CREATE_MACRO = "Create macro"
 L.CLASS_NO_CODE = "No build code yet: it comes once they open their talent window."; L.LEVEL_N = "level %d"
 L.BTN_SHARE_MACRO = "Share macro"; L.CLASS_SHARED_MARK = "%s (shared: click to withdraw)"; L.CLASS_NO_MACROS = "You have no macros yet"
+
+-- Guildmate card
+L.CARD_BASICS = "%s, level %d · %s · %s"; L.CARD_BUILD = "Build: %s"; L.CARD_PROFS = "Professions: %s"; L.CARD_WANTS = "Wants: %s"; L.CARD_GIVES = "Gives away: %s"
+L.CARD_GOAL = "Goal: %s (%s)"; L.CARD_WALL = "On the wall: %s (%s)"; L.CARD_MEETUP = "Meetup: %s, %s"

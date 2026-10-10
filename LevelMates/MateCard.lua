@@ -1,0 +1,91 @@
+-- MateCard.lua: a guildmate's card, opened by a left click on their row: class, level, zone, build, professions,
+-- wishes and giveaways, personal goal, their latest on the wall and the meetups they go to, with buttons to whisper,
+-- invite, set a waypoint or view the build (each only from its click). Spec 2026-10-10-levelmates-class-tanda-design.
+local _, ns = ...
+local MC = {}
+ns.MateCard = MC
+local L, R = ns.L, ns.Roster
+
+local function items(list, name)
+	local out = {}
+	for _, w in ipairs(list) do if w.name == name then out[#out + 1] = ns.Wishlist.Link(w.id) or ("#" .. w.id) end end
+	return out
+end
+
+-- The card's text, one line per thing known about them.
+function MC.Lines(name)
+	local m, lines = R.mates[name], {}
+	if m then
+		local class = m.class and (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[m.class] or m.class) or "?"
+		local info = m.mapId and C_Map.GetMapInfo(m.mapId)
+		local state = m.inGroup and (m.hasSlot and L.GROUP_FREE or L.GROUP_FULL) or L.SOLO
+		lines[#lines + 1] = string.format(L.CARD_BASICS, class, m.level or 0, info and info.name or "?", state)
+	end
+	local b = ns.Builds.Of(name)
+	if b then lines[#lines + 1] = string.format(L.CARD_BUILD, ns.Builds.PointsText(b)) end
+	local profs = {}
+	for _, c in ipairs(ns.Professions.List()) do if c.name == name then profs[#profs + 1] = ns.Professions.Name(c.id) .. " " .. c.rank end end
+	if #profs > 0 then lines[#lines + 1] = string.format(L.CARD_PROFS, table.concat(profs, ", ")) end
+	local wants, gives = items(ns.Wishlist.List(), name), items(ns.Gifts.List(), name)
+	if #wants > 0 then lines[#lines + 1] = string.format(L.CARD_WANTS, table.concat(wants, " ")) end
+	if #gives > 0 then lines[#lines + 1] = string.format(L.CARD_GIVES, table.concat(gives, " ")) end
+	for _, p in ipairs(ns.Personal.List()) do
+		if p.name == name then lines[#lines + 1] = string.format(L.CARD_GOAL, ns.Personal.Text(p), ns.Personal.ProgressText(p)) end
+	end
+	for _, e in ipairs(ns.Feed.List()) do
+		if e.who == name then lines[#lines + 1] = string.format(L.CARD_WALL, ns.Feed.Text(e), ns.Feed.Ago(e)); break end
+	end
+	for _, mt in ipairs(ns.Meetups.List()) do
+		if mt.by == name or (mt.joined and mt.joined[name]) then
+			lines[#lines + 1] = string.format(L.CARD_MEETUP, ns.Dungeons.Name(mt.d), ns.Meetups.When(mt))
+		end
+	end
+	return lines
+end
+
+local function Build()
+	local f = CreateFrame("Frame", "LevelMatesMateCard", UIParent, "BasicFrameTemplateWithInset")
+	MC.frame = f
+	f:SetSize(380, 260); f:SetPoint("CENTER", 220, 0); f:SetFrameStrata("DIALOG")
+	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	tinsert(UISpecialFrames, "LevelMatesMateCard")
+	local body = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	body:SetPoint("TOPLEFT", 16, -34); body:SetWidth(348); body:SetJustifyH("LEFT"); body:SetJustifyV("TOP"); body:SetWordWrap(true)
+	f.body = body
+	local function Btn(text, x, fn)
+		local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+		b:SetSize(84, 22); b:SetPoint("BOTTOMLEFT", x, 12); b:SetText(text)
+		b:SetScript("OnClick", fn)
+		return b
+	end
+	MC.whisper = Btn(L.MENU_WHISPER, 12, function() ns.Board.Whisper(MC.name) end)
+	MC.invite = Btn(L.MENU_INVITE, 100, function() ns.Board.Invite(MC.name) end)
+	MC.waypoint = Btn(L.MENU_WAYPOINT, 188, function()
+		local m = R.mates[MC.name]
+		if m and m.x and m.y and m.mapId then ns.Help.WaypointTo(m.mapId, m.x, m.y) end
+	end)
+	MC.build = Btn(L.CLASS_VIEW_BUILD, 276, function() ns.Builds.Open(ns.Builds.Of(MC.name)) end)
+	f:Hide()
+end
+
+function MC.Refresh()
+	if not (MC.frame and MC.frame:IsShown() and MC.name) then return end
+	local name, m = MC.name, R.mates[MC.name]
+	local fs = MC.frame.TitleContainer and MC.frame.TitleContainer.TitleText or MC.frame.TitleText
+	if fs then fs:SetText(name) end
+	MC.frame.body:SetText(table.concat(MC.Lines(name), "\n"))
+	MC.waypoint:SetShown(m and m.x and m.y and m.mapId and true or false)
+	local b = ns.Builds.Of(name)
+	MC.build:SetShown(b and b.b and true or false)
+end
+
+function MC.Show(name)
+	if not MC.frame then Build() end
+	MC.name = name
+	MC.frame:Show()
+	MC.Refresh()
+end
+
+ns.On("LM_ROW_CLICK", MC.Show)
+for _, e in ipairs({ "LM_ROSTER_CHANGED", "LM_BUILDS_CHANGED", "LM_PROFESSIONS_CHANGED", "LM_WISHES_CHANGED", "LM_FEED_CHANGED", "LM_MEETUPS_CHANGED", "LM_GOALS_CHANGED" }) do ns.On(e, MC.Refresh) end

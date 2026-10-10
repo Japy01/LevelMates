@@ -45,6 +45,7 @@ Professions.lua
 Builds.lua
 Macros.lua
 Feed.lua
+MateCard.lua
 GoalDialog.lua
 WishDialog.lua
 DiscordCopy.lua
