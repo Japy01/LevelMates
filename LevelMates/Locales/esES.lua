@@ -148,3 +148,7 @@ L.LANGUAGE_RELOAD = "LevelMates usará el nuevo idioma al recargar la interfaz. 
 
 -- Class tab
 L.TAB_CLASS = "Clase"; L.HEAD_CLASS = "Tu clase"; L.SUB_CLASS = "Builds y macros de tu clase en la hermandad. Clic en una fila para sus opciones."; L.SEARCH_CLASS = "Nombre o macro..."
+
+-- Anuncios del chat en las tarjetas
+L.CHAT_ADS = "%d en el chat"; L.CHAT_AD_LINE = "Chat · %s: «%s» (hace %s)"; L.CHAT_AD_WHISPER = "Susurrar a %s (chat)"
+L.OPT_CHAT_ADS = "Leer anuncios del chat"; L.OPT_CHAT_ADS_TT = "Las tarjetas de mazmorra cuentan también los anuncios de grupo de Comercio, General y otros canales públicos. Solo se leen en tu ordenador; no se envía nada."

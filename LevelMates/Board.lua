@@ -737,6 +737,7 @@ local function GridVisible()
 	for _, d in ipairs(ns.Dungeons.Sorted()) do
 		local match = q == "" or ns.Dungeons.Name(d.id):lower():find(q, 1, true) ~= nil
 		if not match then for _, a in ipairs(B.AdsFor(d.id)) do if a.name:lower():find(q, 1, true) then match = true end end end
+		if not match then for _, a in ipairs(ns.ChatAds.For(d.id)) do if a.name:lower():find(q, 1, true) then match = true end end end
 		if match then out[#out + 1] = d.id end
 	end
 	return out
@@ -758,7 +759,9 @@ local function FillGrid(list)
 			c.bg:SetColorTexture(unpack(c.fits and { 0.35, 0.27, 0.05, 0.9 } or { 0.08, 0.08, 0.08, 0.9 }))
 			c.name:SetText(ns.Dungeons.Name(id)); c.name:SetTextColor(unpack(c.fits and { 1, 0.82, 0 } or { 0.75, 0.75, 0.75 }))
 			c.levels:SetText(string.format("%d-%d", d.min, d.max))
-			c.count:SetText(#ads == 0 and "" or #ads == 1 and L.LFG_SEARCHING_ONE or string.format(L.LFG_SEARCHING, #ads))
+			local count, chat = #ads == 0 and "" or #ads == 1 and L.LFG_SEARCHING_ONE or string.format(L.LFG_SEARCHING, #ads), #ns.ChatAds.For(id)
+			if chat > 0 then count = count .. (count ~= "" and " · " or "") .. string.format(L.CHAT_ADS, chat) end
+			c.count:SetText(count)
 			local meet = ns.Meetups.List(id)[1]
 			if meet then
 				local n = 1
@@ -784,6 +787,9 @@ function B.DungeonTooltip(card)
 		local who = {}
 		for name, role in pairs(a.joined or {}) do who[#who + 1] = name .. " (" .. L["ROLE_" .. role] .. ")" end
 		if #who > 0 then table.sort(who); GameTooltip:AddLine("   " .. string.format(L.LFJ_JOINED, table.concat(who, ", ")), 0.4, 1, 0.4, true) end
+	end
+	for _, a in ipairs(ns.ChatAds.For(d.id)) do
+		GameTooltip:AddLine(string.format(L.CHAT_AD_LINE, a.name, a.text, ns.Journal.Duration(math.max(0, math.floor(GetTime() - a.t)))), 0.8, 0.8, 0.8, true)
 	end
 	for _, m in ipairs(ns.Meetups.List(d.id)) do
 		local who = {}
@@ -831,6 +837,7 @@ function B.OpenDungeonMenu(id)
 				end
 			end
 		end
+		for _, a in ipairs(ns.ChatAds.For(id)) do root:CreateButton(string.format(L.CHAT_AD_WHISPER, a.name), function() B.Whisper(a.full) end) end
 		root:CreateButton(L.MEET_HERE, function() ns.Fire("LM_MEET_HERE", id) end)
 		root:CreateButton(L.LFG_HERE, function() ns.Fire("LM_LFG_HERE", id) end)
 	end)

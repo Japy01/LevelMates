@@ -30,6 +30,7 @@ QuestProgress.lua
 Help.lua
 Rares.lua
 LFG.lua
+ChatAds.lua
 Meetups.lua
 LfgDialog.lua
 MeetDialog.lua

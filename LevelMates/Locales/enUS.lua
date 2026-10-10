@@ -147,3 +147,7 @@ L.LANGUAGE_RELOAD = "LevelMates will use the new language after reloading the in
 
 -- Class tab
 L.TAB_CLASS = "Class"; L.HEAD_CLASS = "Your class"; L.SUB_CLASS = "Guild builds and macros for your class. Click a row for its options."; L.SEARCH_CLASS = "Name or macro..."
+
+-- Chat ads on the dungeon cards
+L.CHAT_ADS = "%d in chat"; L.CHAT_AD_LINE = "Chat · %s: «%s» (%s ago)"; L.CHAT_AD_WHISPER = "Whisper %s (chat)"
+L.OPT_CHAT_ADS = "Read group ads from chat"; L.OPT_CHAT_ADS_TT = "Dungeon cards also count group ads posted in Trade, General and other public channels. Only read on your computer; nothing is sent."
