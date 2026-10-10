@@ -109,9 +109,10 @@ local function Build()
 	if ns.Skin.On() then   -- a box behind the heading and subtitle, and a dark strip behind the column names
 		local on = f.Inset and f.Inset.CreateTexture and f.Inset or f
 		local head = ns.Skin.Box(on, ns.Skin.C.box, ns.Skin.C.boxBorder)
-		head:SetPoint("TOPLEFT", B.MARGIN - 4, -(insetTop + 4)); head:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP - 12))
+		ns.Skin.WarmInset(f)
+		head:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN - 4, -(insetTop + 4)); head:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP - 12))
 		local strip = ns.Skin.Box(on, ns.Skin.C.strip)
-		strip:SetPoint("TOPLEFT", B.MARGIN - 4, -(B.TOP - 4)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 2))
+		strip:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN - 4, -(B.TOP - 4)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 2))
 		B.headBox, B.colStrip = head, strip
 		divider:Hide()   -- the box's border does its job
 	end

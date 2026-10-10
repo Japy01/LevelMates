@@ -31,6 +31,17 @@ function SK.Backdrop(f, bg, border, edge, bgFile)
 	f:SetBackdropBorderColor(unpack(border))
 end
 
+-- The game frame's inner panel is near black: our warm brown over it, with the game's marble faint on top.
+function SK.WarmInset(f)
+	local on = f.Inset and f.Inset.CreateTexture and f.Inset
+	if not on or on.warm then return end
+	local fill = on:CreateTexture(nil, "BACKGROUND", nil, 1)
+	fill:SetAllPoints(on); fill:SetColorTexture(unpack(SK.C.panel))
+	local grain = on:CreateTexture(nil, "BACKGROUND", nil, 2)
+	grain:SetAllPoints(on); grain:SetTexture(SK.MARBLE, "REPEAT", "REPEAT"); grain:SetHorizTile(true); grain:SetVertTile(true); grain:SetAlpha(0.22)
+	on.warm, on.warmFill = fill, fill
+end
+
 -- A window: a title, a close button and an inner panel (f.Inset) like the game's own frames.
 function SK.Window(name, parent)
 	if not SK.On() then return CreateFrame("Frame", name, parent or UIParent, "BasicFrameTemplateWithInset") end
@@ -42,6 +53,7 @@ function SK.Window(name, parent)
 			if ButtonFrameTemplate_HideAttic then ButtonFrameTemplate_HideAttic(gf) end
 			gf.TitleText = gf.TitleContainer and gf.TitleContainer.TitleText or gf.TitleText
 			gf.gameFrame = true
+			SK.WarmInset(gf)
 			return gf
 		end
 	end
