@@ -111,3 +111,4 @@ L.HEAD_GOALS = "Metas"; L.SUB_GOALS = "Metas de la hermandad y metas personales.
 L.HEAD_WISHES = "Deseos"; L.SUB_WISHES = "Mayús+clic en un objeto para añadirlo; clic derecho en el tuyo para quitarlo."; L.SEARCH_WISHES = "Objeto o nombre..."
 L.HEAD_CRAFTS = "Oficios"; L.SUB_CRAFTS = "Quién tiene cada profesión y a qué nivel. Clic derecho: susurrar."; L.SEARCH_CRAFTS = "Profesión o nombre..."
 L.PACE = "Ritmo: %s por nivel · el más rápido: nivel %d en %s"; L.PACE_TO_MAX = " · nivel 60 en ~%s"
+L.LEVELUP_NOTICE = "¡%s ha llegado a nivel %d!"; L.CHEER = "Felicitar"; L.CHEER_TEXT = "¡Felicidades por el nivel %d!"

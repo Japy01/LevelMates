@@ -303,3 +303,8 @@ function Region:ClearFocus() self.focused = false end
 
 -- Screen notices
 UIErrorsFrame = { messages = {}, AddMessage = function(self, text) self.messages[#self.messages + 1] = text end }
+
+-- EventRegistry callbacks (addon chat links arrive as "SetItemRef")
+EventRegistry = { callbacks = {} }
+function EventRegistry:RegisterCallback(event, fn, owner) self.callbacks[event] = self.callbacks[event] or {}; table.insert(self.callbacks[event], { fn = fn, owner = owner }) end
+function STUB.ClickLink(link) for _, c in ipairs(EventRegistry.callbacks.SetItemRef or {}) do c.fn(c.owner, link, link, "LeftButton") end end

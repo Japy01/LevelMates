@@ -111,3 +111,4 @@ L.HEAD_GOALS = "Goals"; L.SUB_GOALS = "Guild goals and personal goals."; L.SEARC
 L.HEAD_WISHES = "Wishes"; L.SUB_WISHES = "Shift+click an item to add it; right-click yours to remove it."; L.SEARCH_WISHES = "Item or name..."
 L.HEAD_CRAFTS = "Professions"; L.SUB_CRAFTS = "Who has each profession and at what rank. Right-click: whisper."; L.SEARCH_CRAFTS = "Profession or name..."
 L.PACE = "Pace: %s per level · fastest: level %d in %s"; L.PACE_TO_MAX = " · level 60 in ~%s"
+L.LEVELUP_NOTICE = "%s reached level %d!"; L.CHEER = "Congratulate"; L.CHEER_TEXT = "Congratulations on level %d!"

@@ -136,10 +136,12 @@ end
 
 C.OnMessage("hb", function(f, name)
 	local m = R.mates[name] or { quests = {} }
+	local before = m.level
 	m.level, m.mapId, m.inGroup, m.hasSlot = f.l, f.z, f.g == 1, f.s == 1
 	m.x, m.y, m.xph, m.class, m.version = f.x, f.y, f.r, f.c, f.v
 	m.seenAt = GetTime()
 	R.mates[name] = m
+	if before and f.l > before then ns.Fire("LM_MATE_LEVELUP", name, f.l) end   -- a mate I already knew
 	ns.Fire("LM_ROSTER_CHANGED")
 end)
 C.OnMessage("bye", function(_, name) if R.mates[name] then R.mates[name] = nil; ns.Fire("LM_ROSTER_CHANGED") end end)

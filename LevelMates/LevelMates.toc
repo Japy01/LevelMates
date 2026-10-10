@@ -18,6 +18,7 @@ Dungeons.lua
 Comm.lua
 Roster.lua
 Version.lua
+Cheers.lua
 Settings.lua
 Board.lua
 MinimapButton.lua
