@@ -355,6 +355,7 @@ local function Build()
 	local post = CreateFrame("Button", nil, rp, "UIPanelButtonTemplate")
 	post:SetSize(140, 24); post:SetPoint("TOPLEFT", 0, -226); post:SetText(L.RECRUIT_POST)
 	post:SetScript("OnClick", function()   -- the only place recruitment reaches a public channel: a click
+		for i = 1, 3 do ns.Recruit.SetTemplate(i, B.recruitEdit[i]:GetText()) end   -- what is typed, even without Enter
 		local text, ch = ns.Recruit.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2)
 		if text then SendChatMessage(text, "CHANNEL", nil, ch); ns.Recruit.Posted() end
 	end)
@@ -961,6 +962,7 @@ function B.Refresh()
 		elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED
 		else emptyText = L.EMPTY end
 	end
+	if recruit then emptyText = "" end   -- the panel fills this tab
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
 	if (goals or wishes or crafts or feed) and pages > 1 then   -- the pager only when there is more than one page

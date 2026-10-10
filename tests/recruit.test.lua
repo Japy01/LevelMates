@@ -11,7 +11,7 @@ STUB.Receive("LVLM", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Jefa-Testre
 STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Mario-Testrealm")
 STUB.player.level = 30; STUB.guildOnline = 7; STUB.channels[2] = 2
 
-assert(C.Validate("rt", { i = 2, x = "hola" }) and C.Validate("rt", { i = 4, x = "x" }) == false and C.Validate("rc", { t = 100 }), "formats")
+assert(C.Validate("rt", { i = 2, x = "hola", v = 100 }) and C.Validate("rt", { i = 4, x = "x", v = 100 }) == false and C.Validate("rc", { t = 100 }), "formats")
 assert(RC.Expand("{hermandad} · {conectados} · {nivel}") == "Test Guild · 7 · 30", "placeholders: " .. RC.Expand("{hermandad} · {conectados} · {nivel}"))
 STUB.player.guild = "100% Pros"
 assert(RC.Expand("{guild}!") == "100% Pros!", "a % in the guild name")
@@ -41,15 +41,15 @@ STUB.lastChat = nil
 B.recruitPost.scripts.OnClick(B.recruitPost)
 assert(STUB.lastChat == nil and said(string.format(L.RECRUIT_WAIT, 10)), "wait 10 minutes")
 STUB.Advance(RC.GAP + 1)
-STUB.Receive("LVLM", C.Encode("rc", { t = math.floor(time() / 60) }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM", C.Encode("rc", { t = time() }), "GUILD", "Jefa-Testrealm")
 assert(RC.Last().by == "Jefa" and RC.Wait() > 0, "Jefa just posted")
 assert(B.recruitStatus.text:find("Jefa", 1, true), "status shows who")
-STUB.Receive("LVLM", C.Encode("rc", { t = math.floor(time() / 60) + 5 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM", C.Encode("rc", { t = time() }), "GUILD", "Mario-Testrealm")
 assert(RC.Last().by == "Jefa", "members' rc ignored")
 
 -- shared templates: officers only
-STUB.Receive("LVLM", C.Encode("rt", { i = 3, x = "Plantilla de Jefa" }), "GUILD", "Jefa-Testrealm")
-STUB.Receive("LVLM", C.Encode("rt", { i = 3, x = "Spam de Mario" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM", C.Encode("rt", { i = 3, x = "Plantilla de Jefa", v = time() }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM", C.Encode("rt", { i = 3, x = "Spam de Mario", v = time() + 10 }), "GUILD", "Mario-Testrealm")
 assert(RC.Templates()[3] == "Plantilla de Jefa" and B.recruitEdit[3]:GetText() == "Plantilla de Jefa", "Jefa's template")
 
 -- not in the channel: refused with the reason
