@@ -15,10 +15,11 @@ ns.On("LM_MATE_LEVELUP", function(name, level)
 end)
 
 -- The link's click (a hardware event, so the whisper is allowed).
+function K.Whisper(name, level) SendChatMessage(string.format(L.CHEER_TEXT, level), "WHISPER", nil, name) end
 function K.OnLink(link)
 	local name, level = tostring(link):match("^addon:LevelMates:cheer:([^:]+):(%d+)")
 	if not name then return false end
-	SendChatMessage(string.format(L.CHEER_TEXT, tonumber(level)), "WHISPER", nil, name)
+	K.Whisper(name, tonumber(level))
 	return true
 end
 if EventRegistry and EventRegistry.RegisterCallback then
