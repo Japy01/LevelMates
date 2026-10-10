@@ -116,6 +116,7 @@ local function simClass()
 	BU.AddSample("Luis", { c = class, s = mine.s, l = 22, p = #parts > 0 and table.concat(parts, ","):gsub(":%d+", ":5") or "1:5" })
 	ns.Macros.AddSample("Mario", "Pull", "#showtooltip\n/startattack\n/say Pull!", class)
 	ns.ChatAds.AddSample(5, "Pepe", "LFM DM need heal", 90)
+	ns.Ask.AddSample("Mario", "¿Qué rama para subir rápido?", 12)
 end
 
 -- Group XP bars (Mario and Ana as if grouped) and deaths for the Cemetery.
@@ -131,7 +132,7 @@ end
 local function off()
 	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples(); ns.Wishlist.RemoveSamples(); ns.Professions.RemoveSamples()
 	ns.Feed.RemoveSamples(); ns.Gifts.RemoveSamples(); ns.Meetups.RemoveSamples()
-	ns.Builds.RemoveSamples(); ns.Macros.RemoveSamples(); ns.ChatAds.RemoveSamples(); ns.GroupXP.RemoveSamples()
+	ns.Builds.RemoveSamples(); ns.Macros.RemoveSamples(); ns.ChatAds.RemoveSamples(); ns.GroupXP.RemoveSamples(); ns.Ask.RemoveSamples()
 	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")

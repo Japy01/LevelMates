@@ -14,13 +14,14 @@ Everyone who wants to appear needs the addon. English and Spanish: the game's la
 - **Rested XP** next to the heading, with a notice at the maximum.
 - **Group XP bars**: grouped with guildmates, a small window shows everyone's XP in the level.
 - **Trainer reminder**: leveling up tells you which spells wait at your class trainer.
-- **Guildmate card**: click a name to see everything about them in one place (build, professions, wishes and giveaways, goal, wall, meetups), with Whisper, Invite, Waypoint and View build. In a group it lists your quests they lack, with a Share button.
+- **Alts**: your other characters in the same guild show on your card and in the board tooltip; `/lm alts` shows yours.
+- **Guildmate card**: click a name to see everything about them in one place (alts, build, professions, wishes and giveaways, goal, wall, meetups), with Whisper, Invite, Waypoint and View build. In a group it lists your quests they lack, with a Share button.
 
 ### Dungeons
-- **Dungeons tab**: a card with artwork for each of the 14 dungeons, highlighted when it fits your level, with how many are looking for a group. Click a card to join a group ("Join Mario as healer"), whisper, invite, look for a group there, or set up a **meetup** ("Saturday 21:00", with a reminder 15 minutes before). Cards also count group ads read from Trade, General and other public channels ("2 looking · 3 in chat"), which you can whisper from the card.
+- **Dungeons tab**: a card with artwork for each of the 14 dungeons, highlighted when it fits your level, with how many are looking for a group. Click a card to join a group ("Join Mario as healer"), whisper, invite, look for a group there, or set up a **meetup** ("Saturday 21:00", with a reminder 15 minutes before). Cards also count group ads read from Trade, General and other public channels ("2 looking · 3 in chat"), which you can whisper from the card. **Calendar** lists the next 7 days of meetups.
 
 ### Class
-- **Class tab**: guild talent builds of your class (points per branch and level) with "View build", which puts the build's link in your chat (only you see it) to open it in the game's own viewer; a macro library for each class with spell names in your language, created with a click; and macros your guildmates share with "Share macro".
+- **Class tab**: guild talent builds of your class (points per branch and level) with "View build", which puts the build's link in your chat (only you see it) to open it in the game's own viewer; a macro library for each class with spell names in your language, created with a click; and macros your guildmates share with "Share macro". **Ask my class** sends a question to guildmates of your class, answered by whisper.
 
 ### Goals and progress
 - **Goals tab**: officers set guild goals (everyone to a level, a dungeon together, a counter of levels, quests or dungeons) with live progress and who is missing. Anyone can set a personal goal.
@@ -38,15 +39,15 @@ Everyone who wants to appear needs the addon. English and Spanish: the game's la
 - **Copy for Discord**: the "Discord" button puts the current tab into a box as ready-to-paste Discord text. Nothing is sent anywhere.
 
 ### Officers
-- **Recruit tab** (officers and guild master only): three shared templates with placeholders (`{guild}`, `{online}`, `{level}`), posted to channel 2 (Trade) or 1 (General) with a click, a 10-minute wait shared by all officers, and an optional reminder that offers a one-click Post.
+- **Recruit tab** (officers and guild master only): three shared templates with placeholders (`{guild}`, `{online}`, `{level}`), posted to channel 2 (Trade) or 1 (General) with a click, a 10-minute wait shared by all officers, and an optional reminder that offers a one-click Post. **Inactive** lists members away for 14 or 30 days, with rank, last login and join date (noted from the day LevelMates first sees them).
 
 ## Privacy
 
 Everything goes only to your own guild, as addon messages. In `/lm options` you can turn each part off.
 
 - **Always** (while "Appear on the board" is on): your level, zone, class and group state.
-- **On by default**, with a switch to stop: your professions and ranks; your XP percent, only while grouped with a guildmate; your deaths (level and zone) on the wall; your talent build (points per branch, level and the build code); your level-ups, dungeons with guildmates, rare loot and personal goal on the guild wall.
-- **Only when you use them**: the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join.
+- **On by default**, with a switch to stop: your other characters in the same guild (alts); your professions and ranks; your XP percent, only while grouped with a guildmate; your deaths (level and zone) on the wall; your talent build (points per branch, level and the build code); your level-ups, dungeons with guildmates, rare loot and personal goal on the guild wall.
+- **Only when you use them**: the questions you ask your class, the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join.
 - **Off by default**, only if you turn them on: your position (map, rare sightings), your quests (quest matching and progress), XP per hour and rested XP.
 
 Turning "Appear on the board" off stops everything: you send nothing and see nobody. The journal never leaves your computer. Group ads in public chat are only read, on your computer, and can be turned off.
@@ -61,7 +62,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Commands
 
-`/lm` (board), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm muro`, `/lm reclutar` (open a tab), `/lm help <text>` (ask for help), `/lm cancel`, `/lm panico`, `/lm options`, `/lm debug`.
+`/lm` (board), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm alts`, `/lm muro`, `/lm reclutar` (open a tab), `/lm help <text>` (ask for help), `/lm cancel`, `/lm panico`, `/lm options`, `/lm debug`.
 
 To try it alone (fake guildmates, local only, nothing is sent): `/lm sim`, and `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`, `clase`, `xp`, `muertes`; `/lm sim off` clears them.
 
@@ -87,13 +88,14 @@ Todos los que quieran salir necesitan el addon. En español e inglés: el idioma
 - **XP descansada** junto al título, con aviso al llegar al máximo.
 - **Barras de XP del grupo**: en grupo con hermanos, una ventanita muestra la XP de todos en el nivel.
 - **Recordatorio de entrenador**: al subir de nivel te dice qué hechizos te esperan en tu entrenador de clase.
-- **Ficha de hermano**: clic en un nombre para ver todo lo suyo en un sitio (build, oficios, deseos y regalos, meta, muro, quedadas), con Susurrar, Invitar, Punto de ruta y Ver build. En grupo lista tus misiones que le faltan, con un botón Compartir.
+- **Alts**: tus otros personajes de la misma hermandad salen en tu ficha y en el tooltip del tablón; `/lm alts` muestra los tuyos.
+- **Ficha de hermano**: clic en un nombre para ver todo lo suyo en un sitio (alts, build, oficios, deseos y regalos, meta, muro, quedadas), con Susurrar, Invitar, Punto de ruta y Ver build. En grupo lista tus misiones que le faltan, con un botón Compartir.
 
 ### Mazmorras
-- **Pestaña Mazmorras**: una tarjeta con imagen para cada una de las 14 mazmorras, resaltada si es de tu nivel, con cuántos buscan grupo. Clic en una tarjeta para apuntarte a un grupo ("Me apunto con Mario como sanador"), susurrar, invitar, buscar grupo ahí o crear una **quedada** ("sábado 21:00", con recordatorio 15 minutos antes). Las tarjetas cuentan también los anuncios de grupo de Comercio, General y otros canales públicos ("2 buscan · 3 en el chat"), y puedes susurrarles desde la tarjeta.
+- **Pestaña Mazmorras**: una tarjeta con imagen para cada una de las 14 mazmorras, resaltada si es de tu nivel, con cuántos buscan grupo. Clic en una tarjeta para apuntarte a un grupo ("Me apunto con Mario como sanador"), susurrar, invitar, buscar grupo ahí o crear una **quedada** ("sábado 21:00", con recordatorio 15 minutos antes). Las tarjetas cuentan también los anuncios de grupo de Comercio, General y otros canales públicos ("2 buscan · 3 en el chat"), y puedes susurrarles desde la tarjeta. **Calendario** lista las quedadas de los próximos 7 días.
 
 ### Clase
-- **Pestaña Clase**: las builds de talentos de los hermanos de tu clase (puntos por rama y nivel) con "Ver build", que pone el enlace de la build en tu chat (solo lo ves tú) para abrirla en la ventana del propio juego; una biblioteca de macros por clase con los nombres de hechizo en tu idioma, que se crean con un clic; y las macros que comparten tus hermanos con "Compartir macro".
+- **Pestaña Clase**: las builds de talentos de los hermanos de tu clase (puntos por rama y nivel) con "Ver build", que pone el enlace de la build en tu chat (solo lo ves tú) para abrirla en la ventana del propio juego; una biblioteca de macros por clase con los nombres de hechizo en tu idioma, que se crean con un clic; y las macros que comparten tus hermanos con "Compartir macro". **Preguntar a mi clase** manda una pregunta a los hermanos de tu clase, que te responden por susurro.
 
 ### Metas y progreso
 - **Pestaña Metas**: los oficiales marcan metas de hermandad (todos a un nivel, una mazmorra juntos, un contador de niveles, misiones o mazmorras) con el progreso en directo y quién falta. Cualquiera puede ponerse una meta personal.
@@ -111,15 +113,15 @@ Todos los que quieran salir necesitan el addon. En español e inglés: el idioma
 - **Copiar para Discord**: el botón "Discord" pone la pestaña actual en un cuadro como texto listo para pegar en Discord. No se envía nada a ningún sitio.
 
 ### Oficiales
-- **Pestaña Reclutar** (solo oficiales y maestro): tres plantillas compartidas con comodines (`{hermandad}`, `{conectados}`, `{nivel}`), publicadas en el canal 2 (Comercio) o 1 (General) con un clic, una espera de 10 minutos compartida entre oficiales y un recordatorio opcional que ofrece Publicar con un clic.
+- **Pestaña Reclutar** (solo oficiales y maestro): tres plantillas compartidas con comodines (`{hermandad}`, `{conectados}`, `{nivel}`), publicadas en el canal 2 (Comercio) o 1 (General) con un clic, una espera de 10 minutos compartida entre oficiales y un recordatorio opcional que ofrece Publicar con un clic. **Inactivos** lista a quien lleva 14 o 30 días sin entrar, con rango, última conexión y fecha de ingreso (apuntada desde el día en que LevelMates lo ve por primera vez).
 
 ## Privacidad
 
 Todo va solo a tu hermandad, como mensajes de addon. En `/lm opciones` puedes apagar cada parte.
 
 - **Siempre** (mientras "Aparecer en el tablón" esté activado): tu nivel, zona, clase y si estás en grupo.
-- **Activado por defecto**, con un interruptor para dejar de hacerlo: tus profesiones y su nivel; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
-- **Solo cuando los usas**: las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas.
+- **Activado por defecto**, con un interruptor para dejar de hacerlo: tus otros personajes de la misma hermandad (alts); tus profesiones y su nivel; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
+- **Solo cuando los usas**: las preguntas a tu clase, las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas.
 - **Apagado por defecto**, solo si lo activas: tu posición (mapa, avistamiento de raros), tus misiones (emparejar misiones y su progreso), la XP por hora y la XP descansada.
 
 Si apagas "Aparecer en el tablón", se detiene todo: no envías nada y no ves a nadie. El diario nunca sale de tu ordenador. Los anuncios de grupo del chat público solo se leen, en tu ordenador, y se puede apagar.
@@ -134,7 +136,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Comandos
 
-`/lm` (tablón), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm muro`, `/lm reclutar` (abren una pestaña), `/lm ayuda <texto>` (pedir ayuda), `/lm cancelar`, `/lm panico`, `/lm opciones`, `/lm debug`.
+`/lm` (tablón), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm alts`, `/lm muro`, `/lm reclutar` (abren una pestaña), `/lm ayuda <texto>` (pedir ayuda), `/lm cancelar`, `/lm panico`, `/lm opciones`, `/lm debug`.
 
 Para probarlo solo (hermanos falsos, solo en local, no se envía nada): `/lm sim`, y `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`, `clase`, `xp`, `muertes`; `/lm sim off` los quita.
 

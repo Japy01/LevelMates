@@ -9,8 +9,12 @@
 - **Quests they lack**: in a group, a guildmate's card lists your quests they do not have (when they share their quests), with a Share button.
 - **Trainer reminder**: leveling up tells you which spells are waiting at your class trainer (known from your last visit); before any visit, a reminder on even levels.
 - **Cemetery**: your deaths go to the guild wall (level and zone, nothing from combat), and the wall has a Cemetery button with the week's deaths.
+- **Ask your class**: a question to guildmates of your class from the Class tab; they get a notice with [Answer], which opens a whisper. The last day's questions are listed on the tab.
+- **Alts**: your other characters in the same guild are shared, shown on your card and in the board tooltip; `/lm alts` shows all your characters there with level and professions.
+- **Meetup calendar**: on the Dungeons tab, "Calendar" lists the next 7 days of meetups by day; click to join, leave or cancel.
+- **Inactive members** (officers): on the Recruit tab, members away for 14 or 30 days with level, rank, last login and join date (noted by LevelMates from the day it first sees them). It only informs.
 - The window is a little wider, for nine tabs.
-- `/lm clase` opens the Class tab; `/lm sim clase`, `/lm sim xp` and `/lm sim muertes` try them alone.
+- `/lm clase` opens the Class tab; `/lm alts` opens your own card; `/lm sim clase`, `/lm sim xp` and `/lm sim muertes` try them alone.
 
 ## 0.1.2
 
