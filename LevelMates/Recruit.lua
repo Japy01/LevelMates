@@ -112,19 +112,19 @@ function RC.Snooze() snoozeUntil = now() + RC.GAP; if RC.prompt then RC.prompt:H
 
 function RC.ShowPrompt()
 	if not RC.prompt then
-		local p = CreateFrame("Frame", "LevelMatesRecruitPrompt", UIParent, "BasicFrameTemplateWithInset")
+		local p = ns.Skin.Window("LevelMatesRecruitPrompt", UIParent)
 		p:SetSize(320, 96); p:SetPoint("TOP", 0, -140); p:SetFrameStrata("DIALOG")
 		if p.TitleText then p.TitleText:SetText(L.HEAD_RECRUIT) end
 		local text = p:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 		text:SetPoint("TOP", 0, -32); text:SetText(L.RECRUIT_PROMPT)
-		local post = CreateFrame("Button", nil, p, "UIPanelButtonTemplate")
+		local post = ns.Skin.Button(p)
 		post:SetSize(130, 22); post:SetPoint("BOTTOMLEFT", 16, 12); post:SetText(L.RECRUIT_POST)
 		post:SetScript("OnClick", function()   -- a click: the post
 			local msg, ch = RC.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2)
 			if msg then SendChatMessage(msg, "CHANNEL", nil, ch); RC.Posted() end
 			p:Hide()
 		end)
-		local later = CreateFrame("Button", nil, p, "UIPanelButtonTemplate")
+		local later = ns.Skin.Button(p)
 		later:SetSize(130, 22); later:SetPoint("BOTTOMRIGHT", -16, 12); later:SetText(L.RECRUIT_LATER)
 		later:SetScript("OnClick", function() RC.Snooze() end)
 		p:SetScript("OnHide", function() snoozeUntil = math.max(snoozeUntil, now() + RC.GAP) end)   -- closed any way: not again for 10 min

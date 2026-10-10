@@ -8,6 +8,7 @@ ButtonFrameTemplate_HidePortrait = function() error("must not be called on the f
 ButtonFrameTemplate_HideAttic = function() error("must not be called on the fallback frame") end
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.db.settings.style = "classic"
 ns.Board.Toggle()
 assert(ns.Board.frame and ns.Board.frame:IsShown(), "board still opens")
 assert(ns.Board.frame.TitleText.text == ns.L.BOARD_TITLE .. " - Test Guild (0)", "title on the basic frame")

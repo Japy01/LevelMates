@@ -12,7 +12,7 @@ local function Menu(owner, items)
 	end)
 end
 local function Button(f, w, point, x, y, text, onClick)
-	local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local b = ns.Skin.Button(f)
 	b:SetSize(w, 22); b:SetPoint(point, x, y); b:SetText(text)
 	b:SetScript("OnClick", onClick)
 	return b
@@ -37,7 +37,7 @@ local function Labels()
 end
 
 local function Build()
-	local f = CreateFrame("Frame", "LevelMatesMeetDialog", UIParent, "BasicFrameTemplateWithInset")
+	local f = ns.Skin.Window("LevelMatesMeetDialog", UIParent)
 	Dlg.frame = f
 	f:SetSize(330, 190); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")

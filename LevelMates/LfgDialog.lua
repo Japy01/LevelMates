@@ -6,7 +6,7 @@ local L, G, D = ns.L, ns.LFG, ns.Dungeons
 local ROLES = { "T", "H", "D" }
 
 local function Build()
-	local f = CreateFrame("Frame", "LevelMatesLfgDialog", UIParent, "BasicFrameTemplateWithInset")
+	local f = ns.Skin.Window("LevelMatesLfgDialog", UIParent)
 	Dlg.frame = f
 	f:SetSize(320, 230); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
@@ -15,7 +15,7 @@ local function Build()
 	tinsert(UISpecialFrames, "LevelMatesLfgDialog")
 	f:Hide()
 
-	local pick = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local pick = ns.Skin.Button(f)
 	pick:SetSize(280, 22); pick:SetPoint("TOP", 0, -36); pick:SetText(L.LFG_PICK_DUNGEON)
 	pick:SetScript("OnClick", function(self)
 		MenuUtil.CreateContextMenu(self, function(_, root)
@@ -47,11 +47,11 @@ local function Build()
 	note:SetScript("OnEscapePressed", function() f:Hide() end)
 	Dlg.note = note
 
-	local ok = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local ok = ns.Skin.Button(f)
 	ok:SetSize(130, 22); ok:SetPoint("BOTTOMLEFT", 20, 14); ok:SetText(L.LFG_PUBLISH)
 	ok:SetScript("OnClick", function() Dlg.Publish() end)
 	Dlg.ok = ok
-	local close = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local close = ns.Skin.Button(f)
 	close:SetSize(130, 22); close:SetPoint("BOTTOMRIGHT", -20, 14); close:SetText(L.LFG_CLOSE)
 	close:SetScript("OnClick", function() f:Hide() end)
 end

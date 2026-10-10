@@ -15,14 +15,14 @@ local function Menu(owner, items)
 end
 
 local function Button(f, w, point, x, y, text, onClick)
-	local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local b = ns.Skin.Button(f)
 	b:SetSize(w, 22); b:SetPoint(point, x, y); b:SetText(text)
 	b:SetScript("OnClick", onClick)
 	return b
 end
 
 local function Build()
-	local f = CreateFrame("Frame", "LevelMatesGoalDialog", UIParent, "BasicFrameTemplateWithInset")
+	local f = ns.Skin.Window("LevelMatesGoalDialog", UIParent)
 	Dlg.frame = f
 	f:SetSize(320, 220); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
@@ -102,7 +102,7 @@ ns.MyGoalDialog = My
 local P = ns.Personal
 
 local function BuildMine()
-	local f = CreateFrame("Frame", "LevelMatesMyGoalDialog", UIParent, "BasicFrameTemplateWithInset")
+	local f = ns.Skin.Window("LevelMatesMyGoalDialog", UIParent)
 	My.frame = f
 	f:SetSize(300, 170); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")

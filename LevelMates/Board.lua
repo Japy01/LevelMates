@@ -19,7 +19,7 @@ B.BAR_W = 160
 B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
 B.KCOLS = { 150, 1, 339, 50, 60 }   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
 B.ICOLS = { 150, 50, 160, 110, 130 }   -- inactive members: name, level, rank, away, joined (same total as B.COLS)   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
-B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
+B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 8, 104, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
 B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts", "class", "feed", "recruit" }
 local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT" }
@@ -63,7 +63,8 @@ end
 local function Build()
 	-- The journal-style frame (gold border, dark inset) when the client has it; the basic frame otherwise.
 	local f
-	if ButtonFrameTemplate_HidePortrait then
+	if ns.Skin.On() then f = ns.Skin.Window("LevelMatesBoard", UIParent)   -- LevelMates' own brown and gold window
+	elseif ButtonFrameTemplate_HidePortrait then
 		local ok, frame = pcall(CreateFrame, "Frame", "LevelMatesBoard", UIParent, "ButtonFrameTemplate")
 		if ok and frame then
 			f = frame
@@ -71,7 +72,7 @@ local function Build()
 			if ButtonFrameTemplate_HideAttic then ButtonFrameTemplate_HideAttic(f) end   -- the template reserves an empty 60px band above the inset
 		end
 	end
-	f = f or CreateFrame("Frame", "LevelMatesBoard", UIParent, "BasicFrameTemplateWithInset")
+	f = f or ns.Skin.Window("LevelMatesBoard", UIParent)
 	B.frame = f
 	-- Lay the content out from the inset's real anchors, so it sits inside the dark recess whatever the template does.
 	local insetTop, insetBottom = 24, 26
@@ -108,7 +109,7 @@ local function Build()
 	if search.Instructions then search.Instructions:SetText(L.SEARCH_HINT) end
 	search:SetScript("OnTextChanged", function(self) B.search = self:GetText() or ""; B.Refresh() end)
 	-- "Discord": the current tab as text to paste in Discord (every tab).
-	local discord = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local discord = ns.Skin.Button(f)
 	discord:SetSize(80, 20); discord:SetPoint("RIGHT", search, "LEFT", -12, 0); discord:SetText(L.BTN_DISCORD)
 	discord:SetScript("OnClick", function() ns.Fire("LM_DISCORD_COPY", B.tab) end)
 	B.discordButton = discord
@@ -264,7 +265,7 @@ local function Build()
 	B.CARD_W = math.floor((B.WIDTH - 2 * B.MARGIN - (B.CARD_COLS - 1) * B.CARD_GAP) / B.CARD_COLS)
 	B.cards = {}
 	for i = 1, #ns.Dungeons.list do
-		local c = CreateFrame("Button", nil, f)
+		local c = CreateFrame("Button", nil, f, ns.Skin.On() and "BackdropTemplate" or nil)
 		c:SetSize(B.CARD_W, B.CARD_H); c:RegisterForClicks("AnyUp")
 		c:SetHighlightTexture("Interface/QuestFrame/UI-QuestLogTitleHighlight", "ADD")
 		c.bg = c:CreateTexture(nil, "BACKGROUND"); c.bg:SetAllPoints()
@@ -274,6 +275,20 @@ local function Build()
 		c.levels = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); c.levels:SetPoint("BOTTOMLEFT", 5, 5)
 		c.count = c:CreateFontString(nil, "OVERLAY", "GameFontGreenSmall"); c.count:SetPoint("BOTTOMRIGHT", -5, 5)
 		c.badge = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); c.badge:SetPoint("TOPLEFT", c.art, "TOPLEFT", 3, -3)
+		if ns.Skin.On() then   -- the picture fills the card; name, levels and who is looking sit on dark bands over it
+			c.skin = true
+			ns.Skin.Backdrop(c, { 0, 0, 0, 1 }, ns.Skin.C.card, 12)
+			c.bg:Hide()
+			c.art:ClearAllPoints(); c.art:SetPoint("TOPLEFT", 4, -4); c.art:SetPoint("BOTTOMRIGHT", -4, 4)
+			c.top = c:CreateTexture(nil, "ARTWORK", nil, 1); c.top:SetColorTexture(unpack(ns.Skin.C.band))
+			c.top:SetPoint("TOPLEFT", 4, -4); c.top:SetPoint("TOPRIGHT", -4, -4); c.top:SetHeight(32)
+			c.bottom = c:CreateTexture(nil, "ARTWORK", nil, 1); c.bottom:SetColorTexture(unpack(ns.Skin.C.band))
+			c.bottom:SetPoint("BOTTOMLEFT", 4, 4); c.bottom:SetPoint("BOTTOMRIGHT", -4, 4); c.bottom:SetHeight(18)
+			c.name:ClearAllPoints(); c.name:SetPoint("TOPLEFT", 8, -7); c.name:SetWidth(B.CARD_W - 16); c.name:SetHeight(26)
+			c.levels:ClearAllPoints(); c.levels:SetPoint("BOTTOMLEFT", 8, 7)
+			c.count:ClearAllPoints(); c.count:SetPoint("BOTTOMRIGHT", -8, 7)
+			c.badge:ClearAllPoints(); c.badge:SetPoint("TOPRIGHT", -8, -38)
+		end
 		c:SetScript("OnClick", function(self) B.OpenDungeonMenu(self.dungeonId) end)
 		c:SetScript("OnEnter", function(self) B.DungeonTooltip(self) end)
 		c:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
@@ -281,13 +296,13 @@ local function Build()
 		B.cards[i] = c
 	end
 
-	local help = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local help = ns.Skin.Button(f)
 	help:SetSize(120, 20); help:SetPoint("BOTTOMLEFT", 12, 3); help:SetText(L.BTN_HELP)
 	help:SetScript("OnClick", function() ns.Fire("LM_HELP_BUTTON") end)
 	B.helpButton = help
 
 	-- Dungeons tab: its own action button in the same spot as "Ask for help".
-	local lfg = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local lfg = ns.Skin.Button(f)
 	lfg:SetSize(140, 20); lfg:SetPoint("BOTTOMLEFT", 12, 3); lfg:SetText(L.BTN_LFG)
 	lfg:SetScript("OnClick", function() ns.Fire("LM_LFG_BUTTON") end)
 	B.lfgButton = lfg
@@ -295,10 +310,17 @@ local function Build()
 	B.tabs = {}
 	local tabList, prevTab = {}, nil
 	for i, key in ipairs(B.TAB_KEYS) do
-		local b = CreateFrame("Button", "LevelMatesBoardTab" .. i, f, "PanelTabButtonTemplate")
+		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i)
 		b:SetID(i); b:SetText(L[TAB_LABELS[key]])
-		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", -16, 0) else b:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 11, 2) end
-		if PanelTemplates_TabResize then PanelTemplates_TabResize(b, 0) end
+		if b.skinTab then   -- flat tabs under the window, sized to their text
+			local fs = b:GetFontString()
+			local w = fs and fs.GetStringWidth and fs:GetStringWidth() or (#L[TAB_LABELS[key]] * 7)
+			b:SetSize(math.max(56, math.floor(w) + 20), 24)
+			if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 2, 0) else b:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 6, 1) end
+		else
+			if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", -16, 0) else b:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 11, 2) end
+			if PanelTemplates_TabResize then PanelTemplates_TabResize(b, 0) end
+		end
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.tabs[key], tabList[i], prevTab = b, b, b
 	end
@@ -307,11 +329,11 @@ local function Build()
 	B.tab = KnownTab(ns.char.boardTab)
 
 	-- Journal tab: clear (bottom left), type filter (bottom right), pager in the help-rows area.
-	local clear = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local clear = ns.Skin.Button(f)
 	clear:SetSize(120, 20); clear:SetPoint("BOTTOMLEFT", 12, 3); clear:SetText(L.BTN_J_CLEAR)
 	clear:SetScript("OnClick", function() ns.Fire("LM_JOURNAL_CLEAR") end)
 	B.journalClear = clear
-	local filter = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local filter = ns.Skin.Button(f)
 	filter:SetSize(140, 20); filter:SetPoint("BOTTOMRIGHT", -12, 3)
 	filter:SetScript("OnClick", function(self)
 		MenuUtil.CreateContextMenu(self, function(_, root)
@@ -321,10 +343,10 @@ local function Build()
 		end)
 	end)
 	B.journalFilterButton = filter
-	local prev = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local prev = ns.Skin.Button(f)
 	prev:SetSize(110, 20); prev:SetPoint("BOTTOM", -160, B.BOTTOM + 8); prev:SetText(L.BTN_J_PREV)
 	prev:SetScript("OnClick", function() B.TurnPage(-1) end)
-	local nextb = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local nextb = ns.Skin.Button(f)
 	nextb:SetSize(110, 20); nextb:SetPoint("BOTTOM", 160, B.BOTTOM + 8); nextb:SetText(L.BTN_J_NEXT)
 	nextb:SetScript("OnClick", function() B.TurnPage(1) end)
 	local pageText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -332,43 +354,43 @@ local function Build()
 	B.journalPrev, B.journalNext, B.journalPageText = prev, nextb, pageText
 
 	-- Goals tab: "New goal" for officers (bottom left).
-	local goalNew = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local goalNew = ns.Skin.Button(f)
 	goalNew:SetSize(120, 20); goalNew:SetPoint("BOTTOMLEFT", 12, 3); goalNew:SetText(L.BTN_GOAL_NEW)
 	goalNew:SetScript("OnClick", function() ns.Fire("LM_GOAL_NEW") end)
 	B.goalNew = goalNew
-	local myGoal = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local myGoal = ns.Skin.Button(f)
 	myGoal:SetSize(120, 20); myGoal:SetPoint("BOTTOMRIGHT", -12, 3); myGoal:SetText(L.BTN_MYGOAL)
 	myGoal:SetScript("OnClick", function() ns.Fire("LM_MYGOAL") end)
 	B.myGoal = myGoal
 
 	-- Wishes tab: "Add wish" (bottom left).
-	local wishAdd = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local wishAdd = ns.Skin.Button(f)
 	wishAdd:SetSize(120, 20); wishAdd:SetPoint("BOTTOMLEFT", 12, 3); wishAdd:SetText(L.BTN_WISH_ADD)
 	wishAdd:SetScript("OnClick", function() ns.Fire("LM_WISH_ADD") end)
 	B.wishAdd = wishAdd
-	local giftAdd = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local giftAdd = ns.Skin.Button(f)
 	giftAdd:SetSize(120, 20); giftAdd:SetPoint("BOTTOMRIGHT", -12, 3); giftAdd:SetText(L.BTN_GIFT_ADD)
 	giftAdd:SetScript("OnClick", function() ns.Fire("LM_GIFT_ADD") end)
 	B.giftAdd = giftAdd
 
 	-- Dungeons tab: "Calendar" (bottom right) swaps the cards for the next 7 days of meetups.
-	local calendar = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local calendar = ns.Skin.Button(f)
 	calendar:SetSize(120, 20); calendar:SetPoint("BOTTOMRIGHT", -12, 3); calendar:SetText(L.BTN_CALENDAR)
 	calendar:SetScript("OnClick", function() B.lfgCalendar = not B.lfgCalendar; B.Refresh() end)
 	B.lfgCalendarButton = calendar
 
 	-- Wall: "Cemetery" (bottom right) shows only deaths; a second click shows everything again.
-	local cemetery = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local cemetery = ns.Skin.Button(f)
 	cemetery:SetSize(120, 20); cemetery:SetPoint("BOTTOMRIGHT", -12, 3); cemetery:SetText(L.BTN_CEMETERY)
 	cemetery:SetScript("OnClick", function() B.feedDeaths = not B.feedDeaths; B.feedPage = 1; B.Refresh() end)
 	B.feedCemetery = cemetery
 
 	-- Class tab: "Share macro" (bottom left) lists my macros; a click shares or withdraws one.
-	local classShare = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local classShare = ns.Skin.Button(f)
 	classShare:SetSize(140, 20); classShare:SetPoint("BOTTOMLEFT", 12, 3); classShare:SetText(L.BTN_SHARE_MACRO)
 	classShare:SetScript("OnClick", function(self) B.OpenShareMacroMenu(self) end)
 	B.classShare = classShare
-	local classAsk = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local classAsk = ns.Skin.Button(f)
 	classAsk:SetSize(160, 20); classAsk:SetPoint("BOTTOMRIGHT", -12, 3); classAsk:SetText(L.BTN_ASK)
 	classAsk:SetScript("OnClick", function() ns.Ask.OpenBox() end)
 	B.classAsk = classAsk
@@ -401,7 +423,7 @@ local function Build()
 	local status = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	status:SetPoint("TOPLEFT", 4, -200); status:SetJustifyH("LEFT"); status:SetTextColor(0.7, 0.7, 0.7)
 	B.recruitStatus = status
-	local post = CreateFrame("Button", nil, rp, "UIPanelButtonTemplate")
+	local post = ns.Skin.Button(rp)
 	post:SetSize(140, 24); post:SetPoint("TOPLEFT", 0, -226); post:SetText(L.RECRUIT_POST)
 	post:SetScript("OnClick", function()   -- the only place recruitment reaches a public channel: a click
 		for i = 1, 3 do ns.Recruit.SetTemplate(i, B.recruitEdit[i]:GetText()) end   -- what is typed, even without Enter
@@ -416,11 +438,11 @@ local function Build()
 	remindLabel:SetPoint("LEFT", remind, "RIGHT", 2, 0); remindLabel:SetText(L.RECRUIT_REMIND)
 	B.recruitRemind = remind
 	-- Recruit tab: "Inactive" (bottom left) swaps the templates for members who have not logged in; 14 or 30 days.
-	local view = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local view = ns.Skin.Button(f)
 	view:SetSize(120, 20); view:SetPoint("BOTTOMLEFT", 12, 3); view:SetText(L.BTN_INACTIVE)
 	view:SetScript("OnClick", function() B.recruitView = B.recruitView ~= "inactive" and "inactive" or nil; B.recruitPage = 1; if B.recruitView then ns.Inactive.Scan() end; B.Refresh() end)
 	B.recruitViewButton = view
-	local days = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local days = ns.Skin.Button(f)
 	days:SetSize(120, 20); days:SetPoint("BOTTOMRIGHT", -12, 3)
 	days:SetScript("OnClick", function() ns.char.inactiveDays = (ns.char.inactiveDays or 14) == 14 and 30 or 14; B.recruitPage = 1; B.Refresh() end)
 	B.recruitDaysButton = days
@@ -430,7 +452,7 @@ local function Build()
 	for i = 1, HELP_ROWS do
 		local text = Col(f, B.WIDTH - 110)
 		text:SetPoint("BOTTOMLEFT", 12, B.BOTTOM + 8 + (i - 1) * ROW_H)
-		local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+		local btn = ns.Skin.Button(f)
 		btn:SetSize(60, ROW_H); btn:SetPoint("LEFT", text, "RIGHT", 4, 0); btn:SetText(L.BTN_COMING)
 		btn:SetScript("OnClick", function(self) if self.helpId then ns.Help.Coming(self.helpId) end end)
 		B.helpRows[i] = { text = text, button = btn }
@@ -585,7 +607,9 @@ local function ClearRow(r) r.icon:Hide(); r.name:SetText(""); r.level:SetText(""
 B.PAL_TINT = { 0.2, 0.8, 0.3, 0.15 }
 -- Row background: the partner tint for a match, otherwise the zebra stripe.
 local function RowBg(r, i, tint)
-	if tint then r.bg:SetColorTexture(unpack(B.PAL_TINT)) else r.bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0) end
+	if tint then r.bg:SetColorTexture(unpack(B.PAL_TINT))
+	elseif ns.Skin.On() then local c = ns.Skin.C.row; r.bg:SetColorTexture(c[1], c[2], c[3], i % 2 == 0 and c[4] or 0)   -- warm stripes
+	else r.bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0) end
 end
 
 local function FillMates(list)
@@ -827,10 +851,14 @@ local function FillGrid(list)
 			c:SetPoint("TOPLEFT", B.frame, "TOPLEFT", B.MARGIN + col * (B.CARD_W + B.CARD_GAP), -(B.TOP + row * (B.CARD_H + B.CARD_GAP)))
 			c.dungeonId, c.fits = id, ns.Dungeons.Fits(id, mine)
 			local tex, coords = ns.Dungeons.Art(id)
-			if tex then c.art:SetTexture(tex); c.art:SetTexCoord(unpack(coords)); c.art:SetAlpha(c.fits and 1 or 0.45); c.art:Show() else c.art:Hide() end
-			c.bg:SetColorTexture(unpack(c.fits and { 0.35, 0.27, 0.05, 0.9 } or { 0.08, 0.08, 0.08, 0.9 }))
+			if tex and c.skin then   -- a taller picture: the same scene, more of it, so it is not stretched
+				local mid = (coords[3] + coords[4]) / 2
+				c.art:SetTexture(tex); c.art:SetTexCoord(coords[1], coords[2], math.max(0, mid - 0.36), math.min(1, mid + 0.36)); c.art:SetAlpha(c.fits and 1 or 0.55); c.art:Show()
+			elseif tex then c.art:SetTexture(tex); c.art:SetTexCoord(unpack(coords)); c.art:SetAlpha(c.fits and 1 or 0.45); c.art:Show() else c.art:Hide() end
+			if c.skin then c:SetBackdropBorderColor(unpack(c.fits and ns.Skin.C.card or ns.Skin.C.cardDim))
+			else c.bg:SetColorTexture(unpack(c.fits and { 0.35, 0.27, 0.05, 0.9 } or { 0.08, 0.08, 0.08, 0.9 })) end
 			c.name:SetText(ns.Dungeons.Name(id)); c.name:SetTextColor(unpack(c.fits and { 1, 0.82, 0 } or { 0.75, 0.75, 0.75 }))
-			c.levels:SetText(string.format("%d-%d", d.min, d.max))
+			c.levels:SetText(string.format(c.skin and L.CARD_LEVELS or "%d-%d", d.min, d.max))
 			local count, chat = #ads == 0 and "" or #ads == 1 and L.LFG_SEARCHING_ONE or string.format(L.LFG_SEARCHING, #ads), #ns.ChatAds.For(id)
 			if chat > 0 then count = count .. (count ~= "" and " · " or "") .. string.format(L.CHAT_ADS, chat) end
 			c.count:SetText(count)
@@ -1154,7 +1182,10 @@ local function RefreshTabs()
 	local mates = B.tab == "mates"
 	local index = 1
 	for i, key in ipairs(B.TAB_KEYS) do if key == B.tab then index = i end end
-	if PanelTemplates_SetTab then PanelTemplates_SetTab(B.frame, index)
+	if ns.Skin.On() then
+		B.frame.selectedTab = index
+		for i, key in ipairs(B.TAB_KEYS) do ns.Skin.SelectTab(B.tabs[key], i == index) end
+	elseif PanelTemplates_SetTab then PanelTemplates_SetTab(B.frame, index)
 	else for i, key in ipairs(B.TAB_KEYS) do B.tabs[key]:SetEnabled(i ~= index) end end
 	B.helpButton:SetShown(mates); B.nearCheck:SetShown(mates); B.nearLabel:SetShown(mates)
 	B.palCheck:SetShown(mates); B.palLabel:SetShown(mates)

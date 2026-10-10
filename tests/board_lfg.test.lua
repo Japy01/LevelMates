@@ -30,10 +30,10 @@ for i, d in ipairs(D.Sorted()) do assert(ids[i] == d.id, "cards by level") end
 for i = 1, #B.rows do assert(not B.rows[i].button:IsShown(), "no list rows on this tab") end
 assert(B.headText[1].text == "" and B.headText[3].text == "", "no column headers")
 local rfc = cardOf(2)
-assert(rfc.name.text == D.Name(2) and rfc.levels.text == "13-18" and rfc.count.text == string.format(L.LFG_SEARCHING, 2), "name, levels, 2 looking")
+assert(rfc.name.text == D.Name(2) and rfc.levels.text == string.format(L.CARD_LEVELS, 13, 18) and rfc.count.text == string.format(L.LFG_SEARCHING, 2), "name, levels, 2 looking")
 assert(cardOf(6).count.text == "", "nobody for Shadowfang")
 assert(rfc.fits and not cardOf(6).fits, "my level fits Ragefire, not Shadowfang")
-assert(rfc.art:IsShown() and rfc.art.texture == "Interface\\Glues\\LoadingScreens\\LoadScreenRagefireChasm" and rfc.art.texcoord[3] == 0.25, "the loading screen, cropped")
+assert(rfc.art:IsShown() and rfc.art.texture == "Interface\\Glues\\LoadingScreens\\LoadScreenRagefireChasm" and rfc.art.texcoord[3] < 0.25, "the loading screen, cropped to the taller card")
 assert(cardOf(1).art:IsShown() and cardOf(1).art.texture == 7963781, "Hall of Thanes: Forever's own loading screen")
 
 -- hover: every ad

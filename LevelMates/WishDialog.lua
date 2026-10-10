@@ -6,7 +6,7 @@ ns.WishDialog = Dlg
 local L, W = ns.L, ns.Wishlist
 
 local function Build()
-	local f = CreateFrame("Frame", "LevelMatesWishDialog", UIParent, "BasicFrameTemplateWithInset")
+	local f = ns.Skin.Window("LevelMatesWishDialog", UIParent)
 	Dlg.frame = f
 	f:SetSize(340, 140); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
@@ -20,13 +20,13 @@ local function Build()
 	box:SetSize(290, 22); box:SetPoint("TOP", 0, -56); box:SetAutoFocus(false); box:SetMaxLetters(255)
 	box:SetScript("OnTextChanged", function() Dlg.Refresh() end)
 	Dlg.box = box
-	local add = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local add = ns.Skin.Button(f)
 	add:SetSize(120, 22); add:SetPoint("BOTTOMLEFT", 20, 14); add:SetText(L.WISH_ADD)
 	add:SetScript("OnClick", function()
 		if (Dlg.mode == "gift" and ns.Gifts.Add or W.Add)(box:GetText()) then box:SetText(""); Dlg.Refresh() end   -- stays open for the next one
 	end)
 	Dlg.add = add
-	local close = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local close = ns.Skin.Button(f)
 	close:SetSize(120, 22); close:SetPoint("BOTTOMRIGHT", -20, 14); close:SetText(L.LFG_CLOSE)
 	close:SetScript("OnClick", function() f:Hide() end)
 end

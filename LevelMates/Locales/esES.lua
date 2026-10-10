@@ -203,3 +203,7 @@ L.CARD_ALTS = "Alts: %s"; L.CARD_MY_CHARS = "Tus personajes en esta hermandad:";
 L.OPT_ALTS = "Compartir mis alts"; L.OPT_ALTS_TT = "Tus hermanos ven cuáles de tus otros personajes de esta misma hermandad son tuyos. Los de fuera de la hermandad nunca se comparten."
 L.MACRO_RUN_WARN = "Cuidado: esta macro ejecuta código o cambia ajustes."
 L.CARD_WAYPOINT = "Ruta"
+
+-- Estilo de ventanas
+L.CARD_LEVELS = "Nv %d-%d"; L.OPT_STYLE = "Estilo de ventanas"; L.STYLE_GOLD = "LevelMates (marrón y dorado)"; L.STYLE_CLASSIC = "Clásico (marcos del juego)"
+L.OPT_STYLE_TT = "El aspecto de las ventanas de LevelMates. Al cambiarlo te propone recargar la interfaz."

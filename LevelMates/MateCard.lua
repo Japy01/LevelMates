@@ -83,7 +83,7 @@ function MC.Lines(name)
 end
 
 local function Build()
-	local f = CreateFrame("Frame", "LevelMatesMateCard", UIParent, "BasicFrameTemplateWithInset")
+	local f = ns.Skin.Window("LevelMatesMateCard", UIParent)
 	MC.frame = f
 	f:SetSize(380, 260); f:SetPoint("CENTER", 220, 0); f:SetFrameStrata("DIALOG")
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
@@ -93,7 +93,7 @@ local function Build()
 	body:SetPoint("TOPLEFT", 16, -34); body:SetWidth(348); body:SetJustifyH("LEFT"); body:SetJustifyV("TOP"); body:SetWordWrap(true)
 	f.body = body
 	local function Btn(text, x, fn)
-		local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+		local b = ns.Skin.Button(f)
 		b:SetSize(84, 22); b:SetPoint("BOTTOMLEFT", x, 12); b:SetText(text)
 		b:SetScript("OnClick", fn)
 		return b
@@ -107,7 +107,7 @@ local function Build()
 	MC.build = Btn(L.CLASS_VIEW_BUILD, 276, function() ns.Builds.Open(ns.Builds.Of(MC.name)) end)
 	MC.questButtons = {}
 	for i = 1, MC.MAX_QUESTS do
-		local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+		local b = ns.Skin.Button(f)
 		b:SetSize(348, 22); b:SetPoint("BOTTOMLEFT", 16, 40 + (MC.MAX_QUESTS - i) * 24)
 		b:SetScript("OnClick", function(self)   -- the game's own quest share, offered to the group, from this click only
 			local index = self.questId and C_QuestLog.GetLogIndexForQuestID and C_QuestLog.GetLogIndexForQuestID(self.questId)

@@ -67,7 +67,8 @@ local function Build()
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); local p, _, rp, x, y = self:GetPoint(); ns.char.groupXpPos = { p, rp, x, y } end)
 	local pos = ns.char.groupXpPos
 	if pos then f:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else f:SetPoint("TOPLEFT", 20, -220) end
-	local bg = f:CreateTexture(nil, "BACKGROUND"); bg:SetAllPoints(); bg:SetColorTexture(0, 0, 0, 0.55)
+	if ns.Skin.On() then ns.Skin.Backdrop(f, ns.Skin.C.frame, ns.Skin.C.frameBorder, 12)
+	else local bg = f:CreateTexture(nil, "BACKGROUND"); bg:SetAllPoints(); bg:SetColorTexture(0, 0, 0, 0.55) end
 	local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	title:SetPoint("TOPLEFT", 8, -6); title:SetText(L.GROUPXP_TITLE)
 	f.title = title

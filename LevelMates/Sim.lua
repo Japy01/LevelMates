@@ -150,7 +150,7 @@ local ART = { "LoadScreenUldaman", "LoadScreenStratholme", "LoadScreenScholomanc
 local function simArt()
 	local f = _G.LevelMatesArtPreview
 	if not f then
-		f = CreateFrame("Frame", "LevelMatesArtPreview", UIParent, "BasicFrameTemplateWithInset")
+		f = ns.Skin.Window("LevelMatesArtPreview", UIParent)
 		f:SetSize(940, 640); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
 		f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
 		f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)

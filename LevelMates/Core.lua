@@ -5,7 +5,7 @@ ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadat
 local DEFAULTS = {
 	share = true, sharePos = false, shareQuests = false, shareXp = false, shareRested = false,
 	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, restedNotices = true, goalNotices = true, wishNotices = true, screenNotices = true, levelNotices = true, shareProfessions = true, shareFeed = true, feedLoot = true, rareNotices = true, mapPins = true, readChatAds = true, shareBuild = true, shareDeaths = true, trainerNotices = true, groupXp = true, askNotices = true, shareAlts = true, sound = true, minimap = true,
-	transport = "auto", debug = false, language = "auto",
+	transport = "auto", debug = false, language = "auto", style = "gold",
 }
 
 ns.DEFAULTS = DEFAULTS

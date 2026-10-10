@@ -18,6 +18,7 @@ local atticHidden
 ButtonFrameTemplate_HideAttic = function(f) atticHidden = f end
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.db.settings.style = "classic"   -- the game's own frames
 ns.Board.Toggle()
 assert(#created == 1 and ns.Board.frame == created[1], "board built from ButtonFrameTemplate")
 assert(hidden == ns.Board.frame, "portrait hidden")

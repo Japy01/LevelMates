@@ -1,0 +1,81 @@
+-- Skin.lua: LevelMates' own look, warm browns and gold as the game's windows, built with the game's BackdropTemplate
+-- (flat fill + the tooltip border), the way ElvUI, Baganator's themes and others do it. Every window, button and tab
+-- of the addon is made here; the "classic" style option gives back the game's own templates.
+local _, ns = ...
+local SK = {}
+ns.Skin = SK
+local unpack = unpack or table.unpack
+
+SK.FLAT, SK.EDGE = "Interface\\Buttons\\WHITE8X8", "Interface\\Tooltips\\UI-Tooltip-Border"
+SK.C = {
+	frame = { 0.24, 0.17, 0.10, 0.97 }, frameBorder = { 0.86, 0.67, 0.32, 1 },
+	panel = { 0.32, 0.23, 0.13, 0.94 }, panelBorder = { 0.58, 0.44, 0.22, 1 },
+	button = { 0.42, 0.29, 0.13, 1 }, buttonBorder = { 0.86, 0.67, 0.32, 1 },
+	tab = { 0.30, 0.21, 0.11, 1 }, tabActive = { 0.58, 0.42, 0.17, 1 },
+	row = { 1, 0.85, 0.55, 0.07 }, header = { 1, 0.82, 0.25, 0.14 }, hover = { 1, 0.85, 0.45, 0.16 },
+	card = { 0.86, 0.67, 0.32, 1 }, cardDim = { 0.40, 0.33, 0.24, 1 }, band = { 0.10, 0.06, 0.02, 0.62 },
+}
+
+function SK.On() return not (ns.db and ns.db.settings.style == "classic") end
+
+-- Background and border on a frame made with BackdropTemplate.
+function SK.Backdrop(f, bg, border, edge)
+	if not f.SetBackdrop and Mixin and BackdropTemplateMixin then Mixin(f, BackdropTemplateMixin) end
+	f:SetBackdrop({ bgFile = SK.FLAT, edgeFile = SK.EDGE, edgeSize = edge or 14, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
+	f:SetBackdropColor(unpack(bg))
+	f:SetBackdropBorderColor(unpack(border))
+end
+
+-- A window: a title, a close button and an inner panel (f.Inset) like the game's own frames.
+function SK.Window(name, parent)
+	if not SK.On() then return CreateFrame("Frame", name, parent or UIParent, "BasicFrameTemplateWithInset") end
+	local f = CreateFrame("Frame", name, parent or UIParent, "BackdropTemplate")
+	SK.Backdrop(f, SK.C.frame, SK.C.frameBorder, 16)
+	f.TitleText = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	f.TitleText:SetPoint("TOP", 0, -8)
+	local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+	close:SetPoint("TOPRIGHT", -2, -2)
+	close:SetScript("OnClick", function() f:Hide() end)
+	f.CloseButton = close
+	-- the inner panel is drawn with textures on the window itself: a child frame would cover the window's own texts
+	local inset = f:CreateTexture(nil, "BACKGROUND", nil, 1)
+	inset:SetPoint("TOPLEFT", 8, -26); inset:SetPoint("BOTTOMRIGHT", -8, 28)
+	inset:SetColorTexture(unpack(SK.C.panel))
+	local function line(p1, p2, w, h)
+		local t = f:CreateTexture(nil, "BORDER")
+		t:SetColorTexture(unpack(SK.C.panelBorder)); t:SetPoint(p1, inset, p1); t:SetPoint(p2, inset, p2)
+		if w then t:SetWidth(w) else t:SetHeight(h) end
+	end
+	line("TOPLEFT", "TOPRIGHT", nil, 1); line("BOTTOMLEFT", "BOTTOMRIGHT", nil, 1); line("TOPLEFT", "BOTTOMLEFT", 1); line("TOPRIGHT", "BOTTOMRIGHT", 1)
+	f.Inset = inset
+	return f
+end
+
+-- A button: brown with a gold border and the game's gold text; brighter under the mouse.
+function SK.Button(parent, name)
+	if not SK.On() then return CreateFrame("Button", name, parent, "UIPanelButtonTemplate") end
+	local b = CreateFrame("Button", name, parent, "BackdropTemplate")
+	SK.Backdrop(b, SK.C.button, SK.C.buttonBorder, 12)
+	local fs = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	fs:SetPoint("CENTER", 0, 0)
+	b:SetFontString(fs)
+	b:SetNormalFontObject("GameFontNormal"); b:SetHighlightFontObject("GameFontHighlight"); b:SetDisabledFontObject("GameFontDisable")
+	local hl = b:CreateTexture(nil, "HIGHLIGHT")
+	hl:SetPoint("TOPLEFT", 3, -3); hl:SetPoint("BOTTOMRIGHT", -3, 3); hl:SetColorTexture(unpack(SK.C.hover))
+	b:SetHighlightTexture(hl)
+	return b
+end
+
+-- A tab: a flat button; the selected one is lighter, with white text.
+function SK.Tab(parent, name)
+	if not SK.On() then return CreateFrame("Button", name, parent, "PanelTabButtonTemplate") end
+	local b = SK.Button(parent, name)
+	b.skinTab = true
+	b:SetDisabledFontObject("GameFontHighlight")   -- the selected tab is disabled: white text, not grey
+	SK.Backdrop(b, SK.C.tab, SK.C.buttonBorder, 12)
+	return b
+end
+function SK.SelectTab(b, selected)
+	b:SetBackdropColor(unpack(selected and SK.C.tabActive or SK.C.tab))
+	b:SetEnabled(not selected)
+end

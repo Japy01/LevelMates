@@ -153,7 +153,7 @@ function D.Text(tab)
 end
 
 local function Build()
-	local f = CreateFrame("Frame", "LevelMatesDiscordDialog", UIParent, "BasicFrameTemplateWithInset")
+	local f = ns.Skin.Window("LevelMatesDiscordDialog", UIParent)
 	D.frame = f
 	f:SetSize(480, 320); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
@@ -171,7 +171,7 @@ local function Build()
 	box:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
 	scroll:SetScrollChild(box)
 	D.box = box
-	local close = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	local close = ns.Skin.Button(f)
 	close:SetSize(120, 22); close:SetPoint("BOTTOM", 0, 12); close:SetText(L.LFG_CLOSE)
 	close:SetScript("OnClick", function() f:Hide() end)
 end

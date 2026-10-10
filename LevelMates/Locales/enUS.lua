@@ -202,3 +202,7 @@ L.CARD_ALTS = "Alts: %s"; L.CARD_MY_CHARS = "Your characters in this guild:"; L.
 L.OPT_ALTS = "Share my alts"; L.OPT_ALTS_TT = "Guildmates see which of your other characters in this same guild are yours. Characters outside the guild are never shared."
 L.MACRO_RUN_WARN = "Careful: this macro runs code or changes settings."
 L.CARD_WAYPOINT = "Waypoint"
+
+-- Window style
+L.CARD_LEVELS = "Lv %d-%d"; L.OPT_STYLE = "Window style"; L.STYLE_GOLD = "LevelMates (brown and gold)"; L.STYLE_CLASSIC = "Classic (the game's frames)"
+L.OPT_STYLE_TT = "The look of LevelMates' windows. A change asks to reload the interface."

@@ -365,3 +365,12 @@ function WorldMapFrame:OnMapChanged() end
 -- Guild member counts (total, total, online)
 function GetNumGuildMembers() return STUB.guildTotal or 0, STUB.guildTotal or 0, STUB.guildOnline or 0 end
 function Region:HasFocus() return self.focused == true end
+
+-- Skinned buttons and backdrops (BackdropTemplate, Button font strings)
+function Region:SetFontString(fs) self.fontString = fs end
+function Region:GetFontString() return self.fontString end
+function Region:SetNormalFontObject() end
+function Region:SetHighlightFontObject() end
+function Region:SetDisabledFontObject() end
+function Region:SetBackdropColor(r, g, b, a) self.backdropColor = { r, g, b, a } end
+function Region:SetBackdropBorderColor(r, g, b, a) self.backdropBorder = { r, g, b, a } end
