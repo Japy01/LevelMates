@@ -104,11 +104,12 @@ C.SCHEMA = {
 	gv   = { ids = itemids(10) },
 	gr   = { i = int(1, 999999), to = text(24) },
 	gro  = { i = int(1, 999999), by = text(24) },
+	rr   = { n = text(40), z = int(1, 100000), x = num(0, 100), y = num(0, 100) },
 	fe   = { k = oneOf("lvl", "dun", "itm", "pgl"), a = int(0, 999999), b = text(60), t = int(0, 100000000) },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, gv = {}, gr = { "i", "to" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, gv = {}, gr = { "i", "to" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]

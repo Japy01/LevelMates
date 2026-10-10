@@ -132,3 +132,4 @@ L.MEET_HERE = "Meet here..."; L.MEET_JOIN = "Join the %s meetup as %s"; L.MEET_L
 L.MEET_LINE = "Meetup %s (%s)"; L.MEET_NEW = "%s set a %s meetup for %s."; L.MEET_JOINED = "%s joins your %s meetup (%s) as %s."
 L.MEET_SOON = "Your %s meetup (%s) starts in 15 minutes!"; L.MEET_BAD_TIME = "Pick a time from now to 7 days ahead."; L.MEET_FULL = "Too many meetups: at most 2 yours and 10 in the guild."
 L.GIFT_ASKED = "Reservation asked to %s for %s; they confirm it."; L.GIFT_CONFIRMED = "%s confirms: %s is reserved for you."; L.MEET_NOT_NOW = "Not now: you are in an instance or \"Appear on the board\" is off."
+L.RARE_SEEN = "%s spotted %s in %s"; L.WAYPOINT = "Waypoint"; L.OPT_RARE = "Rare sightings"; L.OPT_RARE_TT = "Tell the guild when you see a rare, and hear about the ones guildmates see where you are."

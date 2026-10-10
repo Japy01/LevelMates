@@ -25,6 +25,7 @@ MinimapButton.lua
 Questie.lua
 Match.lua
 Help.lua
+Rares.lua
 LFG.lua
 Meetups.lua
 LfgDialog.lua

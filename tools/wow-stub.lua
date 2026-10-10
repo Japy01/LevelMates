@@ -339,3 +339,13 @@ UIErrorsFrame = { messages = {}, AddMessage = function(self, text) self.messages
 EventRegistry = { callbacks = {} }
 function EventRegistry:RegisterCallback(event, fn, owner) self.callbacks[event] = self.callbacks[event] or {}; table.insert(self.callbacks[event], { fn = fn, owner = owner }) end
 function STUB.ClickLink(link) for _, c in ipairs(EventRegistry.callbacks.SetItemRef or {}) do c.fn(c.owner, link, link, "LeftButton") end end
+
+-- Units (rares)
+STUB.units = {}
+function UnitExists(u) return STUB.units[u] ~= nil end
+function UnitClassification(u) return STUB.units[u] and STUB.units[u].class or "normal" end
+function UnitIsDead(u) return STUB.units[u] and STUB.units[u].dead or false end
+function UnitIsPlayer(u) return STUB.units[u] and STUB.units[u].player or false end
+local realUnitName = UnitName
+function UnitName(u) if STUB.units[u] then return STUB.units[u].name end; return realUnitName(u) end
+C_Map.GetPlayerMapPosition = function() return { GetXY = function() return STUB.pos and STUB.pos[1] or 0.5, STUB.pos and STUB.pos[2] or 0.5 end } end
