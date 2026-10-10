@@ -152,3 +152,6 @@ L.TAB_CLASS = "Clase"; L.HEAD_CLASS = "Tu clase"; L.SUB_CLASS = "Builds y macros
 -- Anuncios del chat en las tarjetas
 L.CHAT_ADS = "%d en el chat"; L.CHAT_AD_LINE = "Chat · %s: «%s» (hace %s)"; L.CHAT_AD_WHISPER = "Susurrar a %s (chat)"
 L.OPT_CHAT_ADS = "Leer anuncios del chat"; L.OPT_CHAT_ADS_TT = "Las tarjetas de mazmorra cuentan también los anuncios de grupo de Comercio, General y otros canales públicos. Solo se leen en tu ordenador; no se envía nada."
+
+-- Builds
+L.BUILD_LINK = "LevelMates: build"; L.OPT_BUILD = "Compartir mi build de talentos"; L.OPT_BUILD_TT = "Los hermanos de tu clase ven tus puntos por rama y tu nivel, y pueden abrir tu build en la ventana del juego."

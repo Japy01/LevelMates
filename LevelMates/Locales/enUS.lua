@@ -151,3 +151,6 @@ L.TAB_CLASS = "Class"; L.HEAD_CLASS = "Your class"; L.SUB_CLASS = "Guild builds 
 -- Chat ads on the dungeon cards
 L.CHAT_ADS = "%d in chat"; L.CHAT_AD_LINE = "Chat · %s: «%s» (%s ago)"; L.CHAT_AD_WHISPER = "Whisper %s (chat)"
 L.OPT_CHAT_ADS = "Read group ads from chat"; L.OPT_CHAT_ADS_TT = "Dungeon cards also count group ads posted in Trade, General and other public channels. Only read on your computer; nothing is sent."
+
+-- Builds
+L.BUILD_LINK = "LevelMates: build"; L.OPT_BUILD = "Share my talent build"; L.OPT_BUILD_TT = "Guildmates of your class see your points per branch and level, and can open your build in the game's viewer."

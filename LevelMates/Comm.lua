@@ -77,6 +77,19 @@ local function profs(v)
 	return n <= 6
 end
 
+-- Talent points per branch "1001:9,1002:0": 1-8 group:points pairs.
+local function branchPoints(v)
+	if type(v) ~= "string" or v == "" or #v > 80 then return false end
+	local n = 0
+	for pair in (v .. ","):gmatch("([^,]*),") do
+		if not pair:match("^%d+:%d+$") then return false end
+		n = n + 1
+	end
+	return n <= 8
+end
+-- A talent build code as the game exports it (base64 letters).
+local function buildCode(v) return type(v) == "string" and #v >= 1 and #v <= 150 and v:match("^[%w%+/=]+$") ~= nil end
+
 -- Quest objectives "6/10,1/1": up to 60 characters of have/need pairs.
 local function objectives(v) return type(v) == "string" and #v <= 60 and v:match("^%d+/%d+[%d/,]*$") ~= nil and not v:find(",,", 1, true) and v:sub(-1) ~= "," end
 
@@ -112,10 +125,11 @@ C.SCHEMA = {
 	qo   = { i = int(1, 999999), o = objectives },
 	rr   = { n = text(40), z = int(1, 100000), x = num(0, 100), y = num(0, 100) },
 	fe   = { k = oneOf("lvl", "dun", "itm", "pgl"), a = int(0, 999999), b = text(60), t = int(0, 100000000) },
+	tb   = { c = word(16), s = int(0, 100000), l = int(1, 100), p = branchPoints, b = buildCode },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
@@ -247,7 +261,7 @@ local function pump()
 	C.stats.queued = #queue
 end
 
-local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true }
+local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true }
 function C.Send(kind, fields, prio)
 	if active == "none" or not IsInGuild() then return false end
 	if inInstance() and not INSTANCE_OK[kind] then return false end
