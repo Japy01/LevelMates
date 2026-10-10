@@ -1,5 +1,8 @@
 package-as: LevelMates
 enable-nolib-creation: no
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
 move-folders:
   LevelMates/LevelMates: LevelMates
 ignore:

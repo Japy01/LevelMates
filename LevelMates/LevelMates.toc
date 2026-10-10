@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: LevelMates
-## Notes: See which guildmates are online and where, match quests with them, and ask for a hand with elites.|nAddon messages only. No combat data. Your position and quests are shared only if you turn it on.
-## Notes-esES: Ve qué hermanos están conectados y dónde, empareja misiones con ellos y pide ayuda con los elites.|nSolo mensajes de addon. Nada de combate. Tu posición y tus misiones solo se comparten si lo activas.
+## Notes: Level up together with your guild: guildmates online, dungeon groups and meetups, guild goals, wishlist and giveaways, professions, a guild wall, rares and help.|nAddon messages to your guild only. Nothing from combat.
+## Notes-esES: Sube de nivel con tu hermandad: hermanos conectados, grupos y quedadas de mazmorra, metas, deseos y regalos, oficios, muro de la hermandad, raros y ayuda.|nSolo mensajes de addon a tu hermandad. Nada de combate.
 ## Author: Diego and contributors
 ## Version: @project-version@
 ## SavedVariables: LevelMatesDB
