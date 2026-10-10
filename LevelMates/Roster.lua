@@ -163,6 +163,7 @@ C.OnMessage("q", function(f, name)
 	if not m then return end
 	local idx, total = tostring(f.i):match("^(%d+)/(%d+)$")
 	if idx == "1" then m.quests = {} end
+	m.questsKnown = true   -- they share their quests (the empty default means "unknown")
 	for id in tostring(f.ids):gmatch("%d+") do m.quests[tonumber(id)] = true end
 	if idx == total then ns.Fire("LM_MATE_QUESTS", name) end
 end)

@@ -12,6 +12,25 @@ local function items(list, name)
 	return out
 end
 
+local function grouped(name) return UnitInParty(name) or UnitInRaid(name) end
+MC.MAX_QUESTS = 5
+
+-- In a group: my quests (not done, shareable) that they do not have; nil when not grouped or they do not share
+-- their quests (the roster only knows quests of players who share them).
+function MC.MissingQuests(name)
+	local m = R.mates[name]
+	if not (m and grouped(name) and m.questsKnown and m.quests) then return nil end
+	local out = {}
+	for id in pairs(R.MyQuests()) do
+		if not m.quests[id] and C_QuestLog.IsPushableQuest and C_QuestLog.IsPushableQuest(id) then
+			out[#out + 1] = { id = id, title = C_QuestLog.GetTitleForQuestID(id) or ("#" .. id) }
+		end
+	end
+	table.sort(out, function(a, b) return a.title < b.title end)
+	while #out > MC.MAX_QUESTS do table.remove(out) end
+	return out
+end
+
 -- The card's text, one line per thing known about them.
 function MC.Lines(name)
 	local m, lines = R.mates[name], {}
@@ -40,6 +59,11 @@ function MC.Lines(name)
 			lines[#lines + 1] = string.format(L.CARD_MEETUP, ns.Dungeons.Name(mt.d), ns.Meetups.When(mt))
 		end
 	end
+	if m and grouped(name) then
+		local missing = MC.MissingQuests(name)
+		if not missing then lines[#lines + 1] = L.CARD_NO_QUESTS
+		elseif #missing > 0 then lines[#lines + 1] = L.CARD_MISSING end
+	end
 	return lines
 end
 
@@ -66,6 +90,17 @@ local function Build()
 		if m and m.x and m.y and m.mapId then ns.Help.WaypointTo(m.mapId, m.x, m.y) end
 	end)
 	MC.build = Btn(L.CLASS_VIEW_BUILD, 276, function() ns.Builds.Open(ns.Builds.Of(MC.name)) end)
+	MC.questButtons = {}
+	for i = 1, MC.MAX_QUESTS do
+		local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+		b:SetSize(348, 22); b:SetPoint("BOTTOMLEFT", 16, 40 + (MC.MAX_QUESTS - i) * 24)
+		b:SetScript("OnClick", function(self)   -- the game's own quest share, offered to the group, from this click only
+			local index = self.questId and C_QuestLog.GetLogIndexForQuestID and C_QuestLog.GetLogIndexForQuestID(self.questId)
+			if index then QuestLogPushQuest(index) end
+		end)
+		b:Hide()
+		MC.questButtons[i] = b
+	end
 	f:Hide()
 end
 
@@ -78,6 +113,13 @@ function MC.Refresh()
 	MC.waypoint:SetShown(m and m.x and m.y and m.mapId and true or false)
 	local b = ns.Builds.Of(name)
 	MC.build:SetShown(b and b.b and true or false)
+	local missing = MC.MissingQuests(name) or {}
+	for i, qb in ipairs(MC.questButtons) do
+		local q = missing[i]
+		qb.questId = q and q.id
+		if q then qb:SetText(string.format(L.CARD_SHARE_QUEST, q.title)); qb:Show() else qb:Hide() end
+	end
+	MC.frame:SetHeight(260 + #missing * 24)
 end
 
 function MC.Show(name)
@@ -88,4 +130,4 @@ function MC.Show(name)
 end
 
 ns.On("LM_ROW_CLICK", MC.Show)
-for _, e in ipairs({ "LM_ROSTER_CHANGED", "LM_BUILDS_CHANGED", "LM_PROFESSIONS_CHANGED", "LM_WISHES_CHANGED", "LM_FEED_CHANGED", "LM_MEETUPS_CHANGED", "LM_GOALS_CHANGED" }) do ns.On(e, MC.Refresh) end
+for _, e in ipairs({ "LM_MATE_QUESTS", "LM_ROSTER_CHANGED", "LM_BUILDS_CHANGED", "LM_PROFESSIONS_CHANGED", "LM_WISHES_CHANGED", "LM_FEED_CHANGED", "LM_MEETUPS_CHANGED", "LM_GOALS_CHANGED" }) do ns.On(e, MC.Refresh) end

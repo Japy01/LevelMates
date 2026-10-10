@@ -180,3 +180,4 @@ L.OPT_TRAINER = "Trainer reminder"; L.OPT_TRAINER_TT = "When you level up, tells
 
 -- Group XP bars
 L.GROUPXP_TITLE = "Group XP"; L.OPT_GROUPXP = "Group XP bars"; L.OPT_GROUPXP_TT = "While grouped with guildmates, a small window shows everyone's XP. Your XP percent goes to your guild only while you are grouped with a guildmate."
+L.CARD_NO_QUESTS = "They do not share their quests, so LevelMates cannot tell which of yours they lack."; L.CARD_MISSING = "Your quests they do not have:"; L.CARD_SHARE_QUEST = "Share: %s"
