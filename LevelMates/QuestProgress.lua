@@ -32,6 +32,7 @@ end
 local function grouped(name) return UnitInParty(name) or UnitInRaid(name) end
 
 function Q.SendChanged()
+	if not ns.db.settings.shareQuests then return end   -- quest ids go out only for players who share their quests
 	local mine, shared = myQuests(), {}
 	for name, m in pairs(R.mates) do
 		if grouped(name) then for id in pairs(m.quests or {}) do if mine[id] then shared[id] = true end end end
@@ -57,11 +58,11 @@ end
 
 C.OnMessage("qo", function(f, name)
 	local m = R.mates[name]
-	if not m then return end
+	if not m or not grouped(name) then return end   -- my group's progress only
 	m.progress = m.progress or {}
 	local before = m.progress[f.i]
 	m.progress[f.i] = f.o
-	if complete(f.o) and not complete(before) and myQuests()[f.i] and not told[name .. ":" .. f.i] and ns.db.settings.matchNotices then
+	if before and complete(f.o) and not complete(before) and myQuests()[f.i] and not told[name .. ":" .. f.i] and ns.db.settings.matchNotices then
 		told[name .. ":" .. f.i] = true
 		ns.Notice(L.QUEST_DONE, name, C_QuestLog.GetTitleForQuestID(f.i) or ("#" .. f.i))
 	end
@@ -83,4 +84,9 @@ ev:SetScript("OnEvent", function(_, event)
 	if event == "GROUP_ROSTER_UPDATE" and not IsInGroup() then wipe(sent) end   -- a new group hears everything again
 	soon()
 end)
-ns.On("LM_MATE_QUESTS", soon)
+-- A groupmate's quest list (a login, a /reload): what we share goes to them again.
+ns.On("LM_MATE_QUESTS", function(name)
+	local m = R.mates[name]
+	if m and grouped(name) then for id in pairs(m.quests or {}) do sent[id] = nil end end
+	soon()
+end)

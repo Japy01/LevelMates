@@ -124,6 +124,7 @@ H.PANIC_GAP = 30
 local lastPanic = -math.huge
 function H.Panic()
 	if GetTime() - lastPanic < H.PANIC_GAP then ns.Say(L.PANIC_WAIT); return false end
+	if H.mine then H.Cancel() end   -- one request at a time: the old one is withdrawn first
 	if H.Ask(L.PANIC_TEXT) then lastPanic = GetTime(); return true end
 	return false
 end

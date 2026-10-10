@@ -8,6 +8,7 @@ STUB.guildMembers = { Tester = true, Mario = true }
 R.InvalidateGuildRoster()
 STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")
 assert(ns.db.settings.rareNotices == true, "on by default")
+ns.db.settings.sharePos = true   -- sightings carry my position: they need position sharing on
 assert(C.Validate("rr", { n = "Mangaleta", z = 1412, x = 42.5, y = 61 }) and C.Validate("rr", { n = "Mangaleta", z = 1412 }) == false, "rr format")
 
 -- I target a live rare: the guild hears it once in 15 minutes

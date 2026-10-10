@@ -7,6 +7,7 @@ STUB.guildMembers = { Tester = true, Mario = true }
 R.InvalidateGuildRoster()
 assert(C.Validate("qo", { i = 101, o = "6/10,1/1" }) and C.Validate("qo", { i = 101, o = "6 de 10" }) == false, "qo format")
 
+ns.db.settings.shareQuests = true   -- progress needs quest sharing on
 STUB.quests = { 101, 102 }
 STUB.objectives[101] = { { numFulfilled = 6, numRequired = 10, finished = false }, { numFulfilled = 0, numRequired = 0, finished = true } }
 STUB.objectives[102] = { { numFulfilled = 1, numRequired = 3, finished = false } }

@@ -20,7 +20,8 @@ local function myPosition()
 end
 
 function RA.Seen(unit)
-	if not UnitExists(unit) then return false end
+	-- a sighting carries my position: only for players who share it, with sightings on
+	if not (ns.db.settings.rareNotices and ns.db.settings.sharePos) or not UnitExists(unit) then return false end
 	local class, name = UnitClassification(unit), UnitName(unit)
 	if secret(class) or secret(name) or not RARE[class] or not name or UnitIsDead(unit) or UnitIsPlayer(unit) then return false end
 	local now = GetTime()
