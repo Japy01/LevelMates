@@ -174,3 +174,7 @@ L.BUILD_LINK = "Build de %s"; L.BUILD_CLICK = "Haz clic para verla: %s"
 -- Cementerio
 L.FEED_DTH = "murió a nivel %d en %s"; L.BTN_CEMETERY = "Cementerio"; L.BTN_WALL_ALL = "Todo el muro"; L.FEED_CEMETERY_SUB = "Cementerio: %d muertes en la hermandad esta semana."
 L.OPT_DEATHS = "Mis muertes en el muro"; L.OPT_DEATHS_TT = "Tus muertes salen en el muro de la hermandad con tu nivel y zona. Nada de combate."
+
+-- Entrenador
+L.TRAINER_NEW = "Nivel %d: %d hechizos nuevos en tu entrenador (%s)."; L.TRAINER_EVEN = "Nivel %d: pasa por tu entrenador a por hechizos nuevos."
+L.OPT_TRAINER = "Recordatorio de entrenador"; L.OPT_TRAINER_TT = "Al subir de nivel te dice qué hechizos te esperan en tu entrenador de clase (lo sabe por tu última visita)."

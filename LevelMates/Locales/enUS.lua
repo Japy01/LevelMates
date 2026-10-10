@@ -173,3 +173,7 @@ L.BUILD_LINK = "%s's build"; L.BUILD_CLICK = "Click to view: %s"
 -- Cemetery
 L.FEED_DTH = "died at level %d in %s"; L.BTN_CEMETERY = "Cemetery"; L.BTN_WALL_ALL = "Whole wall"; L.FEED_CEMETERY_SUB = "Cemetery: %d deaths in the guild this week."
 L.OPT_DEATHS = "My deaths on the wall"; L.OPT_DEATHS_TT = "Your deaths appear on the guild wall with your level and zone. Nothing from combat."
+
+-- Trainer
+L.TRAINER_NEW = "Level %d: %d new spells at your trainer (%s)."; L.TRAINER_EVEN = "Level %d: visit your trainer for new spells."
+L.OPT_TRAINER = "Trainer reminder"; L.OPT_TRAINER_TT = "When you level up, tells you which spells are waiting at your class trainer (it learns them from your last visit)."
