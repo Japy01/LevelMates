@@ -122,3 +122,7 @@ L.COL_WHAT = "What"; L.COL_WHEN = "When"; L.FEED_EMPTY = "Nothing on the wall ye
 L.FEED_LVL = "reached level %d"; L.FEED_DUN = "went to %s"; L.FEED_ITM = "got %s"; L.FEED_PGL = "reached their goal: level %d"; L.FEED_GOL = "goal reached: %s"
 L.OPT_FEED = "Share on the wall"; L.OPT_FEED_TT = "Your level-ups, dungeons with guildmates and goals appear on guildmates' wall."
 L.OPT_FEED_LOOT = "Loot on the wall"; L.OPT_FEED_LOOT_TT = "Rare (blue) or better items you loot appear on the wall."
+L.BTN_GIFT_ADD = "Give away"; L.GIFT_DIALOG_TITLE = "Give an item away"; L.COL_KIND = "Kind"; L.WANTS = "wants"; L.GIVES = "gives"
+L.GIFT_DUP = "That item is already in your giveaways."; L.GIFT_FULL = "You give away at most %d items."
+L.GIFT_FOR_YOU = "%s gives away %s, which is on your list. Right-click their row to reserve it."; L.GIFT_WANTED = "%s wants %s, which you give away."
+L.GIFT_RESERVED = "%s reserves your %s."; L.GIFT_RESERVED_BY = "reserved by %s"; L.GIFT_RESERVE = "Reserve"; L.GIFT_REMOVE = "Remove from my giveaways"; L.GIFT_TOOLTIP = "Given away by: %s"

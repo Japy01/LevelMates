@@ -87,6 +87,13 @@ function builders.wishes()
 		table.insert(byName[w.name], l and plain(l) or string.format(L.WISH_UNKNOWN, w.id))
 	end
 	for _, name in ipairs(order) do lines[#lines + 1] = string.format("• **%s**: %s", name, table.concat(byName[name], ", ")) end
+	local gives, gorder = {}, {}
+	for _, g in ipairs(ns.Gifts.List()) do
+		if not gives[g.name] then gives[g.name] = {}; gorder[#gorder + 1] = g.name end
+		local l = W.Link(g.id)
+		table.insert(gives[g.name], (l and plain(l) or string.format(L.WISH_UNKNOWN, g.id)) .. (g.reservedBy and (" (" .. string.format(L.GIFT_RESERVED_BY, g.reservedBy) .. ")") or ""))
+	end
+	for _, name in ipairs(gorder) do lines[#lines + 1] = string.format("• **%s** %s: %s", name, L.GIVES, table.concat(gives[name], ", ")) end
 	return lines
 end
 

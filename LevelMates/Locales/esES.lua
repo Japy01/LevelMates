@@ -122,3 +122,7 @@ L.COL_WHAT = "Qué"; L.COL_WHEN = "Cuándo"; L.FEED_EMPTY = "Todavía no hay nad
 L.FEED_LVL = "subió a nivel %d"; L.FEED_DUN = "fue a %s"; L.FEED_ITM = "consiguió %s"; L.FEED_PGL = "cumplió su meta: nivel %d"; L.FEED_GOL = "meta cumplida: %s"
 L.OPT_FEED = "Compartir en el muro"; L.OPT_FEED_TT = "Tus subidas de nivel, mazmorras con hermanos y metas salen en el muro de los hermanos."
 L.OPT_FEED_LOOT = "Botín en el muro"; L.OPT_FEED_LOOT_TT = "Los objetos raros (azules) o mejores que consigues salen en el muro."
+L.BTN_GIFT_ADD = "Regalar"; L.GIFT_DIALOG_TITLE = "Regalar un objeto"; L.COL_KIND = "Tipo"; L.WANTS = "quiere"; L.GIVES = "regala"
+L.GIFT_DUP = "Ese objeto ya está en tus regalos."; L.GIFT_FULL = "Puedes regalar como mucho %d objetos."
+L.GIFT_FOR_YOU = "%s regala %s, que está en tu lista. Clic derecho en su fila para reservarlo."; L.GIFT_WANTED = "%s quiere %s, que tú regalas."
+L.GIFT_RESERVED = "%s reserva tu %s."; L.GIFT_RESERVED_BY = "reservado por %s"; L.GIFT_RESERVE = "Reservar"; L.GIFT_REMOVE = "Quitar de mis regalos"; L.GIFT_TOOLTIP = "Lo regala: %s"

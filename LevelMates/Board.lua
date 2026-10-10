@@ -13,7 +13,7 @@ B.COLS = { 150, 50, 180, 70, 70 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
 B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
-B.WCOLS = { 100, 1, 344, 1, 74 }   -- wishes: who, -, item, -, since (same total as B.COLS)
+B.WCOLS = { 100, 1, 280, 65, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
 B.CCOLS = { 150, 1, 239, 60, 70 }   -- professions: who, -, profession, rank, online or last seen (same total as B.COLS)
 B.FCOLS = { 110, 1, 313, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
@@ -173,7 +173,7 @@ local function Build()
 				return
 			end
 			if B.tab == "wishes" then
-				if mouse == "RightButton" and self.wishMine then B.OpenWishMenu(self.wishId) end
+				if mouse == "RightButton" and self.wishId then B.OpenWishMenu(self.wishId, self.wishKind, self.wishMine, self.wishName) end
 				return
 			end
 			if B.tab == "goals" then
@@ -309,6 +309,10 @@ local function Build()
 	wishAdd:SetSize(120, 20); wishAdd:SetPoint("BOTTOMLEFT", 12, 3); wishAdd:SetText(L.BTN_WISH_ADD)
 	wishAdd:SetScript("OnClick", function() ns.Fire("LM_WISH_ADD") end)
 	B.wishAdd = wishAdd
+	local giftAdd = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	giftAdd:SetSize(120, 20); giftAdd:SetPoint("BOTTOMRIGHT", -12, 3); giftAdd:SetText(L.BTN_GIFT_ADD)
+	giftAdd:SetScript("OnClick", function() ns.Fire("LM_GIFT_ADD") end)
+	B.giftAdd = giftAdd
 
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
@@ -420,7 +424,7 @@ local function SetHeaders()
 	end
 	if B.tab == "wishes" then
 		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ITEM)
-		B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_SINCE)
+		B.headText[4]:SetText(L.COL_KIND); B.headText[5]:SetText(L.COL_SINCE)
 		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
 		return
 	end
@@ -618,13 +622,16 @@ local function FillWishes(list)
 	for i = 1, ROWS do
 		local r, w = B.rows[i], list[i]
 		r.button.mate, r.button.adId, r.button.entry, r.button.goalId, r.button.personalMine = nil, nil, nil, nil, nil
-		r.button.wishId, r.button.wishMine = w and w.id or nil, w and w.mine or nil
+		r.button.wishId, r.button.wishMine, r.button.wishKind, r.button.wishName = w and w.id or nil, w and w.mine or nil, w and w.kind or nil, w and w.name or nil
 		if w then
 			r.icon:Hide()
 			r.name:SetText(w.name); if w.mine then r.name:SetTextColor(ClassColor(MyClass())) else r.name:SetTextColor(0.7, 0.7, 0.7) end
 			r.level:SetText("")
-			r.zone:SetText(ns.Wishlist.Link(w.id) or string.format(L.WISH_UNKNOWN, w.id)); r.zone:SetTextColor(1, 1, 1)
-			r.group:SetText("")
+			local item = ns.Wishlist.Link(w.id) or string.format(L.WISH_UNKNOWN, w.id)
+			if w.reservedBy then item = item .. "  " .. string.format(L.GIFT_RESERVED_BY, w.reservedBy) end
+			r.zone:SetText(item); r.zone:SetTextColor(1, 1, 1)
+			r.group:SetText(w.kind == "give" and L.GIVES or L.WANTS)
+			r.group:SetTextColor(unpack(w.kind == "give" and { 1, 0.82, 0 } or { 0.4, 1, 0.4 }))
 			r.xph:SetText(date("%d/%m", w.t)); r.xph:SetTextColor(0.7, 0.7, 0.7)
 			r.button:Show()
 			RowBg(r, i, false)
@@ -634,8 +641,20 @@ local function FillWishes(list)
 	end
 end
 
-function B.OpenWishMenu(id)
-	if not ns.Wishlist.Has(id) then return end
+function B.OpenWishMenu(id, kind, mine, name)
+	if kind == "give" then
+		if mine then
+			MenuUtil.CreateContextMenu(B.frame, function(_, root) root:CreateButton(L.GIFT_REMOVE, function() ns.Gifts.Remove(id) end) end)
+		else
+			local row
+			for _, g in ipairs(ns.Gifts.List()) do if g.name == name and g.id == id then row = g end end
+			if row and not row.reservedBy then
+				MenuUtil.CreateContextMenu(B.frame, function(_, root) root:CreateButton(L.GIFT_RESERVE, function() ns.Gifts.Reserve(name, id) end) end)
+			end
+		end
+		return
+	end
+	if not mine or not ns.Wishlist.Has(id) then return end
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
 		root:CreateButton(L.WISH_REMOVE, function() ns.Wishlist.Remove(id) end)
 	end)
@@ -769,6 +788,7 @@ local function RefreshTabs()
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
 	B.wishAdd:SetShown(wishes)
+	B.giftAdd:SetShown(wishes)
 end
 
 function B.Refresh()
@@ -783,7 +803,10 @@ function B.Refresh()
 	elseif crafts then
 		list, pages = Page(CraftsVisible())
 	elseif wishes then
-		list, pages = Page(ns.Wishlist.List())
+		local all = {}
+		for _, w in ipairs(ns.Wishlist.List()) do w.kind = "want"; all[#all + 1] = w end
+		for _, g in ipairs(ns.Gifts.List()) do g.kind = "give"; all[#all + 1] = g end
+		list, pages = Page(all)
 	elseif goals then
 		local all = ns.Goals.List()
 		for _, p in ipairs(ns.Personal.List()) do all[#all + 1] = p end

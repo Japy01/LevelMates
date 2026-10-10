@@ -23,7 +23,7 @@ local function Build()
 	local add = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	add:SetSize(120, 22); add:SetPoint("BOTTOMLEFT", 20, 14); add:SetText(L.WISH_ADD)
 	add:SetScript("OnClick", function()
-		if W.Add(box:GetText()) then box:SetText(""); Dlg.Refresh() end   -- stays open for the next one
+		if (Dlg.mode == "gift" and ns.Gifts.Add or W.Add)(box:GetText()) then box:SetText(""); Dlg.Refresh() end   -- stays open for the next one
 	end)
 	Dlg.add = add
 	local close = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
@@ -35,8 +35,10 @@ function Dlg.Refresh()
 	if Dlg.frame then Dlg.add:SetEnabled(W.ItemId(Dlg.box:GetText() or "") ~= nil) end
 end
 
-function Dlg.Open()
+function Dlg.Open(mode)
 	if not Dlg.frame then Build() end
+	Dlg.mode = mode == "gift" and "gift" or "wish"
+	if Dlg.frame.TitleText then Dlg.frame.TitleText:SetText(Dlg.mode == "gift" and L.GIFT_DIALOG_TITLE or L.WISH_DIALOG_TITLE) end
 	Dlg.box:SetText("")
 	Dlg.frame:Show()
 	Dlg.Refresh()
@@ -51,4 +53,5 @@ if hooksecurefunc then
 	if ChatEdit_InsertLink then hooksecurefunc("ChatEdit_InsertLink", Dlg.Capture) end
 end
 
-ns.On("LM_WISH_ADD", Dlg.Open)
+ns.On("LM_WISH_ADD", function() Dlg.Open("wish") end)
+ns.On("LM_GIFT_ADD", function() Dlg.Open("gift") end)

@@ -43,6 +43,7 @@ function W.Add(link)
 	local list = mine()
 	if #list >= W.MAX then ns.Say(L.WISH_FULL, W.MAX); return false end
 	list[#list + 1] = { id = id, t = time() }
+	ns.Fire("LM_WISH_ADDED", id)
 	send("now")
 	ns.Fire("LM_WISHES_CHANGED")
 	return true
