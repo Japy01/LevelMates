@@ -20,7 +20,7 @@ assert(tex == "Interface\\Glues\\LoadingScreens\\LoadScreenRagefireChasm" and co
 assert(D.Art(8) == 131870, "file ids work too")
 -- only the game's own art: Forever's loading screens for its new dungeons, the Monastery screen for the Library
 assert(D.Art(1) == 7963781 and D.Art(3) == 7963782, "Forever's own loading screens")
-assert(D.Art(14) == "Interface\\Glues\\LoadingScreens\\LoadScreenScarletMonastery2", "the Library uses the Monastery screen")
+assert(D.Art(14) == "Interface\\Glues\\LoadingScreens\\LoadScreenScarletHalls", "the Library uses the Scarlet Halls screen")
 for _, d in ipairs(D.list) do
 	local tex = D.Art(d.id)
 	assert(tex and not tostring(tex):find("AddOns", 1, true), "never another addon's files: " .. d.key)

@@ -3,7 +3,7 @@
 ## 0.1.2
 
 - Language option: automatic (the game's), English or Spanish, whatever the game client's language; a change offers to reload the interface.
-- Dungeon cards use only the game's own art: Forever's loading screens for Hall of Thanes (Old Ironforge) and Ruins of Lordaeron, the Scarlet Monastery screen for the Library. No other addon's files are used.
+- Dungeon cards use only the game's own art: Forever's loading screens for Hall of Thanes (Old Ironforge) and Ruins of Lordaeron, the Scarlet Halls screen for the Library. No other addon's files are used.
 
 ## 0.1.1
 
