@@ -101,7 +101,7 @@ local function soon()
 	C_Timer.After(5, function() scheduled = false; sendIfChanged() end)
 end
 local events = CreateFrame("Frame")
-for _, e in ipairs({ "TRAIT_CONFIG_UPDATED", "PLAYER_TALENT_UPDATE", "PLAYER_LEVEL_UP", "ADDON_LOADED" }) do events:RegisterEvent(e) end
+for _, e in ipairs({ "TRAIT_CONFIG_UPDATED", "TRAIT_CONFIG_LIST_UPDATED", "PLAYER_TALENT_UPDATE", "PLAYER_LEVEL_UP", "ADDON_LOADED" }) do events:RegisterEvent(e) end
 events:SetScript("OnEvent", function(_, event, arg)
 	if event == "ADDON_LOADED" then
 		if arg == "Blizzard_PlayerSpells" and PlayerSpellsFrame and PlayerSpellsFrame.HookScript then PlayerSpellsFrame:HookScript("OnHide", soon) end

@@ -116,6 +116,10 @@ end
 
 function builders.recruit()
 	local lines = {}
+	if ns.Board.recruitView ~= "inactive" then   -- the templates view: the message as it would be posted
+		local t = ns.Recruit.Templates()[ns.char.recruitTemplate or 1]
+		return t and t ~= "" and { ns.Recruit.Expand(t) } or {}
+	end
 	for _, e in ipairs(ns.Inactive.List(ns.char.inactiveDays or 14)) do
 		lines[#lines + 1] = string.format("• **%s** (%d, %s): %s · %s", e.name, e.level, e.rank, ns.Inactive.AwayText(e), ns.Inactive.JoinedText(e))
 	end
@@ -135,7 +139,7 @@ end
 function D.Text(tab)
 	tab = builders[tab] and tab or "mates"
 	local guild = GetGuildInfo("player")
-	local head = "**" .. L.BOARD_TITLE .. (guild and (" · " .. guild) or "") .. " · " .. (tab == "journal" and string.format(L.DC_J_TITLE, me()) or L[TAB_TITLE[tab]]) .. "**"
+	local head = "**" .. L.BOARD_TITLE .. (guild and (" · " .. guild) or "") .. " · " .. (tab == "journal" and string.format(L.DC_J_TITLE, me()) or tab == "recruit" and ns.Board.recruitView ~= "inactive" and L.TAB_RECRUIT or L[TAB_TITLE[tab]]) .. "**"
 	local lines = builders[tab]()
 	if #lines == 0 then return head .. "\n" .. L.DC_NOTHING end
 	local text, used = head, #head

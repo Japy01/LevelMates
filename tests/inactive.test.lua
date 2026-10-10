@@ -52,3 +52,13 @@ local text = ns.DiscordCopy.Text("recruit")
 assert(text:find("Old", 1, true) and text:find("Luis", 1, true), "copy for Discord: " .. text)
 B.recruitViewButton.scripts.OnClick(B.recruitViewButton)
 assert(B.recruitPanel:IsShown() and not B.recruitDaysButton:IsShown(), "back to the templates")
+-- the member list is read once for many redraws
+local reads = 0
+local realMembers = C_Club.GetClubMembers
+C_Club.GetClubMembers = function(...) reads = reads + 1; return realMembers(...) end
+ns.Inactive.Invalidate()
+for _ = 1, 10 do I.List(14) end
+assert(reads == 1, "one read for ten lists: " .. reads)
+STUB.Fire("GUILD_ROSTER_UPDATE")
+I.List(14)
+assert(reads == 2, "read again after a roster update")

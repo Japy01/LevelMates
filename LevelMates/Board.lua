@@ -898,7 +898,7 @@ B.CAL_DAYS = 7
 local function CalendarVisible()
 	local out, lastDay, now = {}, nil, ns.Meetups.Now()
 	for _, m in ipairs(ns.Meetups.List()) do
-		if m.at <= now + B.CAL_DAYS * 1440 then
+		if m.at >= now and m.at <= now + B.CAL_DAYS * 1440 then   -- not the ones already started
 			local t = date("*t", m.at * 60)
 			local day = t.year * 10000 + t.month * 100 + t.day
 			if day ~= lastDay then out[#out + 1] = { header = day, t = t }; lastDay = day end
@@ -1092,6 +1092,7 @@ function B.OpenClassMenu(c)
 		else
 			local m = c.m
 			root:CreateTitle(m.name)
+			if c.kind == "guild" and ns.Macros.Risky(m.body) then root:CreateTitle(L.MACRO_RUN_WARN) end
 			root:CreateButton(L.CLASS_CREATE_MACRO, function() ns.Macros.Create(m.name, m.body) end)
 			if c.kind == "guild" then root:CreateButton(string.format(L.LFG_WHISPER, m.by), function() B.Whisper(m.by) end) end
 		end
@@ -1190,7 +1191,7 @@ function B.Refresh()
 		if B.recruitView == "inactive" then list, pages = Page(ns.Inactive.List(ns.char.inactiveDays or 14, B.search)) end
 	elseif feed then
 		local all = ns.Feed.List(B.search, B.feedDeaths)
-		B.feedDeathCount = #all
+		B.feedDeathCount = #ns.Feed.List(nil, true)   -- the week's deaths, whatever the search
 		list, pages = Page(all)
 	elseif class then
 		list, pages = Page(ClassVisible())
@@ -1316,6 +1317,13 @@ guildFrame:RegisterEvent("PLAYER_GUILD_UPDATE")
 guildFrame:SetScript("OnEvent", function() B.Refresh() end)
 
 ns.On("LM_LFG_CHANGED", B.Refresh)
+-- Chat ads come in streams: one redraw a second at most, and only while the Dungeons tab shows them.
+local chatPending = false
+ns.On("LM_CHATADS_CHANGED", function()
+	if chatPending or B.tab ~= "lfg" then return end
+	chatPending = true
+	C_Timer.After(1, function() chatPending = false; if B.tab == "lfg" then B.Refresh() end end)
+end)
 ns.Slash("lfg", function() B.ShowTab("lfg") end)
 ns.Slash("grupo", function() B.ShowTab("lfg") end)
 

@@ -59,7 +59,7 @@ function CA.Parse(text)
 end
 
 local ads = {}   -- by full sender name: { id, name, full, text, t }
-local function hidden(chan) return type(chan) == "string" and chan:match("^LM%x%x%x%x%x%x%x%x$") ~= nil end
+local function hidden(chan) return type(chan) == "string" and chan:gsub("^%d+%.%s*", ""):match("^LM%x%x%x%x%x%x%x%x$") ~= nil end   -- "5. LMxxxxxxxx" too
 local function secret(v) return issecretvalue and issecretvalue(v) end
 
 function CA.Hear(text, sender, channel)
@@ -69,10 +69,10 @@ function CA.Hear(text, sender, channel)
 	local name = ns.ShortName(sender)
 	if name == UnitName("player") then return end
 	local id = CA.Parse(text)
-	local had = ads[sender]
-	if id then ads[sender] = { id = id, name = name, full = sender, text = ns.CutUtf8(text, 120), t = GetTime() }
-	else ads[sender] = nil end   -- their newest message is what they are doing now
-	if id or had then ns.Fire("LM_LFG_CHANGED") end
+	if not id then return end   -- other lines (a sale, a chat) leave their ad alone until it expires
+	local shown = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1"):gsub("|", "")
+	ads[sender] = { id = id, name = name, full = sender, text = ns.CutUtf8(shown, 120), t = GetTime() }
+	ns.Fire("LM_CHATADS_CHANGED")
 end
 
 -- The live ads for a dungeon, newest first.
@@ -87,8 +87,8 @@ function CA.For(id)
 	return out
 end
 
-function CA.AddSample(id, name, text, secondsAgo) ads[name .. "-Sim"] = { id = id, name = name, full = name, text = text, t = GetTime() - (secondsAgo or 0), sim = true }; ns.Fire("LM_LFG_CHANGED") end
-function CA.RemoveSamples() for k, a in pairs(ads) do if a.sim then ads[k] = nil end end; ns.Fire("LM_LFG_CHANGED") end
+function CA.AddSample(id, name, text, secondsAgo) ads[name .. "-Sim"] = { id = id, name = name, full = name, text = text, t = GetTime() - (secondsAgo or 0), sim = true }; ns.Fire("LM_CHATADS_CHANGED") end
+function CA.RemoveSamples() for k, a in pairs(ads) do if a.sim then ads[k] = nil end end; ns.Fire("LM_CHATADS_CHANGED") end
 
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("CHAT_MSG_CHANNEL")

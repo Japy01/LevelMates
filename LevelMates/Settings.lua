@@ -16,7 +16,7 @@ ns.On("LM_LOADED", function()
 	S.category = category
 	Bool(category, "share", L.OPT_SHARE, L.OPT_SHARE_TT, function(v) if v then ns.Comm.Start() else ns.Comm.Stop() end; ns.Fire("LM_ROSTER_CHANGED") end)
 	Bool(category, "sharePos", L.OPT_POS, L.OPT_POS_TT, function() ns.Roster.SendHeartbeat(true) end)
-	Bool(category, "shareQuests", L.OPT_QUESTS, L.OPT_QUESTS_TT, function(v) if v then ns.Roster.SendQuests() end end)
+	Bool(category, "shareQuests", L.OPT_QUESTS, L.OPT_QUESTS_TT, function(v) if v then ns.Roster.SendQuests() else ns.Roster.WithdrawQuests() end end)
 	Bool(category, "shareXp", L.OPT_XPH, L.OPT_XPH_TT)
 	Bool(category, "shareRested", L.OPT_RESTED, L.OPT_RESTED_TT, function(v) ns.Rested.SetSharing(v) end)
 	Bool(category, "shareProfessions", L.OPT_PROFS, L.OPT_PROFS_TT, function(v) ns.Professions.SetSharing(v) end)

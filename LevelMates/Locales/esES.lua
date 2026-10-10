@@ -201,3 +201,4 @@ L.COL_RANK_GUILD = "Rango"; L.COL_AWAY = "Última vez"; L.COL_JOINED = "Ingreso"
 -- Alts
 L.CARD_ALTS = "Alts: %s"; L.CARD_MY_CHARS = "Tus personajes en esta hermandad:"; L.CARD_CHAR = "%s, nivel %d %s"
 L.OPT_ALTS = "Compartir mis alts"; L.OPT_ALTS_TT = "Tus hermanos ven cuáles de tus otros personajes de esta misma hermandad son tuyos. Los de fuera de la hermandad nunca se comparten."
+L.MACRO_RUN_WARN = "Cuidado: esta macro ejecuta código o cambia ajustes."

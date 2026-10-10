@@ -90,7 +90,8 @@ function MA.Create(name, body)
 	if GetMacroIndexByName(name) > 0 then ns.Notice(L.MACRO_EXISTS, name); return false end
 	local _, chars = GetNumMacros()
 	if (chars or 0) >= (MAX_CHARACTER_MACROS or 30) then ns.Notice(L.MACRO_FULL); return false end
-	local ok = pcall(CreateMacro, name, MA.ICON, body, true)
+	local ok, index = pcall(CreateMacro, name, MA.ICON, body, true)
+	ok = ok and type(index) == "number" and index > 0   -- the game returns the new macro's index, nothing when it refused
 	if ok then ns.Notice(L.MACRO_MADE, name) end
 	return ok
 end
@@ -108,6 +109,13 @@ end
 local function bodyOf(name)
 	local i = GetMacroIndexByName(name)
 	if i and i > 0 then local _, _, body = GetMacroInfo(i); return body end
+end
+
+-- Macros that run code or change settings: a word of warning before creating someone else's.
+function MA.Risky(body)
+	local b = tostring(body or ""):lower()
+	for _, cmd in ipairs({ "/run", "/script", "/console", "/gquit", "/guildquit", "/gdisband" }) do if b:find(cmd, 1, true) then return true end end
+	return false
 end
 
 function MA.IsShared(name) for _, n in ipairs(shared()) do if n == name then return true end end; return false end
@@ -132,6 +140,7 @@ function MA.Share(name)
 	if #shared() >= MA.MAX_SHARED then ns.Notice(L.MACRO_MAX, MA.MAX_SHARED); return false end
 	local body = bodyOf(name)
 	if not body or body == "" then return false end
+	if #name > 16 then ns.Notice(L.MACRO_LONG, name); return false end   -- 16 bytes on the wire: accents take two
 	local ok, why = C.Encode("mc", { n = name, x = body })
 	if not ok then ns.Notice(why == "too long" and L.MACRO_LONG or L.MACRO_BAD, name); return false end
 	table.insert(shared(), name)

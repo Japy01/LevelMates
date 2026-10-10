@@ -139,7 +139,7 @@ function MC.Refresh()
 			qb:ClearAllPoints(); qb:SetPoint("BOTTOMLEFT", 16, 40 + (#missing - i) * 24)   -- stacked right above the action buttons
 		else qb:Hide() end
 	end
-	MC.frame:SetHeight(260 + #missing * 24)
+	MC.frame:SetHeight(math.max(260, 100 + #MC.Lines(name) * 16) + #missing * 24)   -- room for every line above the buttons
 end
 
 function MC.Show(name)

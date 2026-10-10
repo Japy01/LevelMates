@@ -75,7 +75,7 @@ ns.On("LM_HB_SENT", function()
 	local n, cutoff = 0, F.Now() - 1440
 	for _, e in ipairs(store()) do
 		if e.t < cutoff or n >= F.RESEND then break end
-		if e.pending and e.who == me() then n = n + 1; sendEntry(e) end
+		if e.pending and e.who == me() and (e.k ~= "dth" or ns.db.settings.shareDeaths) then n = n + 1; sendEntry(e) end
 	end
 end)
 ns.On("LM_COMM_DROPPED", function(kind)
@@ -113,7 +113,7 @@ ns.On("LM_PING_ANSWERED", function()
 	local n, cutoff = 0, F.Now() - 1440
 	for _, e in ipairs(store()) do
 		if n >= F.RESEND or e.t < cutoff then break end
-		if e.who == me() and e.k ~= "gol" and not e.sim then
+		if e.who == me() and e.k ~= "gol" and not e.sim and (e.k ~= "dth" or ns.db.settings.shareDeaths) then
 			C.Send("fe", { k = e.k, a = e.a, b = e.b, t = e.t })
 			n = n + 1
 		end

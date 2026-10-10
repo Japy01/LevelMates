@@ -109,7 +109,6 @@ function R.SendQuests()
 	table.sort(ids)
 	local list = table.concat(ids, ",")
 	if list == lastQuestsSig then return end
-	lastQuestsSig = list
 	-- split into ≤ 240-byte chunks
 	local chunks = {}
 	local cur = ""
@@ -117,8 +116,16 @@ function R.SendQuests()
 		local piece = (cur == "" and "" or ",") .. id
 		if #cur + #piece > 240 then chunks[#chunks + 1] = cur; cur = tostring(id) else cur = cur .. piece end
 	end
-	chunks[#chunks + 1] = cur
-	for i, chunk in ipairs(chunks) do C.Send("q", { i = i .. "/" .. #chunks, ids = chunk }) end
+	chunks[#chunks + 1] = cur ~= "" and cur or "0"   -- "0": an empty list (the last quest turned in) goes out too
+	local ok = true
+	for i, chunk in ipairs(chunks) do ok = C.Send("q", { i = i .. "/" .. #chunks, ids = chunk }) and ok end
+	if ok then lastQuestsSig = list end   -- refused (in a dungeon): tried again on the next change or heartbeat
+end
+
+-- Sharing turned off: "0/0" tells guildmates to forget my quests.
+function R.WithdrawQuests()
+	lastQuestsSig = nil
+	if C.IsReady() then C.Send("q", { i = "0/0", ids = "0" }) end
 end
 
 function R.Expire()
@@ -162,9 +169,10 @@ C.OnMessage("q", function(f, name)
 	local m = R.mates[name]
 	if not m then return end
 	local idx, total = tostring(f.i):match("^(%d+)/(%d+)$")
+	if idx == "0" then m.quests, m.questsKnown = {}, nil; ns.Fire("LM_MATE_QUESTS", name); return end   -- they stopped sharing
 	if idx == "1" then m.quests = {} end
 	m.questsKnown = true   -- they share their quests (the empty default means "unknown")
-	for id in tostring(f.ids):gmatch("%d+") do m.quests[tonumber(id)] = true end
+	for id in tostring(f.ids):gmatch("%d+") do if id ~= "0" then m.quests[tonumber(id)] = true end end
 	if idx == total then ns.Fire("LM_MATE_QUESTS", name) end
 end)
 

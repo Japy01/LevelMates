@@ -26,10 +26,19 @@ local function members()
 	return out
 end
 
+-- The member list, read at most every 30 seconds: big guilds have hundreds and the board redraws often.
+local cache, cachedAt = nil, -math.huge
+local function cached()
+	if not cache or GetTime() - cachedAt > 30 then cache, cachedAt = members(), GetTime() end
+	return cache
+end
+function I.Invalidate() cache = nil end
+
 -- Notes when each member is first seen.
 function I.Scan()
 	if not (IsInGuild() and GetGuildInfo("player")) then return end
 	local list = members()
+	cache, cachedAt = list, GetTime()
 	if #list == 0 then return end   -- the roster has not loaded yet: a look now would date everyone from today
 	local s, now = store(), time()
 	local firstLook = s.since == nil
@@ -47,7 +56,7 @@ end
 -- Offline for at least `days`, longest first.
 function I.List(days, search)
 	local s, q, out = store(), (search or ""):lower(), {}
-	for _, info in ipairs(members()) do
+	for _, info in ipairs(cached()) do
 		local name = ns.ShortName(info.name)
 		local away = daysAway(info)
 		if info.presence == OFFLINE and away >= days and (q == "" or name:lower():find(q, 1, true)) then
@@ -66,6 +75,6 @@ end
 function I.AwayText(e) return string.format(L.INACTIVE_AWAY, e.days) end
 
 local ev = CreateFrame("Frame")
-ev:RegisterEvent("CLUB_MEMBER_ADDED")
-ev:SetScript("OnEvent", function() I.Scan() end)
+ev:RegisterEvent("CLUB_MEMBER_ADDED"); ev:RegisterEvent("CLUB_MEMBER_REMOVED"); ev:RegisterEvent("GUILD_ROSTER_UPDATE")
+ev:SetScript("OnEvent", function(_, event) if event == "CLUB_MEMBER_ADDED" then I.Scan() else I.Invalidate() end end)
 ns.On("LM_WORLD", function(isInitial) if isInitial then C_Timer.After(15, I.Scan) end end)
