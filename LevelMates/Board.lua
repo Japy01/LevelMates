@@ -48,6 +48,8 @@ local function SetClassIcon(tex, class)
 	end
 end
 
+local function MyClass() return select(2, UnitClass("player")) end
+
 local function ClassColor(class)
 	local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
 	if c then return c.r, c.g, c.b end
@@ -508,7 +510,7 @@ local function FillGoals(list)
 		if g and g.name then   -- personal goal
 			local P = ns.Personal
 			r.icon:Hide()
-			r.name:SetText(g.name); r.name:SetTextColor(1, 1, 1)
+			r.name:SetText(g.name); if g.mine then r.name:SetTextColor(ClassColor(MyClass())) else r.name:SetTextColor(1, 1, 1) end
 			r.level:SetText("")
 			r.zone:SetText(P.Text(g)); r.zone:SetTextColor(0.6, 0.8, 1)
 			r.group:SetText(P.ProgressText(g)); r.group:SetTextColor(unpack(P.IsDone(g) and B.GROUP_COLORS.open or { 1, 1, 1 }))
@@ -548,7 +550,7 @@ local function FillCrafts(list)
 		if c then
 			local m = R.mates[c.name]
 			r.icon:Hide()
-			r.name:SetText(c.name); r.name:SetTextColor(ClassColor(m and m.class))
+			r.name:SetText(c.name); r.name:SetTextColor(ClassColor(c.mine and MyClass() or m and m.class))
 			r.level:SetText("")
 			r.zone:SetText(ns.Professions.Name(c.id)); r.zone:SetTextColor(1, 0.82, 0)
 			r.group:SetText(tostring(c.rank)); r.group:SetTextColor(1, 1, 1)
@@ -585,7 +587,7 @@ local function FillWishes(list)
 		r.button.wishId, r.button.wishMine = w and w.id or nil, w and w.mine or nil
 		if w then
 			r.icon:Hide()
-			r.name:SetText(w.name); r.name:SetTextColor(unpack(w.mine and { 1, 1, 1 } or { 0.7, 0.7, 0.7 }))
+			r.name:SetText(w.name); if w.mine then r.name:SetTextColor(ClassColor(MyClass())) else r.name:SetTextColor(0.7, 0.7, 0.7) end
 			r.level:SetText("")
 			r.zone:SetText(ns.Wishlist.Link(w.id) or string.format(L.WISH_UNKNOWN, w.id)); r.zone:SetTextColor(1, 1, 1)
 			r.group:SetText("")
