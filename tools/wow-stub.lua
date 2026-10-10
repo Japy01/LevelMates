@@ -192,7 +192,14 @@ function strtrim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
 function strlower(s) return s:lower() end
 function tinsert(t, v) t[#t + 1] = v end
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
-function date(fmt) return "00:00:00" end
+function date(fmt, t)
+	if fmt == "*t" then   -- UTC is this stub's "local time"; 1970-01-01 was a Thursday (wday 5)
+		t = t or time()
+		local s = t % 86400
+		return { year = 2025, month = 10, day = 9, hour = math.floor(s / 3600), min = math.floor(s % 3600 / 60), sec = s % 60, wday = (math.floor(t / 86400) + 4) % 7 + 1 }
+	end
+	return "00:00:00"
+end
 STUB.printed = {}
 function print(...) local parts = {}; for i = 1, select("#", ...) do parts[i] = tostring((select(i, ...))) end; STUB.printed[#STUB.printed + 1] = table.concat(parts, " ") end
 

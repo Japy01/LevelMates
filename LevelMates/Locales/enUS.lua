@@ -126,3 +126,8 @@ L.BTN_GIFT_ADD = "Give away"; L.GIFT_DIALOG_TITLE = "Give an item away"; L.COL_K
 L.GIFT_DUP = "That item is already in your giveaways."; L.GIFT_FULL = "You give away at most %d items."
 L.GIFT_FOR_YOU = "%s gives away %s, which is on your list. Right-click their row to reserve it."; L.GIFT_WANTED = "%s wants %s, which you give away."
 L.GIFT_RESERVED = "%s reserves your %s."; L.GIFT_RESERVED_BY = "reserved by %s"; L.GIFT_RESERVE = "Reserve"; L.GIFT_REMOVE = "Remove from my giveaways"; L.GIFT_TOOLTIP = "Given away by: %s"
+L.DAY_1 = "Sun"; L.DAY_2 = "Mon"; L.DAY_3 = "Tue"; L.DAY_4 = "Wed"; L.DAY_5 = "Thu"; L.DAY_6 = "Fri"; L.DAY_7 = "Sat"
+L.MEET_TODAY = "Today"; L.MEET_TOMORROW = "Tomorrow"; L.MEET_TITLE = "Meet at %s"; L.MEET_NOTE_HINT = "Note (optional, up to 40 characters)"; L.MEET_CREATE = "Create"
+L.MEET_HERE = "Meet here..."; L.MEET_JOIN = "Join the %s meetup as %s"; L.MEET_LEAVE = "Leave the %s meetup"; L.MEET_CANCEL = "Cancel the %s meetup"
+L.MEET_LINE = "Meetup %s (%s)"; L.MEET_NEW = "%s set a %s meetup for %s."; L.MEET_JOINED = "%s joins your %s meetup (%s) as %s."
+L.MEET_SOON = "Your %s meetup (%s) starts in 15 minutes!"; L.MEET_BAD_TIME = "Pick a time from now to 7 days ahead."; L.MEET_FULL = "Too many meetups: at most 2 yours and 10 in the guild."

@@ -126,3 +126,8 @@ L.BTN_GIFT_ADD = "Regalar"; L.GIFT_DIALOG_TITLE = "Regalar un objeto"; L.COL_KIN
 L.GIFT_DUP = "Ese objeto ya está en tus regalos."; L.GIFT_FULL = "Puedes regalar como mucho %d objetos."
 L.GIFT_FOR_YOU = "%s regala %s, que está en tu lista. Clic derecho en su fila para reservarlo."; L.GIFT_WANTED = "%s quiere %s, que tú regalas."
 L.GIFT_RESERVED = "%s reserva tu %s."; L.GIFT_RESERVED_BY = "reservado por %s"; L.GIFT_RESERVE = "Reservar"; L.GIFT_REMOVE = "Quitar de mis regalos"; L.GIFT_TOOLTIP = "Lo regala: %s"
+L.DAY_1 = "dom"; L.DAY_2 = "lun"; L.DAY_3 = "mar"; L.DAY_4 = "mié"; L.DAY_5 = "jue"; L.DAY_6 = "vie"; L.DAY_7 = "sáb"
+L.MEET_TODAY = "Hoy"; L.MEET_TOMORROW = "Mañana"; L.MEET_TITLE = "Quedar en %s"; L.MEET_NOTE_HINT = "Nota (opcional, hasta 40 caracteres)"; L.MEET_CREATE = "Crear"
+L.MEET_HERE = "Quedar aquí..."; L.MEET_JOIN = "Me apunto a la quedada del %s como %s"; L.MEET_LEAVE = "Me borro de la quedada del %s"; L.MEET_CANCEL = "Cancelar la quedada del %s"
+L.MEET_LINE = "Quedada %s (%s)"; L.MEET_NEW = "%s ha quedado para %s el %s."; L.MEET_JOINED = "%s se apunta a tu quedada de %s (%s) como %s."
+L.MEET_SOON = "¡Tu quedada de %s (%s) empieza en 15 minutos!"; L.MEET_BAD_TIME = "Elige una hora de ahora a 7 días vista."; L.MEET_FULL = "Demasiadas quedadas: como mucho 2 tuyas y 10 en la hermandad."

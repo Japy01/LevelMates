@@ -237,6 +237,7 @@ local function Build()
 		c.name:SetPoint("TOPLEFT", 5, -(B.ART_H + 6)); c.name:SetWidth(B.CARD_W - 10); c.name:SetHeight(26); c.name:SetJustifyH("LEFT"); c.name:SetJustifyV("TOP"); c.name:SetWordWrap(true)   -- "Scarlet Monastery: Graveyard" needs two lines
 		c.levels = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); c.levels:SetPoint("BOTTOMLEFT", 5, 5)
 		c.count = c:CreateFontString(nil, "OVERLAY", "GameFontGreenSmall"); c.count:SetPoint("BOTTOMRIGHT", -5, 5)
+		c.badge = c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); c.badge:SetPoint("TOPLEFT", c.art, "TOPLEFT", 3, -3)
 		c:SetScript("OnClick", function(self) B.OpenDungeonMenu(self.dungeonId) end)
 		c:SetScript("OnEnter", function(self) B.DungeonTooltip(self) end)
 		c:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
@@ -698,6 +699,14 @@ local function FillGrid(list)
 			c.name:SetText(ns.Dungeons.Name(id)); c.name:SetTextColor(unpack(c.fits and { 1, 0.82, 0 } or { 0.75, 0.75, 0.75 }))
 			c.levels:SetText(string.format("%d-%d", d.min, d.max))
 			c.count:SetText(#ads == 0 and "" or #ads == 1 and L.LFG_SEARCHING_ONE or string.format(L.LFG_SEARCHING, #ads))
+			local meet = ns.Meetups.List(id)[1]
+			if meet then
+				local n = 1
+				for _ in pairs(meet.joined or {}) do n = n + 1 end
+				c.badge:SetText(ns.Meetups.When(meet) .. " · " .. n); c.badge:Show()
+			else
+				c.badge:SetText(""); c.badge:Hide()
+			end
 			c:Show()
 		else
 			c:Hide()
@@ -715,6 +724,13 @@ function B.DungeonTooltip(card)
 		local who = {}
 		for name, role in pairs(a.joined or {}) do who[#who + 1] = name .. " (" .. L["ROLE_" .. role] .. ")" end
 		if #who > 0 then table.sort(who); GameTooltip:AddLine("   " .. string.format(L.LFJ_JOINED, table.concat(who, ", ")), 0.4, 1, 0.4, true) end
+	end
+	for _, m in ipairs(ns.Meetups.List(d.id)) do
+		local who = {}
+		for name, role in pairs(m.joined or {}) do who[#who + 1] = name .. " (" .. L["ROLE_" .. role] .. ")" end
+		table.sort(who)
+		GameTooltip:AddLine(string.format(L.MEET_LINE, ns.Meetups.When(m), m.by) .. (m.n and (": " .. m.n) or ""), 0.6, 0.8, 1, true)
+		if #who > 0 then GameTooltip:AddLine("   " .. string.format(L.LFJ_JOINED, table.concat(who, ", ")), 0.4, 1, 0.4, true) end
 	end
 	GameTooltip:Show()
 end
@@ -743,6 +759,19 @@ function B.OpenDungeonMenu(id)
 				root:CreateButton(string.format(L.LFG_INVITE, a.name), function() B.Invite(a.name) end)
 			end
 		end
+		for _, m in ipairs(ns.Meetups.List(id)) do
+			local when = ns.Meetups.When(m)
+			if m.by == UnitName("player") then
+				root:CreateButton(string.format(L.MEET_CANCEL, when), function() ns.Meetups.Cancel(m.id) end)
+			elseif ns.Meetups.MyRole(m.id) then
+				root:CreateButton(string.format(L.MEET_LEAVE, when), function() ns.Meetups.Leave(m.id) end)
+			else
+				for _, role in ipairs({ "T", "H", "D" }) do
+					root:CreateButton(string.format(L.MEET_JOIN, when, L["ROLE_" .. role]), function() ns.Meetups.Join(m.id, role) end)
+				end
+			end
+		end
+		root:CreateButton(L.MEET_HERE, function() ns.Fire("LM_MEET_HERE", id) end)
 		root:CreateButton(L.LFG_HERE, function() ns.Fire("LM_LFG_HERE", id) end)
 	end)
 end
@@ -934,3 +963,5 @@ ns.Slash("professions", function() B.ShowTab("crafts") end)
 ns.On("LM_FEED_CHANGED", B.Refresh)
 ns.Slash("muro", function() B.ShowTab("feed") end)
 ns.Slash("wall", function() B.ShowTab("feed") end)
+
+ns.On("LM_MEETUPS_CHANGED", B.Refresh)

@@ -26,7 +26,9 @@ Questie.lua
 Match.lua
 Help.lua
 LFG.lua
+Meetups.lua
 LfgDialog.lua
+MeetDialog.lua
 Partner.lua
 Rested.lua
 Journal.lua
