@@ -7,3 +7,9 @@ assert(#ns.Builds.List() >= 2 and ns.Builds.Of("Mario") and #ns.Macros.Guild() =
 for i = n + 1, #STUB.sent do local k = ns.Comm.Decode(STUB.sent[i].msg); assert(k ~= "tb" and k ~= "mc", "nothing sent") end
 SlashCmdList.LEVELMATES("sim off")
 assert(not ns.Builds.Of("Mario") and #ns.Macros.Guild() == 0 and #ns.ChatAds.For(5) == 0, "cleared")
+SlashCmdList.LEVELMATES("sim xp")
+assert(ns.GroupXP.frame and ns.GroupXP.frame:IsShown() and #ns.GroupXP.Rows() == 3, "group XP bars with two fake guildmates")
+SlashCmdList.LEVELMATES("sim muertes")
+assert(#ns.Feed.List(nil, true) == 2, "two deaths on the wall")
+SlashCmdList.LEVELMATES("sim off")
+assert(not ns.GroupXP.frame:IsShown() and #ns.Feed.List(nil, true) == 0, "cleared")

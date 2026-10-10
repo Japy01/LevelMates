@@ -7,7 +7,7 @@ ns.GroupXP = GX
 local L, C, R = ns.L, ns.Comm, ns.Roster
 GX.BAR_W, GX.GAP, GX.FRESH = 110, 30, 300
 
-local function grouped(name) return UnitInParty(name) or UnitInRaid(name) end
+local function grouped(name) return UnitInParty(name) or UnitInRaid(name) or (GX.sim and R.mates[name] and R.mates[name].xpSim) end
 local function anyMate() for name in pairs(R.mates) do if grouped(name) then return true end end; return false end
 local function myPct()
 	local max = UnitXPMax("player") or 0
@@ -50,6 +50,10 @@ function GX.Rows()
 	for _, o in ipairs(others) do out[#out + 1] = o end
 	return out
 end
+
+-- /lm sim xp: fake guildmates in my group (local only; nothing is sent for them).
+function GX.AddSample(name, level, pct) local m = R.mates[name]; if not m then return end; GX.sim = true; m.xpSim, m.xpPct, m.xpLevel, m.xpAt = true, pct, level, GetTime(); GX.Refresh() end
+function GX.RemoveSamples() GX.sim = false; for _, m in pairs(R.mates) do m.xpSim = nil end; GX.Refresh() end
 
 local ROW_H = 18
 local function Build()

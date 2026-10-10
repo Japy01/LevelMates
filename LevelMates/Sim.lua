@@ -118,10 +118,20 @@ local function simClass()
 	ns.ChatAds.AddSample(5, "Pepe", "LFM DM need heal", 90)
 end
 
+-- Group XP bars (Mario and Ana as if grouped) and deaths for the Cemetery.
+local function simXp()
+	if not R.mates.Mario then run() end
+	ns.GroupXP.AddSample("Mario", 30, 72); ns.GroupXP.AddSample("Ana", 12, 18)
+end
+local function simDeaths()
+	ns.Feed.AddSample("Luis", "dth", 22, "Bosque del Ocaso", 30)
+	ns.Feed.AddSample("Ana", "dth", 12, "Los Baldíos", 300)
+end
+
 local function off()
 	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples(); ns.Wishlist.RemoveSamples(); ns.Professions.RemoveSamples()
 	ns.Feed.RemoveSamples(); ns.Gifts.RemoveSamples(); ns.Meetups.RemoveSamples()
-	ns.Builds.RemoveSamples(); ns.Macros.RemoveSamples(); ns.ChatAds.RemoveSamples()
+	ns.Builds.RemoveSamples(); ns.Macros.RemoveSamples(); ns.ChatAds.RemoveSamples(); ns.GroupXP.RemoveSamples()
 	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -176,5 +186,7 @@ ns.Slash("sim", function(rest)
 	elseif rest == "raro" or rest == "rare" then simRare()
 	elseif rest == "arte" or rest == "art" then simArt()
 	elseif rest == "clase" or rest == "class" then simClass()
+	elseif rest == "xp" then simXp()
+	elseif rest == "muertes" or rest == "deaths" then simDeaths()
 	else run() end
 end)
