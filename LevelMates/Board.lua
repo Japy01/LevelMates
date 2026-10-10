@@ -19,10 +19,10 @@ B.BAR_W = 160
 B.FCOLS = { 110, 1, 313, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
-B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts", "feed" }
-local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", feed = "TAB_FEED" }
+B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts", "feed", "recruit" }
+local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", feed = "TAB_FEED", recruit = "TAB_RECRUIT" }
 B.TAB_LABELS = TAB_LABELS
-local HEAD_KEY = { mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", feed = "FEED" }
+local HEAD_KEY = { mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", feed = "FEED", recruit = "RECRUIT" }
 local function KnownTab(key) for _, k in ipairs(B.TAB_KEYS) do if k == key then return key end end; return "mates" end
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
@@ -324,6 +324,48 @@ local function Build()
 	giftAdd:SetScript("OnClick", function() ns.Fire("LM_GIFT_ADD") end)
 	B.giftAdd = giftAdd
 
+	-- Recruit tab (officers): three templates, which one, the channel, a preview, the status and Publish.
+	local rp = CreateFrame("Frame", nil, f)
+	rp:SetPoint("TOPLEFT", B.MARGIN, -B.TOP); rp:SetSize(B.WIDTH - 2 * B.MARGIN, 300); rp:Hide()
+	B.recruitPanel, B.recruitEdit, B.recruitUse, B.recruitChannel = rp, {}, {}, {}
+	for i = 1, 3 do
+		local use = CreateFrame("CheckButton", nil, rp, "UICheckButtonTemplate")
+		use:SetSize(22, 22); use:SetPoint("TOPLEFT", 0, -(i - 1) * 34)
+		use:SetScript("OnClick", function() ns.char.recruitTemplate = i; B.Refresh() end)
+		local edit = CreateFrame("EditBox", nil, rp, "InputBoxTemplate")
+		edit:SetSize(B.WIDTH - 2 * B.MARGIN - 40, 22); edit:SetPoint("LEFT", use, "RIGHT", 10, 0); edit:SetAutoFocus(false); edit:SetMaxLetters(200)
+		local function save(self) ns.Recruit.SetTemplate(i, self:GetText()); self:ClearFocus() end
+		edit:SetScript("OnEnterPressed", save); edit:SetScript("OnEditFocusLost", save)
+		B.recruitUse[i], B.recruitEdit[i] = use, edit
+	end
+	for k, ch in ipairs({ 2, 1 }) do
+		local cb = CreateFrame("CheckButton", nil, rp, "UICheckButtonTemplate")
+		cb:SetSize(22, 22); cb:SetPoint("TOPLEFT", (k - 1) * 220, -110)
+		cb:SetScript("OnClick", function() ns.char.recruitChannel = ch; B.Refresh() end)
+		local label = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		label:SetPoint("LEFT", cb, "RIGHT", 2, 0); label:SetText(L["RECRUIT_CHANNEL_" .. ch])
+		B.recruitChannel[ch] = cb
+	end
+	local preview = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	preview:SetPoint("TOPLEFT", 4, -146); preview:SetWidth(B.WIDTH - 2 * B.MARGIN - 8); preview:SetJustifyH("LEFT"); preview:SetTextColor(1, 0.75, 0.75)
+	B.recruitPreview = preview
+	local status = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	status:SetPoint("TOPLEFT", 4, -200); status:SetJustifyH("LEFT"); status:SetTextColor(0.7, 0.7, 0.7)
+	B.recruitStatus = status
+	local post = CreateFrame("Button", nil, rp, "UIPanelButtonTemplate")
+	post:SetSize(140, 24); post:SetPoint("TOPLEFT", 0, -226); post:SetText(L.RECRUIT_POST)
+	post:SetScript("OnClick", function()   -- the only place recruitment reaches a public channel: a click
+		local text, ch = ns.Recruit.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2)
+		if text then SendChatMessage(text, "CHANNEL", nil, ch); ns.Recruit.Posted() end
+	end)
+	B.recruitPost = post
+	local remind = CreateFrame("CheckButton", nil, rp, "UICheckButtonTemplate")
+	remind:SetSize(22, 22); remind:SetPoint("LEFT", post, "RIGHT", 20, 0)
+	remind:SetScript("OnClick", function(self) ns.char.recruitRemind = self:GetChecked() and true or false end)
+	local remindLabel = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	remindLabel:SetPoint("LEFT", remind, "RIGHT", 2, 0); remindLabel:SetText(L.RECRUIT_REMIND)
+	B.recruitRemind = remind
+
 	-- active help requests, above the help button; "On my way" whispers only from its click
 	B.helpRows = {}
 	for i = 1, HELP_ROWS do
@@ -420,6 +462,7 @@ end
 local function SetHeaders()
 	local lfg = B.tab == "lfg"
 	if lfg then for i = 1, 5 do B.headText[i]:SetText("") end; return end   -- the grid has no columns
+	if B.tab == "recruit" then for i = 1, 5 do B.headText[i]:SetText("") end; return end
 	if B.tab == "feed" then
 		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_WHAT)
 		B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_WHEN)
@@ -816,8 +859,25 @@ function B.TurnPage(step)
 	if key then B[key] = (B[key] or 1) + step; B.Refresh() end
 end
 
+local function RefreshRecruit()
+	local RC, t = ns.Recruit, ns.Recruit.Templates()
+	local use, ch = ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2
+	for i = 1, 3 do
+		if not B.recruitEdit[i]:HasFocus() then B.recruitEdit[i]:SetText(t[i] or "") end
+		B.recruitUse[i]:SetChecked(i == use)
+	end
+	for c, cb in pairs(B.recruitChannel) do cb:SetChecked(c == ch) end
+	B.recruitRemind:SetChecked(ns.char.recruitRemind == true)
+	B.recruitPreview:SetText(RC.Expand(t[use] or ""))
+	local l, wait = RC.Last(), RC.Wait()
+	local status = l and string.format(L.RECRUIT_LAST, ns.Journal.Duration(math.max(0, time() - l.at)), l.by) or L.RECRUIT_NONE
+	status = status .. "  ·  " .. (wait > 0 and string.format(L.RECRUIT_WAIT, math.ceil(wait / 60)) or L.RECRUIT_READY)
+	B.recruitStatus:SetText(status)
+end
+
 local function RefreshTabs()
-	local lfg, journal, goals, wishes, crafts, feed = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed"
+	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "mates"; ns.char.boardTab = "mates" end
+	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
 	local mates = B.tab == "mates"
 	local index = 1
 	for i, key in ipairs(B.TAB_KEYS) do if key == B.tab then index = i end end
@@ -834,15 +894,19 @@ local function RefreshTabs()
 	B.myGoal:SetShown(goals)
 	B.wishAdd:SetShown(wishes)
 	B.giftAdd:SetShown(wishes)
+	B.tabs.recruit:SetShown(R.IAmOfficer())
 end
 
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
-	local lfg, journal, goals, wishes, crafts, feed = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed"
+	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "mates"; ns.char.boardTab = "mates" end
+	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
 	local list, pages
 	if journal then
 		list = Page(ns.Journal.List(B.journalFilter or "all", B.search))
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
+	elseif recruit then
+		list = {}
 	elseif feed then
 		list, pages = Page(ns.Feed.List(B.search))
 	elseif crafts then
@@ -883,6 +947,8 @@ function B.Refresh()
 	if journal then FillJournal(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillGrid(list) else FillMates(list) end
 	if not lfg then for _, c in ipairs(B.cards) do c:Hide() end end
 	if not crafts then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
+	B.recruitPanel:SetShown(recruit)
+	if recruit then RefreshRecruit() end
 	local emptyText = ""
 	if #list == 0 then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
@@ -900,7 +966,7 @@ function B.Refresh()
 	if (goals or wishes or crafts or feed) and pages > 1 then   -- the pager only when there is more than one page
 		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
 	end
-	if journal or goals or wishes or crafts or feed then
+	if journal or goals or wishes or crafts or feed or recruit then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else
 		RefreshHelp()
@@ -990,3 +1056,7 @@ ns.Slash("muro", function() B.ShowTab("feed") end)
 ns.Slash("wall", function() B.ShowTab("feed") end)
 
 ns.On("LM_MEETUPS_CHANGED", B.Refresh)
+
+ns.On("LM_RECRUIT_CHANGED", B.Refresh)
+ns.Slash("reclutar", function() B.ShowTab("recruit") end)
+ns.Slash("recruit", function() B.ShowTab("recruit") end)

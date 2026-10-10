@@ -361,3 +361,7 @@ local canvas = CreateFrame("Frame"); canvas:SetSize(1000, 700)
 function WorldMapFrame:GetCanvas() return canvas end
 function WorldMapFrame:GetMapID() return STUB.worldMapId end
 function WorldMapFrame:OnMapChanged() end
+
+-- Guild member counts (total, total, online)
+function GetNumGuildMembers() return STUB.guildTotal or 0, STUB.guildTotal or 0, STUB.guildOnline or 0 end
+function Region:HasFocus() return self.focused == true end

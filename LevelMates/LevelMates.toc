@@ -22,6 +22,7 @@ Cheers.lua
 Settings.lua
 Board.lua
 GuildMap.lua
+Recruit.lua
 MinimapButton.lua
 Questie.lua
 Match.lua
