@@ -40,7 +40,7 @@ local function simWall()
 end
 local function simGifts()
 	ns.Gifts.AddSample("Ana", { 2589, 765 })
-	ns.Gifts.AddSample("Luis", { 2318 })
+	ns.Gifts.AddSample("Luis", { 2318 }, { [2447] = 15000, [2589] = 450 })   -- Peacebloom for 1g 50s, Linen Cloth for 4s 50c
 end
 local function simMeetups()
 	ns.Meetups.AddSample("Mario", 5, 90, { Ana = "H" })

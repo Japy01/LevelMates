@@ -20,10 +20,24 @@ local function Build()
 	box:SetSize(290, 22); box:SetPoint("TOP", 0, -56); box:SetAutoFocus(false); box:SetMaxLetters(255)
 	box:SetScript("OnTextChanged", function() Dlg.Refresh() end)
 	Dlg.box = box
+	-- offer mode: the price in gold (empty = free)
+	local price = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+	price:SetSize(90, 22); price:SetPoint("TOPRIGHT", box, "BOTTOMRIGHT", 0, -8); price:SetAutoFocus(false); price:SetMaxLetters(8)
+	local priceLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	priceLabel:SetPoint("RIGHT", price, "LEFT", -10, 0); priceLabel:SetText(L.PRICE_LABEL)
+	Dlg.price, Dlg.priceLabel = price, priceLabel
 	local add = ns.Skin.Button(f)
 	add:SetSize(120, 22); add:SetPoint("BOTTOMLEFT", 20, 14); add:SetText(L.WISH_ADD)
 	add:SetScript("OnClick", function()
-		if (Dlg.mode == "gift" and ns.Gifts.Add or W.Add)(box:GetText()) then box:SetText(""); Dlg.Refresh() end   -- stays open for the next one
+		local ok
+		if Dlg.mode == "gift" then
+			local p = ns.Gifts.ParsePrice(Dlg.price:GetText())
+			if p == false then ns.Say(L.PRICE_BAD); return end
+			ok = ns.Gifts.Add(box:GetText(), p)
+		else
+			ok = W.Add(box:GetText())
+		end
+		if ok then box:SetText(""); Dlg.price:SetText(""); Dlg.Refresh() end   -- stays open for the next one
 	end)
 	Dlg.add = add
 	local close = ns.Skin.Button(f)
@@ -39,7 +53,9 @@ function Dlg.Open(mode)
 	if not Dlg.frame then Build() end
 	Dlg.mode = mode == "gift" and "gift" or "wish"
 	if Dlg.frame.TitleText then Dlg.frame.TitleText:SetText(Dlg.mode == "gift" and L.GIFT_DIALOG_TITLE or L.WISH_DIALOG_TITLE) end
-	Dlg.box:SetText("")
+	Dlg.box:SetText(""); Dlg.price:SetText("")
+	Dlg.price:SetShown(Dlg.mode == "gift"); Dlg.priceLabel:SetShown(Dlg.mode == "gift")
+	Dlg.frame:SetHeight(Dlg.mode == "gift" and 170 or 140)
 	Dlg.frame:Show()
 	Dlg.Refresh()
 end

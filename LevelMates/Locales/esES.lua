@@ -207,3 +207,9 @@ L.CARD_WAYPOINT = "Ruta"
 -- Estilo de ventanas
 L.CARD_LEVELS = "Nv %d-%d"; L.OPT_STYLE = "Estilo de ventanas"; L.STYLE_GOLD = "LevelMates (marrón y dorado)"; L.STYLE_CLASSIC = "Clásico (marcos del juego)"
 L.OPT_STYLE_TT = "El aspecto de las ventanas de LevelMates. Al cambiarlo te propone recargar la interfaz."
+
+-- Mercadillo de la hermandad
+L.BTN_GIFT_ADD = "Ofrecer"; L.GIFT_DIALOG_TITLE = "Ofrecer un objeto"; L.HEAD_WISHES = "Deseos y mercadillo"
+L.SUB_WISHES = "Mayús+clic en un objeto para añadirlo. Se ofrece gratis o con precio; el pago y la entrega, por comercio o correo."
+L.PRICE_LABEL = "Precio en oro (vacío = gratis):"; L.PRICE_BAD = "Eso no es un precio: escribe oro, por ejemplo 2 o 1,5."
+L.GIFT_BUY = "Lo compro (avisar al vendedor)"; L.SALE_FOR_YOU = "%s vende %s por %s, que está en tu lista. Clic derecho en su fila para comprarlo."

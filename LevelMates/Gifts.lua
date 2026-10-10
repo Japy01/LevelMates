@@ -1,5 +1,6 @@
--- Gifts.lua: the giveaway market. Items I give away (up to 10) go out in `gv` (as wishes do in `wl`); a guildmate
--- reserves one with `gr`, first come. Giveaways and wishes are matched both ways with a notice.
+-- Gifts.lua: the guild market. Items I offer (up to 10), free or for a price: the free ones go out in `gv` (as wishes do
+-- in `wl`, so older versions still see them), the priced ones in `sl`. A guildmate reserves or buys one with `gr`, first
+-- come; payment and handing over are up to them (trade or mail): the addon never touches gold. Giveaways and wishes are matched both ways with a notice.
 -- Spec 2026-10-10-levelmates-social-leveling-design (A2).
 local _, ns = ...
 local GF = {}
@@ -22,13 +23,38 @@ function GF.Has(id) for _, g in ipairs(mine()) do if g.id == id then return g en
 -- A refused send stays pending in the character's saved data and goes out after the next heartbeat.
 local sentAt
 local function send(prio)
-	local ids = {}
-	for _, g in ipairs(mine()) do ids[#ids + 1] = g.id end
-	local fields = {}
+	local ids, sale = {}, {}
+	for _, g in ipairs(mine()) do
+		if g.price then sale[#sale + 1] = g.id .. ":" .. g.price else ids[#ids + 1] = g.id end
+	end
+	local fields, priced = {}, {}
 	if #ids > 0 then fields.ids = table.concat(ids, ",") end
-	if C.Send("gv", fields, prio) then ns.char.giftPending, sentAt = nil, GetTime(); return true end
+	if #sale > 0 then priced.p = table.concat(sale, ",") end
+	local ok = C.Send("gv", fields, prio)
+	ok = C.Send("sl", priced, prio) and ok
+	if ok then ns.char.giftPending, sentAt = nil, GetTime(); return true end
 	ns.char.giftPending = true
 	return false
+end
+
+-- Prices: typed in gold ("1,5" = 1 gold 50 silver), kept in copper. nil = free, false = not a price.
+function GF.ParsePrice(text)
+	text = strtrim(tostring(text or ""))
+	if text == "" then return nil end
+	local gold = tonumber((text:gsub(",", ".")))
+	if not gold or gold < 0 or gold > 9999 then return false end
+	local copper = math.floor(gold * 10000 + 0.5)
+	return copper > 0 and copper or nil
+end
+-- A price as the game shows money (coin icons), or as text where the client has no such helper.
+function GF.Money(copper)
+	if GetCoinTextureString then return GetCoinTextureString(copper) end
+	local g, s, c = math.floor(copper / 10000), math.floor(copper % 10000 / 100), copper % 100
+	local out = {}
+	if g > 0 then out[#out + 1] = g .. "g" end
+	if s > 0 then out[#out + 1] = s .. "s" end
+	if c > 0 then out[#out + 1] = c .. "c" end
+	return table.concat(out, " ")
 end
 local function resend() if sentAt ~= GetTime() then send() end end
 
@@ -37,7 +63,15 @@ local function others()
 	local t, out, cutoff = theirs(), {}, time() - GF.FORGET_DAYS * 86400
 	for name, l in pairs(t) do
 		if l.t < cutoff then t[name] = nil
-		elseif name ~= me() and (l.sim or R.IsGuildmate(name)) then out[#out + 1] = { name = name, ids = l.ids, t = l.t, reserved = l.reserved or {} } end
+		elseif name ~= me() and (l.sim or R.IsGuildmate(name)) then
+			local ids, prices = {}, l.sale or {}
+			for _, id in ipairs(l.ids or {}) do if not prices[id] then ids[#ids + 1] = id end end
+			local priced = {}
+			for id in pairs(prices) do priced[#priced + 1] = id end
+			table.sort(priced)
+			for _, id in ipairs(priced) do ids[#ids + 1] = id end
+			out[#out + 1] = { name = name, ids = ids, prices = prices, t = l.t, reserved = l.reserved or {} }
+		end
 	end
 	table.sort(out, function(a, b) return a.name < b.name end)
 	return out
@@ -48,13 +82,13 @@ local told = {}
 local function tell(key, fmt, ...) if told[key] then return end; told[key] = true; ns.Notice(fmt, ...) end
 
 -- Called from a click (the dialog in gift mode).
-function GF.Add(text)
+function GF.Add(text, price)
 	local id = W.ItemId(text)
 	if not id then ns.Say(L.WISH_NOT_ITEM); return false end
 	if GF.Has(id) then ns.Say(L.GIFT_DUP); return false end
 	local list = mine()
 	if #list >= GF.MAX then ns.Say(L.GIFT_FULL, GF.MAX); return false end
-	list[#list + 1] = { id = id, t = time() }
+	list[#list + 1] = { id = id, t = time(), price = price or nil }
 	send("now")
 	for _, name in ipairs(W.WantedBy(id)) do if name ~= me() then tell(name .. ":w:" .. id, L.GIFT_WANTED, name, link(id)) end end
 	ns.Fire("LM_WISHES_CHANGED")
@@ -80,9 +114,9 @@ end
 
 function GF.List()
 	local out = {}
-	for _, g in ipairs(mine()) do out[#out + 1] = { name = me(), id = g.id, t = g.t, mine = true, reservedBy = g.reservedBy } end
+	for _, g in ipairs(mine()) do out[#out + 1] = { name = me(), id = g.id, t = g.t, mine = true, reservedBy = g.reservedBy, price = g.price } end
 	for _, o in ipairs(others()) do
-		for _, id in ipairs(o.ids) do out[#out + 1] = { name = o.name, id = id, t = o.t, reservedBy = o.reserved[id] } end
+		for _, id in ipairs(o.ids) do out[#out + 1] = { name = o.name, id = id, t = o.t, reservedBy = o.reserved[id], price = o.prices[id] } end
 	end
 	return out
 end
@@ -99,13 +133,30 @@ C.OnMessage("gv", function(f, name)
 	if not R.mates[name] then return end
 	local t = theirs()
 	if f.ids == nil then
-		t[name] = nil
+		if t[name] and t[name].sale then t[name].ids = {} else t[name] = nil end   -- a seller keeps their priced offers
 	else
 		local old = t[name] and t[name].reserved or {}
 		local ids, reserved = {}, {}
 		for id in tostring(f.ids):gmatch("%d+") do id = tonumber(id); ids[#ids + 1] = id; reserved[id] = old[id] end
-		t[name] = { ids = ids, t = time(), reserved = reserved }
+		for id in pairs(t[name] and t[name].sale or {}) do reserved[id] = old[id] end
+		t[name] = { ids = ids, sale = t[name] and t[name].sale, t = time(), reserved = reserved }
 		for _, id in ipairs(ids) do if W.Has(id) then tell(name .. ":g:" .. id, L.GIFT_FOR_YOU, name, link(id)) end end
+	end
+	ns.Fire("LM_WISHES_CHANGED")
+end)
+
+C.OnMessage("sl", function(f, name)
+	if not R.mates[name] then return end
+	local t = theirs()
+	local sale = {}
+	for id, price in tostring(f.p or ""):gmatch("(%d+):(%d+)") do sale[tonumber(id)] = tonumber(price) end
+	if not next(sale) then
+		if t[name] then t[name].sale = nil; if #(t[name].ids or {}) == 0 then t[name] = nil end end
+	else
+		t[name] = t[name] or { ids = {}, reserved = {} }
+		t[name].sale, t[name].t = sale, time()
+		t[name].reserved = t[name].reserved or {}
+		for id, price in pairs(sale) do if W.Has(id) then tell(name .. ":s:" .. id, L.SALE_FOR_YOU, name, link(id), GF.Money(price)) end end
 	end
 	ns.Fire("LM_WISHES_CHANGED")
 end)
@@ -157,7 +208,7 @@ end)
 ns.On("LM_PING_ANSWERED", function() if #mine() > 0 then resend() end end)
 ns.On("LM_ANNOUNCED", function() if #mine() > 0 then resend() end end)
 ns.On("LM_HB_SENT", function() if ns.char.giftPending then send() end end)
-ns.On("LM_COMM_DROPPED", function(kind) if kind == "gv" then ns.char.giftPending = true end end)
+ns.On("LM_COMM_DROPPED", function(kind) if kind == "gv" or kind == "sl" then ns.char.giftPending = true end end)
 
 if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
 	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)
@@ -168,7 +219,7 @@ if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and
 end
 
 -- Simulation support (/lm sim mercadillo): local samples, never sent.
-function GF.AddSample(name, ids) theirs()[name] = { ids = ids, t = time(), sim = true, reserved = {} }; ns.Fire("LM_WISHES_CHANGED") end
+function GF.AddSample(name, ids, sale) theirs()[name] = { ids = ids, sale = sale, t = time(), sim = true, reserved = {} }; ns.Fire("LM_WISHES_CHANGED") end
 function GF.RemoveSamples()
 	local t = theirs()
 	for name, l in pairs(t) do if l.sim then t[name] = nil end end

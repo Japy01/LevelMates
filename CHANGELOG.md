@@ -13,6 +13,8 @@
 - **Alts**: your other characters in the same guild are shared, shown on your card and in the board tooltip; `/lm alts` shows all your characters there with level and professions.
 - **Meetup calendar**: on the Dungeons tab, "Calendar" lists the next 7 days of meetups by day; click to join, leave or cancel.
 - **Inactive members** (officers): on the Recruit tab, members away for 14 or 30 days with level, rank, last login and join date (noted by LevelMates from the day it first sees them). It only informs.
+- **Guild market**: in the Wishes tab, "Offer" puts an item up for free or for a price in gold; the price shows with the game's coins, and "I'll buy it" tells the seller. Payment and handing over are by trade or mail: the addon never touches gold.
+- **Window style**: LevelMates' windows use the game's own frame with a warm brown panel, the character sheet's stripes and plaques, and dungeon cards with the whole picture; `/lm options` has a Classic style too.
 - The window is a little wider, for nine tabs.
 - `/lm clase` opens the Class tab; `/lm alts` opens your own card; `/lm sim clase`, `/lm sim xp` and `/lm sim muertes` try them alone.
 

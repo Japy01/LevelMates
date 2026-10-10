@@ -93,6 +93,20 @@ local function buildCode(v) return type(v) == "string" and #v >= 1 and #v <= 150
 -- A macro body: up to 255 characters, lines allowed, no other control characters and no "|" codes.
 local function macroBody(v) return type(v) == "string" and #v >= 1 and #v <= 255 and not v:find("|", 1, true) and not v:gsub("\n", ""):find("%c") end
 
+-- Priced offers "2589:15000,765:1": 1-10 entries of item id (1-999999) and price in copper (1-99999999).
+local function saleList(v)
+	if type(v) ~= "string" or v == "" or v:find(",,", 1, true) or v:sub(-1) == "," then return false end
+	local n = 0
+	for pair in v:gmatch("[^,]+") do
+		local id, price = pair:match("^(%d+):(%d+)$")
+		if not id then return false end
+		id, price = tonumber(id), tonumber(price)
+		if id < 1 or id > 999999 or price < 1 or price > 99999999 then return false end
+		n = n + 1
+	end
+	return n <= 10
+end
+
 -- Quest objectives "6/10,1/1": up to 60 characters of have/need pairs.
 local function objectives(v) return type(v) == "string" and #v <= 60 and v:match("^%d+/%d+[%d/,]*$") ~= nil and not v:find(",,", 1, true) and v:sub(-1) ~= "," end
 
@@ -134,10 +148,11 @@ C.SCHEMA = {
 	xp   = { p = int(0, 100), l = int(1, 100) },
 	ask  = { id = word(8), x = text(120) },
 	al   = { n = text(120) },
+	sl   = { p = saleList },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, sl = {}, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
@@ -269,7 +284,7 @@ local function pump()
 	C.stats.queued = #queue
 end
 
-local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true, xp = true, al = true }
+local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true, xp = true, al = true, sl = true }
 function C.Send(kind, fields, prio)
 	if active == "none" or not IsInGuild() then return false end
 	if inInstance() and not INSTANCE_OK[kind] then return false end

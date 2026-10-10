@@ -13,7 +13,7 @@ B.COLS = { 150, 50, 260, 70, 70 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 12, 680
 B.JCOLS = { 100, 1, 395, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 364, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
-B.WCOLS = { 100, 1, 360, 65, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
+B.WCOLS = { 100, 1, 320, 105, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
 B.CCOLS = { 150, 1, 289, 60, 100 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
 B.BAR_W = 160
 B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
@@ -812,7 +812,7 @@ local function FillWishes(list)
 			local item = ns.Wishlist.Link(w.id) or string.format(L.WISH_UNKNOWN, w.id)
 			if w.reservedBy then item = item .. "  " .. string.format(L.GIFT_RESERVED_BY, w.reservedBy) end
 			r.zone:SetText(item); r.zone:SetTextColor(1, 1, 1)
-			r.group:SetText(w.kind == "give" and L.GIVES or L.WANTS)
+			r.group:SetText(w.kind == "give" and (w.price and ns.Gifts.Money(w.price) or L.GIVES) or L.WANTS)
 			r.group:SetTextColor(unpack(w.kind == "give" and { 1, 0.82, 0 } or { 0.4, 1, 0.4 }))
 			r.xph:SetText(date("%d/%m", w.t)); r.xph:SetTextColor(0.7, 0.7, 0.7)
 			r.button:Show()
@@ -831,7 +831,7 @@ function B.OpenWishMenu(id, kind, mine, name)
 			local row
 			for _, g in ipairs(ns.Gifts.List()) do if g.name == name and g.id == id then row = g end end
 			if row and not row.reservedBy and R.mates[name] then   -- the giver confirms: online only
-				MenuUtil.CreateContextMenu(B.frame, function(_, root) root:CreateButton(L.GIFT_RESERVE, function() ns.Gifts.Reserve(name, id) end) end)
+				MenuUtil.CreateContextMenu(B.frame, function(_, root) root:CreateButton(row.price and L.GIFT_BUY or L.GIFT_RESERVE, function() ns.Gifts.Reserve(name, id) end) end)
 			end
 		end
 		return

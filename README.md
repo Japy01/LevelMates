@@ -29,7 +29,7 @@ Everyone who wants to appear needs the addon. English and Spanish: the game's la
 - **Wall tab**: the last 7 days in the guild: level-ups, dungeons with guildmates, rare loot, goals reached, deaths (a Cemetery button shows only those). What you missed arrives when you log in.
 
 ### Items and professions
-- **Wishes tab**: up to 10 items you want, added with Shift+click, and up to 10 you give away. Wishes and giveaways are matched both ways ("Ana gives away [Sword], which is on your list"), a giveaway can be reserved, and item tooltips say who wants or gives an item. Looting something a guildmate wants tells you who to pass it to.
+- **Wishes tab**: up to 10 items you want, added with Shift+click, and up to 10 you give away. Wishes and giveaways are matched both ways ("Ana gives away [Sword], which is on your list"), a giveaway can be reserved, offers can also have a price in gold ("I'll buy it" tells the seller; you pay by trade or mail), and item tooltips say who wants or gives an item. Looting something a guildmate wants tells you who to pass it to.
 - **Professions tab**: who has each profession and at what rank, grouped by profession.
 
 ### Help and notices
@@ -103,7 +103,7 @@ Todos los que quieran salir necesitan el addon. En español e inglés: el idioma
 - **Pestaña Muro**: los últimos 7 días de la hermandad: subidas de nivel, mazmorras con hermanos, botín raro, metas cumplidas, muertes (el botón Cementerio muestra solo esas). Lo que te perdiste llega al entrar.
 
 ### Objetos y profesiones
-- **Pestaña Deseos**: hasta 10 objetos que quieres, añadidos con Mayús+clic, y hasta 10 que regalas. Deseos y regalos se cruzan en los dos sentidos ("Ana regala [Espada], que está en tu lista"), un regalo se puede reservar, y el tooltip de un objeto dice quién lo quiere o lo regala. Si te cae algo que quiere un hermano, te avisa para que se lo pases.
+- **Pestaña Deseos**: hasta 10 objetos que quieres, añadidos con Mayús+clic, y hasta 10 que regalas. Deseos y regalos se cruzan en los dos sentidos ("Ana regala [Espada], que está en tu lista"), un regalo se puede reservar, también se puede ofrecer con precio en oro ("Lo compro" avisa al vendedor; el pago, por comercio o correo), y el tooltip de un objeto dice quién lo quiere o lo regala. Si te cae algo que quiere un hermano, te avisa para que se lo pases.
 - **Pestaña Oficios**: quién tiene cada profesión y a qué nivel, agrupado por profesión.
 
 ### Ayuda y avisos
