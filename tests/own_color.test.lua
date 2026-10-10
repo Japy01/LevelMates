@@ -7,7 +7,7 @@ STUB.player.level = 20
 ns.char.skills = { [171] = { name = "Alchemy", rank = 50 } }
 assert(ns.Wishlist.Add("|cff1eff00|Hitem:2589::::::::20:::::::|h[Linen]|h|r"))
 assert(ns.Personal.Set(30, 7))
-local function mineRow() for i = 1, #B.rows do local r = B.rows[i]; if r.button:IsShown() and r.name.text == "Tester" then return r end end end
+local function mineRow() for i = 1, #B.rows do local r = B.rows[i]; if r.button:IsShown() and r.name.text:gsub("^%s+", "") == "Tester" then return r end end end
 for _, tab in ipairs({ "crafts", "wishes", "goals" }) do
 	B.ShowTab(tab)
 	local r = mineRow()

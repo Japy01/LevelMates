@@ -14,7 +14,8 @@ B.GAP, B.MARGIN, B.WIDTH = 4, 12, 600
 B.JCOLS = { 100, 1, 315, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 284, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 280, 65, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
-B.CCOLS = { 150, 1, 239, 60, 70 }   -- professions: who, -, profession, rank, online or last seen (same total as B.COLS)
+B.CCOLS = { 150, 1, 239, 60, 70 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
+B.BAR_W = 160
 B.FCOLS = { 110, 1, 313, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
@@ -165,6 +166,9 @@ local function Build()
 		local icon = btn:CreateTexture(nil, "ARTWORK")   -- class icon, left of the name
 		icon:SetSize(ROW_H - 4, ROW_H - 4); icon:SetPoint("LEFT", 0, 0)
 		local r = { bg = bg, icon = icon, button = btn, name = Col(btn, B.COLS[1] - (ROW_H - 4) - 4), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
+		-- Professions tab: a rank bar in the third column
+		r.barBg = btn:CreateTexture(nil, "ARTWORK"); r.barBg:SetColorTexture(1, 1, 1, 0.12); r.barBg:SetSize(B.BAR_W, 8); r.barBg:Hide()
+		r.barFill = btn:CreateTexture(nil, "OVERLAY"); r.barFill:SetColorTexture(0.9, 0.7, 0.15, 0.9); r.barFill:SetHeight(8); r.barFill:Hide()
 		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
 			if B.tab == "feed" then return end
@@ -420,6 +424,7 @@ local function SetHeaders()
 	if B.tab == "crafts" then
 		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_PROFESSION)
 		B.headText[4]:SetText(L.COL_RANK); B.headText[5]:SetText(L.COL_SEEN)
+		B.headText[3]:SetText(L.COL_PROGRESS)
 		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
 		return
 	end
@@ -585,16 +590,28 @@ local function FillCrafts(list)
 	for i = 1, ROWS do
 		local r, c = B.rows[i], list[i]
 		r.button.mate, r.button.adId, r.button.entry, r.button.goalId, r.button.personalMine = nil, nil, nil, nil, nil
-		r.button.craftName, r.button.craftMine = c and c.name or nil, c and c.mine or nil
-		if c then
+		r.button.craftHeader = c and c.header or nil
+		r.button.craftName, r.button.craftMine = c and not c.header and c.name or nil, c and c.mine or nil
+		r.barBg:Hide(); r.barFill:Hide()
+		if c and c.header then   -- the profession: icon, name and how many have it
+			r.icon:SetTexture(ns.Professions.Icon(c.header)); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:Show()
+			r.name:SetText(ns.Professions.Name(c.header) .. " (" .. c.count .. ")"); r.name:SetTextColor(1, 0.82, 0)
+			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
+			r.button:Show()
+			r.bg:SetColorTexture(1, 0.82, 0, 0.08)
+		elseif c then
 			local m = R.mates[c.name]
 			r.icon:Hide()
-			r.name:SetText(c.name); r.name:SetTextColor(ClassColor(c.mine and MyClass() or m and m.class))
+			r.name:SetText("   " .. c.name); r.name:SetTextColor(ClassColor(c.mine and MyClass() or m and m.class))
 			r.level:SetText("")
-			r.zone:SetText(ns.Professions.Name(c.id)); r.zone:SetTextColor(1, 0.82, 0)
-			r.group:SetText(tostring(c.rank)); r.group:SetTextColor(1, 1, 1)
-			local online = c.mine or m ~= nil
-			r.xph:SetText(online and L.ONLINE or date("%d/%m", c.t)); r.xph:SetTextColor(unpack(online and B.GROUP_COLORS.open or { 0.7, 0.7, 0.7 }))
+			r.zone:SetText("")
+			r.barBg:ClearAllPoints(); r.barBg:SetPoint("LEFT", r.zone, "LEFT", 0, 0); r.barBg:Show()
+			r.barFill:ClearAllPoints(); r.barFill:SetPoint("LEFT", r.zone, "LEFT", 0, 0)
+			r.barFill:SetWidth(math.max(1, B.BAR_W * math.min(1, c.rank / (c.max or c.rank)))); r.barFill:Show()
+			r.group:SetText(c.max and (c.rank .. "/" .. c.max) or tostring(c.rank)); r.group:SetTextColor(1, 1, 1)
+			if c.mine then r.xph:SetText("")
+			elseif m then r.xph:SetText(L.ONLINE); r.xph:SetTextColor(unpack(B.GROUP_COLORS.open))
+			else r.xph:SetText(string.format(L.FEED_AGO, ns.Journal.Duration(math.max(0, time() - c.t)))); r.xph:SetTextColor(0.7, 0.7, 0.7) end
 			r.button:Show()
 			RowBg(r, i, false)
 		else
@@ -611,13 +628,7 @@ function B.OpenCraftMenu(name)
 	end)
 end
 
-local function CraftsVisible()
-	local out, q = {}, (B.search or ""):lower()
-	for _, c in ipairs(ns.Professions.List()) do
-		if q == "" or c.name:lower():find(q, 1, true) or ns.Professions.Name(c.id):lower():find(q, 1, true) then out[#out + 1] = c end
-	end
-	return out
-end
+local function CraftsVisible() return ns.Professions.Groups(B.search) end
 
 local function FillWishes(list)
 	for i = 1, ROWS do
@@ -858,6 +869,7 @@ function B.Refresh()
 	B.restedText:SetText(rested and string.format(L.RESTED_MINE, rested) or "")
 	if journal then FillJournal(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then FillGrid(list) else FillMates(list) end
 	if not lfg then for _, c in ipairs(B.cards) do c:Hide() end end
+	if not crafts then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
 	local emptyText = ""
 	if #list == 0 then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED

@@ -181,7 +181,7 @@ local function readProfessions(before)
 	if C_SkillInfo.GetSkillLineInfoByID then
 		for id in pairs(PROFESSIONS) do
 			local s = C_SkillInfo.GetSkillLineInfoByID(id)
-			if s and s.name and s.name ~= "" and (s.rank or 0) > 0 then out[id] = { name = s.name, rank = s.rank } end
+			if s and s.name and s.name ~= "" and (s.rank or 0) > 0 then out[id] = { name = s.name, rank = s.rank, max = s.maxRank } end
 		end
 		return out
 	end
@@ -189,7 +189,7 @@ local function readProfessions(before)
 	for i = 1, n do
 		local s = C_SkillInfo.GetSkillLineInfo(i)
 		if s and s.isHeader and s.isCollapsed then collapsed = true end
-		if s and not s.isHeader and PROFESSIONS[s.skillID] then out[s.skillID] = { name = s.name, rank = s.rank } end
+		if s and not s.isHeader and PROFESSIONS[s.skillID] then out[s.skillID] = { name = s.name, rank = s.rank, max = s.maxRank } end
 	end
 	if collapsed and before then
 		for id, old in pairs(before) do if not out[id] then out[id] = old end end

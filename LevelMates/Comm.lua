@@ -63,15 +63,15 @@ local function itemids(max)
 		return n >= 1 and n <= max
 	end
 end
--- Professions "171:120,182:95": 1-6 pairs of skill id (1-999) and rank (1-450).
+-- Professions "171:120:150,182:95": 1-6 entries of skill id (1-999), rank (1-450) and optionally the max rank (1-450).
 local function profs(v)
 	if type(v) ~= "string" or v == "" or v:find(",,", 1, true) or v:sub(-1) == "," then return false end
 	local n = 0
 	for pair in v:gmatch("[^,]+") do
-		local id, rank = pair:match("^(%d+):(%d+)$")
+		local id, rank, max = pair:match("^(%d+):(%d+):?(%d*)$")
 		if not id then return false end
-		id, rank = tonumber(id), tonumber(rank)
-		if id < 1 or id > 999 or rank < 1 or rank > 450 then return false end
+		id, rank, max = tonumber(id), tonumber(rank), tonumber(max)
+		if id < 1 or id > 999 or rank < 1 or rank > 450 or (max and (max < 1 or max > 450)) then return false end
 		n = n + 1
 	end
 	return n <= 6
