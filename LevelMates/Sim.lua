@@ -113,6 +113,35 @@ local function off()
 	for _, who in ipairs(FAKES) do inject("bye", {}, who) end
 end
 
+-- /lm sim arte: a window with candidate game textures for the dungeon cards (file ids near Forever's own loading
+-- screens, and classic loading screens), to pick art that ships with the game instead of anyone's files.
+local ART = { "LoadScreenUldaman", "LoadScreenStratholme", "LoadScreenScholomance", "LoadScreenScarletMonastery",
+	"LoadScreenScarletMonastery2", "LoadScreenRazorfenDowns", "LoadScreenBlackrockDepths", "LoadScreenEasternKingdom" }
+local function simArt()
+	local f = _G.LevelMatesArtPreview
+	if not f then
+		f = CreateFrame("Frame", "LevelMatesArtPreview", UIParent, "BasicFrameTemplateWithInset")
+		f:SetSize(940, 640); f:SetPoint("CENTER"); f:SetFrameStrata("DIALOG")
+		f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
+		f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+		tinsert(UISpecialFrames, "LevelMatesArtPreview")
+		local list = {}
+		for id = 7963768, 7963785 do list[#list + 1] = { tex = id, label = tostring(id) } end
+		for _, name in ipairs(ART) do list[#list + 1] = { tex = "Interface\\Glues\\LoadingScreens\\" .. name, label = name } end
+		f.thumbs = {}
+		for i, c in ipairs(list) do
+			local col, row = (i - 1) % 6, math.floor((i - 1) / 6)
+			local tex = f:CreateTexture(nil, "ARTWORK")
+			tex:SetSize(146, 92); tex:SetPoint("TOPLEFT", 14 + col * 152, -30 - row * 118)
+			tex:SetTexture(c.tex); tex:SetTexCoord(0.02, 0.98, 0.12, 0.88)
+			local label = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+			label:SetPoint("TOP", tex, "BOTTOM", 0, -2); label:SetText(c.label)
+			f.thumbs[i] = { tex = tex, label = label }
+		end
+	end
+	f:Show()
+end
+
 ns.Slash("sim", function(rest)
 	rest = strlower(strtrim(rest or ""))
 	if rest == "off" then off()
@@ -129,5 +158,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "mercadillo" or rest == "gifts" then simGifts()
 	elseif rest == "quedada" or rest == "meetup" then simMeetups()
 	elseif rest == "raro" or rest == "rare" then simRare()
+	elseif rest == "arte" or rest == "art" then simArt()
 	else run() end
 end)
