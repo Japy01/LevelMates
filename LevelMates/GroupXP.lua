@@ -8,7 +8,7 @@ local L, C, R = ns.L, ns.Comm, ns.Roster
 GX.BAR_W, GX.GAP, GX.FRESH = 110, 30, 300
 
 local function grouped(name) return UnitInParty(name) or UnitInRaid(name) or (GX.sim and R.mates[name] and R.mates[name].xpSim) end
-local function anyMate() for name in pairs(R.mates) do if grouped(name) then return true end end; return false end
+local function anyMate() for name in pairs(R.mates) do if UnitInParty(name) or UnitInRaid(name) then return true end end; return false end   -- real groups only: the sim sends nothing
 local function myPct()
 	local max = UnitXPMax("player") or 0
 	if max <= 0 then return 0 end

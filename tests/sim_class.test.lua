@@ -13,3 +13,7 @@ SlashCmdList.LEVELMATES("sim muertes")
 assert(#ns.Feed.List(nil, true) == 2, "two deaths on the wall")
 SlashCmdList.LEVELMATES("sim off")
 assert(not ns.GroupXP.frame:IsShown() and #ns.Feed.List(nil, true) == 0, "cleared")
+local n = #STUB.sent
+SlashCmdList.LEVELMATES("sim xp"); STUB.Fire("PLAYER_XP_UPDATE", "player"); STUB.Advance(40)
+for i = n + 1, #STUB.sent do assert(ns.Comm.Decode(STUB.sent[i].msg) ~= "xp", "the sim sends no XP") end
+SlashCmdList.LEVELMATES("sim off")
