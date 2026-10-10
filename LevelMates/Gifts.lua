@@ -72,11 +72,9 @@ end
 -- Called from a click (a row's menu): reserve a guildmate's giveaway.
 function GF.Reserve(giver, id)
 	local e = theirs()[giver]
-	if not e then return false end
-	if not C.Send("gr", { i = id, to = giver }, "now") then ns.Say(L.HELP_NEEDS_SHARE); return false end
-	e.reserved = e.reserved or {}
-	e.reserved[id] = e.reserved[id] or me()
-	ns.Fire("LM_WISHES_CHANGED")
+	if not e or not R.mates[giver] then return false end   -- the giver confirms, so they must be online
+	if not C.Send("gr", { i = id, to = giver }, "now") then ns.Say(L.MEET_NOT_NOW); return false end
+	ns.Say(L.GIFT_ASKED, giver, link(id))
 	return true
 end
 
@@ -136,13 +134,24 @@ C.OnMessage("gr", function(f, name)
 		local first = g.reservedBy == nil
 		g.reservedBy = name
 		if first then ns.Notice(L.GIFT_RESERVED, name, link(f.i)) end
-	else
-		local e = theirs()[f.to]
-		if not e then return end
-		e.reserved = e.reserved or {}
-		e.reserved[f.i] = e.reserved[f.i] or name
+		C.Send("gro", { i = f.i, by = name }, "now")   -- everyone learns who got it from me
+		ns.Fire("LM_WISHES_CHANGED")
 	end
+end)
+
+-- The giver's word on who reserved a gift (the truth for everyone, the reserver included).
+C.OnMessage("gro", function(f, name)
+	if not R.mates[name] then return end
+	local e = theirs()[name]
+	if not e then return end
+	e.reserved = e.reserved or {}
+	local new = e.reserved[f.i] ~= f.by
+	e.reserved[f.i] = f.by
+	if new and f.by == me() then ns.Notice(L.GIFT_CONFIRMED, name, link(f.i)) end
 	ns.Fire("LM_WISHES_CHANGED")
+end)
+ns.On("LM_PING_ANSWERED", function()
+	for _, g in ipairs(mine()) do if g.reservedBy then C.Send("gro", { i = g.id, by = g.reservedBy }) end end
 end)
 
 ns.On("LM_PING_ANSWERED", function() if #mine() > 0 then resend() end end)

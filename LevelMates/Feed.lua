@@ -57,11 +57,31 @@ function F.List(search)
 	return out
 end
 
+-- Dungeons and loot happen inside instances, where nothing can be sent: what cannot go out stays pending and
+-- goes after the next heartbeat outside (the newest five of the last day).
+local function sendEntry(e)
+	if C.Send("fe", { k = e.k, a = e.a, b = e.b, t = e.t }) then e.pending = nil; return true end
+	e.pending = true
+	return false
+end
 local function share(k, a, b)
 	local e = { who = me(), k = k, a = a or 0, b = b, t = F.Now() }
 	F.Add(e)
-	if ns.db.settings.shareFeed then C.Send("fe", { k = k, a = e.a, b = b, t = e.t }) end
+	if ns.db.settings.shareFeed then sendEntry(e) end
 end
+ns.On("LM_HB_SENT", function()
+	if not ns.db.settings.shareFeed then return end
+	local n, cutoff = 0, F.Now() - 1440
+	for _, e in ipairs(store()) do
+		if e.t < cutoff or n >= F.RESEND then break end
+		if e.pending and e.who == me() then n = n + 1; sendEntry(e) end
+	end
+end)
+ns.On("LM_COMM_DROPPED", function(kind)
+	if kind ~= "fe" then return end
+	local cutoff = F.Now() - 10
+	for _, e in ipairs(store()) do if e.who == me() and e.k ~= "gol" and e.t >= cutoff then e.pending = true end end
+end)
 
 ns.On("LM_JOURNAL_ADDED", function(e)
 	if e.sim then return end

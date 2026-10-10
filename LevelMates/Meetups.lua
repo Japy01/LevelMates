@@ -20,7 +20,7 @@ local function myJoins() ns.char.meetJoins = ns.char.meetJoins or {}; return ns.
 local function newId() return string.format("%04x%04x", math.random(0, 65535), math.random(0, 65535)):sub(1, 8) end
 local function prune()
 	local s = store()
-	for id, m in pairs(s) do if M.Now() > m.at + M.KEEP then s[id] = nil; myJoins()[id] = nil end end
+	for id, m in pairs(s) do if M.Now() > m.at + M.KEEP then s[id] = nil; myJoins()[id] = nil; if ns.char.meetReminded then ns.char.meetReminded[id] = nil end end end
 end
 local function count(by)
 	local n = 0
@@ -56,7 +56,7 @@ function M.Create(d, at, note)
 	local clean = strtrim(tostring(note or "")):gsub("[%c|]", "")
 	clean = ns.CutUtf8(clean, 40)
 	local m = { id = newId(), d = d, at = at, n = clean ~= "" and clean or nil, by = me(), joined = {} }
-	if not C.Send("qd", { id = m.id, d = d, at = at, n = m.n }, "now") then return false end
+	if not C.Send("qd", { id = m.id, d = d, at = at, n = m.n }, "now") then ns.Say(L.MEET_NOT_NOW); return false end
 	store()[m.id] = m
 	changed()
 	return true
@@ -65,7 +65,7 @@ end
 function M.Cancel(id)
 	local m = store()[id]
 	if not m or m.by ~= me() then return false end
-	C.Send("qdx", { id = id }, "now")
+	if not C.Send("qdx", { id = id }, "now") then ns.Say(L.MEET_NOT_NOW); return false end   -- or guildmates would keep it
 	store()[id] = nil
 	changed()
 	return true
@@ -74,7 +74,7 @@ end
 function M.Join(id, role)
 	local m = store()[id]
 	if not m or m.by == me() or not ROLES[role] then return false end
-	if not C.Send("qj", { id = id, r = role }, "now") then ns.Say(L.HELP_NEEDS_SHARE); return false end
+	if not C.Send("qj", { id = id, r = role }, "now") then ns.Say(L.MEET_NOT_NOW); return false end
 	myJoins()[id] = role
 	m.joined = m.joined or {}
 	m.joined[me()] = role
@@ -84,7 +84,7 @@ end
 
 function M.Leave(id)
 	if not myJoins()[id] then return false end
-	if not C.Send("qjx", { id = id }, "now") then ns.Say(L.HELP_NEEDS_SHARE); return false end
+	if not C.Send("qjx", { id = id }, "now") then ns.Say(L.MEET_NOT_NOW); return false end
 	myJoins()[id] = nil
 	local m = store()[id]
 	if m and m.joined then m.joined[me()] = nil end
@@ -139,8 +139,10 @@ ns.On("LM_PING_ANSWERED", function()
 end)
 
 -- The reminder: 15 minutes before, once, for mine and the ones I joined.
-local reminded = {}
+-- Kept with the character, so a /reload inside the window does not repeat it.
 function M.Tick()
+	ns.char.meetReminded = ns.char.meetReminded or {}
+	local reminded = ns.char.meetReminded
 	for _, m in ipairs(M.List()) do
 		local left = m.at - M.Now()
 		if not reminded[m.id] and left >= 0 and left <= M.REMIND and (m.by == me() or myJoins()[m.id]) then

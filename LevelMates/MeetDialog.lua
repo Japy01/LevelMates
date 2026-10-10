@@ -23,11 +23,11 @@ function Dlg.DayName(offset)
 	return L["DAY_" .. date("*t", time() + offset * 86400).wday]
 end
 
--- Minutes since 1970 for the chosen day (0 = today), hour and minute, in this PC's local time.
+-- Minutes since 1970 for the chosen day (0 = today), hour and minute, in this PC's local time; time(table) applies
+-- the summer-time rules of that day, so a meetup across a clock change keeps its hour.
 function Dlg.At()
-	local now, t = time(), date("*t")
-	local midnight = now - (t.hour * 3600 + t.min * 60 + t.sec)
-	return math.floor((midnight + Dlg.dayOffset * 86400 + Dlg.hour * 3600 + Dlg.minute * 60) / 60)
+	local d = date("*t", time() + Dlg.dayOffset * 86400)
+	return math.floor(time({ year = d.year, month = d.month, day = d.day, hour = Dlg.hour, min = Dlg.minute, sec = 0 }) / 60)
 end
 
 local function Labels()

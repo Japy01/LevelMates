@@ -649,7 +649,7 @@ function B.OpenWishMenu(id, kind, mine, name)
 		else
 			local row
 			for _, g in ipairs(ns.Gifts.List()) do if g.name == name and g.id == id then row = g end end
-			if row and not row.reservedBy then
+			if row and not row.reservedBy and R.mates[name] then   -- the giver confirms: online only
 				MenuUtil.CreateContextMenu(B.frame, function(_, root) root:CreateButton(L.GIFT_RESERVE, function() ns.Gifts.Reserve(name, id) end) end)
 			end
 		end

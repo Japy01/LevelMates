@@ -192,11 +192,32 @@ function strtrim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
 function strlower(s) return s:lower() end
 function tinsert(t, v) t[#t + 1] = v end
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
+-- A real (UTC) calendar for date("*t") and time(table): this stub's "local time" is UTC.
+local function daysFromCivil(y, m, d)
+	y = m <= 2 and y - 1 or y
+	local era = math.floor(y / 400)
+	local yoe = y - era * 400
+	local doy = math.floor((153 * (m + (m > 2 and -3 or 9)) + 2) / 5) + d - 1
+	return era * 146097 + yoe * 365 + math.floor(yoe / 4) - math.floor(yoe / 100) + doy - 719468
+end
+local function civilFromDays(z)
+	z = z + 719468
+	local era = math.floor(z / 146097)
+	local doe = z - era * 146097
+	local yoe = math.floor((doe - math.floor(doe / 1460) + math.floor(doe / 36524) - math.floor(doe / 146096)) / 365)
+	local doy = doe - (365 * yoe + math.floor(yoe / 4) - math.floor(yoe / 100))
+	local mp = math.floor((5 * doy + 2) / 153)
+	local d = doy - math.floor((153 * mp + 2) / 5) + 1
+	local m = mp < 10 and mp + 3 or mp - 9
+	return yoe + era * 400 + (m <= 2 and 1 or 0), m, d
+end
+STUB.daysFromCivil = daysFromCivil
 function date(fmt, t)
-	if fmt == "*t" then   -- UTC is this stub's "local time"; 1970-01-01 was a Thursday (wday 5)
+	if fmt == "*t" then   -- 1970-01-01 was a Thursday (wday 5)
 		t = t or time()
-		local s = t % 86400
-		return { year = 2025, month = 10, day = 9, hour = math.floor(s / 3600), min = math.floor(s % 3600 / 60), sec = s % 60, wday = (math.floor(t / 86400) + 4) % 7 + 1 }
+		local days, s = math.floor(t / 86400), t % 86400
+		local y, m, d = civilFromDays(days)
+		return { year = y, month = m, day = d, hour = math.floor(s / 3600), min = math.floor(s % 3600 / 60), sec = s % 60, wday = (days + 4) % 7 + 1 }
 	end
 	return "00:00:00"
 end
@@ -259,7 +280,10 @@ STUB.atlases = {}
 C_Texture = { GetAtlasInfo = function(a) if STUB.atlases[a] then return { width = 64, height = 64 } end end }
 
 -- Journal support
-function time() return 1760000000 + math.floor(STUB.now) end
+function time(t)
+	if type(t) == "table" then return STUB.daysFromCivil(t.year, t.month, t.day) * 86400 + (t.hour or 12) * 3600 + (t.min or 0) * 60 + (t.sec or 0) end
+	return 1760000000 + math.floor(STUB.now)
+end
 function UnitGUID(u) return "Player-1-TESTER" end
 function GetInstanceInfo() return STUB.instanceName or "Mulgore", STUB.inInstance and "party" or "none", 0, "", 5, 0, false, STUB.instanceId or 0 end
 C_SkillInfo = {
