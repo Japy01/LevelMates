@@ -14,6 +14,9 @@ A World of Warcraft: Forever guild addon. See which guildmates are online and wh
 - **Guild goals** (Goals tab, or `/lm metas`): officers set goals for the guild — everyone to a level, a dungeon together, or a counter of levels, quests or dungeons between everyone — with live progress and who is missing. Kept across sessions; up to 5 at a time. Anyone can also set a personal goal ("My goal": a level by a date) that the guild sees.
 - **Wishlist** (Wishes tab, or `/lm deseos`): up to 10 items you want, added with Shift+click; guildmates see them, item tooltips say who wants an item, and looting something a guildmate wants tells you who to pass it to.
 - **Copy for Discord** ("Discord" button on the board): the current tab as ready-to-paste Discord text (Ctrl+C, Ctrl+V). Nothing is sent anywhere.
+- **Professions** (Professions tab, or `/lm oficios`): who has each profession and at what rank (sharing can be turned off).
+- **Join a group** from a dungeon card ("Join Mario as healer"); the poster is told and sees who joined, with an invite button for each.
+- **Notices**: important ones also in the middle of the screen; a [Congratulate] link when a guildmate levels up; a notice when a guildmate has a newer LevelMates. The Journal tab shows your pace (time per level, fastest level, rough time to 60).
 
 ## Privacy
 
@@ -29,7 +32,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Commands
 
-`/lm` (board), `/lm lfg` (Dungeons tab), `/lm diario` (Journal tab), `/lm metas` (Goals tab), `/lm deseos` (Wishes tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim off`.
+`/lm` (board), `/lm lfg` (Dungeons tab), `/lm diario` (Journal tab), `/lm metas` (Goals tab), `/lm deseos` (Wishes tab), `/lm oficios` (Professions tab), `/lm help <text>`, `/lm cancel`, `/lm options`, `/lm debug`. To try it alone: `/lm sim` (fake guildmates, local only), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim off`.
 
 ## Not in v1 (planned)
 
@@ -55,6 +58,9 @@ Addon de hermandad para World of Warcraft: Forever. Ve qué hermanos están cone
 - **Metas de hermandad** (pestaña Metas, o `/lm metas`): los oficiales marcan objetivos para la hermandad — todos a un nivel, una mazmorra juntos, o un contador de niveles, misiones o mazmorras entre todos — con el progreso en directo y quién falta. Se guardan entre sesiones; hasta 5 a la vez. Cualquiera puede poner además su meta personal ("Mi meta": un nivel para una fecha) y la hermandad la ve.
 - **Lista de deseos** (pestaña Deseos, o `/lm deseos`): hasta 10 objetos que quieres, añadidos con Mayús+clic; la hermandad los ve, el tooltip de un objeto dice quién lo quiere y, si te cae algo que quiere un hermano, te avisa para que se lo pases.
 - **Copiar para Discord** (botón "Discord" del tablón): la pestaña actual como texto listo para pegar en Discord (Ctrl+C, Ctrl+V). No se envía nada a ningún sitio.
+- **Oficios** (pestaña Oficios, o `/lm oficios`): quién tiene cada profesión y a qué nivel (se puede dejar de compartir).
+- **Apuntarse a un grupo** desde la tarjeta de la mazmorra ("Me apunto con Mario como sanador"); quien lo publicó recibe el aviso, ve los apuntados y puede invitarlos con un clic.
+- **Avisos**: los importantes también en el centro de la pantalla; un enlace [Felicitar] cuando un hermano sube de nivel; aviso cuando un hermano tiene una versión más nueva. La pestaña Diario muestra tu ritmo (tiempo por nivel, el nivel más rápido y una estimación hasta 60).
 
 ## Privacidad
 
@@ -70,7 +76,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Comandos
 
-`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm diario` (pestaña Diario), `/lm metas` (pestaña Metas), `/lm deseos` (pestaña Deseos), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim off`.
+`/lm` (tablón), `/lm lfg` (pestaña Mazmorras), `/lm diario` (pestaña Diario), `/lm metas` (pestaña Metas), `/lm deseos` (pestaña Deseos), `/lm oficios` (pestaña Oficios), `/lm ayuda <texto>`, `/lm cancelar`, `/lm opciones`, `/lm debug`. Para probarlo solo: `/lm sim` (hermanos falsos, solo en local), `/lm sim help`, `/lm sim lfg`, `/lm sim pal`, `/lm sim rested`, `/lm sim diario`, `/lm sim metas`, `/lm sim deseos`, `/lm sim oficios`, `/lm sim off`.
 
 ## Pendiente para después de v1
 

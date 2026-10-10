@@ -70,8 +70,13 @@ local function simWishes()
 	ns.Wishlist.AddSample("Ana", { 765, 2447 })
 end
 
+local function simCrafts()
+	ns.Professions.AddSample("Mario", { { id = 171, rank = 120 }, { id = 182, rank = 140 } })
+	ns.Professions.AddSample("Ana", { { id = 197, rank = 90 } })
+end
+
 local function off()
-	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples(); ns.Wishlist.RemoveSamples()
+	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples(); ns.Wishlist.RemoveSamples(); ns.Professions.RemoveSamples()
 	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -88,5 +93,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "diario" or rest == "journal" then simJournal()
 	elseif rest == "metas" or rest == "goals" then simGoals()
 	elseif rest == "deseos" or rest == "wishes" then simWishes()
+	elseif rest == "oficios" or rest == "professions" then simCrafts()
 	else run() end
 end)

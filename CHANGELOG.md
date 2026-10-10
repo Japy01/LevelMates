@@ -30,3 +30,7 @@ First version.
 - Personal goals: "My goal" on the Goals tab (a target level and a deadline, one per character), shown to guildmates with their level; announced when reached. New message kind `gp`.
 - Wishlist: a fifth board tab (the tabs are now classic tabs under the window); up to 10 items per character added with Shift+click; shared with the guild; "Wanted by" on item tooltips; a notice when you loot a guildmate's wish. New message kind `wl`.
 - Copy for Discord: a "Discord" button on the board puts the current tab (guildmates, dungeon groups, your week, goals, wishes) into a box as Discord text, at most one message long, selected for Ctrl+C.
+- Headings and help line per board tab; your leveling pace on the Journal tab.
+- Screen notices for the important events (option), a notice when a guildmate runs a newer LevelMates, and a [Congratulate] link on guildmates' level-ups (option).
+- Professions: a sixth tab with who has each profession and its rank, shared in the new kind `pf` (option to stop sharing); in Copy for Discord too.
+- Join a dungeon group from its card (new kinds `lfj`/`lfjx`): the poster is told, sees who joined, invites them, and hears when the group is full.
