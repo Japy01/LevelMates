@@ -35,7 +35,7 @@ local function fields()
 	local names = {}
 	for _, c in ipairs(AL.MyAlts()) do
 		if #table.concat(names, ",") + #c.name + 1 > 120 then break end
-		names[#names + 1] = c.name
+		if R.IsGuildmate(c.name) then names[#names + 1] = c.name end   -- one that left the guild since it last logged in: never shared
 	end
 	return #names > 0 and { n = table.concat(names, ",") } or {}
 end

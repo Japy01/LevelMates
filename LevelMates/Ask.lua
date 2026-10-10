@@ -33,11 +33,14 @@ function A.Ask(text)
 	return true
 end
 
+local heardAt = {}   -- name -> when their last question was taken: one a minute from each, whatever they send
 C.OnMessage("ask", function(f, name)
 	local m = R.mates[name]
 	if not (m and m.class == myClass()) then return end   -- only my class, as my roster knows theirs
 	local s = store()
 	if s[f.id] then return end
+	if GetTime() - (heardAt[name] or -math.huge) < A.GAP then return end
+	heardAt[name] = GetTime()
 	s[f.id] = { by = name, x = f.x, t = time() }
 	ns.Fire("LM_QUESTIONS_CHANGED")
 	if ns.db.settings.askNotices then

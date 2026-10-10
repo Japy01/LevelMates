@@ -17,7 +17,7 @@ B.WCOLS = { 100, 1, 360, 65, 74 }   -- wishes and gifts: who, -, item, wants/giv
 B.CCOLS = { 150, 1, 319, 60, 70 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
 B.BAR_W = 160
 B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
-B.KCOLS = { 150, 1, 339, 50, 60 }
+B.KCOLS = { 150, 1, 339, 50, 60 }   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
 B.ICOLS = { 150, 50, 160, 110, 130 }   -- inactive members: name, level, rank, away, joined (same total as B.COLS)   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 6, 100, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
@@ -220,7 +220,10 @@ local function Build()
 			elseif B.tab == "class" and self.classEntry and not self.classEntry.header then   -- class: the whole macro, or the build
 				local e = self.classEntry
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-				if e.kind == "build" then
+				if e.kind == "ask" then
+					GameTooltip:AddLine(e.q.by, 1, 0.82, 0)
+					GameTooltip:AddLine(e.q.x, 1, 1, 1, true)
+				elseif e.kind == "build" then
 					GameTooltip:AddLine(e.e.name .. " · " .. string.format(L.LEVEL_N, e.e.l), 1, 0.82, 0)
 					GameTooltip:AddLine(ns.Builds.PointsText(e.e), 1, 1, 1, true)
 					if not e.e.b then GameTooltip:AddLine(L.CLASS_NO_CODE, 0.7, 0.7, 0.7, true) end

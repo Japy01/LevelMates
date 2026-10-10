@@ -28,11 +28,13 @@ end
 
 -- Notes when each member is first seen.
 function I.Scan()
-	if not IsInGuild() then return end
+	if not (IsInGuild() and GetGuildInfo("player")) then return end
+	local list = members()
+	if #list == 0 then return end   -- the roster has not loaded yet: a look now would date everyone from today
 	local s, now = store(), time()
 	local firstLook = s.since == nil
 	if firstLook then s.since = now end
-	for _, info in ipairs(members()) do
+	for _, info in ipairs(list) do
 		local name = ns.ShortName(info.name)
 		if not s.who[name] then s.who[name] = firstLook and { t = now, before = true } or { t = now } end
 	end

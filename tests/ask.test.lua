@@ -33,6 +33,7 @@ assert(STUB.lastTell == "Mario", "[Answer] opens a whisper")
 -- the option silences the notice, the list keeps them; 24 hours
 ns.db.settings.askNotices = false
 STUB.printed = {}
+STUB.Advance(61)   -- one question a minute from each sender
 STUB.Receive("LVLM", C.Encode("ask", { id = "q0000004", x = "¿Escudo?" }), "GUILD", "Mario-Testrealm")
 assert(#STUB.printed == 0 and #A.List() == 3, "silent but listed")
 ns.db.questions[GetGuildInfo("player")]["q0000004"].t = time() - 25 * 3600

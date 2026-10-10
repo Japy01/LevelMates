@@ -15,7 +15,9 @@ ns.db.characters["Farrealm-Elsewhere"] = { name = "Farrealm", realm = "Elsewhere
 local mine = AL.MyAlts()
 assert(#mine == 1 and mine[1].name == "Testalt", "only my other characters in this same guild and realm")
 
--- shared with the guild
+-- shared with the guild (alts still in it)
+STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true, Testalt = true }
+ns.Roster.InvalidateGuildRoster()
 AL.SetSharing()
 assert(last("al") and last("al").n == "Testalt", "sent")
 ns.db.settings.shareAlts = false
