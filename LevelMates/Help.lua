@@ -30,15 +30,18 @@ function H.Ask(text)
 	text = text:gsub("[%c|]", "")
 	text = ns.CutUtf8(text, 60)
 	if text == "" then return false end
+	if not IsInGuild() then ns.Say(L.HELP_NO_GUILD); return false end
 	if not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	local mapId, x, y = myPosition()
 	if not mapId or not x then ns.Say(L.HELP_NO_POS); return false end
 	local id = newId()
 	if C.Send("help", { t = text, z = mapId, x = x, y = y, id = id }, "now") then
 		H.mine = { id = id, text = text, at = GetTime(), helpers = {} }
+		ns.Say(L.HELP_SENT, text)   -- the asker sees it went out, not only the button's new text
 		ns.Fire("LM_HELP_CHANGED")
 		return true
 	end
+	ns.Say(L.HELP_NOT_SENT)   -- never fail in silence
 	return false
 end
 

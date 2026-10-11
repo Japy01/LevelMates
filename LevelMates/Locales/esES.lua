@@ -213,3 +213,6 @@ L.BTN_GIFT_ADD = "Ofrecer"; L.GIFT_DIALOG_TITLE = "Ofrecer un objeto"; L.HEAD_WI
 L.SUB_WISHES = "Mayús+clic en un objeto para añadirlo. Se ofrece gratis o con precio; el pago y la entrega, por comercio o correo."
 L.PRICE_LABEL = "Precio en oro (vacío = gratis):"; L.PRICE_BAD = "Eso no es un precio: escribe oro, por ejemplo 2 o 1,5."
 L.GIFT_BUY = "Lo compro (avisar al vendedor)"; L.SALE_FOR_YOU = "%s vende %s por %s, que está en tu lista. Clic derecho en su fila para comprarlo."
+
+-- Ayuda: confirmaciones
+L.HELP_SENT = "Petición de ayuda enviada a tu hermandad: %s. Pulsa el botón otra vez para cancelarla."; L.HELP_NO_GUILD = "No estás en una hermandad: la ayuda se pide a tu hermandad."; L.HELP_NOT_SENT = "No se ha podido enviar la petición de ayuda ahora. Prueba otra vez en un momento."

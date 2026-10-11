@@ -212,3 +212,6 @@ L.BTN_GIFT_ADD = "Offer"; L.GIFT_DIALOG_TITLE = "Offer an item"; L.HEAD_WISHES =
 L.SUB_WISHES = "Shift+click an item to add it. Offers can be free or priced; you pay and hand over by trade or mail."
 L.PRICE_LABEL = "Price in gold (empty = free):"; L.PRICE_BAD = "That is not a price: type gold, for example 2 or 1,5."
 L.GIFT_BUY = "I'll buy it (tell the seller)"; L.SALE_FOR_YOU = "%s sells %s for %s, which is on your list. Right-click its row to buy it."
+
+-- Help feedback
+L.HELP_SENT = "Help request sent to your guild: %s. Click the button again to cancel it."; L.HELP_NO_GUILD = "You are not in a guild: help requests go to your guild."; L.HELP_NOT_SENT = "The help request could not be sent now. Try again in a moment."
