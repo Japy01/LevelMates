@@ -4,7 +4,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 assert(type(ns.DEFAULTS) == "table" and ns.DEFAULTS.share == true, "defaults exported by Core")
 local checked = 0
-for _, s in ipairs(ns.Settings.category.settings) do
+for _, s in ipairs(ns.Settings.AllSettings()) do
 	if s.key and ns.DEFAULTS[s.key] ~= nil then
 		assert(s.default == ns.DEFAULTS[s.key], s.key .. " default is " .. tostring(s.default) .. ", should be " .. tostring(ns.DEFAULTS[s.key]))
 		checked = checked + 1

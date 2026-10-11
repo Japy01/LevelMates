@@ -389,3 +389,4 @@ STUB.handled = {}
 STUB.errorHandler = function(msg) STUB.handled[#STUB.handled + 1] = msg end
 function geterrorhandler() return STUB.errorHandler end
 function seterrorhandler(fn) STUB.errorHandler = fn end
+Settings.RegisterVerticalLayoutSubcategory = function(parent, name) local c = { name = name, settings = {}, parent = parent }; function c:GetID() return 2 end; return c, {} end

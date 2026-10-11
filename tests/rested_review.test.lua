@@ -10,7 +10,7 @@ local function sentRx(from)
 	return table.concat(out, ",")
 end
 local share
-for _, s in ipairs(ns.Settings.category.settings) do if s.key == "shareRested" then share = s end end
+for _, s in ipairs(ns.Settings.AllSettings()) do if s.key == "shareRested" then share = s end end
 assert(share, "the setting is registered")
 
 -- the panel's Defaults button re-applies "off": nothing may leave the client

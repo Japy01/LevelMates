@@ -247,3 +247,4 @@ L.ACHD_level = "Llega a nivel %d"; L.ACHD_d = "%d mazmorras con hermanos"; L.ACH
 L.ACHD_m = "Ve a %d quedadas"; L.ACHD_q = "Entrega %d misiones"; L.ACHD_dead = "Muere %d veces"; L.ACHD_ch = "Estar cuando la hermandad cumple un reto semanal"
 L.ACH_GOT = "Logro: %s"; L.FEED_ACH = "consiguió %s"; L.CARD_ACH = "Logros: %d"; L.BTN_ACH = "Logros"; L.BTN_JOURNAL = "Diario"
 L.OPT_ACH = "Compartir mis logros"; L.OPT_ACH_TT = "Tus logros salen en el muro de la hermandad y en tu ficha."
+L.OPT_PAGE_SHARE = "Compartir"; L.OPT_PAGE_NOTICES = "Avisos"
