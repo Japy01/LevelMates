@@ -152,7 +152,9 @@ end
 
 -- A small window gets the page too, and its writing in ink each time it shows (and after its own refreshes).
 function SK.SmallPage(f)
-	SK.Page(f)
+	-- the whole inside, right under the title: these windows write from the top and keep their buttons at the foot
+	local page = SK.Page(f)
+	page:ClearAllPoints(); page:SetPoint("TOPLEFT", 4, -22); page:SetPoint("BOTTOMRIGHT", -4, 4)
 	f:HookScript("OnShow", function() SK.InkWindow(f); if C_Timer then C_Timer.After(0, function() SK.InkWindow(f) end) end end)
 end
 -- Everything written on a window's page, in ink: its texts and those of its rows and boxes. The game's red buttons,
