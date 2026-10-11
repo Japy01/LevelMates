@@ -224,3 +224,11 @@ L.GUILD_LEVEL_UP = "The guild reaches level %d in LevelMates!"; L.GUILD_LEVEL_WA
 
 -- Home
 L.HOME_INVITE_TEXT = "Guild %s: install LevelMates (CurseForge, World of Warcraft: Forever) to see who is online and leveling near you, find dungeon groups and push the guild level together."
+
+-- Home and the five tabs
+L.TAB_HOME = "Home"; L.TAB_GUILD = "Guild"; L.HEAD_HOME = "Home"; L.SUB_HOME = "What is going on in the guild and what you can do now."; L.SEARCH_HOME = "Search..."
+L.HOME_GUILD = "The guild"; L.HOME_NOW = "Right now"; L.HOME_FORYOU = "For you"; L.HOME_WEEK = "This week"
+L.HOME_LEVEL = "Guild level %d"; L.HOME_DONE = "done!"; L.HOME_GO = "On my way"; L.HOME_JOIN = "Join"; L.HOME_SEE = "See"; L.HOME_INVITE = "Invite"
+L.HOME_BUY = "Buy"; L.HOME_RESERVE = "Reserve"; L.HOME_TRAINER = "%d spells at your trainer"; L.HOME_COPY = "Copy"
+L.HOME_RANK_l = "Most levels"; L.HOME_RANK_d = "Most dungeons"; L.HOME_RANK_h = "Most helps"
+L.HOME_ALONE_TITLE = "Bring your guild"; L.HOME_ALONE = "Guildmates show up here once they install LevelMates. Copy an invite to paste in guild chat or Discord."

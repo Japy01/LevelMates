@@ -6,7 +6,7 @@ ns.DiscordCopy = D
 local L = ns.L
 D.MAX = 2000   -- one Discord message
 local ROLE_EMOJI = { T = ":shield:", H = ":green_heart:", D = ":crossed_swords:" }
-local TAB_TITLE = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", recruit = "HEAD_INACTIVE", feed = "TAB_FEED" }
+local TAB_TITLE = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", home = "TAB_HOME", recruit = "HEAD_INACTIVE", feed = "TAB_FEED" }
 
 local function me() return (UnitName("player")) end
 -- "[Name]" from a game link; Discord shows the codes as they are.
@@ -126,6 +126,23 @@ function builders.recruit()
 	return lines
 end
 
+function builders.home()
+	local PT, lines = ns.Points, {}
+	local level, into, need = PT.Level(PT.GuildTotal())
+	lines[#lines + 1] = string.format("• %s (%d/%d)", string.format(L.HOME_LEVEL, level), into, need)
+	local ch = PT.Challenge()
+	lines[#lines + 1] = string.format("• %s: %d/%d", ch.text, ch.have, ch.goal)
+	for _, cat in ipairs({ "l", "d", "h" }) do
+		local top = PT.Rankings()[cat]
+		if #top > 0 then
+			local parts = {}
+			for k, t in ipairs(top) do parts[#parts + 1] = k .. ". " .. t.name .. " (" .. t.n .. ")" end
+			lines[#lines + 1] = "• **" .. L["HOME_RANK_" .. cat] .. "**: " .. table.concat(parts, ", ")
+		end
+	end
+	return lines
+end
+
 function builders.feed()
 	local F, lines = ns.Feed, {}
 	for _, e in ipairs(F.List()) do
@@ -174,6 +191,14 @@ local function Build()
 	local close = ns.Skin.Button(f)
 	close:SetSize(120, 22); close:SetPoint("BOTTOM", 0, 12); close:SetText(L.LFG_CLOSE)
 	close:SetScript("OnClick", function() f:Hide() end)
+end
+
+-- Any text in the box (Home's invite): to copy and paste anywhere; nothing is sent.
+function D.OpenText(text)
+	if not D.frame then Build() end
+	D.box:SetText(text)
+	D.frame:Show()
+	D.box:SetFocus(); D.box:HighlightText()
 end
 
 function D.Open(tab)

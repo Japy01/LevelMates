@@ -7,7 +7,7 @@ local function mate(name, level, z) STUB.Receive("LVLM", C.Encode("hb", { l = le
 local function pal(name) STUB.Receive("LVLM", C.Encode("pal", { p = 1 }), "GUILD", name .. "-Testrealm") end
 mate("Alto", 40, 1421); mate("Lejos", 22, 1412); mate("Cerca", 19, 1421); mate("Solo", 21, 1421); mate("Marcado", 30, 1421)
 pal("Lejos"); pal("Cerca"); pal("Marcado")
-B.Toggle()
+B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 local function shown()
 	local out = {}
 	for i = 1, #B.rows do local r = B.rows[i]; if r.button:IsShown() then out[#out + 1] = r.name.text end end
@@ -54,7 +54,7 @@ assert(not same(rowOf("Cerca").bg.colorTexture, B.PAL_TINT), "tint removed")
 
 -- a refused tick (sharing off) re-syncs the box
 ns.db.settings.share = false; C.Stop()
-B.Toggle(); B.Toggle()
+B.Toggle(); B.Toggle(); B.ShowTab("mates")
 B.palCheck:SetChecked(true); B.palCheck.scripts.OnClick(B.palCheck)
 assert(not P.IsOn() and not B.palCheck:GetChecked(), "box unticked again when refused")
 -- header layout: the box clears the divider and the subtitle stops before the box

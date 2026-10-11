@@ -19,11 +19,11 @@ STUB.player.guild = "Test Guild"
 
 -- officers only
 B.Toggle()
-assert(not B.tabs.recruit:IsShown(), "members do not see the tab")
+assert(not B.subs.recruit:IsShown(), "members do not see the tab")
 assert(not RC.SetTemplate(2, "x") and RC.Prepare(1, 2) == nil, "members cannot edit or post")
 STUB.iAmOfficer = true
 B.ShowTab("recruit")
-assert(B.tabs.recruit:IsShown() and B.recruitPanel:IsShown() and B.heading.text == L.HEAD_RECRUIT, "officers do")
+assert(B.subs.recruit:IsShown() and B.recruitPanel:IsShown() and B.heading.text == L.HEAD_RECRUIT, "officers do")
 assert(B.recruitEdit[1]:GetText() == L.RECRUIT_DEFAULT, "a default template")
 for i = 1, #B.rows do assert(not B.rows[i].button:IsShown(), "no list rows here") end
 
@@ -61,4 +61,4 @@ assert(STUB.lastChat == nil and said(string.format(L.RECRUIT_NO_CHANNEL, 1)), "n
 -- members again: no tab
 STUB.iAmOfficer = false
 B.Refresh()
-assert(not B.tabs.recruit:IsShown() and B.tab ~= "recruit", "back to a member's tabs")
+assert(not B.subs.recruit:IsShown() and B.tab ~= "recruit", "back to a member's tabs")

@@ -17,9 +17,8 @@ local function visible()
 	return out
 end
 
-assert(B.tabs.goals, "fourth tab")
-assert(B.frame.Tabs[4] == B.tabs.goals, "goals is the fourth classic tab")
-B.tabs.goals.scripts.OnClick(B.tabs.goals)
+assert(B.subs.goals, "a Guild sub-section")
+B.subs.goals.scripts.OnClick(B.subs.goals)
 assert(B.tab == "goals" and ns.char.boardTab == "goals", "goals tab, remembered")
 assert(B.headText[1].text == L.COL_BY and B.headText[3].text == L.COL_GOAL and B.headText[4].text == L.COL_PROGRESS and B.headText[5].text == L.COL_UNTIL, "headers")
 assert(B.rows[1].zone:GetWidth() == B.GCOLS[3], "goals column widths")

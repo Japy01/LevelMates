@@ -43,7 +43,7 @@ assert(told == 1, "completed: told once")
 STUB.Receive("LVLM", C.Encode("qo", { i = 555, o = "1/1" }), "GUILD", "Mario-Testrealm")
 assert(#Q.Shared("Mario") == 1, "a quest I do not have is not shown")
 STUB.Receive("LVLM", C.Encode("qo", { i = 102, o = "1/3" }), "GUILD", "Nadie-Testrealm")
-B.Toggle()
+B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 local row
 for i = 1, #B.rows do if B.rows[i].name.text == "Mario" then row = B.rows[i] end end
 row.button.scripts.OnEnter(row.button)

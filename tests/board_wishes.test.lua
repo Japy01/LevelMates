@@ -22,7 +22,7 @@ local function visible()
 end
 
 B.ShowTab("wishes")
-assert(B.tab == "wishes" and B.frame.Tabs[5] == B.tabs.wishes and B.frame.selectedTab == 5, "fifth classic tab")
+assert(B.tab == "wishes" and B.subs.wishes.lit and B.frame.selectedTab == 4, "a Guild sub-section, lit")
 assert(B.headText[1].text == L.COL_WHO and B.headText[3].text == L.COL_ITEM and B.headText[5].text == L.COL_SINCE, "headers")
 assert(B.rows[1].zone:GetWidth() == B.WCOLS[3], "wishes column widths")
 local rows = visible()

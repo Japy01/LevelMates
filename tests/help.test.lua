@@ -19,7 +19,7 @@ assert(H.active.zz11 and H.active.zz11.name == "Mario", "stored")
 assert(STUB.printed[#STUB.printed]:find("Mario"), "notice")
 assert(wp and wp.uiMapID == 1421 and math.abs(wp.x - 0.1) < 0.001, "waypoint set on my map")
 -- board lists the request with an "on my way" button, and flips its help button while mine is active
-ns.Board.Toggle()
+ns.Board.Toggle(); ns.Board.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 assert(ns.Board.helpButton.text == ns.L.BTN_HELP_CANCEL, "help button flips to cancel: " .. tostring(ns.Board.helpButton.text))
 local row = ns.Board.helpRows[1]
 assert(row and row.text.text and row.text.text:find("Mario") and row.text.text:find("Elite X"), "active request listed: " .. tostring(row and row.text.text))

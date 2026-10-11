@@ -18,14 +18,21 @@ B.CCOLS = { 150, 1, 289, 60, 100 }   -- professions: who, -, progress bar, rank,
 B.BAR_W = 160
 B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
 B.KCOLS = { 150, 1, 339, 50, 60 }   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
+B.HCOLS = { 170, 1, 279, 80, 70 }   -- home: who or what, -, details, numbers, action (same total as B.COLS)
 B.ICOLS = { 150, 50, 160, 110, 130 }   -- inactive members: name, level, rank, away, joined (same total as B.COLS)   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 8, 104, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
-B.TAB_KEYS = { "mates", "lfg", "journal", "goals", "wishes", "crafts", "class", "feed", "recruit" }
-local TAB_LABELS = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT" }
+B.TAB_KEYS = { "home", "mates", "lfg", "guild", "journal" }   -- the five main tabs
+B.GUILD_KEYS = { "feed", "goals", "wishes", "crafts", "class", "recruit" }   -- the Guild tab's sub-sections
+B.CONTENT_KEYS = { "home", "mates", "lfg", "journal", "feed", "goals", "wishes", "crafts", "class", "recruit" }   -- what a page shows
+local TAB_LABELS = { home = "TAB_HOME", guild = "TAB_GUILD", mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT" }
 B.TAB_LABELS = TAB_LABELS
-local HEAD_KEY = { mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT" }
-local function KnownTab(key) for _, k in ipairs(B.TAB_KEYS) do if k == key then return key end end; return "mates" end
+local HEAD_KEY = { home = "HOME", mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT" }
+local function KnownTab(key) for _, k in ipairs(B.CONTENT_KEYS) do if k == key then return key end end; return "home" end
+-- The main tab a page belongs to: the Guild tab's sub-sections belong to "guild".
+function B.MainOf(key) for _, k in ipairs(B.GUILD_KEYS) do if k == key then return "guild" end end; return key end
+-- "guild" opens its last sub-section (the wall at first).
+local function Resolve(key) if key == "guild" then return ns.char.guildSub or "feed" end; return key end
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
 B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
@@ -187,6 +194,10 @@ local function Build()
 		r.barFill = btn:CreateTexture(nil, "OVERLAY"); r.barFill:SetColorTexture(0.9, 0.7, 0.15, 0.9); r.barFill:SetHeight(8); r.barFill:Hide()
 		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
+			if B.tab == "home" then
+				if self.homeEntry and not self.homeEntry.header then B.HomeAction(self.homeEntry) end
+				return
+			end
 			if B.tab == "feed" then return end
 			if B.tab == "lfg" then   -- the meetup calendar
 				if self.meet then B.OpenMeetMenu(self.meet) end
@@ -338,6 +349,16 @@ local function Build()
 		B.tabs[key], tabList[i], prevTab = b, b, b
 	end
 	f.Tabs = tabList   -- the template's parentArray, set here so the order is ours
+	-- the Guild tab's sub-sections: a row of buttons on the subtitle's line
+	B.subs = {}
+	local prevSub
+	for _, key in ipairs(B.GUILD_KEYS) do
+		local b = ns.Skin.Button(f)
+		b:SetSize(100, 20); b:SetText(L[TAB_LABELS[key]])
+		if prevSub then b:SetPoint("LEFT", prevSub, "RIGHT", 4, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN, -(insetTop + 31)) end
+		b:SetScript("OnClick", function() B.SetTab(key) end)
+		B.subs[key], prevSub = b, b
+	end
 	if PanelTemplates_SetNumTabs then PanelTemplates_SetNumTabs(f, #tabList) end
 	B.tab = KnownTab(ns.char.boardTab)
 
@@ -556,6 +577,7 @@ end
 local function SetHeaders()
 	local lfg = B.tab == "lfg"
 	if lfg then for i = 1, 5 do B.headText[i]:SetText("") end; return end   -- the grid has no columns
+	if B.tab == "home" then for i = 1, 5 do B.headText[i]:SetText("") end; return end
 	if B.tab == "recruit" then
 		if B.recruitView == "inactive" then
 			B.headText[1]:SetText(L.COL_NAME); B.headText[2]:SetText(L.COL_LEVEL); B.headText[3]:SetText(L.COL_RANK_GUILD)
@@ -926,6 +948,92 @@ function B.DungeonTooltip(card)
 	GameTooltip:Show()
 end
 
+-- Home: the guild, what is happening now, what is for me, this week.
+local HOME_COLOR = { guild = { 1, 0.82, 0 }, now = { 0.4, 1, 0.4 }, foryou = { 1, 0.82, 0 }, week = { 0.6, 0.8, 1 } }
+local function FillHome(list)
+	for i = 1, ROWS do
+		local r, e = B.rows[i], list[i]
+		r.button.mate, r.button.adId, r.button.homeEntry = nil, nil, e
+		r.barBg:Hide(); r.barFill:Hide()
+		if e and e.header then
+			r.icon:Hide()
+			r.name:SetText(L["HOME_" .. e.header:upper()] .. (e.count and ("  •  " .. e.count) or ""))
+			SectionHeader(r)
+			r.name:SetTextColor(unpack(HOME_COLOR[e.header] or { 1, 0.82, 0 }))
+			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
+			r.button:Show()
+		elseif e then
+			local m = e.name and R.mates[e.name]
+			r.icon:Hide()
+			r.level:SetText(""); r.zone:SetTextColor(1, 1, 1); r.group:SetTextColor(1, 1, 1); r.xph:SetTextColor(0.4, 1, 0.4)
+			r.name:SetTextColor(1, 1, 1)
+			local action = ""
+			if e.kind == "level" or e.kind == "challenge" then   -- a bar across the details column
+				local have, goal = e.kind == "level" and e.into or e.have, e.kind == "level" and e.need or e.goal
+				r.name:SetText(e.kind == "level" and string.format(L.HOME_LEVEL, e.level) or e.text); r.name:SetTextColor(1, 0.82, 0)
+				r.zone:SetText("")
+				r.barBg:ClearAllPoints(); r.barBg:SetPoint("LEFT", r.zone, "LEFT", 0, 0); r.barBg:Show()
+				r.barFill:ClearAllPoints(); r.barFill:SetPoint("LEFT", r.zone, "LEFT", 0, 0)
+				r.barFill:SetWidth(math.max(1, B.BAR_W * math.min(1, have / math.max(1, goal)))); r.barFill:Show()
+				r.group:SetText(have .. "/" .. goal)
+				if e.kind == "challenge" and e.done then action = L.HOME_DONE end
+			elseif e.kind == "help" then
+				local info = e.zone and C_Map.GetMapInfo(e.zone)
+				r.name:SetText(e.name); r.name:SetTextColor(ClassColor(m and m.class))
+				r.zone:SetText(e.text .. (info and ("  ·  " .. info.name) or "")); r.zone:SetTextColor(1, 0.5, 0.4)
+				action = L.HOME_GO
+			elseif e.kind == "lfg" then
+				r.name:SetText(e.name); r.name:SetTextColor(ClassColor(m and m.class))
+				r.zone:SetText(ns.Dungeons.Name(e.dungeon) .. "  ·  " .. ns.LFG.RolesShort(e.roles))
+				action = L.HOME_JOIN
+			elseif e.kind == "meet" then
+				r.name:SetText(e.meet.by)
+				r.zone:SetText(ns.Dungeons.Name(e.meet.d) .. "  ·  " .. ns.Meetups.When(e.meet))
+				action = L.HOME_SEE
+			elseif e.kind == "mate" then
+				SetClassIcon(r.icon, m and m.class)
+				r.name:SetText(e.name); r.name:SetTextColor(ClassColor(m and m.class))
+				local info = m and m.mapId and C_Map.GetMapInfo(m.mapId)
+				r.zone:SetText(string.format(L.LEVEL_N, m and m.level or 0) .. (info and ("  ·  " .. info.name) or ""))
+				action = L.HOME_INVITE
+			elseif e.kind == "gift" then
+				r.name:SetText(e.name); r.name:SetTextColor(ClassColor(m and m.class))
+				r.zone:SetText((ns.Wishlist.Link(e.id) or string.format(L.WISH_UNKNOWN, e.id)) .. "  ·  " .. (e.price and ns.Gifts.Money(e.price) or L.GIVES))
+				action = e.price and L.HOME_BUY or L.HOME_RESERVE
+			elseif e.kind == "trainer" then
+				r.icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09"); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:Show()
+				r.name:SetText(string.format(L.HOME_TRAINER, e.n)); r.zone:SetText(e.names)
+			elseif e.kind == "rank" then
+				r.name:SetText(L["HOME_RANK_" .. e.cat]); r.name:SetTextColor(0.6, 0.8, 1)
+				local parts = {}
+				for k, t in ipairs(e.top) do parts[#parts + 1] = k .. ". " .. t.name .. " (" .. t.n .. ")" end
+				r.zone:SetText(table.concat(parts, "   "))
+			elseif e.kind == "invite" then
+				r.name:SetText(L.HOME_ALONE_TITLE); r.name:SetTextColor(1, 0.82, 0)
+				r.zone:SetText(L.HOME_ALONE)
+				action = L.HOME_COPY
+			end
+			r.xph:SetText(action)
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+
+-- A Home row's click does its thing (each one only from this click).
+function B.HomeAction(e)
+	if e.kind == "help" then ns.Help.Coming(e.id)
+	elseif e.kind == "lfg" then B.OpenDungeonMenu(e.dungeon)
+	elseif e.kind == "meet" then B.OpenMeetMenu(e.meet)
+	elseif e.kind == "mate" then B.OpenMenu(e.name)
+	elseif e.kind == "gift" then B.OpenWishMenu(e.id, "give", false, e.name)
+	elseif e.kind == "invite" then ns.DiscordCopy.OpenText(ns.Home.InviteText())
+	elseif e.kind == "level" or e.kind == "challenge" or e.kind == "rank" then B.SetTab("feed")
+	end
+end
+
 -- Recruit tab, inactive view.
 local function FillInactive(list)
 	for i = 1, ROWS do
@@ -1172,7 +1280,7 @@ function B.OpenShareMacroMenu(owner)
 end
 
 -- Pages of ROWS for the long tabs (journal, goals, wishes); the pager sits in the help-rows area.
-local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", feed = "feedPage" }
+local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", home = "homePage", feed = "feedPage" }
 local function Page(all)
 	local key = PAGE_KEY[B.tab]
 	local pages = math.max(1, math.ceil(#all / ROWS))
@@ -1209,8 +1317,12 @@ local function RefreshTabs()
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
 	local class = B.tab == "class"
 	local mates = B.tab == "mates"
-	local index = 1
-	for i, key in ipairs(B.TAB_KEYS) do if key == B.tab then index = i end end
+	local index, main = 1, B.MainOf(B.tab)
+	for i, key in ipairs(B.TAB_KEYS) do if key == main then index = i end end
+	for key, b in pairs(B.subs) do
+		b:SetShown(main == "guild" and (key ~= "recruit" or R.IAmOfficer()))
+		if key == B.tab then b:LockHighlight() else b:UnlockHighlight() end
+	end
 	if ns.Skin.On() then
 		B.frame.selectedTab = index
 		for i, key in ipairs(B.TAB_KEYS) do ns.Skin.SelectTab(B.tabs[key], i == index) end
@@ -1233,7 +1345,6 @@ local function RefreshTabs()
 	B.feedCemetery:SetShown(feed)
 	B.feedCemetery:SetText(B.feedDeaths and L.BTN_WALL_ALL or L.BTN_CEMETERY)
 	B.giftAdd:SetShown(wishes)
-	B.tabs.recruit:SetShown(R.IAmOfficer())
 	B.recruitViewButton:SetShown(recruit)
 	B.recruitViewButton:SetText(B.recruitView == "inactive" and L.BTN_TEMPLATES or L.BTN_INACTIVE)
 	B.recruitDaysButton:SetShown(recruit and B.recruitView == "inactive")
@@ -1244,9 +1355,11 @@ function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
 	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "mates"; ns.char.boardTab = "mates" end
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
-	local class = B.tab == "class"
+	local class, home = B.tab == "class", B.tab == "home"
 	local list, pages
-	if journal then
+	if home then
+		list, pages = Page(ns.Home.Rows())
+	elseif journal then
 		list = Page(ns.Journal.List(B.journalFilter or "all", B.search))
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
 	elseif recruit then
@@ -1272,14 +1385,16 @@ function B.Refresh()
 	else
 		list = lfg and (B.lfgCalendar and CalendarVisible() or GridVisible()) or Visible()
 	end
-	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
+	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or home and B.HCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
 	SetHeaders()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
 	B.subtitle:SetText(journal and ns.Journal.PaceText() or feed and B.feedDeaths and string.format(L.FEED_CEMETERY_SUB, B.feedDeathCount or 0) or L["SUB_" .. hk])
 	if lfg and B.lfgCalendar then B.heading:SetText(L.HEAD_CALENDAR); B.subtitle:SetText(L.SUB_CALENDAR) end
 	if recruit and B.recruitView == "inactive" then B.heading:SetText(L.HEAD_INACTIVE); B.subtitle:SetText(L.SUB_INACTIVE) end
-	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)   -- the partner box sits there only on Guildmates
+	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
+	B.subtitle:SetShown(B.MainOf(B.tab) ~= "guild")   -- the sub-section buttons sit there
+	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
 	if lfg and not B.lfgCalendar then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
@@ -1295,9 +1410,9 @@ function B.Refresh()
 		end
 	end
 	B.restedText:SetText(top)
-	if recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) else FillGrid(list) end else FillMates(list) end
+	if home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) else FillGrid(list) end else FillMates(list) end
 	if not lfg or B.lfgCalendar then for _, c in ipairs(B.cards) do c:Hide() end end
-	if not crafts then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
+	if not crafts and not home then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
 	-- rows one under another; a section header (plaque) takes more height, and the window grows with it
 	local y, extra = 0, 0
 	for _, r in ipairs(B.rows) do
@@ -1323,10 +1438,10 @@ function B.Refresh()
 	if recruit then emptyText = B.recruitView == "inactive" and #list == 0 and L.INACTIVE_EMPTY or "" end   -- the panel fills this tab
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
-	if (goals or wishes or crafts or feed or class or recruit) and pages and pages > 1 then   -- the pager only when there is more than one page
+	if (goals or wishes or crafts or feed or class or recruit or home) and pages and pages > 1 then   -- the pager only when there is more than one page
 		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
 	end
-	if journal or goals or wishes or crafts or feed or recruit or class then
+	if journal or goals or wishes or crafts or feed or recruit or class or home then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else
 		RefreshHelp()
@@ -1334,7 +1449,8 @@ function B.Refresh()
 end
 
 function B.SetTab(key)
-	key = KnownTab(key)
+	key = KnownTab(Resolve(key))
+	if B.MainOf(key) == "guild" then ns.char.guildSub = key end
 	ns.char.boardTab, B.tab, B.search = key, key, ""
 	if B.searchBox then B.searchBox:SetText("") end
 	B.Refresh()
@@ -1343,7 +1459,8 @@ end
 -- Open the board on a given tab (slash command, minimap, binding).
 function B.ShowTab(key)
 	if not B.frame then Build() end
-	B.tab = KnownTab(key)
+	B.tab = KnownTab(Resolve(key))
+	if B.MainOf(B.tab) == "guild" then ns.char.guildSub = B.tab end
 	ns.char.boardTab = B.tab
 	B.frame:Show()
 	B.Refresh()
@@ -1351,6 +1468,7 @@ end
 
 function B.Toggle()
 	if not B.frame then Build() end
+	if not B.frame:IsShown() then B.tab = "home" end   -- the board always opens on Home: "what do I do now"
 	B.frame:SetShown(not B.frame:IsShown())
 	B.Refresh()
 end

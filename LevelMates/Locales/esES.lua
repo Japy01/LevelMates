@@ -225,3 +225,11 @@ L.GUILD_LEVEL_UP = "¡La hermandad llega a nivel %d en LevelMates!"; L.GUILD_LEV
 
 -- Inicio
 L.HOME_INVITE_TEXT = "Hermandad %s: instalad LevelMates (CurseForge, World of Warcraft: Forever) para ver quién está conectado y subiendo cerca de vosotros, encontrar grupo para mazmorras y subir juntos el nivel de la hermandad."
+
+-- Inicio y las cinco pestañas
+L.TAB_HOME = "Inicio"; L.TAB_GUILD = "Hermandad"; L.HEAD_HOME = "Inicio"; L.SUB_HOME = "Lo que pasa en la hermandad y lo que puedes hacer ahora."; L.SEARCH_HOME = "Buscar..."
+L.HOME_GUILD = "La hermandad"; L.HOME_NOW = "Ahora mismo"; L.HOME_FORYOU = "Para ti"; L.HOME_WEEK = "Esta semana"
+L.HOME_LEVEL = "Nivel de hermandad %d"; L.HOME_DONE = "¡hecho!"; L.HOME_GO = "Voy"; L.HOME_JOIN = "Me apunto"; L.HOME_SEE = "Ver"; L.HOME_INVITE = "Invitar"
+L.HOME_BUY = "Comprar"; L.HOME_RESERVE = "Reservar"; L.HOME_TRAINER = "%d hechizos en tu entrenador"; L.HOME_COPY = "Copiar"
+L.HOME_RANK_l = "Más niveles"; L.HOME_RANK_d = "Más mazmorras"; L.HOME_RANK_h = "Más ayudas"
+L.HOME_ALONE_TITLE = "Trae a tu hermandad"; L.HOME_ALONE = "Tus hermanos salen aquí cuando instalan LevelMates. Copia una invitación para pegarla en el chat de hermandad o en Discord."

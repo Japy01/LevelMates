@@ -9,7 +9,7 @@ CLASS_ICON_TCOORDS = { MAGE = { 0.25, 0.5, 0, 0.25 }, WARRIOR = { 0, 0.25, 0, 0.
 STUB.atlases["classicon-mage"] = true   -- Forever draws class icons from atlases; warrior is missing on purpose to exercise the fallback
 local function hb(name, level, z, g, s, class) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = z, g = g or 0, s = s or 0, c = class }), "GUILD", name .. "-Testrealm") end
 hb("Mario", 30, 1421, 1, 1, "MAGE"); hb("Ana", 12, 1412, 0, 0, "WARRIOR"); hb("Luis", 22, 1421, 1, 0)
-B.Toggle()
+B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 
 local function same(a, b) return a and b and a[1] == b[1] and a[2] == b[2] and a[3] == b[3] end
 assert(B.frame:GetHeight() == B.CHROME + (B.MIN_ROWS + 3) * B.ROW_H, "compact with few mates: " .. tostring(B.frame:GetHeight()))

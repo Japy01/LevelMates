@@ -7,7 +7,7 @@ STUB.player.level = 20
 STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
 STUB.Receive("LVLM", C.Encode("hb", { l = 12, z = 1412 }), "GUILD", "Ana-Testrealm")
 STUB.Receive("LVLM", C.Encode("hb", { l = 22, z = 1421 }), "GUILD", "Luis-Testrealm")
-B.Toggle()
+B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 
 local function shown()
 	local out = {}

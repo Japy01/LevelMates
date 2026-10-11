@@ -6,7 +6,7 @@ local C, B, L = ns.Comm, ns.Board, ns.L
 for _, n in ipairs({ { "Mario", 30 }, { "Ana", 12 }, { "Marta", 22 } }) do
 	STUB.Receive("LVLM", C.Encode("hb", { l = n[2], z = 1421 }), "GUILD", n[1] .. "-Testrealm")
 end
-B.Toggle()
+B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 local function shown()
 	local out = {}
 	for i = 1, #B.rows do local r = B.rows[i]; if r.button:IsShown() then out[#out + 1] = r.name.text end end

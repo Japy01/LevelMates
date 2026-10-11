@@ -19,7 +19,7 @@ local function pick(text) for _, e in ipairs(entries) do if e.text == text then 
 local function cardOf(id) for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == id then return c end end end
 local function shownIds() local out = {}; for _, c in ipairs(B.cards) do if c:IsShown() then out[#out + 1] = c.dungeonId end end; return out end
 local function search(text) B.searchBox:SetText(text); B.searchBox.scripts.OnTextChanged(B.searchBox) end
-B.Toggle()
+B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 
 assert(B.tab == "mates" and B.helpButton:IsShown() and not B.lfgButton:IsShown() and #shownIds() == 0, "starts on guildmates, no cards")
 B.tabs.lfg.scripts.OnClick(B.tabs.lfg)

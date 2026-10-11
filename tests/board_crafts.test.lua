@@ -16,7 +16,7 @@ end
 local function visible() local out = {}; for i = 1, #B.rows do if B.rows[i].button:IsShown() then out[#out + 1] = B.rows[i] end end; return out end
 
 B.ShowTab("crafts")
-assert(B.frame.Tabs[6] == B.tabs.crafts and B.frame.selectedTab == 6, "sixth classic tab")
+assert(B.subs.crafts and B.frame.selectedTab == 4 and B.subs.crafts.lit, "a Guild sub-section, lit")
 assert(B.headText[1].text == L.COL_WHO and B.headText[3].text == L.COL_PROGRESS and B.headText[4].text == L.COL_RANK and B.headText[5].text == L.COL_SEEN, "headers")
 assert(B.rows[1].zone:GetWidth() == B.CCOLS[3], "column widths")
 local function name(r) return (r.name.text:gsub("^%s+", "")) end
