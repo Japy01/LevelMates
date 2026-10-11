@@ -103,6 +103,8 @@ do
 	STUB.Fire("GROUP_ROSTER_UPDATE")
 	assert(H.mine == nil, "request closed once Mario joined")
 	STUB.Advance(1)
-	assert(select(1, C.Decode(STUB.sent[#STUB.sent].msg)) == "helpok", "everyone is told (helpok)")
+	local told = false
+	for i = #STUB.sent, math.max(1, #STUB.sent - 3), -1 do if select(1, C.Decode(STUB.sent[i].msg)) == "helpok" then told = true end end
+	assert(told, "everyone is told (helpok)")
 	assert(STUB.printed[#STUB.printed]:find("Mario"), "user is told who joined: " .. tostring(STUB.printed[#STUB.printed]))
 end

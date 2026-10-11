@@ -26,7 +26,9 @@ assert(#R.List() == 2, "two mates")
 n = #STUB.sent
 STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
 STUB.Advance(6)
-assert(#STUB.sent == n + 1, "answered ping")
+local hbs = 0
+for i = n + 1, #STUB.sent do if C.Decode(STUB.sent[i].msg) == "hb" then hbs = hbs + 1 end end
+assert(hbs == 1, "answered ping with one heartbeat")
 -- expiry
 STUB.Advance(121)
 R.Expire()
@@ -52,7 +54,7 @@ n = #STUB.sent
 STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
 STUB.Advance(6)
 local answered = {}
-for i = n + 1, #STUB.sent do answered[#answered + 1] = select(1, C.Decode(STUB.sent[i].msg)) end
+for i = n + 1, #STUB.sent do local k = select(1, C.Decode(STUB.sent[i].msg)); if k ~= "pt" then answered[#answered + 1] = k end end   -- guild points go too; not the roster's business
 table.sort(answered)
 assert(table.concat(answered, ",") == "hb,q", "ping answered with hb and q: " .. table.concat(answered, ","))
 -- XP/h restarts at a level-up: the XP bar resets, so the old window would report nonsense

@@ -216,3 +216,9 @@ L.GIFT_BUY = "Lo compro (avisar al vendedor)"; L.SALE_FOR_YOU = "%s vende %s por
 
 -- Ayuda: confirmaciones
 L.HELP_SENT = "Petición de ayuda enviada a tu hermandad: %s. Pulsa el botón otra vez para cancelarla."; L.HELP_NO_GUILD = "No estás en una hermandad: la ayuda se pide a tu hermandad."; L.HELP_NOT_SENT = "No se ha podido enviar la petición de ayuda ahora. Prueba otra vez en un momento."
+
+-- Progreso de la hermandad
+L.OPT_POINTS = "Compartir mis puntos de hermandad"; L.OPT_POINTS_TT = "Lo que haces (niveles, mazmorras con hermanos, misiones, ayudas, regalos, quedadas) suma al nivel de la hermandad, al reto semanal y a los mejores de la semana."
+L.CHALLENGE_d = "%d mazmorras en grupo"; L.CHALLENGE_l = "%d niveles entre todos"; L.CHALLENGE_h = "%d ayudas"; L.CHALLENGE_q = "%d misiones entregadas"
+L.CHALLENGE_DONE_SHORT = "¡Reto semanal cumplido!"; L.CHALLENGE_DONE = "¡Reto semanal cumplido! %s"
+L.GUILD_LEVEL_UP = "¡La hermandad llega a nivel %d en LevelMates!"; L.GUILD_LEVEL_WALL = "Nivel de hermandad %d"

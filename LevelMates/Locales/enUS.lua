@@ -215,3 +215,9 @@ L.GIFT_BUY = "I'll buy it (tell the seller)"; L.SALE_FOR_YOU = "%s sells %s for 
 
 -- Help feedback
 L.HELP_SENT = "Help request sent to your guild: %s. Click the button again to cancel it."; L.HELP_NO_GUILD = "You are not in a guild: help requests go to your guild."; L.HELP_NOT_SENT = "The help request could not be sent now. Try again in a moment."
+
+-- Guild progress
+L.OPT_POINTS = "Share my guild points"; L.OPT_POINTS_TT = "What you do (levels, dungeons with guildmates, quests, helps, gifts, meetups) adds to the guild level, the weekly challenge and the weekly top three."
+L.CHALLENGE_d = "%d dungeons in a group"; L.CHALLENGE_l = "%d levels between everyone"; L.CHALLENGE_h = "%d helps"; L.CHALLENGE_q = "%d quests turned in"
+L.CHALLENGE_DONE_SHORT = "Weekly challenge done!"; L.CHALLENGE_DONE = "Weekly challenge done! %s"
+L.GUILD_LEVEL_UP = "The guild reaches level %d in LevelMates!"; L.GUILD_LEVEL_WALL = "Guild level %d"

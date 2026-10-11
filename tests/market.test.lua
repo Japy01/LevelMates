@@ -51,6 +51,7 @@ MenuUtil.CreateContextMenu = function(owner, fn) made = {}; local root = { Creat
 row.button.scripts.OnClick(row.button, "RightButton")
 assert(made[1] and made[1].text == L.GIFT_BUY, "buy, not reserve")
 made[1].fn()
+STUB.Advance(12)
 assert(last("gr").i == 2318 and last("gr").to == "Mario", "asks the seller")
 assert(B.giftAdd.text == L.BTN_GIFT_ADD and L.BTN_GIFT_ADD ~= "", "the Offer button")
 

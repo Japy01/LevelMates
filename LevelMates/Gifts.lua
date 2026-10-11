@@ -184,7 +184,7 @@ C.OnMessage("gr", function(f, name)
 		if not g or (g.reservedBy and g.reservedBy ~= name) then return end   -- first come
 		local first = g.reservedBy == nil
 		g.reservedBy = name
-		if first then ns.Notice(L.GIFT_RESERVED, name, link(f.i)) end
+		if first then ns.Notice(L.GIFT_RESERVED, name, link(f.i)); ns.Fire("LM_GIFT_GIVEN") end
 		C.Send("gro", { i = f.i, by = name }, "now")   -- everyone learns who got it from me
 		ns.Fire("LM_WISHES_CHANGED")
 	end

@@ -50,6 +50,7 @@ Builds.lua
 Macros.lua
 Ask.lua
 Feed.lua
+Points.lua
 MateCard.lua
 Alts.lua
 GoalDialog.lua
