@@ -28,7 +28,7 @@ AC.LIST = {
 	{ id = "quest100", cat = "q", n = 100, icon = "Interface\\Icons\\INV_Letter_15" },
 	{ id = "quest500", cat = "q", n = 500, icon = "Interface\\Icons\\INV_Scroll_03" },
 	{ id = "dead10", cat = "dead", n = 10, icon = "Interface\\Icons\\INV_Misc_Bone_HumanSkull_01" },
-	{ id = "challenge", cat = "ch", n = 1, icon = "Interface\\Icons\\INV_BannerPVP_02" },
+	{ id = "challenge", cat = "ch", n = 1, icon = "banner" },   -- the faction's banner
 }
 local BY_ID, INDEX = {}, {}
 for i, a in ipairs(AC.LIST) do BY_ID[a.id], INDEX[a.id] = a, i end
@@ -36,7 +36,8 @@ function AC.Get(id) return BY_ID[id] end
 function AC.Index(id) return INDEX[id] end
 function AC.Name(id) return L["ACH_" .. id] or id end
 function AC.Desc(id) local a = BY_ID[id]; return string.format(L["ACHD_" .. a.cat], a.n) end
-function AC.Link(id) local a = BY_ID[id]; return "|T" .. a.icon .. ":14|t " .. AC.Name(id) end
+function AC.Icon(id) local a = BY_ID[id]; return a.icon == "banner" and ns.Skin.Banner() or a.icon end
+function AC.Link(id) return "|T" .. AC.Icon(id) .. ":14|t " .. AC.Name(id) end
 
 local function me() return (UnitName("player")) end
 local function stats() ns.char.stats = ns.char.stats or {}; return ns.char.stats end

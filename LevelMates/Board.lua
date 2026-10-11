@@ -29,7 +29,7 @@ local TAB_LABELS = { home = "TAB_HOME", guild = "TAB_GUILD", mates = "TAB_MATES"
 B.TAB_LABELS = TAB_LABELS
 local HEAD_KEY = { home = "HOME", mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT" }
 local TAB_ICON = { home = "Interface\\Icons\\INV_Misc_Book_09", mates = "Interface\\Icons\\Spell_Holy_PrayerOfFortitude",
-	lfg = "Interface\\Icons\\INV_Misc_Key_03", guild = "Interface\\Icons\\INV_BannerPVP_02", journal = "Interface\\Icons\\INV_Misc_Note_01" }
+	lfg = "Interface\\Icons\\INV_Misc_Key_03", guild = "banner", journal = "Interface\\Icons\\INV_Misc_Note_01" }
 local function KnownTab(key) for _, k in ipairs(B.CONTENT_KEYS) do if k == key then return key end end; return "home" end
 -- The main tab a page belongs to: the Guild tab's sub-sections belong to "guild".
 function B.MainOf(key) for _, k in ipairs(B.GUILD_KEYS) do if k == key then return "guild" end end; return key end
@@ -323,7 +323,7 @@ local function Build()
 	B.tabs = {}
 	local tabList, prevTab = {}, nil
 	for i, key in ipairs(B.TAB_KEYS) do
-		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i, TAB_ICON[key], L[TAB_LABELS[key]])
+		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i, TAB_ICON[key] == "banner" and ns.Skin.Banner() or TAB_ICON[key], L[TAB_LABELS[key]])
 		b:SetID(i)
 		-- in the top band, right of the portrait, as the spellbook's
 		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 10, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", f.gameFrame and 66 or 16, -24) end
@@ -955,7 +955,7 @@ local function FillAch(list)
 		r.button.mate, r.button.adId, r.button.entry, r.button.ach = nil, nil, nil, a
 		if a then
 			local has = AC.Has(a.id)
-			r.icon:SetTexture(a.icon); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:SetDesaturated(not has); r.icon:Show()
+			r.icon:SetTexture(AC.Icon(a.id)); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:SetDesaturated(not has); r.icon:Show()
 			r.name:SetText(AC.Name(a.id)); r.name:SetTextColor(unpack(has and { 1, 0.82, 0 } or { 0.7, 0.7, 0.7 }))
 			r.level:SetText("")
 			r.zone:SetText(AC.Desc(a.id)); r.zone:SetTextColor(1, 1, 1)

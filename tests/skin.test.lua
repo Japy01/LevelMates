@@ -43,3 +43,9 @@ SK.InkPass(); SK.InkPass()
 assert(math.abs(fs.color[1] - SK.INK_LEVELS[5]) < 1e-6, "never darker twice")
 SlashCmdList.LEVELMATES("tinta 9")
 assert(ns.db.settings.ink == 5, "out of range: unchanged")
+
+-- the guild banner in my faction's colours
+UnitFactionGroup = function() return "Horde" end
+assert(SK.Banner():find("INV_BannerPVP_01", 1, true), "red for the Horde")
+UnitFactionGroup = function() return "Alliance" end
+assert(SK.Banner():find("INV_BannerPVP_02", 1, true), "blue for the Alliance")

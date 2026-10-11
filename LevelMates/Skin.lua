@@ -10,6 +10,11 @@ SK.FLAT, SK.EDGE = "Interface\\Buttons\\WHITE8X8", "Interface\\Tooltips\\UI-Tool
 SK.ROCK, SK.MARBLE = "Interface\\FrameGeneral\\UI-Background-Rock", "Interface\\FrameGeneral\\UI-Background-Marble"
 SK.PAGE, SK.RIBBON, SK.DIVIDER = "spellbook-Page-Right-C60", "spellbook-background-evergreen-ribbon", "spellbook-divider"
 SK.ICON = "Interface\\AddOns\\LevelMates\\Media\\icon"
+-- The guild banner in my faction's colours: red for the Horde, blue for the Alliance.
+function SK.Banner()
+	local faction = UnitFactionGroup and UnitFactionGroup("player")
+	return faction == "Horde" and "Interface\\Icons\\INV_BannerPVP_01" or "Interface\\Icons\\INV_BannerPVP_02"
+end
 SK.C = {
 	frame = { 0.045, 0.035, 0.025, 0.98 }, frameBorder = { 0.62, 0.47, 0.24, 1 },
 	page = { 0.86, 0.76, 0.58, 1 },                            -- parchment, where the page art is missing
