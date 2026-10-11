@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- `/lm informe` opens a report to copy when something goes wrong: versions, messages, guildmates seen and LevelMates' last errors. Nothing is sent.
+
 ## 0.3.0
 
 - **The guild book**: LevelMates looks like the game's spellbook: the game's own frame with a round portrait, icon tabs at the top, a parchment page with the game's decorative letters, ribbon and divider, section bands with counts, and dark ink on the page.
@@ -9,7 +13,6 @@
 - **Ask for help** never fails in silence: a confirmation when it goes out, and the reason when it cannot (no guild, not now).
 - `/lm sim puntos` tries the guild progress alone.
 - `/lm tinta 1-5` sets how dark the text on the page is, live.
-- `/lm informe` opens a report to copy when something goes wrong: versions, messages, guildmates seen and LevelMates' last errors. Nothing is sent.
 
 ## 0.2.0
 
