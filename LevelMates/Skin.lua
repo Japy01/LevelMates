@@ -125,6 +125,7 @@ function SK.Window(name, parent, portrait)
 			else
 				ButtonFrameTemplate_HidePortrait(gf)
 				if ButtonFrameTemplate_HideAttic then ButtonFrameTemplate_HideAttic(gf) end
+				if gf.TopTileStreaks then gf.TopTileStreaks:Hide() end   -- the attic's band would cover the page's first lines
 			end
 			gf.TitleText = gf.TitleContainer and gf.TitleContainer.TitleText or gf.TitleText
 			gf.gameFrame = true
@@ -158,7 +159,7 @@ function SK.SmallPage(f)
 	f:HookScript("OnShow", function() SK.InkWindow(f); if C_Timer then C_Timer.After(0, function() SK.InkWindow(f) end) end end)
 end
 -- Everything written on a window's page, in ink: its texts and those of its rows and boxes. The game's red buttons,
--- the close button and the title band keep their own colours; typed text goes dark brown.
+-- the close button, the title band and the typing boxes keep their own colours.
 function SK.InkWindow(f)
 	local function walk(o)
 		if o.lmKeep or o == f.CloseButton or o == f.TitleContainer then return end
@@ -169,8 +170,7 @@ function SK.InkWindow(f)
 			end
 		end
 		for _, c in ipairs({ o:GetChildren() }) do
-			if c.GetObjectType and c:GetObjectType() == "EditBox" then c:SetTextColor(SK.Ink(1, 1, 1))
-			else walk(c) end
+			if not (c.GetObjectType and c:GetObjectType() == "EditBox") then walk(c) end   -- typed text stays light on its dark box
 		end
 	end
 	walk(f)

@@ -145,7 +145,9 @@ function MC.Refresh()
 			qb:ClearAllPoints(); qb:SetPoint("BOTTOMLEFT", 16, 40 + (#missing - i) * 24)   -- stacked right above the action buttons
 		else qb:Hide() end
 	end
-	MC.frame:SetHeight(math.max(260, 100 + #MC.Lines(name) * 16) + #missing * 24)   -- room for every line above the buttons
+	-- room for the text as written (wrapped lines too), the quest buttons and the action row, no more
+	local textH = MC.frame.body.GetStringHeight and MC.frame.body:GetStringHeight() or #MC.Lines(name) * 16
+	MC.frame:SetHeight(math.max(160, 34 + textH + 16 + #missing * 24 + 40))
 	ns.Skin.InkWindow(MC.frame)
 end
 
