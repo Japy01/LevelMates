@@ -247,3 +247,4 @@ L.ACHD_m = "Go to %d meetups"; L.ACHD_q = "Turn in %d quests"; L.ACHD_dead = "Di
 L.ACH_GOT = "Achievement: %s"; L.FEED_ACH = "earned %s"; L.CARD_ACH = "Achievements: %d"; L.BTN_ACH = "Achievements"; L.BTN_JOURNAL = "Journal"
 L.OPT_ACH = "Share my achievements"; L.OPT_ACH_TT = "Your achievements go to the guild wall and your card."
 L.OPT_PAGE_SHARE = "Share"; L.OPT_PAGE_NOTICES = "Notices"
+L.INVITE_SENT = "Invite sent to %s (it may take a few seconds to reach them)."

@@ -30,3 +30,9 @@ assert(B.lastMenuFor == "Ana", "her menu")
 -- Copy for Discord on Home
 local text = ns.DiscordCopy.Text("home")
 assert(text:find(string.format(L.HOME_LEVEL, 1), 1, true), "guild level in the copy")
+
+-- inviting says so at once (the server may take a moment)
+C_PartyInfo = { InviteUnit = function() end }
+STUB.printed = {}
+B.Invite("Gigasamba Caramba")
+assert(STUB.printed[#STUB.printed]:find(string.format(L.INVITE_SENT, "Gigasamba Caramba"), 1, true), "told at once")

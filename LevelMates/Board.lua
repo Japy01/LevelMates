@@ -1500,7 +1500,7 @@ function B.Toggle()
 end
 
 -- Actions below run only from click handlers (menu entries / row clicks): Forever drops them otherwise.
-function B.Invite(name) C_PartyInfo.InviteUnit(name) end
+function B.Invite(name) C_PartyInfo.InviteUnit(name); ns.Say(L.INVITE_SENT, name) end   -- the server can take a few seconds: say the click worked
 function B.Whisper(name) ChatFrameUtil.SendTell(name) end
 function B.OpenMenu(name)
 	B.lastMenuFor = name
