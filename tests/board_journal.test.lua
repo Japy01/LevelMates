@@ -21,7 +21,7 @@ assert(B.headText[1].text == L.COL_WHEN and B.headText[3].text == L.COL_ENTRY an
 assert(B.rows[1].zone:GetWidth() == B.JCOLS[3], "journal column widths")
 
 local rows = visible()
-assert(#rows == 20 and rows[1].zone.text == J.Text(J.List("all", "")[1]), "newest first, one page of 20")
+assert(#rows == 20 and rows[1].zone.text == ns.Skin.InkText(J.Text(J.List("all", "")[1])), "newest first, one page of 20")
 assert(B.journalPageText.text == string.format(L.J_PAGE, 1, 2), "page 1 of 2: " .. tostring(B.journalPageText.text))
 assert(B.journalPrev.enabled == false and B.journalNext.enabled == true, "pager buttons")
 B.journalNext.scripts.OnClick(B.journalNext)

@@ -111,7 +111,7 @@ local function Build()
 	strip:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN - 4, -(B.TOP - 2)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 4))
 	B.colStrip = strip
 	local search = CreateFrame("EditBox", nil, f, "SearchBoxTemplate")
-	search:SetSize(170, 20); search:SetPoint("TOPRIGHT", f, "TOPRIGHT", -16, -(insetTop - 44))   -- in the top band, as the spellbook's
+	search:SetSize(170, 20); search:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -30)   -- in the top band, as the spellbook's
 	if search.Instructions then search.Instructions:SetText(L.SEARCH_HINT) end
 	search:SetScript("OnTextChanged", function(self) B.search = self:GetText() or ""; B.Refresh() end)
 	-- "Discord": the current tab as text to paste in Discord (every tab).
@@ -323,7 +323,7 @@ local function Build()
 		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i, TAB_ICON[key], L[TAB_LABELS[key]])
 		b:SetID(i)
 		-- in the top band, right of the portrait, as the spellbook's
-		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 10, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", f.gameFrame and 66 or 16, -(insetTop - 46)) end
+		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 10, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", f.gameFrame and 66 or 16, -24) end
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.tabs[key], tabList[i], prevTab = b, b, b
 	end
@@ -334,7 +334,7 @@ local function Build()
 	for _, key in ipairs(B.GUILD_KEYS) do
 		local b = ns.Skin.Button(f)
 		b:SetSize(100, 20); b:SetText(L[TAB_LABELS[key]])
-		if prevSub then b:SetPoint("LEFT", prevSub, "RIGHT", 4, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN, -(insetTop + 31)) end
+		if prevSub then b:SetPoint("LEFT", prevSub, "RIGHT", 4, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN, -(insetTop + 36)) end
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.subs[key], prevSub = b, b
 	end
@@ -411,7 +411,7 @@ local function Build()
 	-- Recruit tab (officers): three templates, which one, the channel, a preview, the status and Publish.
 	local rp = CreateFrame("Frame", nil, f)
 	rp:SetPoint("TOPLEFT", B.MARGIN, -B.TOP); rp:SetSize(B.WIDTH - 2 * B.MARGIN, 300); rp:Hide()
-	B.recruitPanel, B.recruitEdit, B.recruitUse, B.recruitChannel = rp, {}, {}, {}
+	B.recruitPanel, B.recruitEdit, B.recruitUse, B.recruitChannel, B.recruitLabels = rp, {}, {}, {}, {}
 	for i = 1, 3 do
 		local use = CreateFrame("CheckButton", nil, rp, "UICheckButtonTemplate")
 		use:SetSize(22, 22); use:SetPoint("TOPLEFT", 0, -(i - 1) * 34)
@@ -428,6 +428,7 @@ local function Build()
 		cb:SetScript("OnClick", function() ns.char.recruitChannel = ch; B.Refresh() end)
 		local label = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 		label:SetPoint("LEFT", cb, "RIGHT", 2, 0); label:SetText(L["RECRUIT_CHANNEL_" .. ch])
+		table.insert(B.recruitLabels, label)
 		B.recruitChannel[ch] = cb
 	end
 	local preview = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -448,6 +449,7 @@ local function Build()
 	remind:SetSize(22, 22); remind:SetPoint("LEFT", post, "RIGHT", 20, 0)
 	remind:SetScript("OnClick", function(self) ns.char.recruitRemind = self:GetChecked() and true or false end)
 	local remindLabel = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	table.insert(B.recruitLabels, remindLabel)
 	remindLabel:SetPoint("LEFT", remind, "RIGHT", 2, 0); remindLabel:SetText(L.RECRUIT_REMIND)
 	B.recruitRemind = remind
 	-- Recruit tab: "Inactive" (bottom left) swaps the templates for members who have not logged in; 14 or 30 days.
@@ -472,7 +474,9 @@ local function Build()
 	end
 	-- dark ink for every text written on the parchment
 	local Ink = ns.Skin.InkFont
-	Ink(B.heading); Ink(B.restedText); Ink(B.subtitle); Ink(f.empty); Ink(B.journalPageText); Ink(B.nearLabel); Ink(B.palLabel)
+	Ink(B.heading); Ink(B.restedText); Ink(B.subtitle); Ink(f.empty); Ink(B.journalPageText); Ink(B.palLabel)   -- not nearLabel: it sits on the dark bar under the page
+	for _, label in ipairs(B.recruitLabels) do Ink(label) end
+	for _, edit in ipairs(B.recruitEdit) do Ink(edit) end
 	for _, fs in ipairs(B.headText) do Ink(fs) end
 	for _, r in ipairs(B.rows) do Ink(r.name); Ink(r.level); Ink(r.zone); Ink(r.group); Ink(r.xph) end
 	for _, hr in ipairs(B.helpRows) do Ink(hr.text) end
@@ -1300,7 +1304,7 @@ local function RefreshRecruit()
 end
 
 local function RefreshTabs()
-	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "mates"; ns.char.boardTab = "mates" end
+	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "feed"; ns.char.boardTab = "feed"; ns.char.guildSub = "feed" end   -- members: the wall, never stuck
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
 	local class = B.tab == "class"
 	local mates = B.tab == "mates"
@@ -1340,7 +1344,7 @@ end
 
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
-	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "mates"; ns.char.boardTab = "mates" end
+	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "feed"; ns.char.boardTab = "feed"; ns.char.guildSub = "feed" end   -- members: the wall, never stuck
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
 	local class, home = B.tab == "class", B.tab == "home"
 	local list, pages
@@ -1381,6 +1385,7 @@ function B.Refresh()
 	if recruit and B.recruitView == "inactive" then B.heading:SetText(L.HEAD_INACTIVE); B.subtitle:SetText(L.SUB_INACTIVE) end
 	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
 	B.subtitle:SetShown(B.MainOf(B.tab) ~= "guild")   -- the sub-section buttons sit there
+	B.divider:SetShown(B.MainOf(B.tab) ~= "guild")
 	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
@@ -1437,7 +1442,7 @@ end
 
 function B.SetTab(key)
 	key = KnownTab(Resolve(key))
-	if B.MainOf(key) == "guild" then ns.char.guildSub = key end
+	if B.MainOf(key) == "guild" and (key ~= "recruit" or R.IAmOfficer()) then ns.char.guildSub = key end
 	ns.char.boardTab, B.tab, B.search = key, key, ""
 	if B.searchBox then B.searchBox:SetText("") end
 	B.Refresh()
@@ -1447,7 +1452,7 @@ end
 function B.ShowTab(key)
 	if not B.frame then Build() end
 	B.tab = KnownTab(Resolve(key))
-	if B.MainOf(B.tab) == "guild" then ns.char.guildSub = B.tab end
+	if B.MainOf(B.tab) == "guild" and (B.tab ~= "recruit" or R.IAmOfficer()) then ns.char.guildSub = B.tab end
 	ns.char.boardTab = B.tab
 	B.frame:Show()
 	B.Refresh()
@@ -1536,5 +1541,6 @@ ns.Slash("recruit", function() B.ShowTab("recruit") end)
 ns.On("LM_BUILDS_CHANGED", B.Refresh)
 ns.On("LM_MACROS_CHANGED", B.Refresh)
 ns.On("LM_QUESTIONS_CHANGED", B.Refresh)
+ns.On("LM_POINTS_CHANGED", B.Refresh)
 ns.Slash("clase", function() B.ShowTab("class") end)
 ns.Slash("class", function() B.ShowTab("class") end)

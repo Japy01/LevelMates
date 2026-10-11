@@ -24,7 +24,15 @@ SK.HEAD_H = 22   -- a section header row
 function SK.On() return true end   -- one style: the book (kept as a function for the code paths that ask)
 
 -- Text written on the parchment: the colour a fill asks for, in ink (darker, so it reads on paper).
-function SK.Ink(r, g, b) return (r or 1) * 0.45, (g or 1) * 0.40, (b or 1) * 0.32 end
+function SK.Ink(r, g, b) return (r or 1) * 0.36, (g or 1) * 0.30, (b or 1) * 0.22 end
+-- Colour codes inside a text (item links, quality colours) in ink too: a white or grey item would vanish on paper.
+function SK.InkText(s)
+	if type(s) ~= "string" then return s end
+	return (s:gsub("|c(%x%x)(%x%x)(%x%x)(%x%x)", function(a, r, g, b)
+		local ir, ig, ib = SK.Ink(tonumber(r, 16) / 255, tonumber(g, 16) / 255, tonumber(b, 16) / 255)
+		return string.format("|c%s%02x%02x%02x", a, math.floor(ir * 255 + 0.5), math.floor(ig * 255 + 0.5), math.floor(ib * 255 + 0.5))
+	end))
+end
 -- A font string on the page: every colour it is given is turned into ink, and no shadow (it blurs on paper).
 function SK.InkFont(fs)
 	if not fs or fs.inked then return fs end
@@ -34,9 +42,17 @@ function SK.InkFont(fs)
 		local ir, ig, ib = SK.Ink(r or 1, g or 1, b or 1)
 		return set(self, ir, ig, ib, a)
 	end
+	local setText = fs.SetText
+	fs.SetText = function(self, t) return setText(self, SK.InkText(t)) end
 	if fs.SetShadowColor then fs:SetShadowColor(0, 0, 0, 0) end
 	fs:SetTextColor(1, 1, 1)
 	return fs
+end
+
+-- Whether the client has an atlas (Forever's art differs from Mainline's in places).
+function SK.HasAtlas(name)
+	if not (C_Texture and C_Texture.GetAtlasInfo) then return true end
+	return C_Texture.GetAtlasInfo(name) ~= nil
 end
 
 -- Background and border on a frame made with BackdropTemplate.
@@ -53,10 +69,10 @@ function SK.Page(f, ribbon)
 	if on.page then return on.page end
 	local page = on:CreateTexture(nil, "BACKGROUND", nil, 1)
 	page:SetColorTexture(unpack(SK.C.page))
-	page:SetAtlas(SK.PAGE)
+	if SK.HasAtlas(SK.PAGE) then page:SetAtlas(SK.PAGE) end   -- else the plain parchment colour
 	if on == f then page:SetAllPoints(f.Inset) else page:SetAllPoints(on) end
 	on.page = page
-	if ribbon then
+	if ribbon and SK.HasAtlas(SK.RIBBON) then
 		local r = on:CreateTexture(nil, "ARTWORK")
 		r:SetAtlas(SK.RIBBON); r:SetSize(34, 92)
 		r:SetPoint("TOPRIGHT", page, "TOPRIGHT", -18, 4)
@@ -79,7 +95,7 @@ function SK.Window(name, parent, portrait)
 			end
 			gf.TitleText = gf.TitleContainer and gf.TitleContainer.TitleText or gf.TitleText
 			gf.gameFrame = true
-			SK.Page(gf, portrait)
+			if portrait then SK.Page(gf, true) end
 			return gf
 		end
 	end
@@ -96,7 +112,7 @@ function SK.Window(name, parent, portrait)
 	inset:SetPoint("TOPLEFT", 8, portrait and -86 or -26); inset:SetPoint("BOTTOMRIGHT", -8, 28)
 	inset:SetColorTexture(0, 0, 0, 0)
 	f.Inset = inset
-	SK.Page(f, portrait)
+	if portrait then SK.Page(f, true) end
 	return f
 end
 

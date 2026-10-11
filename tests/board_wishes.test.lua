@@ -27,11 +27,11 @@ assert(B.headText[1].text == L.COL_WHO and B.headText[3].text == L.COL_ITEM and 
 assert(B.rows[1].zone:GetWidth() == B.WCOLS[3], "wishes column widths")
 local rows = visible()
 assert(#rows == 3, "mine and Mario's two: " .. #rows)
-assert(rows[1].name.text == "Tester" and rows[1].zone.text == link(2589, "Linen") and rows[1].xph.text ~= "", "mine first")
-assert(rows[2].name.text == "Mario" and rows[2].zone.text == link(1001, "Cool Sword"), "Mario's")
+assert(rows[1].name.text == "Tester" and rows[1].zone.text == ns.Skin.InkText(link(2589, "Linen")) and rows[1].xph.text ~= "", "mine first")
+assert(rows[2].name.text == "Mario" and rows[2].zone.text == ns.Skin.InkText(link(1001, "Cool Sword")), "Mario's")
 assert(rows[3].zone.text == string.format(L.WISH_UNKNOWN, 4242), "not loaded yet")
 STUB.items[4242] = link(4242, "Late Item"); STUB.itemLoads[4242]()
-assert(visible()[3].zone.text == link(4242, "Late Item"), "filled in when it loads")
+assert(visible()[3].zone.text == ns.Skin.InkText(link(4242, "Late Item")), "filled in when it loads")
 
 -- hover: the item card
 rows = visible()

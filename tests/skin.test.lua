@@ -1,3 +1,5 @@
+STUB.atlases["spellbook-Page-Right-C60"] = true
+STUB.atlases["spellbook-background-evergreen-ribbon"] = true
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
@@ -26,4 +28,4 @@ for _, c in ipairs(B.cards) do if c.fits then fits = c else far = c end end
 assert(fits.backdropBorder[1] == SK.C.card[1] and far.backdropBorder[1] == SK.C.cardDim[1], "cards keep their gold or dim border")
 ns.MateCard.Show("Nadie")
 local cardPage = (ns.MateCard.frame.Inset and ns.MateCard.frame.Inset.page) or ns.MateCard.frame.page
-assert(cardPage and cardPage.atlas == SK.PAGE, "the card on the same parchment")
+assert(not cardPage, "small windows keep the game's dark panel")

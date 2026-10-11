@@ -65,7 +65,14 @@ PT.Add = add
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("PLAYER_LEVEL_UP"); ev:RegisterEvent("QUEST_TURNED_IN")
 ev:SetScript("OnEvent", function(_, event) if not ns.db then return end; add(event == "PLAYER_LEVEL_UP" and "l" or "q") end)
-ns.On("LM_JOURNAL_ADDED", function(e) if e.k == "dungeon" and e.mates and #e.mates > 0 and not e.sim then add("d") end end)
+-- A dungeon with guildmates: the same one counts once in three hours (a corpse run back in is not a new run).
+local lastDungeon = {}
+ns.On("LM_JOURNAL_ADDED", function(e)
+	if e.k ~= "dungeon" or not (e.mates and #e.mates > 0) or e.sim then return end
+	if lastDungeon[e.name] and time() - lastDungeon[e.name] < 3 * 3600 then return end
+	lastDungeon[e.name] = time()
+	add("d")
+end)
 local helped = {}
 ns.On("LM_HELP_GIVEN", function(id) if id and helped[id] then return end; if id then helped[id] = true end; add("h") end)
 ns.On("LM_GIFT_GIVEN", function() add("g") end)
@@ -155,14 +162,17 @@ function PT.Rankings()
 end
 
 -- The guild's milestones, told once each (saved): a new guild level, the week's challenge done.
+local settledAt = nil   -- a minute after entering the world: what arrives before is the starting point, not news
+ns.On("LM_WORLD", function() settledAt = GetTime() + 60 end)
 function PT.CheckMilestones()
 	if not (ns.db and IsInGuild()) then return end
+	local quiet = not settledAt or GetTime() < settledAt
 	local guild = GetGuildInfo("player") or "?"
 	ns.db.milestones = ns.db.milestones or {}
 	ns.db.milestones[guild] = ns.db.milestones[guild] or {}
 	local ms = ns.db.milestones[guild]
 	local level = PT.Level(PT.GuildTotal())
-	if not ms.level then ms.level = level
+	if not ms.level or quiet or level < ms.level then ms.level = level   -- a baseline (or someone forgotten): no news
 	elseif level > ms.level then
 		ms.level = level
 		ns.Notice(L.GUILD_LEVEL_UP, level)
@@ -171,6 +181,7 @@ function PT.CheckMilestones()
 	local ch, w = PT.Challenge(), PT.Week()
 	if ch.done and ms.challenge ~= w then
 		ms.challenge = w
+		if quiet then return end   -- already done when I logged in: not news
 		ns.Notice(L.CHALLENGE_DONE, ch.text)
 		ns.Feed.Add({ who = "", k = "gol", a = 0, b = ch.text, t = ns.Feed.Now() })
 	end
