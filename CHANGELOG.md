@@ -2,6 +2,9 @@
 
 ## 0.3.1
 
+- Home: an icon for every kind of row; the Guild tab and the challenge achievement show your faction's banner.
+- The group XP window can be minimised or closed (`/lm xp` brings it back).
+- Guild points: the week turns at the realm's Monday midnight; points belong to each guild (a new guild starts from zero); nothing is sent while sharing is off; helps count at most twice a day per person asking.
 - **Dungeon panel**: a click on a dungeon card opens its panel next to the book: the guild's groups with who joined and their role, ads from chat, meetups, guildmates of its levels online, with buttons to join, leave, whisper, invite, look for a group or set up a meetup. Right-click keeps the quick menu.
 - **Options in three pages**: General, Share and Notices.
 - Inviting says so at once in chat (the server can take a few seconds to deliver it).
