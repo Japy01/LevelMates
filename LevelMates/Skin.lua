@@ -180,6 +180,8 @@ function SK.Tab(parent, name, icon, label)
 end
 function SK.SelectTab(b, selected)
 	b.glow:SetShown(selected)
-	b.icon:SetDesaturated(not selected)
+	b.icon:SetDesaturated(false)   -- always in colour; the others a little dimmer
+	local v = selected and 1 or 0.72
+	b.icon:SetVertexColor(v, v, v)
 	b:SetEnabled(not selected)
 end
