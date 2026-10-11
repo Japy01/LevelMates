@@ -57,7 +57,9 @@ assert(#F.List("mario") >= 1 and #F.List("zzz") == 0, "search")
 n = #STUB.sent
 STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
 local mine = count("fe", n)
-assert(mine >= 1 and mine <= F.RESEND, "re-sent to a newcomer: " .. mine)
+local resent = 0   -- achievements may post to the wall at the same moment: only the re-sent entries count here
+for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "fe" and f.k ~= "ach" then resent = resent + 1 end end
+assert(resent >= 1 and resent <= F.RESEND, "re-sent to a newcomer: " .. resent)
 
 -- sharing off: on my wall, not sent
 ns.db.settings.shareFeed = false

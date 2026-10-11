@@ -301,7 +301,8 @@ local function Build()
 			c.count:ClearAllPoints(); c.count:SetPoint("BOTTOMRIGHT", -8, 7)
 			c.badge:ClearAllPoints(); c.badge:SetPoint("TOPRIGHT", -8, -38)
 		end
-		c:SetScript("OnClick", function(self) B.OpenDungeonMenu(self.dungeonId) end)
+		-- a click opens the dungeon's panel next to the book; right-click, the quick menu
+		c:SetScript("OnClick", function(self, mouse) if mouse == "RightButton" then B.OpenDungeonMenu(self.dungeonId) else ns.DungeonPanel.Open(self.dungeonId) end end)
 		c:SetScript("OnEnter", function(self) B.DungeonTooltip(self) end)
 		c:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 		c:Hide()
@@ -1046,7 +1047,7 @@ end
 -- A Home row's click does its thing (each one only from this click).
 function B.HomeAction(e)
 	if e.kind == "help" then ns.Help.Coming(e.id)
-	elseif e.kind == "lfg" then B.OpenDungeonMenu(e.dungeon)
+	elseif e.kind == "lfg" then ns.DungeonPanel.Open(e.dungeon)
 	elseif e.kind == "meet" then B.OpenMeetMenu(e.meet)
 	elseif e.kind == "mate" then B.OpenMenu(e.name)
 	elseif e.kind == "gift" then B.OpenWishMenu(e.id, "give", false, e.name)

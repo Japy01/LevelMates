@@ -45,12 +45,12 @@ B.ShowTab("lfg")
 local card
 for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 4 then card = c end end
 assert(card.badge:IsShown() and card.badge.text == M.When(M.List(4)[1]) .. " · 1", "the card shows the next meetup")
-card.scripts.OnClick(card, "LeftButton")
+card.scripts.OnClick(card, "RightButton")
 assert(pick(string.format(L.MEET_JOIN, M.When(M.List(4)[1]), L.ROLE_T)), "join as tank")
 assert(last("qj").id == "mario01" and last("qj").r == "T" and M.MyRole("mario01") == "T", "qj sent, remembered")
 card.scripts.OnEnter(card)
 assert(table.concat(GameTooltip.lines, "\n"):find("Tester", 1, true), "the tooltip lists who joined")
-card.scripts.OnClick(card, "LeftButton")
+card.scripts.OnClick(card, "RightButton")
 assert(pick(string.format(L.MEET_LEAVE, M.When(M.List(4)[1]))) and last("qjx").id == "mario01", "leave")
 assert(M.Join("mario01", "T"), "join again")
 
@@ -64,7 +64,7 @@ assert(said(string.format(L.MEET_SOON, D.Name(6), M.When(M.List(6)[1]))) == 0, "
 -- cancel mine; the creator's cancel removes it everywhere
 card = nil
 for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 5 then card = c end end
-card.scripts.OnClick(card, "LeftButton")
+card.scripts.OnClick(card, "RightButton")
 assert(pick(string.format(L.MEET_CANCEL, M.When(M.List(5)[1]))) and last("qdx") and #M.List(5) == 0, "cancelled")
 STUB.Receive("LVLM", C.Encode("qdx", { id = "mario01" }), "GUILD", "Ana-Testrealm")
 assert(#M.List(4) == 1, "nobody else can cancel it")

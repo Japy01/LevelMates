@@ -248,3 +248,7 @@ L.ACH_GOT = "Achievement: %s"; L.FEED_ACH = "earned %s"; L.CARD_ACH = "Achieveme
 L.OPT_ACH = "Share my achievements"; L.OPT_ACH_TT = "Your achievements go to the guild wall and your card."
 L.OPT_PAGE_SHARE = "Share"; L.OPT_PAGE_NOTICES = "Notices"
 L.INVITE_SENT = "Invite sent to %s (it may take a few seconds to reach them)."
+
+-- Dungeon panel
+L.DP_GROUPS = "Guild groups"; L.DP_CHAT = "In chat"; L.DP_MEET = "Meetups"; L.DP_MATES = "Guildmates of its levels"; L.DP_EMPTY = "Nobody looking yet. Look for a group or set up a meetup below."
+L.DP_YOUR_LEVEL = "your level"; L.DP_WITHDRAW = "Withdraw"; L.DP_LEAVE = "Leave"; L.DP_WHISPER = "Whisper"; L.DP_INVITE = "Invite"; L.DP_CANCEL = "Cancel"

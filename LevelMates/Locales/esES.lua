@@ -249,3 +249,7 @@ L.ACH_GOT = "Logro: %s"; L.FEED_ACH = "consiguió %s"; L.CARD_ACH = "Logros: %d"
 L.OPT_ACH = "Compartir mis logros"; L.OPT_ACH_TT = "Tus logros salen en el muro de la hermandad y en tu ficha."
 L.OPT_PAGE_SHARE = "Compartir"; L.OPT_PAGE_NOTICES = "Avisos"
 L.INVITE_SENT = "Invitación enviada a %s (puede tardar unos segundos en llegarle)."
+
+-- Panel de mazmorra
+L.DP_GROUPS = "Grupos de la hermandad"; L.DP_CHAT = "En el chat"; L.DP_MEET = "Quedadas"; L.DP_MATES = "Hermanos de su nivel"; L.DP_EMPTY = "Nadie busca todavía. Busca grupo o crea una quedada abajo."
+L.DP_YOUR_LEVEL = "de tu nivel"; L.DP_WITHDRAW = "Retirar"; L.DP_LEAVE = "Me borro"; L.DP_WHISPER = "Susurrar"; L.DP_INVITE = "Invitar"; L.DP_CANCEL = "Cancelar"

@@ -54,6 +54,7 @@ Points.lua
 Home.lua
 Achievements.lua
 MateCard.lua
+DungeonPanel.lua
 Alts.lua
 GoalDialog.lua
 WishDialog.lua

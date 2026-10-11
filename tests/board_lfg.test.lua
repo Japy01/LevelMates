@@ -45,13 +45,13 @@ rfc.scripts.OnLeave(rfc)
 assert(GameTooltip.hidden, "tooltip hides")
 
 -- click: whisper or invite each, or look for a group here
-rfc.scripts.OnClick(rfc, "LeftButton")
+rfc.scripts.OnClick(rfc, "RightButton")
 assert(B.lastDungeonMenu == 2, "menu for the card")
 assert(pick(string.format(L.LFG_WHISPER, "Mario")) and STUB.lastTell == "Mario", "whisper Mario")
 local invites = 0
 for _, e in ipairs(entries) do if e.text == string.format(L.LFG_INVITE, "Ana") then invites = invites + 1 end end
 assert(invites == 1, "invite Ana")
-rfc.scripts.OnClick(rfc, "LeftButton")
+rfc.scripts.OnClick(rfc, "RightButton")
 assert(pick(L.LFG_HERE) and ns.LfgDialog.frame:IsShown() and ns.LfgDialog.dungeon == 2, "the dialog opens with Ragefire chosen")
 ns.LfgDialog.frame:Hide()
 
@@ -66,7 +66,7 @@ STUB.Advance(31)
 assert(G.Post(5, "T"), "I post for the Deadmines")
 local dm = cardOf(5)
 assert(dm.count.text == L.LFG_SEARCHING_ONE, "my ad counts")
-dm.scripts.OnClick(dm, "LeftButton")
+dm.scripts.OnClick(dm, "RightButton")
 local whisperMe = false
 for _, e in ipairs(entries) do if e.text == string.format(L.LFG_WHISPER, "Tester") then whisperMe = true end end
 assert(not whisperMe and pick(L.LFG_CANCEL_MINE) and G.mine == nil, "withdraw, never whisper myself")
