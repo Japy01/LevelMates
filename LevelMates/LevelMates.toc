@@ -57,4 +57,5 @@ Alts.lua
 GoalDialog.lua
 WishDialog.lua
 DiscordCopy.lua
+Report.lua
 Sim.lua

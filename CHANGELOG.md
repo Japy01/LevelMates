@@ -9,6 +9,7 @@
 - **Ask for help** never fails in silence: a confirmation when it goes out, and the reason when it cannot (no guild, not now).
 - `/lm sim puntos` tries the guild progress alone.
 - `/lm tinta 1-5` sets how dark the text on the page is, live.
+- `/lm informe` opens a report to copy when something goes wrong: versions, messages, guildmates seen and LevelMates' last errors. Nothing is sent.
 
 ## 0.2.0
 

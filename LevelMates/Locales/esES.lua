@@ -233,3 +233,6 @@ L.HOME_BUY = "Comprar"; L.HOME_RESERVE = "Reservar"; L.HOME_TRAINER = "%d hechiz
 L.HOME_RANK_l = "Más niveles"; L.HOME_RANK_d = "Más mazmorras"; L.HOME_RANK_h = "Más ayudas"
 L.HOME_ALONE_TITLE = "Trae a tu hermandad"; L.HOME_ALONE = "Tus hermanos salen aquí cuando instalan LevelMates. Copia una invitación para pegarla en el chat de hermandad o en Discord."
 L.INK_HELP = "Oscuridad del texto: /lm tinta 1 (más claro) a 5 (más oscuro). Ahora: %d."; L.INK_SET = "Oscuridad del texto: %d."
+
+-- Informe
+L.REPORT_GUILD = "Hermandad"; L.REPORT_MESSAGES = "Mensajes"; L.REPORT_SRB = "enviados/recibidos/rechazados"; L.REPORT_QUEUED = "en cola"; L.REPORT_MATES = "Hermanos vistos"; L.REPORT_POINTS = "Mis puntos"; L.REPORT_GUILD_TOTAL = "hermandad"; L.REPORT_OPTIONS = "Opciones cambiadas"; L.REPORT_ERRORS = "Últimos errores de LevelMates"

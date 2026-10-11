@@ -232,3 +232,6 @@ L.HOME_BUY = "Buy"; L.HOME_RESERVE = "Reserve"; L.HOME_TRAINER = "%d spells at y
 L.HOME_RANK_l = "Most levels"; L.HOME_RANK_d = "Most dungeons"; L.HOME_RANK_h = "Most helps"
 L.HOME_ALONE_TITLE = "Bring your guild"; L.HOME_ALONE = "Guildmates show up here once they install LevelMates. Copy an invite to paste in guild chat or Discord."
 L.INK_HELP = "Text darkness: /lm ink 1 (lightest) to 5 (darkest). Now: %d."; L.INK_SET = "Text darkness set to %d."
+
+-- Report
+L.REPORT_GUILD = "Guild"; L.REPORT_MESSAGES = "Messages"; L.REPORT_SRB = "sent/received/rejected"; L.REPORT_QUEUED = "waiting"; L.REPORT_MATES = "Guildmates seen"; L.REPORT_POINTS = "My points"; L.REPORT_GUILD_TOTAL = "guild"; L.REPORT_OPTIONS = "Changed options"; L.REPORT_ERRORS = "Last LevelMates errors"
