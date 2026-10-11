@@ -8,6 +8,7 @@
 - **Guild progress**: what you do (levels, dungeons with guildmates, quests, helps, gifts, meetups) adds points; the guild levels up together, a weekly challenge rotates, and the top three of the week are shown (never who is last). Option "Share my guild points".
 - **Ask for help** never fails in silence: a confirmation when it goes out, and the reason when it cannot (no guild, not now).
 - `/lm sim puntos` tries the guild progress alone.
+- `/lm tinta 1-5` sets how dark the text on the page is, live.
 
 ## 0.2.0
 
