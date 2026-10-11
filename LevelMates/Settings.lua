@@ -80,7 +80,6 @@ ns.On("LM_LOADED", function()
 	local quiet = Settings.RegisterProxySetting(notices, "LevelMates_quiet", Settings.VarType.Boolean, L.OPT_QUIET, false,
 		function() return S.IsQuiet() end, function(v) S.SetQuiet(v) end)
 	Settings.CreateCheckbox(notices, quiet, L.OPT_QUIET_TT)
-	table.insert(notices.settings or {}, quiet)
 	Bool(notices, "screenNotices", L.OPT_SCREEN, L.OPT_SCREEN_TT)
 	Bool(notices, "helpNotices", L.OPT_HELP, L.OPT_HELP_TT)
 	Bool(notices, "lfgNotices", L.OPT_LFG, L.OPT_LFG_TT)
