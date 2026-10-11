@@ -53,6 +53,12 @@ function MC.Lines(name)
 		local state = m.inGroup and (m.hasSlot and L.GROUP_FREE or L.GROUP_FULL) or L.SOLO
 		lines[#lines + 1] = string.format(L.CARD_BASICS, class, m.level or 0, info and info.name or "?", state)
 	end
+	local achs = ns.Achievements and ns.Achievements.Of(name) or {}
+	if #achs > 0 then
+		local icons = {}
+		for i = math.max(1, #achs - 2), #achs do icons[#icons + 1] = ns.Achievements.Link(achs[i]) end
+		lines[#lines + 1] = string.format(L.CARD_ACH, #achs) .. "  " .. table.concat(icons, "  ")
+	end
 	local alts = ns.Alts and ns.Alts.Of(name) or {}
 	if #alts > 0 then lines[#lines + 1] = string.format(L.CARD_ALTS, table.concat(alts, ", ")) end
 	local b = ns.Builds.Of(name)

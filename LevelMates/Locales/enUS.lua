@@ -235,3 +235,14 @@ L.INK_HELP = "Text darkness: /lm ink 1 (lightest) to 5 (darkest). Now: %d."; L.I
 
 -- Report
 L.REPORT_GUILD = "Guild"; L.REPORT_MESSAGES = "Messages"; L.REPORT_SRB = "sent/received/rejected"; L.REPORT_QUEUED = "waiting"; L.REPORT_MATES = "Guildmates seen"; L.REPORT_POINTS = "My points"; L.REPORT_GUILD_TOTAL = "guild"; L.REPORT_OPTIONS = "Changed options"; L.REPORT_ERRORS = "Last LevelMates errors"
+
+-- Achievements
+L.ACH_lvl10 = "First steps"; L.ACH_lvl20 = "On the road"; L.ACH_lvl30 = "Seasoned"; L.ACH_lvl40 = "Veteran"; L.ACH_lvl50 = "Almost there"; L.ACH_lvl60 = "Level 60!"
+L.ACH_dun1 = "Together into the dark"; L.ACH_dun10 = "Dungeon crew"; L.ACH_dun50 = "Dungeon masters"
+L.ACH_help1 = "Good Samaritan"; L.ACH_help10 = "Always there"; L.ACH_help50 = "The guild's shield"
+L.ACH_gift1 = "Generous"; L.ACH_gift10 = "Market regular"; L.ACH_meet1 = "On time"; L.ACH_meet5 = "Never misses a meetup"
+L.ACH_quest100 = "Diligent"; L.ACH_quest500 = "Quest machine"; L.ACH_dead10 = "Cemetery regular"; L.ACH_challenge = "We did it"
+L.ACHD_level = "Reach level %d"; L.ACHD_d = "%d dungeons with guildmates"; L.ACHD_h = "Help %d times (On my way)"; L.ACHD_g = "%d gifts or sales in the market"
+L.ACHD_m = "Go to %d meetups"; L.ACHD_q = "Turn in %d quests"; L.ACHD_dead = "Die %d times"; L.ACHD_ch = "Be there when the guild completes a weekly challenge"
+L.ACH_GOT = "Achievement: %s"; L.FEED_ACH = "earned %s"; L.CARD_ACH = "Achievements: %d"; L.BTN_ACH = "Achievements"; L.BTN_JOURNAL = "Journal"
+L.OPT_ACH = "Share my achievements"; L.OPT_ACH_TT = "Your achievements go to the guild wall and your card."

@@ -52,6 +52,7 @@ Ask.lua
 Feed.lua
 Points.lua
 Home.lua
+Achievements.lua
 MateCard.lua
 Alts.lua
 GoalDialog.lua

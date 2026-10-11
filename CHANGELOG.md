@@ -2,6 +2,7 @@
 
 ## 0.3.1
 
+- **Achievements**: twenty personal milestones with the game's icons (levels, dungeons with guildmates, helps, gifts, meetups, quests, a weekly challenge, and one for the cemetery's regulars). Earned ones go to the guild wall and show on your card; the Journal tab lists them all with their progress. Counted from your journal too, so you do not start from zero.
 - `/lm informe` opens a report to copy when something goes wrong: versions, messages, guildmates seen and LevelMates' last errors. Nothing is sent.
 
 ## 0.3.0

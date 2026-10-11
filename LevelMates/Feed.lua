@@ -42,7 +42,8 @@ function F.Text(e)
 	elseif e.k == "itm" then return string.format(L.FEED_ITM, ns.Wishlist.Link(e.a) or string.format(L.WISH_UNKNOWN, e.a))
 	elseif e.k == "pgl" then return string.format(L.FEED_PGL, e.a)
 	elseif e.k == "gol" then return string.format(L.FEED_GOL, e.b or "")
-	elseif e.k == "dth" then return string.format(L.FEED_DTH, e.a, e.b or "?") end
+	elseif e.k == "dth" then return string.format(L.FEED_DTH, e.a, e.b or "?")
+	elseif e.k == "ach" then local a = ns.Achievements and ns.Achievements.LIST[e.a]; return string.format(L.FEED_ACH, a and ns.Achievements.Link(a.id) or "?") end
 	return ""
 end
 function F.Ago(e) return string.format(L.FEED_AGO, ns.Journal.Duration(math.max(0, F.Now() - e.t) * 60)) end
@@ -70,6 +71,7 @@ local function share(k, a, b)
 	F.Add(e)
 	if ns.db.settings.shareFeed then sendEntry(e) end
 end
+F.Share = share   -- for other modules (achievements)
 ns.On("LM_HB_SENT", function()
 	if not ns.db.settings.shareFeed then return end
 	local n, cutoff = 0, F.Now() - 1440

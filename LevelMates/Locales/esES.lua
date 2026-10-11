@@ -236,3 +236,14 @@ L.INK_HELP = "Oscuridad del texto: /lm tinta 1 (más claro) a 5 (más oscuro). A
 
 -- Informe
 L.REPORT_GUILD = "Hermandad"; L.REPORT_MESSAGES = "Mensajes"; L.REPORT_SRB = "enviados/recibidos/rechazados"; L.REPORT_QUEUED = "en cola"; L.REPORT_MATES = "Hermanos vistos"; L.REPORT_POINTS = "Mis puntos"; L.REPORT_GUILD_TOTAL = "hermandad"; L.REPORT_OPTIONS = "Opciones cambiadas"; L.REPORT_ERRORS = "Últimos errores de LevelMates"
+
+-- Logros
+L.ACH_lvl10 = "Primeros pasos"; L.ACH_lvl20 = "En camino"; L.ACH_lvl30 = "Curtido"; L.ACH_lvl40 = "Veterano"; L.ACH_lvl50 = "Ya casi"; L.ACH_lvl60 = "¡Nivel 60!"
+L.ACH_dun1 = "Juntos a la oscuridad"; L.ACH_dun10 = "Cuadrilla de mazmorras"; L.ACH_dun50 = "Señores de las mazmorras"
+L.ACH_help1 = "Buen samaritano"; L.ACH_help10 = "Siempre ahí"; L.ACH_help50 = "El escudo de la hermandad"
+L.ACH_gift1 = "Generoso"; L.ACH_gift10 = "Habitual del mercadillo"; L.ACH_meet1 = "Puntual"; L.ACH_meet5 = "No falta a una quedada"
+L.ACH_quest100 = "Aplicado"; L.ACH_quest500 = "Máquina de misiones"; L.ACH_dead10 = "Cliente fijo del cementerio"; L.ACH_challenge = "¡Lo hemos conseguido!"
+L.ACHD_level = "Llega a nivel %d"; L.ACHD_d = "%d mazmorras con hermanos"; L.ACHD_h = "Ayuda %d veces (Voy)"; L.ACHD_g = "%d regalos o ventas en el mercadillo"
+L.ACHD_m = "Ve a %d quedadas"; L.ACHD_q = "Entrega %d misiones"; L.ACHD_dead = "Muere %d veces"; L.ACHD_ch = "Estar cuando la hermandad cumple un reto semanal"
+L.ACH_GOT = "Logro: %s"; L.FEED_ACH = "consiguió %s"; L.CARD_ACH = "Logros: %d"; L.BTN_ACH = "Logros"; L.BTN_JOURNAL = "Diario"
+L.OPT_ACH = "Compartir mis logros"; L.OPT_ACH_TT = "Tus logros salen en el muro de la hermandad y en tu ficha."

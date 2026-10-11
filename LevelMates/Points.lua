@@ -55,6 +55,7 @@ end
 
 -- What I do: points and this week's counter.
 local function add(cat)
+	ns.Fire("LM_POINT_EVENT", cat)   -- the same actions count for achievements
 	local p = mine()
 	p.t = p.t + PT.VALUE[cat]
 	if p[cat] then p[cat] = p[cat] + 1 end
@@ -183,6 +184,7 @@ function PT.CheckMilestones()
 		ms.challenge = w
 		if quiet then return end   -- already done when I logged in: not news
 		ns.Notice(L.CHALLENGE_DONE, ch.text)
+		ns.Fire("LM_CHALLENGE_DONE")
 		ns.Feed.Add({ who = "", k = "gol", a = 0, b = ch.text, t = ns.Feed.Now() })
 	end
 end

@@ -358,6 +358,11 @@ local function Build()
 		end)
 	end)
 	B.journalFilterButton = filter
+	-- Journal tab: "Achievements" (bottom right, left of the filter) swaps the journal for my achievements
+	local ach = ns.Skin.Button(f)
+	ach:SetSize(120, 20); ach:SetPoint("RIGHT", filter, "LEFT", -8, 0)
+	ach:SetScript("OnClick", function() B.journalView = B.journalView ~= "ach" and "ach" or nil; B.journalPage = 1; B.Refresh() end)
+	B.journalAchButton = ach
 	local prev = ns.Skin.Button(f)
 	prev:SetSize(110, 20); prev:SetPoint("BOTTOM", -160, B.BOTTOM + 8); prev:SetText(L.BTN_J_PREV)
 	prev:SetScript("OnClick", function() B.TurnPage(-1) end)
@@ -941,6 +946,29 @@ function B.DungeonTooltip(card)
 	GameTooltip:Show()
 end
 
+-- Journal tab, achievements view: earned ones with their date, the rest with their progress.
+local function FillAch(list)
+	local AC = ns.Achievements
+	for i = 1, ROWS do
+		local r, a = B.rows[i], list[i]
+		r.button.mate, r.button.adId, r.button.entry, r.button.ach = nil, nil, nil, a
+		if a then
+			local has = AC.Has(a.id)
+			r.icon:SetTexture(a.icon); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:SetDesaturated(not has); r.icon:Show()
+			r.name:SetText(AC.Name(a.id)); r.name:SetTextColor(unpack(has and { 1, 0.82, 0 } or { 0.7, 0.7, 0.7 }))
+			r.level:SetText("")
+			r.zone:SetText(AC.Desc(a.id)); r.zone:SetTextColor(1, 1, 1)
+			if a.cat == "ch" then r.group:SetText(has and "1/1" or "0/1") else r.group:SetText(AC.Progress(a.id) .. "/" .. a.n) end
+			r.group:SetTextColor(1, 1, 1)
+			r.xph:SetText(has and date("%d/%m/%y", AC.When(a.id)) or ""); r.xph:SetTextColor(0.4, 1, 0.4)
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+
 -- Home: the guild, what is happening now, what is for me, this week.
 local HOME_COLOR = { guild = { 1, 0.82, 0 }, now = { 0.4, 1, 0.4 }, foryou = { 1, 0.82, 0 }, week = { 0.6, 0.8, 1 } }
 local function FillHome(list)
@@ -1328,7 +1356,8 @@ local function RefreshTabs()
 	B.lfgCalendarButton:SetShown(lfg)
 	B.lfgCalendarButton:SetText(B.lfgCalendar and L.BTN_CARDS or L.BTN_CALENDAR)
 	B.lfgButton:SetText(ns.LFG.mine and L.BTN_LFG_CANCEL or L.BTN_LFG)
-	B.journalClear:SetShown(journal); B.journalFilterButton:SetShown(journal)
+	B.journalClear:SetShown(journal and B.journalView ~= "ach"); B.journalFilterButton:SetShown(journal and B.journalView ~= "ach")
+	B.journalAchButton:SetShown(journal); B.journalAchButton:SetText(B.journalView == "ach" and L.BTN_JOURNAL or L.BTN_ACH)
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
@@ -1352,6 +1381,8 @@ function B.Refresh()
 	local list, pages
 	if home then
 		list, pages = Page(ns.Home.Rows())
+	elseif journal and B.journalView == "ach" then
+		list, pages = Page(ns.Achievements.LIST)
 	elseif journal then
 		list = Page(ns.Journal.List(B.journalFilter or "all", B.search))
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))
@@ -1404,7 +1435,7 @@ function B.Refresh()
 		end
 	end
 	B.restedText:SetText(top)
-	if home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) else FillGrid(list) end else FillMates(list) end
+	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) else FillGrid(list) end else FillMates(list) end
 	if not lfg or B.lfgCalendar then for _, c in ipairs(B.cards) do c:Hide() end end
 	if not crafts and not home then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
 	-- rows one under another; a section header (plaque) takes more height, and the window grows with it
@@ -1554,5 +1585,6 @@ ns.On("LM_BUILDS_CHANGED", B.Refresh)
 ns.On("LM_MACROS_CHANGED", B.Refresh)
 ns.On("LM_QUESTIONS_CHANGED", B.Refresh)
 ns.On("LM_POINTS_CHANGED", B.Refresh)
+ns.On("LM_ACHIEVEMENTS_CHANGED", B.Refresh)
 ns.Slash("clase", function() B.ShowTab("class") end)
 ns.Slash("class", function() B.ShowTab("class") end)

@@ -33,7 +33,9 @@ STUB.Fire("TRAIT_CONFIG_UPDATED", 7); STUB.Advance(6)
 assert(last("tb").p == "1001:10,1002:0,1003:0" and last("tb").b == "BkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+/", "a talent change goes out with the code")
 local n = #STUB.sent
 STUB.Fire("TRAIT_CONFIG_UPDATED", 7); STUB.Advance(6)
-assert(#STUB.sent == n, "nothing new, nothing sent")
+local tbs = 0
+for i = n + 1, #STUB.sent do if C.Decode(STUB.sent[i].msg) == "tb" then tbs = tbs + 1 end end
+assert(tbs == 0, "nothing new, no build sent")
 -- a client that cannot export: no code, never an error
 PlayerSpellsFrame = { TalentsFrame = { GetLoadoutExportString = function() error("treeInfo nil") end } }
 assert(BU.Mine().b == nil, "no code when the game cannot give one")

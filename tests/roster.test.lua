@@ -11,7 +11,10 @@ assert(table.concat(kinds, ",") == "ping,hb" or table.concat(kinds, ",") == "hb,
 -- unchanged state: no hb for 30 s ticks
 local n = #STUB.sent
 STUB.Advance(31); STUB.Advance(31)
-assert(#STUB.sent == n, "no heartbeat without change")
+local hbs0 = 0
+for i = n + 1, #STUB.sent do if C.Decode(STUB.sent[i].msg) == "hb" then hbs0 = hbs0 + 1 end end
+assert(hbs0 == 0, "no heartbeat without change")
+n = #STUB.sent
 -- level up → hb at the next tick, but not before 30 s since the last
 STUB.player.level = 21
 STUB.Fire("PLAYER_LEVEL_UP", 21)
@@ -54,7 +57,7 @@ n = #STUB.sent
 STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
 STUB.Advance(6)
 local answered = {}
-for i = n + 1, #STUB.sent do local k = select(1, C.Decode(STUB.sent[i].msg)); if k ~= "pt" then answered[#answered + 1] = k end end   -- guild points go too; not the roster's business
+for i = n + 1, #STUB.sent do local k = select(1, C.Decode(STUB.sent[i].msg)); if k ~= "pt" and k ~= "ac" then answered[#answered + 1] = k end end   -- guild points go too; not the roster's business
 table.sort(answered)
 assert(table.concat(answered, ",") == "hb,q", "ping answered with hb and q: " .. table.concat(answered, ","))
 -- XP/h restarts at a level-up: the XP bar resets, so the old window would report nonsense

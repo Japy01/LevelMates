@@ -141,7 +141,7 @@ C.SCHEMA = {
 	gro  = { i = int(1, 999999), by = text(24) },
 	qo   = { i = int(1, 999999), o = objectives },
 	rr   = { n = text(40), z = int(1, 100000), x = num(0, 100), y = num(0, 100) },
-	fe   = { k = oneOf("lvl", "dun", "itm", "pgl", "dth"), a = int(0, 999999), b = text(60), t = int(0, 100000000) },
+	fe   = { k = oneOf("lvl", "dun", "itm", "pgl", "dth", "ach"), a = int(0, 999999), b = text(60), t = int(0, 100000000) },
 	tb   = { c = word(16), s = int(0, 100000), l = int(1, 100), p = branchPoints, b = buildCode },
 	mc   = { n = text(16), x = macroBody },
 	mcx  = { n = text(16) },
@@ -150,10 +150,11 @@ C.SCHEMA = {
 	al   = { n = text(120) },
 	sl   = { p = saleList },
 	pt   = { t = int(0, 100000000), w = int(0, 100000), l = int(0, 100000), d = int(0, 100000), h = int(0, 100000), q = int(0, 100000) },
+	ac   = { ids = idlist(120) },
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, sl = {}, pt = {}, bye = {}, ping = {} }
+local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, ping = {} }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
@@ -285,7 +286,7 @@ local function pump()
 	C.stats.queued = #queue
 end
 
-local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true, xp = true, al = true, sl = true, pt = true }
+local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true, xp = true, al = true, sl = true, pt = true, ac = true }
 function C.Send(kind, fields, prio)
 	if active == "none" or not IsInGuild() then return false end
 	if inInstance() and not INSTANCE_OK[kind] then return false end
