@@ -232,3 +232,4 @@ L.HOME_LEVEL = "Nivel de hermandad %d"; L.HOME_DONE = "¡hecho!"; L.HOME_GO = "V
 L.HOME_BUY = "Comprar"; L.HOME_RESERVE = "Reservar"; L.HOME_TRAINER = "%d hechizos en tu entrenador"; L.HOME_COPY = "Copiar"
 L.HOME_RANK_l = "Más niveles"; L.HOME_RANK_d = "Más mazmorras"; L.HOME_RANK_h = "Más ayudas"
 L.HOME_ALONE_TITLE = "Trae a tu hermandad"; L.HOME_ALONE = "Tus hermanos salen aquí cuando instalan LevelMates. Copia una invitación para pegarla en el chat de hermandad o en Discord."
+L.INK_HELP = "Oscuridad del texto: /lm tinta 1 (más claro) a 5 (más oscuro). Ahora: %d."; L.INK_SET = "Oscuridad del texto: %d."

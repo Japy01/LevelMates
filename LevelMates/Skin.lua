@@ -25,7 +25,13 @@ function SK.On() return true end   -- one style: the book (kept as a function fo
 
 -- Text written on the parchment: the colour a fill asks for, in ink (darker, so it reads on paper).
 -- Near-black brown for white, the same hue darkened for colours: the spellbook's own text is that dark.
-function SK.Ink(r, g, b) return (r or 1) * 0.22, (g or 1) * 0.176, (b or 1) * 0.12 end
+-- How dark the ink is: /lm tinta 1 (lightest) to 5 (darkest); 4 by default.
+SK.INK_LEVELS = { 0.32, 0.26, 0.21, 0.16, 0.11 }
+function SK.InkLevel() local n = ns.db and ns.db.settings.ink or 4; return SK.INK_LEVELS[n] and n or 4 end
+function SK.Ink(r, g, b)
+	local k = SK.INK_LEVELS[SK.InkLevel()]
+	return (r or 1) * k, (g or 1) * k * 0.8, (b or 1) * k * 0.55
+end
 -- Colour codes inside a text (item links, quality colours) in ink too: a white or grey item would vanish on paper.
 function SK.InkText(s)
 	if type(s) ~= "string" then return s end
@@ -34,7 +40,6 @@ function SK.InkText(s)
 		return string.format("|c%s%02x%02x%02x", a, math.floor(ir * 255 + 0.5), math.floor(ig * 255 + 0.5), math.floor(ib * 255 + 0.5))
 	end))
 end
--- A font string on the page: every colour it is given is turned into ink, and no shadow (it blurs on paper).
 -- A font string written on the page: no shadow (it blurs on paper), and listed for the ink pass.
 SK.inkList = {}
 function SK.InkFont(fs)
@@ -51,17 +56,21 @@ local function near(a, b) return math.abs(a - b) < 0.004 end
 function SK.InkOne(fs)
 	local r, g, b = fs:GetTextColor()
 	r, g, b = r or 1, g or 1, b or 1
-	local done = fs.lmInk
-	if not (done and near(done[1], r) and near(done[2], g) and near(done[3], b)) then
-		local ir, ig, ib = SK.Ink(r, g, b)
+	local done, level = fs.lmInk, SK.InkLevel()
+	local already = done and near(done[1], r) and near(done[2], g) and near(done[3], b)
+	if not already or fs.lmLevel ~= level then
+		if not already then fs.lmBase = { r, g, b } end   -- a fresh colour from the page: that is the base
+		local base = fs.lmBase
+		local ir, ig, ib = SK.Ink(base[1], base[2], base[3])
 		fs:SetTextColor(ir, ig, ib)
-		fs.lmInk = { ir, ig, ib }
+		fs.lmInk, fs.lmLevel = { ir, ig, ib }, level
 	end
 	local t = fs:GetText()
-	if type(t) == "string" and t ~= fs.lmInkText and t:find("|c", 1, true) then
-		local inked = SK.InkText(t)
+	if type(t) == "string" and t:find("|c", 1, true) and (t ~= fs.lmInkText or fs.lmTextLevel ~= level) then
+		if t ~= fs.lmInkText then fs.lmBaseText = t end
+		local inked = SK.InkText(fs.lmBaseText)
 		fs:SetText(inked)
-		fs.lmInkText = inked
+		fs.lmInkText, fs.lmTextLevel = inked, level
 	end
 end
 function SK.InkPass() for _, fs in ipairs(SK.inkList) do SK.InkOne(fs) end end

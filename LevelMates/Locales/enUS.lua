@@ -231,3 +231,4 @@ L.HOME_LEVEL = "Guild level %d"; L.HOME_DONE = "done!"; L.HOME_GO = "On my way";
 L.HOME_BUY = "Buy"; L.HOME_RESERVE = "Reserve"; L.HOME_TRAINER = "%d spells at your trainer"; L.HOME_COPY = "Copy"
 L.HOME_RANK_l = "Most levels"; L.HOME_RANK_d = "Most dungeons"; L.HOME_RANK_h = "Most helps"
 L.HOME_ALONE_TITLE = "Bring your guild"; L.HOME_ALONE = "Guildmates show up here once they install LevelMates. Copy an invite to paste in guild chat or Discord."
+L.INK_HELP = "Text darkness: /lm ink 1 (lightest) to 5 (darkest). Now: %d."; L.INK_SET = "Text darkness set to %d."

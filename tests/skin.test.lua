@@ -29,3 +29,17 @@ assert(fits.backdropBorder[1] == SK.C.card[1] and far.backdropBorder[1] == SK.C.
 ns.MateCard.Show("Nadie")
 local cardPage = (ns.MateCard.frame.Inset and ns.MateCard.frame.Inset.page) or ns.MateCard.frame.page
 assert(not cardPage, "small windows keep the game's dark panel")
+
+-- /lm tinta: darker or lighter, live, from each text's own colour
+B.ShowTab("mates")
+local fs = B.heading
+fs:SetTextColor(1, 1, 1); SK.InkPass()
+local dark4 = fs.color[1]
+SlashCmdList.LEVELMATES("tinta 1")
+assert(ns.db.settings.ink == 1 and fs.color[1] > dark4, "lighter: " .. fs.color[1])
+SlashCmdList.LEVELMATES("tinta 5")
+assert(fs.color[1] < dark4, "darker")
+SK.InkPass(); SK.InkPass()
+assert(math.abs(fs.color[1] - SK.INK_LEVELS[5]) < 1e-6, "never darker twice")
+SlashCmdList.LEVELMATES("tinta 9")
+assert(ns.db.settings.ink == 5, "out of range: unchanged")

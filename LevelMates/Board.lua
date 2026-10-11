@@ -1539,6 +1539,15 @@ ns.On("LM_MEETUPS_CHANGED", B.Refresh)
 
 ns.On("LM_RECRUIT_CHANGED", B.Refresh)
 ns.Slash("reclutar", function() B.ShowTab("recruit") end)
+-- /lm tinta 1-5: how dark the text on the page is, tried live.
+local function SetInk(rest)
+	local n = tonumber(strtrim(rest or ""))
+	if not (n and ns.Skin.INK_LEVELS[n]) then ns.Say(L.INK_HELP, ns.Skin.InkLevel()); return end
+	ns.db.settings.ink = n
+	ns.Skin.InkPass()
+	ns.Say(L.INK_SET, n)
+end
+ns.Slash("tinta", SetInk); ns.Slash("ink", SetInk)
 ns.Slash("recruit", function() B.ShowTab("recruit") end)
 
 ns.On("LM_BUILDS_CHANGED", B.Refresh)
