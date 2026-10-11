@@ -77,7 +77,7 @@ function SK.Page(f, ribbon)
 	if ribbon and SK.HasAtlas(SK.RIBBON) then   -- the ribbon hangs at the page's right edge, clear of the columns
 		local r = f:CreateTexture(nil, "ARTWORK")
 		r:SetAtlas(SK.RIBBON); r:SetSize(28, 80)
-		r:SetPoint("TOPLEFT", page, "TOPRIGHT", -14, 6)
+		r:SetPoint("TOPLEFT", page, "TOPRIGHT", -6, 6)
 		f.Ribbon = r
 	end
 	return page

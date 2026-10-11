@@ -30,7 +30,7 @@ assert(#created == 1 and ns.Board.frame == created[1], "board built from ButtonF
 assert(hidden ~= ns.Board.frame and portrait == "Interface\\AddOns\\LevelMates\\Media\\icon", "the portrait shows LevelMates' icon")
 assert(ns.Board.frame.TitleContainer.TitleText.text == ns.L.BOARD_TITLE .. " - Test Guild (0)", "title set on TitleContainer.TitleText: " .. tostring(ns.Board.frame.TitleContainer.TitleText.text))
 -- header and bottom controls follow the real anchors of the inset
-assert(ns.Board.TOP == 30 + 60 and ns.Board.BOTTOM == 30, "layout derived from the inset: TOP=" .. tostring(ns.Board.TOP) .. " BOTTOM=" .. tostring(ns.Board.BOTTOM))
+assert(ns.Board.TOP == 30 + 30 + 60 and ns.Board.BOTTOM == 30, "layout derived from the inset: TOP=" .. tostring(ns.Board.TOP) .. " BOTTOM=" .. tostring(ns.Board.BOTTOM))
 assert(ns.Board.CHROME == ns.Board.TOP + ns.Board.ROW_H + ns.Board.BOTTOM + 10, "chrome height follows: " .. tostring(ns.Board.CHROME))
 assert(ns.Board.helpButton:GetHeight() + 4 <= ns.Board.BOTTOM, "help button under the inset")
 assert(atticHidden ~= ns.Board.frame, "the top band stays: the icon tabs live there")

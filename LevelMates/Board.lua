@@ -10,7 +10,7 @@ local unpack = unpack or table.unpack   -- the client has unpack; table.unpack c
 
 -- Layout: one place for the widths so the columns always fit inside the window.
 B.COLS = { 150, 50, 260, 70, 70 }   -- name, level, zone, group, xp/h
-B.GAP, B.MARGIN, B.WIDTH = 4, 12, 680
+B.GAP, B.MARGIN, B.WIDTH = 4, 24, 680   -- the margin keeps the text inside the page's drawn edge
 B.JCOLS = { 100, 1, 395, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 364, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 320, 105, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
@@ -81,6 +81,7 @@ local function Build()
 		if type(y1) == "number" and y1 < 0 then insetTop = -y1 end
 		if type(y2) == "number" and y2 > 0 then insetBottom = y2 end
 	end
+	if f.page then insetTop = insetTop + 30 end   -- the page's drawn top edge: the writing starts below it
 	B.TOP, B.BOTTOM = insetTop + 60, insetBottom
 	B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10
 	f:SetSize(B.WIDTH, B.CHROME + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows
