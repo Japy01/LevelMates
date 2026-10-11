@@ -36,3 +36,10 @@ C_PartyInfo = { InviteUnit = function() end }
 STUB.printed = {}
 B.Invite("Gigasamba Caramba")
 assert(STUB.printed[#STUB.printed]:find(string.format(L.INVITE_SENT, "Gigasamba Caramba"), 1, true), "told at once")
+
+-- every Home row has its icon
+B.ShowTab("home")
+for _, r in ipairs(B.rows) do
+	local e = r.button:IsShown() and r.button.homeEntry
+	if e and not e.header then assert(r.icon:IsShown(), "an icon on " .. tostring(e.kind)) end
+end

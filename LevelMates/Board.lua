@@ -971,6 +971,8 @@ local function FillAch(list)
 end
 
 -- Home: the guild, what is happening now, what is for me, this week.
+local HOME_ICON = { level = "banner", challenge = "Interface/Icons/INV_Misc_Map_01", help = "Interface/Icons/Spell_Holy_Heal", lfg = "Interface/Icons/INV_Misc_Key_03",
+	meet = "Interface/Icons/INV_Misc_PocketWatch_01", gift = "Interface/Icons/INV_Misc_Bag_10", trainer = "Interface/Icons/INV_Misc_Book_09", rank = "Interface/Icons/INV_Misc_Coin_01", invite = "Interface/Icons/INV_Letter_15" }
 local HOME_COLOR = { guild = { 1, 0.82, 0 }, now = { 0.4, 1, 0.4 }, foryou = { 1, 0.82, 0 }, week = { 0.6, 0.8, 1 } }
 local function FillHome(list)
 	for i = 1, ROWS do
@@ -986,7 +988,8 @@ local function FillHome(list)
 			r.button:Show()
 		elseif e then
 			local m = e.name and R.mates[e.name]
-			r.icon:Hide()
+			local ic = HOME_ICON[e.kind]   -- each kind of row with its own icon (the mate row shows its class below)
+			if ic then r.icon:SetTexture(ic == "banner" and ns.Skin.Banner() or ic); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:Show() else r.icon:Hide() end
 			r.level:SetText(""); r.zone:SetTextColor(1, 1, 1); r.group:SetTextColor(1, 1, 1); r.xph:SetTextColor(0.4, 1, 0.4)
 			r.name:SetTextColor(1, 1, 1)
 			local action = ""
@@ -1014,6 +1017,7 @@ local function FillHome(list)
 				action = L.HOME_SEE
 			elseif e.kind == "mate" then
 				SetClassIcon(r.icon, m and m.class)
+				if not r.icon:IsShown() then r.icon:SetTexture("Interface/Icons/Spell_Holy_PrayerOfFortitude"); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:Show() end   -- class not known yet
 				r.name:SetText(e.name); r.name:SetTextColor(ClassColor(m and m.class))
 				local info = m and m.mapId and C_Map.GetMapInfo(m.mapId)
 				r.zone:SetText(string.format(L.LEVEL_N, m and m.level or 0) .. (info and ("  ·  " .. info.name) or ""))
