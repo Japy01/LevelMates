@@ -35,20 +35,36 @@ function SK.InkText(s)
 	end))
 end
 -- A font string on the page: every colour it is given is turned into ink, and no shadow (it blurs on paper).
+-- A font string written on the page: no shadow (it blurs on paper), and listed for the ink pass.
+SK.inkList = {}
 function SK.InkFont(fs)
 	if not fs or fs.inked then return fs end
 	fs.inked = true
-	local set = fs.SetTextColor
-	fs.SetTextColor = function(self, r, g, b, a)
-		local ir, ig, ib = SK.Ink(r or 1, g or 1, b or 1)
-		return set(self, ir, ig, ib, a)
-	end
-	local setText = fs.SetText
-	fs.SetText = function(self, t) return setText(self, SK.InkText(t)) end
 	if fs.SetShadowColor then fs:SetShadowColor(0, 0, 0, 0) end
-	fs:SetTextColor(1, 1, 1)
+	SK.inkList[#SK.inkList + 1] = fs
+	SK.InkOne(fs)
 	return fs
 end
+-- After a page is drawn: whatever colour each text was given turns into ink, once (what is already ink is left be;
+-- the game's own text objects do not take overridden methods, so this pass is how it is done).
+local function near(a, b) return math.abs(a - b) < 0.004 end
+function SK.InkOne(fs)
+	local r, g, b = fs:GetTextColor()
+	r, g, b = r or 1, g or 1, b or 1
+	local done = fs.lmInk
+	if not (done and near(done[1], r) and near(done[2], g) and near(done[3], b)) then
+		local ir, ig, ib = SK.Ink(r, g, b)
+		fs:SetTextColor(ir, ig, ib)
+		fs.lmInk = { ir, ig, ib }
+	end
+	local t = fs:GetText()
+	if type(t) == "string" and t ~= fs.lmInkText and t:find("|c", 1, true) then
+		local inked = SK.InkText(t)
+		fs:SetText(inked)
+		fs.lmInkText = inked
+	end
+end
+function SK.InkPass() for _, fs in ipairs(SK.inkList) do SK.InkOne(fs) end end
 
 -- Whether the client has an atlas (Forever's art differs from Mainline's in places).
 function SK.HasAtlas(name)

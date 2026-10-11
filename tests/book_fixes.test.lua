@@ -14,7 +14,7 @@ assert(not mf.page, "no parchment under light text")
 -- I2: colour codes in a text (item links, quality colours) are written in ink too
 B.Toggle()
 local fs = B.rows[1].name
-fs:SetText("|cffffffff|Hitem:2589|h[Linen Cloth]|h|r and |cff1eff00green|r")
+fs:SetText("|cffffffff|Hitem:2589|h[Linen Cloth]|h|r and |cff1eff00green|r"); ns.Skin.InkPass()
 local r, g, b = SK.Ink(1, 1, 1)
 local hex = string.format("%02x%02x%02x", math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5))
 assert(fs.text:find("|cff" .. hex .. "|Hitem:2589", 1, true), "a white item link turns to ink: " .. fs.text)

@@ -81,7 +81,7 @@ local function Build()
 		if type(y1) == "number" and y1 < 0 then insetTop = -y1 end
 		if type(y2) == "number" and y2 > 0 then insetBottom = y2 end
 	end
-	if f.page then insetTop = insetTop + 30 end   -- the page's drawn top edge: the writing starts below it
+	if f.page then insetTop = insetTop + 55 end   -- the page's drawn top edge (its curl): the writing starts below it
 	B.TOP, B.BOTTOM = insetTop + 60, insetBottom
 	B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10
 	f:SetSize(B.WIDTH, B.CHROME + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows
@@ -482,6 +482,7 @@ local function Build()
 	for _, hr in ipairs(B.helpRows) do Ink(hr.text) end
 	Ink(B.recruitPreview); Ink(B.recruitStatus)
 	B.heading:SetTextColor(1, 0.82, 0); B.restedText:SetTextColor(0.6, 0.8, 1); B.subtitle:SetTextColor(0.8, 0.8, 0.8)
+	ns.Skin.InkPass()
 end
 
 local function RefreshHelp()
@@ -1430,6 +1431,7 @@ function B.Refresh()
 	if recruit then emptyText = B.recruitView == "inactive" and #list == 0 and L.INACTIVE_EMPTY or "" end   -- the panel fills this tab
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
+	ns.Skin.InkPass()   -- what this page wrote, in ink
 	if (goals or wishes or crafts or feed or class or recruit or home) and pages and pages > 1 then   -- the pager only when there is more than one page
 		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
 	end

@@ -13,7 +13,7 @@ assert(page and page.atlas == SK.PAGE and f.Ribbon and f.Ribbon.atlas == SK.RIBB
 assert(B.divider.atlas == SK.DIVIDER and B.colStrip, "the spellbook's divider, a band for the columns")
 assert(B.rows[1].stripe and B.rows[1].name.inked and B.heading.inked, "row lines; texts in ink")
 local r, g, b = SK.Ink(1, 1, 1)
-B.rows[1].name:SetTextColor(1, 1, 1)
+B.rows[1].name:SetTextColor(1, 1, 1); SK.InkPass()
 assert(B.rows[1].name.color[1] == r and B.rows[1].name.color[3] == b, "white becomes dark ink")
 ns.Professions.AddSample("Mario", { { id = 171, rank = 120 } })
 B.ShowTab("crafts")
