@@ -657,6 +657,30 @@ local function SectionHeader(r)
 	end
 end
 
+-- Bars grow smoothly (half a second) when their value changes on the page being looked at; the final width is set
+-- at once, the frames in between draw the growth.
+local growing, animator = {}, nil
+local function GrowStep()
+	local now, any = GetTime(), false
+	for tex, a in pairs(growing) do
+		local p = (now - a[3]) / 0.5
+		if p >= 1 then tex:SetWidth(a[2]); growing[tex] = nil
+		else tex:SetWidth(a[1] + (a[2] - a[1]) * (1 - (1 - p) * (1 - p))); any = true end
+	end
+	if not any then animator:SetScript("OnUpdate", nil) end
+end
+function B.Grow(tex, width)
+	local from = tex.lmW
+	tex:SetWidth(width); tex.lmW = width
+	if from and math.abs(from - width) > 1 then
+		animator = animator or CreateFrame("Frame")
+		growing[tex] = { from, width, GetTime() }
+		animator:SetScript("OnUpdate", GrowStep)
+	end
+end
+-- A new page: its bars start where they are, no growth from the previous page's values.
+local function ResetBars() for _, r in ipairs(B.rows or {}) do r.barFill.lmW = nil; growing[r.barFill] = nil end end
+
 local function FillMates(list)
 	local mine = UnitLevel("player")
 	for i = 1, ROWS do
@@ -798,7 +822,7 @@ local function FillCrafts(list)
 			r.zone:SetText("")
 			r.barBg:ClearAllPoints(); r.barBg:SetPoint("LEFT", r.zone, "LEFT", 0, 0); r.barBg:Show()
 			r.barFill:ClearAllPoints(); r.barFill:SetPoint("LEFT", r.zone, "LEFT", 0, 0)
-			r.barFill:SetWidth(math.max(1, B.BAR_W * math.min(1, c.rank / (c.max or c.rank)))); r.barFill:Show()
+			B.Grow(r.barFill, math.max(1, B.BAR_W * math.min(1, c.rank / (c.max or c.rank)))); r.barFill:Show()
 			r.group:SetText(c.max and (c.rank .. "/" .. c.max) or tostring(c.rank)); r.group:SetTextColor(1, 1, 1)
 			if c.mine then r.xph:SetText("")
 			elseif m then r.xph:SetText(L.ONLINE); r.xph:SetTextColor(unpack(B.GROUP_COLORS.open))
@@ -999,7 +1023,7 @@ local function FillHome(list)
 				r.zone:SetText("")
 				r.barBg:ClearAllPoints(); r.barBg:SetPoint("LEFT", r.zone, "LEFT", 0, 0); r.barBg:Show()
 				r.barFill:ClearAllPoints(); r.barFill:SetPoint("LEFT", r.zone, "LEFT", 0, 0)
-				r.barFill:SetWidth(math.max(1, B.BAR_W * math.min(1, have / math.max(1, goal)))); r.barFill:Show()
+				B.Grow(r.barFill, math.max(1, B.BAR_W * math.min(1, have / math.max(1, goal)))); r.barFill:Show()
 				r.group:SetText(have .. "/" .. goal)
 				if e.kind == "challenge" and e.done then action = L.HOME_DONE end
 			elseif e.kind == "help" then
@@ -1318,6 +1342,7 @@ local function Page(all)
 	return list, pages
 end
 function B.TurnPage(step)
+	ResetBars()
 	local key = PAGE_KEY[B.tab]
 	if key then B[key] = (B[key] or 1) + step; B.Refresh() end
 end
@@ -1480,6 +1505,7 @@ function B.Refresh()
 end
 
 function B.SetTab(key)
+	ResetBars()
 	key = KnownTab(Resolve(key))
 	if B.MainOf(key) == "guild" and (key ~= "recruit" or R.IAmOfficer()) then ns.char.guildSub = key end
 	ns.char.boardTab, B.tab, B.search = key, key, ""
@@ -1489,6 +1515,7 @@ end
 
 -- Open the board on a given tab (slash command, minimap, binding).
 function B.ShowTab(key)
+	ResetBars()
 	if not B.frame then Build() end
 	B.tab = KnownTab(Resolve(key))
 	if B.MainOf(B.tab) == "guild" and (B.tab ~= "recruit" or R.IAmOfficer()) then ns.char.guildSub = B.tab end

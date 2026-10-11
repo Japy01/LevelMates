@@ -43,3 +43,10 @@ for _, r in ipairs(B.rows) do
 	local e = r.button:IsShown() and r.button.homeEntry
 	if e and not e.header then assert(r.icon:IsShown(), "an icon on " .. tostring(e.kind)) end
 end
+
+-- bars grow when their value changes on the same page; the final width is set at once
+B.ShowTab("home")
+local bar = B.rows[2].barFill
+local w0 = bar:GetWidth()
+ns.Points.AddSample("Luis", { t = 60 })
+assert(bar:GetWidth() ~= w0, "the new width at once")
