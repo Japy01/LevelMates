@@ -77,7 +77,7 @@ ns.On("LM_HB_SENT", function()
 	local n, cutoff = 0, F.Now() - 1440
 	for _, e in ipairs(store()) do
 		if e.t < cutoff or n >= F.RESEND then break end
-		if e.pending and e.who == me() and (e.k ~= "dth" or ns.db.settings.shareDeaths) then n = n + 1; sendEntry(e) end
+		if e.pending and e.who == me() and (e.k ~= "dth" or ns.db.settings.shareDeaths) and (e.k ~= "ach" or ns.db.settings.shareAchievements) then n = n + 1; sendEntry(e) end
 	end
 end)
 ns.On("LM_COMM_DROPPED", function(kind)

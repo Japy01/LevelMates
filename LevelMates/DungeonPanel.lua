@@ -7,7 +7,6 @@ ns.DungeonPanel = DP
 local L, R = ns.L, ns.Roster
 local unpack = unpack or table.unpack
 DP.WIDTH, DP.LINES, DP.LINE_H = 320, 18, 24
-local ROLE_ICON = { T = "roleicon-tiny-tank", H = "roleicon-tiny-healer", D = "roleicon-tiny-dps" }
 
 local function me() return (UnitName("player")) end
 local function Cap(s) return (s:gsub("^%l", string.upper)) end
@@ -21,7 +20,17 @@ end
 function DP.Rows(id)
 	local out, d = {}, ns.Dungeons.Get(id)
 	local groups = {}
-	for _, a in ipairs(ns.Board.AdsFor(id)) do groups[#groups + 1] = { kind = "ad", ad = a } end
+	for _, a in ipairs(ns.Board.AdsFor(id)) do
+		groups[#groups + 1] = { kind = "ad", ad = a }
+		if a.mine then   -- who joined mine: to invite them
+			local who = {}
+			for name, role in pairs(a.joined or {}) do who[#who + 1] = { kind = "joiner", name = name, role = role } end
+			table.sort(who, function(x, y) return x.name < y.name end)
+			for _, w in ipairs(who) do groups[#groups + 1] = w end
+		else
+			groups[#groups + 1] = { kind = "contact", ad = a }   -- whisper or invite its leader
+		end
+	end
 	section(out, "groups", groups)
 	local chat = {}
 	for _, a in ipairs(ns.ChatAds.For(id)) do chat[#chat + 1] = { kind = "chat", ad = a } end
@@ -55,8 +64,8 @@ end
 local function Build()
 	local f = ns.Skin.Window("LevelMatesDungeonPanel", UIParent)
 	DP.frame = f
-	f:SetSize(DP.WIDTH, 120 + DP.LINES * DP.LINE_H)
-	f:SetFrameStrata("HIGH")
+	f:SetSize(DP.WIDTH, 98 + DP.LINES * DP.LINE_H + 44)   -- every line above the footer buttons
+	f:SetFrameStrata("HIGH"); f:EnableMouse(true); f:SetClampedToScreen(true)   -- clicks stay on the panel, which stays on screen
 	tinsert(UISpecialFrames, "LevelMatesDungeonPanel")
 	f.title = f.TitleText or f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	-- the dungeon's picture across the top
@@ -131,6 +140,13 @@ function DP.Refresh()
 					btns[2] = { Cap(L.ROLE_H), function() ns.LFG.Join(a.id, "H") end }
 					btns[3] = { Cap(L.ROLE_D), function() ns.LFG.Join(a.id, "D") end }
 				end
+			elseif e.kind == "joiner" then
+				line.text:SetText("   " .. e.name .. " (" .. L["ROLE_" .. e.role] .. ")"); line.text:SetTextColor(0.4, 1, 0.4)
+				btns[1] = { L.DP_INVITE, function() ns.Board.Invite(e.name) end }
+			elseif e.kind == "contact" then
+				line.text:SetText(""); line.text:SetTextColor(1, 1, 1)
+				btns[1] = { L.DP_INVITE, function() ns.Board.Invite(e.ad.name) end }
+				btns[2] = { L.DP_WHISPER, function() ns.Board.Whisper(e.ad.name) end }
 			elseif e.kind == "chat" then
 				line.text:SetText(e.ad.name .. ": " .. e.ad.text); line.text:SetTextColor(0.85, 0.85, 0.85)
 				btns[1] = { L.DP_WHISPER, function() ns.Board.Whisper(e.ad.full) end }
@@ -161,7 +177,14 @@ function DP.Open(id)
 	if not DP.frame then Build() end
 	DP.id = id
 	DP.frame:ClearAllPoints()
-	if ns.Board.frame and ns.Board.frame:IsShown() then DP.frame:SetPoint("TOPLEFT", ns.Board.frame, "TOPRIGHT", 4, 0) else DP.frame:SetPoint("CENTER") end
+	local board = ns.Board.frame
+	if board and board:IsShown() then
+		local right, screen = board:GetRight(), UIParent:GetRight()
+		if right and screen and right + DP.WIDTH + 4 > screen then DP.frame:SetPoint("TOPRIGHT", board, "TOPLEFT", -4, 0)   -- no room on the right
+		else DP.frame:SetPoint("TOPLEFT", board, "TOPRIGHT", 4, 0) end
+	else
+		DP.frame:SetPoint("CENTER")
+	end
 	DP.frame:Show()
 	if ns.Board.frame and not DP.hooked then DP.hooked = true; ns.Board.frame:HookScript("OnHide", DP.Close) end   -- closes with the book
 	DP.Refresh()

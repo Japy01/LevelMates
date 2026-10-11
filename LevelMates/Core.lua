@@ -33,7 +33,19 @@ end
 
 local bus = {}
 function ns.On(event, fn) bus[event] = bus[event] or {}; table.insert(bus[event], fn) end
-function ns.Fire(event, ...) local list = bus[event]; if not list then return end; for _, fn in ipairs(list) do fn(...) end end
+local unpack = unpack or table.unpack
+-- Each listener runs on its own: one that fails does not stop the others. Its error is kept for /lm informe and still
+-- goes to the game's error handler (BugGrabber, the default one) as any error would.
+local function onError(err) if ns.OnError then ns.OnError(err) end; return err end
+function ns.Fire(event, ...)
+	local list = bus[event]
+	if not list then return end
+	local n, args = select("#", ...), { ... }
+	for _, fn in ipairs(list) do
+		local ok, err = xpcall(function() return fn(unpack(args, 1, n)) end, onError)
+		if not ok then local h = geterrorhandler and geterrorhandler(); if h then h(err) end end
+	end
+end
 
 function ns.Log(fmt, ...)
 	if ns.db and ns.db.settings.debug then print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end

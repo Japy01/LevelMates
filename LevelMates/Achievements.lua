@@ -46,7 +46,7 @@ function AC.When(id) return got()[id] end
 
 function AC.Progress(id)
 	local a = BY_ID[id]
-	if a.cat == "level" then return math.min(a.n, UnitLevel("player")) end
+	if a.cat == "level" then return math.min(a.n, math.max(UnitLevel("player"), AC.level or 0)) end
 	return math.min(a.n, stats()[a.cat] or 0)
 end
 
@@ -62,8 +62,11 @@ local function sendList(prio)
 		local ids = myIds()
 		if #ids > 0 then fields.ids = table.concat(ids, ",") end
 	end
-	return C.Send("ac", fields, prio)
+	local ok = C.Send("ac", fields, prio)
+	ns.char.achPending = not ok or nil   -- refused (in a dungeon): again with the next heartbeat
+	return ok
 end
+ns.On("LM_HB_SENT", function() if ns.char.achPending then sendList() end end)
 function AC.SetSharing() sendList("now") end
 -- a few seconds after the login burst (heartbeat, ping, professions...): no hurry for these
 ns.On("LM_ANNOUNCED", function() C_Timer.After(10, function() if ns.db.settings.shareAchievements and #myIds() > 0 then sendList() end end) end)
@@ -90,7 +93,7 @@ end
 local function count(cat) local s = stats(); s[cat] = (s[cat] or 0) + 1; AC.Check() end
 
 -- What I do (the points module counts the same actions).
-ns.On("LM_POINT_EVENT", function(cat) if cat ~= "l" then count(cat) else AC.Check() end end)
+ns.On("LM_POINT_EVENT", function(cat, level) if cat ~= "l" then count(cat) else AC.level = level; AC.Check() end end)
 ns.On("LM_JOURNAL_ADDED", function(e) if e.k == "death" and not e.sim then count("dead") end end)
 ns.On("LM_CHALLENGE_DONE", function() award("challenge") end)
 
@@ -100,9 +103,11 @@ local function backfill()
 	ns.char.statsInit = true
 	local s = stats()
 	for _, e in ipairs(ns.Journal.List("all", "")) do
+		if e.sim then -- samples from /lm sim are not real
 		if e.k == "dungeon" and e.mates and #e.mates > 0 then s.d = (s.d or 0) + 1
 		elseif e.k == "quest" then s.q = (s.q or 0) + 1
 		elseif e.k == "death" then s.dead = (s.dead or 0) + 1 end
+		end
 	end
 end
 ns.On("LM_LOADED", function() backfill(); AC.Check(); quiet = false end)

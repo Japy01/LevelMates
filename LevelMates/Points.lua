@@ -54,18 +54,18 @@ local function changed()
 end
 
 -- What I do: points and this week's counter.
-local function add(cat)
-	ns.Fire("LM_POINT_EVENT", cat)   -- the same actions count for achievements
+local function add(cat, level)
 	local p = mine()
 	p.t = p.t + PT.VALUE[cat]
 	if p[cat] then p[cat] = p[cat] + 1 end
+	ns.Fire("LM_POINT_EVENT", cat, level)   -- the same actions count for achievements
 	changed()
 end
 PT.Add = add
 
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("PLAYER_LEVEL_UP"); ev:RegisterEvent("QUEST_TURNED_IN")
-ev:SetScript("OnEvent", function(_, event) if not ns.db then return end; add(event == "PLAYER_LEVEL_UP" and "l" or "q") end)
+ev:SetScript("OnEvent", function(_, event, arg) if not ns.db then return end; if event == "PLAYER_LEVEL_UP" then add("l", arg) else add("q") end end)   -- the level-up's own level: the game still reports the old one during it
 -- A dungeon with guildmates: the same one counts once in three hours (a corpse run back in is not a new run).
 local lastDungeon = {}
 ns.On("LM_JOURNAL_ADDED", function(e)
