@@ -79,7 +79,7 @@ assert(PT.GuildTotal() == PT.Mine().t + 99999, "Ana forgotten")
 
 -- a new week resets my weekly counters, not my total
 local t0 = PT.Mine().t
-ns.char.points.w = PT.Week() - 1   -- as if the counters were from last week
+ns.char.pointsByGuild["Test Guild"].w = PT.Week() - 1   -- as if the counters were from last week
 local m2 = PT.Mine()
 assert(m2.t == t0 and m2.l == 0 and m2.d == 0 and m2.w == PT.Week(), "weekly reset")
 
@@ -89,3 +89,26 @@ PT.SetSharing()
 assert(last("pt").t == nil, "withdrawn")
 ns.db.settings.sharePoints = true
 PT.SetSharing()
+
+-- points belong to the guild: a new one starts from zero
+local here = PT.Mine().t
+STUB.player.guild = "Other Guild"
+assert(PT.Mine().t == 0, "a new guild: from zero")
+STUB.player.guild = "Test Guild"
+assert(PT.Mine().t == here, "back: my points there")
+-- helps: twice a day per asker
+local h0 = PT.Mine().h
+for i = 1, 4 do ns.Fire("LM_HELP_GIVEN", "x" .. i, "Mario") end
+assert(PT.Mine().h == h0 + 2, "twice a day for the same asker: " .. PT.Mine().h - h0)
+ns.Fire("LM_HELP_GIVEN", "y1", "Ana")
+assert(PT.Mine().h == h0 + 3, "another asker counts")
+-- not sharing: nothing goes out when points change
+ns.db.settings.sharePoints = false
+local n = #STUB.sent
+STUB.Fire("QUEST_TURNED_IN", 777); STUB.Advance(70)
+for i = n + 1, #STUB.sent do assert(C.Decode(STUB.sent[i].msg) ~= "pt", "nothing sent while not sharing") end
+ns.db.settings.sharePoints = true
+-- the realm's clock when the client has it
+C_DateAndTime = { GetServerTimeLocal = function() return monday + 3600 end }
+assert(PT.Week() == PT.Week(monday + 3600), "the week by the realm's clock")
+C_DateAndTime = nil

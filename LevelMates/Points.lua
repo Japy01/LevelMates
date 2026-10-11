@@ -11,12 +11,21 @@ PT.CHALLENGES = { { cat = "d", base = 25 }, { cat = "l", base = 60 }, { cat = "h
 local MONDAY = 4 * 86400   -- 1970-01-01 was a Thursday: the first Monday is four days later
 
 local function me() return (UnitName("player")) end
-local function now() return GetServerTime and GetServerTime() or time() end
+-- The realm's own clock (its Monday midnight), as the game shows it; the plain clock where the client has no such call.
+local function now()
+	if C_DateAndTime and C_DateAndTime.GetServerTimeLocal then return C_DateAndTime.GetServerTimeLocal() end
+	return GetServerTime and GetServerTime() or time()
+end
 function PT.Week(t) return math.floor(((t or now()) - MONDAY) / (7 * 86400)) end
 
+-- My points belong to the guild I am in: a new guild starts from zero, the old one's are kept for a return.
 local function mine()
-	ns.char.points = ns.char.points or { t = 0, w = PT.Week(), l = 0, d = 0, h = 0, q = 0 }
-	local p = ns.char.points
+	local guild = GetGuildInfo("player") or "?"
+	ns.char.pointsByGuild = ns.char.pointsByGuild or {}
+	if ns.char.points and not ns.char.pointsByGuild[guild] then ns.char.pointsByGuild[guild] = ns.char.points end   -- from before: this guild's
+	ns.char.points = nil
+	ns.char.pointsByGuild[guild] = ns.char.pointsByGuild[guild] or { t = 0, w = PT.Week(), l = 0, d = 0, h = 0, q = 0 }
+	local p = ns.char.pointsByGuild[guild]
 	if p.w ~= PT.Week() then p.w, p.l, p.d, p.h, p.q = PT.Week(), 0, 0, 0, 0 end   -- a new week: weekly counters start again
 	return p
 end
@@ -46,11 +55,11 @@ function PT.SetSharing() send("now") end
 local function changed()
 	ns.Fire("LM_POINTS_CHANGED")
 	PT.CheckMilestones()
-	if not announced then return end
+	if not announced or not ns.db.settings.sharePoints then return end   -- not sharing: nothing to send
 	if dirty then return end   -- a send is already waiting: it takes the newest
 	dirty = true
 	-- a couple of seconds to gather what happens together, and never more than once a minute
-	C_Timer.After(math.max(2, 60 - (GetTime() - lastSent)), function() if dirty then send() end end)
+	C_Timer.After(math.max(2, 60 - (GetTime() - lastSent)), function() if dirty and ns.db.settings.sharePoints then send() end; dirty = false end)
 end
 
 -- What I do: points and this week's counter.
@@ -75,7 +84,19 @@ ns.On("LM_JOURNAL_ADDED", function(e)
 	add("d")
 end)
 local helped = {}
-ns.On("LM_HELP_GIVEN", function(id) if id and helped[id] then return end; if id then helped[id] = true end; add("h") end)
+-- A help counts once per request, and at most twice a day for the same person asking.
+local helpedBy = {}
+ns.On("LM_HELP_GIVEN", function(id, asker)
+	if id and helped[id] then return end
+	if id then helped[id] = true end
+	if asker then
+		local day = math.floor(time() / 86400)
+		local key = asker .. ":" .. day
+		helpedBy[key] = (helpedBy[key] or 0) + 1
+		if helpedBy[key] > 2 then return end
+	end
+	add("h")
+end)
 ns.On("LM_GIFT_GIVEN", function() add("g") end)
 
 -- A meetup attended: during its hour, grouped with its creator (or, mine, with someone who joined); once each.

@@ -91,7 +91,7 @@ function H.Coming(id)
 	if not h then return end
 	SendChatMessage(string.format(L.HELP_COMING, (UnitName("player"))), "WHISPER", nil, h.name)
 	C.Send("helpgo", { id = id }, "now")   -- an addon message, not chat: tells the asker who is coming
-	ns.Fire("LM_HELP_GIVEN", id)   -- guild points, once per request
+	ns.Fire("LM_HELP_GIVEN", id, h.name)   -- guild points, once per request (and twice a day per asker)
 end
 
 -- Grouping with someone who said "On my way" ends my request for everyone.
