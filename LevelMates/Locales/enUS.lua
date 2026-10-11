@@ -252,3 +252,4 @@ L.INVITE_SENT = "Invite sent to %s (it may take a few seconds to reach them)."
 -- Dungeon panel
 L.DP_GROUPS = "Guild groups"; L.DP_CHAT = "In chat"; L.DP_MEET = "Meetups"; L.DP_MATES = "Guildmates of its levels"; L.DP_EMPTY = "Nobody looking yet. Look for a group or set up a meetup below."
 L.DP_YOUR_LEVEL = "your level"; L.DP_WITHDRAW = "Withdraw"; L.DP_LEAVE = "Leave"; L.DP_WHISPER = "Whisper"; L.DP_INVITE = "Invite"; L.DP_CANCEL = "Cancel"
+L.GROUPXP_NONE = "Group XP bars are back; they show while you are grouped with guildmates."

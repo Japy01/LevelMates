@@ -72,6 +72,16 @@ local function Build()
 	local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	title:SetPoint("TOPLEFT", 8, -6); title:SetText(L.GROUPXP_TITLE)
 	f.title = title
+	-- minimise (only the title stays) and close (back with /lm xp); both remembered
+	local function TitleButton(label, x, onClick)
+		local b = CreateFrame("Button", nil, f)
+		b:SetSize(16, 16); b:SetPoint("TOPRIGHT", x, -3)
+		b.label = b:CreateFontString(nil, "OVERLAY", "GameFontNormal"); b.label:SetPoint("CENTER"); b.label:SetText(label)
+		b:SetScript("OnClick", onClick)
+		return b
+	end
+	f.close = TitleButton("×", -4, function() ns.char.groupXpHidden = true; f:Hide() end)
+	f.minimize = TitleButton("–", -22, function() ns.char.groupXpMin = not ns.char.groupXpMin; GX.Refresh() end)
 	f.rows = {}
 	for i = 1, 5 do
 		local y = -(20 + (i - 1) * ROW_H)
@@ -89,13 +99,13 @@ end
 
 function GX.Refresh()
 	local rows = (ns.db and ns.db.settings.groupXp) and GX.Rows() or {}
-	if #rows < 2 then if GX.frame then GX.frame:Hide() end; return end
+	if #rows < 2 or ns.char.groupXpHidden then if GX.frame then GX.frame:Hide() end; return end
 	if not GX.frame then Build() end
 	local f = GX.frame
 	for i, r in ipairs(f.rows) do
 		local d = rows[i]
 		local parts = { r.text, r.barBg, r.rested, r.fill, r.pct }
-		if d then
+		if d and not ns.char.groupXpMin then
 			local c = d.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[d.class]
 			r.text:SetText(d.level .. " " .. d.name); r.text:SetTextColor(c and c.r or 1, c and c.g or 1, c and c.b or 1)
 			r.fill:SetWidth(math.max(1, math.floor(GX.BAR_W * (d.pct or 0) / 100)))
@@ -109,7 +119,8 @@ function GX.Refresh()
 		end
 	end
 	f.title:SetText(IsInInstance and IsInInstance() == true and L.GROUPXP_PAUSED or L.GROUPXP_TITLE)   -- addon messages cannot go out in dungeons
-	f:SetHeight(24 + #rows * ROW_H)
+	f.minimize.label:SetText(ns.char.groupXpMin and "+" or "–")
+	f:SetHeight(ns.char.groupXpMin and 22 or (24 + #rows * ROW_H))
 	f:Show()
 end
 
@@ -145,3 +156,5 @@ end)
 ns.On("LM_PING_ANSWERED", function() if anyMate() then GX.Send(true) end end)
 ns.On("LM_ROSTER_CHANGED", function() GX.Settle(); GX.Refresh() end)   -- guildmates back on the board after a dungeon
 ns.On("LM_RESTED_CHANGED", GX.Refresh)
+-- /lm xp: the bars back after closing them
+ns.Slash("xp", function() ns.char.groupXpHidden = nil; GX.Refresh(); if not (GX.frame and GX.frame:IsShown()) then ns.Say(L.GROUPXP_NONE) end end)

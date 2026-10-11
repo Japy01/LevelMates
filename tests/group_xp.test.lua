@@ -43,3 +43,19 @@ ns.db.settings.groupXp = false
 n = #STUB.sent
 STUB.Fire("GROUP_ROSTER_UPDATE"); STUB.Advance(40)
 assert(count("xp", n) == 0 and not GX.frame:IsShown(), "off: nothing sent or shown")
+
+-- minimise and close
+ns.db.settings.groupXp = true
+STUB.partyMembers = { Mario = true }
+STUB.Receive("LVLM", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM", C.Encode("xp", { p = 70, l = 21 }), "GUILD", "Mario-Testrealm")
+assert(GX.frame:IsShown(), "shown")
+GX.frame.minimize.scripts.OnClick(GX.frame.minimize)
+assert(GX.frame:GetHeight() == 22 and not GX.frame.rows[1].text:IsShown(), "minimised: the title only")
+GX.frame.minimize.scripts.OnClick(GX.frame.minimize)
+assert(GX.frame:GetHeight() > 22 and GX.frame.rows[1].text:IsShown(), "back open")
+GX.frame.close.scripts.OnClick(GX.frame.close)
+GX.Refresh()
+assert(not GX.frame:IsShown(), "closed stays closed")
+SlashCmdList.LEVELMATES("xp")
+assert(GX.frame:IsShown(), "/lm xp brings it back")

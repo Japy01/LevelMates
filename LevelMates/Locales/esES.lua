@@ -253,3 +253,4 @@ L.INVITE_SENT = "Invitación enviada a %s (puede tardar unos segundos en llegarl
 -- Panel de mazmorra
 L.DP_GROUPS = "Grupos de la hermandad"; L.DP_CHAT = "En el chat"; L.DP_MEET = "Quedadas"; L.DP_MATES = "Hermanos de su nivel"; L.DP_EMPTY = "Nadie busca todavía. Busca grupo o crea una quedada abajo."
 L.DP_YOUR_LEVEL = "de tu nivel"; L.DP_WITHDRAW = "Retirar"; L.DP_LEAVE = "Me borro"; L.DP_WHISPER = "Susurrar"; L.DP_INVITE = "Invitar"; L.DP_CANCEL = "Cancelar"
+L.GROUPXP_NONE = "Las barras de XP vuelven a estar activas; salen cuando vas en grupo con hermanos."
