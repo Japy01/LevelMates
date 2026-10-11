@@ -26,7 +26,7 @@ local row
 for _, r in ipairs(B.rows) do if r.button.mate == "Mario" then row = r end end
 row.button.scripts.OnClick(row.button, "LeftButton")
 assert(MC.frame and MC.frame:IsShown() and MC.name == "Mario", "opened")
-assert(MC.frame.body.text == table.concat(MC.Lines("Mario"), "\n"), "showing the lines")
+assert(MC.frame.body.text == ns.Skin.InkText(table.concat(MC.Lines("Mario"), "\n")), "showing the lines (in ink)")
 MC.whisper.scripts.OnClick(MC.whisper)
 assert(STUB.lastTell == "Mario", "whisper")
 local invited

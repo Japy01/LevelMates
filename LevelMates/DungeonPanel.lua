@@ -171,6 +171,7 @@ function DP.Refresh()
 			line.text:SetWidth(DP.WIDTH - 24 - 64 * #btns)
 		end
 	end
+	ns.Skin.InkWindow(DP.frame)
 end
 
 function DP.Open(id)

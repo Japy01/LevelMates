@@ -86,8 +86,11 @@ function Region:SetTexture(t) self.atlas = nil; self.texture = t end
 function Region:SetAtlas(a) self.atlas = a; self.texcoord = nil end
 function Region:SetChecked(v) self.checked = v end
 function Region:GetChecked() return self.checked end
-function Region:CreateFontString() return setmetatable({ shown = true }, Region) end
-function Region:CreateTexture() return setmetatable({ shown = true }, Region) end
+function Region:CreateFontString() local r = setmetatable({ shown = true, kind = "FontString", parent = self }, Region); self.regions = self.regions or {}; table.insert(self.regions, r); return r end
+function Region:CreateTexture() local r = setmetatable({ shown = true, kind = "Texture", parent = self }, Region); self.regions = self.regions or {}; table.insert(self.regions, r); return r end
+function Region:GetRegions() return (table.unpack or unpack)(self.regions or {}) end
+function Region:GetChildren() return (table.unpack or unpack)(self.children or {}) end
+function Region:GetObjectType() return self.kind or "Frame" end
 function Region:RegisterEvent(e) self.registered[e] = true end
 function Region:UnregisterEvent(e) self.registered[e] = nil end
 function Region:SetScript(name, fn) self.scripts[name] = fn end
@@ -98,6 +101,7 @@ function Region:GetParent() return self.parent end
 function CreateFrame(kind, name, parent, template)
 	local f = setmetatable({ kind = kind, name = name, parent = parent, template = template, registered = {}, scripts = {}, shown = true, TitleText = setmetatable({}, Region) }, Region)
 	STUB.frames[#STUB.frames + 1] = f
+	if type(parent) == "table" then parent.children = parent.children or {}; table.insert(parent.children, f) end
 	if name then _G[name] = f end
 	return f
 end

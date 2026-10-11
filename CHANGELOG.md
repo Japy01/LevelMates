@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Quiet mode** (Options > Notices): only help requests, groups and goals; the other notices, the screen messages and the sound go off, and come back as they were.
+- Bars grow smoothly when their value changes.
+- The small windows (card, dungeon panel, wishes, goals, groups, meetups, Discord) are pages of the book too, written in ink.
+
 ## 0.3.1
 
 - Home: an icon for every kind of row; the Guild tab and the challenge achievement show your faction's banner.

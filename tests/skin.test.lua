@@ -28,7 +28,7 @@ for _, c in ipairs(B.cards) do if c.fits then fits = c else far = c end end
 assert(fits.backdropBorder[1] == SK.C.card[1] and far.backdropBorder[1] == SK.C.cardDim[1], "cards keep their gold or dim border")
 ns.MateCard.Show("Nadie")
 local cardPage = (ns.MateCard.frame.Inset and ns.MateCard.frame.Inset.page) or ns.MateCard.frame.page
-assert(not cardPage, "small windows keep the game's dark panel")
+assert(cardPage, "small windows have the page too")
 
 -- /lm tinta: darker or lighter, live, from each text's own colour
 B.ShowTab("mates")
@@ -49,3 +49,16 @@ UnitFactionGroup = function() return "Horde" end
 assert(SK.Banner():find("INV_BannerPVP_01", 1, true), "red for the Horde")
 UnitFactionGroup = function() return "Alliance" end
 assert(SK.Banner():find("INV_BannerPVP_02", 1, true), "blue for the Alliance")
+
+-- small windows: the page, and their writing in ink (the red buttons and typed text as said)
+local SK = ns.Skin
+local w = SK.Window("LevelMatesTestSmall", UIParent)
+assert(w.page, "a small window has the page")
+local label = w:CreateFontString(); label:SetTextColor(1, 0.82, 0)
+local btn = SK.Button(w); local bfs = btn:CreateFontString(); bfs:SetTextColor(1, 0.82, 0)
+local box = CreateFrame("EditBox", nil, w, "InputBoxTemplate"); box.kind = "EditBox"
+w.scripts.OnShow(w)
+local r = label:GetTextColor()
+assert(r < 0.5, "the label in ink: " .. r)
+assert(bfs:GetTextColor() == 1, "the button keeps its colour")
+assert(box:GetTextColor() < 0.5, "typed text dark")

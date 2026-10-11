@@ -6,10 +6,10 @@ STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local B, SK, C, PT, L, R = ns.Board, ns.Skin, ns.Comm, ns.Points, ns.L, ns.Roster
 local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STUB.sent[i].msg); if k == kind then return f end end end
 
--- C1: small windows keep the game's dark panel (their texts are light): no parchment there
+-- C1: small windows have the parchment too, with their texts inked
 ns.MateCard.Show("Nadie")
 local mf = ns.MateCard.frame
-assert(not mf.page, "no parchment under light text")
+assert(mf.page, "small windows have the page, their texts in ink")
 
 -- I2: colour codes in a text (item links, quality colours) are written in ink too
 B.Toggle()

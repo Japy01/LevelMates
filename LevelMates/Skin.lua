@@ -128,7 +128,7 @@ function SK.Window(name, parent, portrait)
 			end
 			gf.TitleText = gf.TitleContainer and gf.TitleContainer.TitleText or gf.TitleText
 			gf.gameFrame = true
-			if portrait then SK.Page(gf, true) end
+			if portrait then SK.Page(gf, true) else SK.SmallPage(gf) end
 			return gf
 		end
 	end
@@ -145,8 +145,33 @@ function SK.Window(name, parent, portrait)
 	inset:SetPoint("TOPLEFT", 8, portrait and -86 or -26); inset:SetPoint("BOTTOMRIGHT", -8, 28)
 	inset:SetColorTexture(0, 0, 0, 0)
 	f.Inset = inset
-	if portrait then SK.Page(f, true) end
+	f.TitleText.lmKeep = true   -- on the dark frame, above the page
+	if portrait then SK.Page(f, true) else SK.SmallPage(f) end
 	return f
+end
+
+-- A small window gets the page too, and its writing in ink each time it shows (and after its own refreshes).
+function SK.SmallPage(f)
+	SK.Page(f)
+	f:HookScript("OnShow", function() SK.InkWindow(f); if C_Timer then C_Timer.After(0, function() SK.InkWindow(f) end) end end)
+end
+-- Everything written on a window's page, in ink: its texts and those of its rows and boxes. The game's red buttons,
+-- the close button and the title band keep their own colours; typed text goes dark brown.
+function SK.InkWindow(f)
+	local function walk(o)
+		if o.lmKeep or o == f.CloseButton or o == f.TitleContainer then return end
+		for _, r in ipairs({ o:GetRegions() }) do
+			if r.GetObjectType and r:GetObjectType() == "FontString" and not r.lmKeep and r ~= f.TitleText then
+				if not r.lmInkListed then r.lmInkListed = true; SK.InkFont(r) end
+				SK.InkOne(r)
+			end
+		end
+		for _, c in ipairs({ o:GetChildren() }) do
+			if c.GetObjectType and c:GetObjectType() == "EditBox" then c:SetTextColor(SK.Ink(1, 1, 1))
+			else walk(c) end
+		end
+	end
+	walk(f)
 end
 
 -- A row's thin line at its foot (rows on the page are separated by lines, not stripes).
@@ -165,7 +190,7 @@ function SK.Plaque(b)
 end
 
 -- Buttons are the game's red ones.
-function SK.Button(parent, name) return CreateFrame("Button", name, parent, "UIPanelButtonTemplate") end
+function SK.Button(parent, name) local b = CreateFrame("Button", name, parent, "UIPanelButtonTemplate"); b.lmKeep = true; return b end
 
 -- A main tab: a square icon (as the spellbook's), its name in a tooltip, lit when selected.
 function SK.Tab(parent, name, icon, label)

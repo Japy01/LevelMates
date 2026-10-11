@@ -146,6 +146,7 @@ function MC.Refresh()
 		else qb:Hide() end
 	end
 	MC.frame:SetHeight(math.max(260, 100 + #MC.Lines(name) * 16) + #missing * 24)   -- room for every line above the buttons
+	ns.Skin.InkWindow(MC.frame)
 end
 
 function MC.Show(name)
