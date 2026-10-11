@@ -255,3 +255,4 @@ L.DP_GROUPS = "Grupos de la hermandad"; L.DP_CHAT = "En el chat"; L.DP_MEET = "Q
 L.DP_YOUR_LEVEL = "de tu nivel"; L.DP_WITHDRAW = "Retirar"; L.DP_LEAVE = "Me borro"; L.DP_WHISPER = "Susurrar"; L.DP_INVITE = "Invitar"; L.DP_CANCEL = "Cancelar"
 L.GROUPXP_NONE = "Las barras de XP vuelven a estar activas; salen cuando vas en grupo con hermanos."
 L.OPT_QUIET = "Modo tranquilo"; L.OPT_QUIET_TT = "Solo lo importante: ayudas, grupos y metas. Los demás avisos, los del centro de la pantalla y el sonido se apagan; al desactivarlo vuelven como estaban."
+L.ROUTE_SET = "Ruta marcada hacia %s: %s (%.0f, %.0f). Sigue el marcador en pantalla o en el mapa."; L.ROUTE_FAIL = "El juego no permite poner marcadores en %s."; L.ROUTE_SPOT = "el avistamiento"

@@ -254,3 +254,4 @@ L.DP_GROUPS = "Guild groups"; L.DP_CHAT = "In chat"; L.DP_MEET = "Meetups"; L.DP
 L.DP_YOUR_LEVEL = "your level"; L.DP_WITHDRAW = "Withdraw"; L.DP_LEAVE = "Leave"; L.DP_WHISPER = "Whisper"; L.DP_INVITE = "Invite"; L.DP_CANCEL = "Cancel"
 L.GROUPXP_NONE = "Group XP bars are back; they show while you are grouped with guildmates."
 L.OPT_QUIET = "Quiet mode"; L.OPT_QUIET_TT = "Only what matters: help requests, groups and goals. The other notices, the messages in the middle of the screen and the sound are off; turning it off brings them back as they were."
+L.ROUTE_SET = "Route set to %s: %s (%.0f, %.0f). Follow the pin on screen or on the map."; L.ROUTE_FAIL = "The game does not allow a map pin in %s."; L.ROUTE_SPOT = "the sighting"

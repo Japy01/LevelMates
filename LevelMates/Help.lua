@@ -18,9 +18,20 @@ local function myPosition()
 	return mapId, math.floor(x * 1000 + 0.5) / 10, math.floor(y * 1000 + 0.5) / 10
 end
 
-function H.WaypointTo(mapId, x, y)
-	if not (C_Map.CanSetUserWaypointOnMap and C_Map.CanSetUserWaypointOnMap(mapId)) then return false end
+-- `label`: set from a click (a guildmate's name, or a place): then the pin is also followed on screen and the chat says
+-- where it points, or why it could not be set. Without it (an automatic pin) nothing is said or followed.
+function H.WaypointTo(mapId, x, y, label)
+	local info = C_Map.GetMapInfo and C_Map.GetMapInfo(mapId)
+	local zone = info and info.name or tostring(mapId)
+	if not (C_Map.CanSetUserWaypointOnMap and C_Map.CanSetUserWaypointOnMap(mapId)) then
+		if label then ns.Say(L.ROUTE_FAIL, zone) end
+		return false
+	end
 	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(mapId, x / 100, y / 100))
+	if label then
+		if C_SuperTrack and C_SuperTrack.SetSuperTrackedUserWaypoint then C_SuperTrack.SetSuperTrackedUserWaypoint(true) end
+		ns.Say(L.ROUTE_SET, label, zone, x, y)
+	end
 	return true
 end
 

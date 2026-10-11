@@ -108,7 +108,7 @@ local function Build()
 	MC.invite = Btn(L.MENU_INVITE, 100, function() ns.Board.Invite(MC.name) end)
 	MC.waypoint = Btn(L.CARD_WAYPOINT, 188, function()
 		local m = R.mates[MC.name]
-		if m and m.x and m.y and m.mapId then ns.Help.WaypointTo(m.mapId, m.x, m.y) end
+		if m and m.x and m.y and m.mapId then ns.Help.WaypointTo(m.mapId, m.x, m.y, MC.name) end
 	end)
 	MC.build = Btn(L.CLASS_VIEW_BUILD, 276, function() ns.Builds.Open(ns.Builds.Of(MC.name)) end)
 	MC.questButtons = {}

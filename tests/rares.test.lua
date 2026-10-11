@@ -53,6 +53,7 @@ C_Map.SetUserWaypoint = function(p) wp = p end
 UiMapPoint = { CreateFromCoordinates = function(m, x, y) return { m = m, x = x, y = y } end }
 STUB.ClickLink("addon:LevelMates:way:1412:30.0:40.0")
 assert(wp and wp.m == 1412 and math.abs(wp.x - 0.30) < 1e-9 and math.abs(wp.y - 0.40) < 1e-9, "waypoint set")
+printed = #STUB.printed   -- the click says where the route points
 -- option off
 ns.db.settings.rareNotices = false
 STUB.Advance(400)

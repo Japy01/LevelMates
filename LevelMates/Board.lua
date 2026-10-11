@@ -1541,7 +1541,7 @@ function B.OpenMenu(name)
 		root:CreateTitle(name)
 		root:CreateButton(L.MENU_INVITE, function() B.Invite(name) end)
 		root:CreateButton(L.MENU_WHISPER, function() B.Whisper(name) end)
-		if m and m.x and m.y and m.mapId then root:CreateButton(L.MENU_WAYPOINT, function() ns.Help.WaypointTo(m.mapId, m.x, m.y) end) end
+		if m and m.x and m.y and m.mapId then root:CreateButton(L.MENU_WAYPOINT, function() ns.Help.WaypointTo(m.mapId, m.x, m.y, name) end) end
 	end)
 end
 

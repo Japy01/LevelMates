@@ -43,3 +43,18 @@ assert((STUB.printed[#STUB.printed] or ""):find("|Htalentbuild:71:24:CODEmario|h
 STUB.Receive("LVLM", C.Encode("hb", { l = 12, z = 1412, c = "MAGE" }), "GUILD", "Ana-Testrealm")
 MC.Show("Ana")
 assert(#MC.Lines("Ana") >= 1 and not MC.waypoint:IsShown() and not MC.build:IsShown(), "the basics only")
+
+-- the route: the pin, followed on screen, and said in chat; or why not
+local pinned, followed
+C_Map.CanSetUserWaypointOnMap = function(id) return id ~= 999 end
+C_Map.SetUserWaypoint = function(p) pinned = p end
+UiMapPoint = { CreateFromCoordinates = function(id, x, y) return { id = id, x = x, y = y } end }
+C_SuperTrack = { SetSuperTrackedUserWaypoint = function(v) followed = v end }
+local n = #STUB.printed
+assert(ns.Help.WaypointTo(1429, 40, 60, "Mario") and pinned.id == 1429 and followed, "pinned and followed")
+assert(STUB.printed[#STUB.printed]:find("Mario", 1, true) and #STUB.printed == n + 1, "said where")
+assert(not ns.Help.WaypointTo(999, 40, 60, "Mario") and STUB.printed[#STUB.printed]:find("999", 1, true), "why not")
+followed = nil; n = #STUB.printed
+ns.Help.WaypointTo(1429, 40, 60)
+assert(not followed and #STUB.printed == n, "an automatic pin: quiet")
+C_SuperTrack, UiMapPoint, C_Map.CanSetUserWaypointOnMap, C_Map.SetUserWaypoint = nil, nil, nil, nil

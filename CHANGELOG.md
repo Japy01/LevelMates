@@ -4,6 +4,7 @@
 
 - **Quiet mode** (Options > Notices): only help requests, groups and goals; the other notices, the screen messages and the sound go off, and come back as they were.
 - Bars grow smoothly when their value changes.
+- **Route** (card, right-click menu, rare sightings): the pin is followed on screen and the chat says where it points, or why the map does not allow it.
 - The small windows (card, dungeon panel, wishes, goals, groups, meetups, Discord) are pages of the book too, written in ink.
 
 ## 0.3.1

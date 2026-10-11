@@ -38,7 +38,7 @@ function RA.Link(mapId, x, y) return string.format("|Haddon:LevelMates:way:%d:%.
 function RA.OnLink(link)
 	local mapId, x, y = tostring(link):match("^addon:LevelMates:way:(%d+):([%d%.]+):([%d%.]+)")
 	if not mapId then return false end
-	return ns.Help.WaypointTo(tonumber(mapId), tonumber(x), tonumber(y))
+	return ns.Help.WaypointTo(tonumber(mapId), tonumber(x), tonumber(y), L.ROUTE_SPOT)
 end
 if EventRegistry and EventRegistry.RegisterCallback then
 	EventRegistry:RegisterCallback("SetItemRef", function(_, link) RA.OnLink(link) end, RA)
