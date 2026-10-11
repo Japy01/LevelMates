@@ -222,3 +222,6 @@ L.OPT_POINTS = "Compartir mis puntos de hermandad"; L.OPT_POINTS_TT = "Lo que ha
 L.CHALLENGE_d = "%d mazmorras en grupo"; L.CHALLENGE_l = "%d niveles entre todos"; L.CHALLENGE_h = "%d ayudas"; L.CHALLENGE_q = "%d misiones entregadas"
 L.CHALLENGE_DONE_SHORT = "¡Reto semanal cumplido!"; L.CHALLENGE_DONE = "¡Reto semanal cumplido! %s"
 L.GUILD_LEVEL_UP = "¡La hermandad llega a nivel %d en LevelMates!"; L.GUILD_LEVEL_WALL = "Nivel de hermandad %d"
+
+-- Inicio
+L.HOME_INVITE_TEXT = "Hermandad %s: instalad LevelMates (CurseForge, World of Warcraft: Forever) para ver quién está conectado y subiendo cerca de vosotros, encontrar grupo para mazmorras y subir juntos el nivel de la hermandad."

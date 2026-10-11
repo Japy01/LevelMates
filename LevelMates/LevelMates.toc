@@ -51,6 +51,7 @@ Macros.lua
 Ask.lua
 Feed.lua
 Points.lua
+Home.lua
 MateCard.lua
 Alts.lua
 GoalDialog.lua

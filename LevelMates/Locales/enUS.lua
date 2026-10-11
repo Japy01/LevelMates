@@ -221,3 +221,6 @@ L.OPT_POINTS = "Share my guild points"; L.OPT_POINTS_TT = "What you do (levels, 
 L.CHALLENGE_d = "%d dungeons in a group"; L.CHALLENGE_l = "%d levels between everyone"; L.CHALLENGE_h = "%d helps"; L.CHALLENGE_q = "%d quests turned in"
 L.CHALLENGE_DONE_SHORT = "Weekly challenge done!"; L.CHALLENGE_DONE = "Weekly challenge done! %s"
 L.GUILD_LEVEL_UP = "The guild reaches level %d in LevelMates!"; L.GUILD_LEVEL_WALL = "Guild level %d"
+
+-- Home
+L.HOME_INVITE_TEXT = "Guild %s: install LevelMates (CurseForge, World of Warcraft: Forever) to see who is online and leveling near you, find dungeon groups and push the guild level together."
