@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- **The guild book**: LevelMates looks like the game's spellbook: the game's own frame with a round portrait, icon tabs at the top, a parchment page with the game's decorative letters, ribbon and divider, section bands with counts, and dark ink on the page.
+- **Five tabs instead of nine**: Home, Guildmates, Dungeons, Guild (with Wall, Goals, Market, Professions, Class and, for officers, Recruit) and Journal. Old commands (`/lm metas`, `/lm oficios`…) still open their page.
+- **Home**: the board opens on what to do now: the guild level and the weekly challenge, help requests, open groups and today's meetups, guildmates near your level or in your zone, gifts on your wishlist, spells at your trainer, this week's top three, and an invite to copy when nobody is around yet.
+- **Guild progress**: what you do (levels, dungeons with guildmates, quests, helps, gifts, meetups) adds points; the guild levels up together, a weekly challenge rotates, and the top three of the week are shown (never who is last). Option "Share my guild points".
+- **Ask for help** never fails in silence: a confirmation when it goes out, and the reason when it cannot (no guild, not now).
+- `/lm sim puntos` tries the guild progress alone.
+
 ## 0.2.0
 
 - **Class tab**: talent builds of guildmates of your class (points per branch and level), with "View build", which puts its link in your chat (only you see it) to open in the game's build viewer; a macro library for each class, written for LevelMates with spell names in your language, created with a click; and macros guildmates share ("Share macro", up to 5).

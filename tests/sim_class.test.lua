@@ -18,3 +18,8 @@ local n = #STUB.sent
 SlashCmdList.LEVELMATES("sim xp"); STUB.Fire("PLAYER_XP_UPDATE", "player"); STUB.Advance(40)
 for i = n + 1, #STUB.sent do assert(ns.Comm.Decode(STUB.sent[i].msg) ~= "xp", "the sim sends no XP") end
 SlashCmdList.LEVELMATES("sim off")
+
+SlashCmdList.LEVELMATES("sim puntos")
+assert(#ns.Points.Rankings().l >= 3 and ns.Points.GuildTotal() >= 695, "points samples")
+SlashCmdList.LEVELMATES("sim off")
+assert(#ns.Points.Rankings().l == 0 or ns.Points.Rankings().l[1].name == "Tester", "cleared")

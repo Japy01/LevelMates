@@ -133,10 +133,18 @@ local function simDeaths()
 	ns.Feed.AddSample("Ana", "dth", 12, "Los Baldíos", 300)
 end
 
+-- Guild points this week (Mario, Ana and Luis), for Home's guild level, challenge and top three.
+local function simPoints()
+	if not R.mates.Mario then run() end
+	ns.Points.AddSample("Mario", { t = 420, l = 4, d = 3, h = 2, q = 30 })
+	ns.Points.AddSample("Ana", { t = 180, l = 2, d = 1, h = 5, q = 12 })
+	ns.Points.AddSample("Luis", { t = 95, l = 1, d = 2, h = 0, q = 8 })
+end
+
 local function off()
 	ns.Goals.RemoveSamples(); ns.Personal.RemoveSamples(); ns.Wishlist.RemoveSamples(); ns.Professions.RemoveSamples()
 	ns.Feed.RemoveSamples(); ns.Gifts.RemoveSamples(); ns.Meetups.RemoveSamples()
-	ns.Builds.RemoveSamples(); ns.Macros.RemoveSamples(); ns.ChatAds.RemoveSamples(); ns.GroupXP.RemoveSamples(); ns.Ask.RemoveSamples()
+	ns.Builds.RemoveSamples(); ns.Macros.RemoveSamples(); ns.ChatAds.RemoveSamples(); ns.GroupXP.RemoveSamples(); ns.Ask.RemoveSamples(); ns.Points.RemoveSamples()
 	ns.Journal.RemoveWhere(function(e) return e.sim end)
 	inject("helpok", { id = "sim00001" }, "Mario")
 	inject("lfgx", { id = "simlfg01" }, "Mario"); inject("lfgx", { id = "simlfg02" }, "Luis")
@@ -192,6 +200,7 @@ ns.Slash("sim", function(rest)
 	elseif rest == "arte" or rest == "art" then simArt()
 	elseif rest == "clase" or rest == "class" then simClass()
 	elseif rest == "xp" then simXp()
+	elseif rest == "puntos" or rest == "points" then simPoints()
 	elseif rest == "muertes" or rest == "deaths" then simDeaths()
 	else run() end
 end)

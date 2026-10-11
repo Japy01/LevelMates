@@ -6,6 +6,11 @@ Everyone who wants to appear needs the addon. English and Spanish: the game's la
 
 ## What it does
 
+The board opens on **Home**: the guild level and this week's challenge, what is happening now (help, groups, meetups), what is for you (guildmates near your level, gifts you wish for, spells at your trainer) and the week's top three. Five tabs: Home, Guildmates, Dungeons, Guild (Wall, Goals, Market, Professions, Class, Recruit) and Journal, in the look of the game's spellbook.
+
+### Guild progress
+- What you do adds points: levels, dungeons with guildmates, quests, helps, gifts and meetups. Everyone's points make the **guild level**; a **weekly challenge** rotates ("25 dungeons in a group"), and the **top three** of the week in levels, dungeons and helps are shown, never who is last.
+
 ### Guildmates
 - **Board** (`/lm`, the minimap button or a key under Key Bindings → LevelMates): guildmates online with LevelMates, with class, level, zone and group state. Sort by level or zone, filter to players near your level, and right-click a row to invite, whisper or set a waypoint. The busiest zone is shown next to the heading.
 - **Leveling partner**: tick "Looking for a partner" and guildmates within 3 levels who also ticked it appear at the top.
@@ -46,7 +51,7 @@ Everyone who wants to appear needs the addon. English and Spanish: the game's la
 Everything goes only to your own guild, as addon messages. In `/lm options` you can turn each part off.
 
 - **Always** (while "Appear on the board" is on): your level, zone, class and group state.
-- **On by default**, with a switch to stop: your other characters in the same guild (alts); your professions and ranks; your XP percent, only while grouped with a guildmate; your deaths (level and zone) on the wall; your talent build (points per branch, level and the build code); your level-ups, dungeons with guildmates, rare loot and personal goal on the guild wall.
+- **On by default**, with a switch to stop: your guild points (counts of levels, dungeons, quests, helps, gifts and meetups); your other characters in the same guild (alts); your professions and ranks; your XP percent, only while grouped with a guildmate; your deaths (level and zone) on the wall; your talent build (points per branch, level and the build code); your level-ups, dungeons with guildmates, rare loot and personal goal on the guild wall.
 - **Only when you use them**: the questions you ask your class, the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join.
 - **Off by default**, only if you turn them on: your position (map, rare sightings), your quests (quest matching and progress), XP per hour and rested XP.
 
@@ -64,7 +69,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 `/lm` (board), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm alts`, `/lm muro`, `/lm reclutar` (open a tab), `/lm help <text>` (ask for help), `/lm cancel`, `/lm panico`, `/lm options`, `/lm debug`.
 
-To try it alone (fake guildmates, local only, nothing is sent): `/lm sim`, and `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`, `clase`, `xp`, `muertes`; `/lm sim off` clears them.
+To try it alone (fake guildmates, local only, nothing is sent): `/lm sim`, and `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`, `clase`, `xp`, `muertes`, `puntos`; `/lm sim off` clears them.
 
 Made by Diego (Japy01) with the help of AI (Claude, by Anthropic).
 
@@ -79,6 +84,11 @@ Un compañero de hermandad para subir de nivel juntos en World of Warcraft: Fore
 Todos los que quieran salir necesitan el addon. En español e inglés: el idioma del juego, o el que elijas en `/lm opciones`.
 
 ## Qué hace
+
+El tablón se abre en **Inicio**: el nivel de la hermandad y el reto de la semana, lo que pasa ahora (ayudas, grupos, quedadas), lo que es para ti (hermanos cerca de tu nivel, regalos que deseas, hechizos en tu entrenador) y los tres mejores de la semana. Cinco pestañas: Inicio, Hermanos, Mazmorras, Hermandad (Muro, Metas, Mercadillo, Oficios, Clase, Reclutar) y Diario, con el aspecto del libro de hechizos del juego.
+
+### Progreso de la hermandad
+- Lo que haces suma puntos: niveles, mazmorras con hermanos, misiones, ayudas, regalos y quedadas. Los puntos de todos hacen el **nivel de la hermandad**; un **reto semanal** va rotando ("25 mazmorras en grupo") y salen los **tres mejores** de la semana en niveles, mazmorras y ayudas, nunca quién va último.
 
 ### Hermanos
 - **Tablón** (`/lm`, el botón del minimapa o una tecla en Atajos de teclado → LevelMates): los hermanos conectados con LevelMates, con clase, nivel, zona y si están en grupo. Ordena por nivel o zona, filtra a los de tu nivel y haz clic derecho en una fila para invitar, susurrar o poner un punto de ruta. Junto al título sale la zona con más hermanos.
@@ -120,7 +130,7 @@ Todos los que quieran salir necesitan el addon. En español e inglés: el idioma
 Todo va solo a tu hermandad, como mensajes de addon. En `/lm opciones` puedes apagar cada parte.
 
 - **Siempre** (mientras "Aparecer en el tablón" esté activado): tu nivel, zona, clase y si estás en grupo.
-- **Activado por defecto**, con un interruptor para dejar de hacerlo: tus otros personajes de la misma hermandad (alts); tus profesiones y su nivel; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
+- **Activado por defecto**, con un interruptor para dejar de hacerlo: tus puntos de hermandad (cuántos niveles, mazmorras, misiones, ayudas, regalos y quedadas); tus otros personajes de la misma hermandad (alts); tus profesiones y su nivel; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
 - **Solo cuando los usas**: las preguntas a tu clase, las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas.
 - **Apagado por defecto**, solo si lo activas: tu posición (mapa, avistamiento de raros), tus misiones (emparejar misiones y su progreso), la XP por hora y la XP descansada.
 
@@ -138,7 +148,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 `/lm` (tablón), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm alts`, `/lm muro`, `/lm reclutar` (abren una pestaña), `/lm ayuda <texto>` (pedir ayuda), `/lm cancelar`, `/lm panico`, `/lm opciones`, `/lm debug`.
 
-Para probarlo solo (hermanos falsos, solo en local, no se envía nada): `/lm sim`, y `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`, `clase`, `xp`, `muertes`; `/lm sim off` los quita.
+Para probarlo solo (hermanos falsos, solo en local, no se envía nada): `/lm sim`, y `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`, `clase`, `xp`, `muertes`, `puntos`; `/lm sim off` los quita.
 
 Hecho por Diego (Japy01) con ayuda de IA (Claude, de Anthropic).
 
