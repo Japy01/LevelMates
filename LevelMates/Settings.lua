@@ -76,6 +76,11 @@ ns.On("LM_LOADED", function()
 	Bool(share, "shareDeaths", L.OPT_DEATHS, L.OPT_DEATHS_TT)
 	-- Notices: what may pop up
 	local notices = Sub(category, L.OPT_PAGE_NOTICES)
+	-- Quiet: one switch for the lesser notices, the screen messages and the sound; help, groups and goals stay
+	local quiet = Settings.RegisterProxySetting(notices, "LevelMates_quiet", Settings.VarType.Boolean, L.OPT_QUIET, false,
+		function() return S.IsQuiet() end, function(v) S.SetQuiet(v) end)
+	Settings.CreateCheckbox(notices, quiet, L.OPT_QUIET_TT)
+	table.insert(notices.settings or {}, quiet)
 	Bool(notices, "screenNotices", L.OPT_SCREEN, L.OPT_SCREEN_TT)
 	Bool(notices, "helpNotices", L.OPT_HELP, L.OPT_HELP_TT)
 	Bool(notices, "lfgNotices", L.OPT_LFG, L.OPT_LFG_TT)
@@ -90,6 +95,20 @@ ns.On("LM_LOADED", function()
 	Bool(notices, "restedNotices", L.OPT_RESTED_NOTICE, L.OPT_RESTED_NOTICE_TT)
 	Settings.RegisterAddOnCategory(category)
 end)
+
+S.QUIET_KEYS = { "matchNotices", "palNotices", "restedNotices", "wishNotices", "levelNotices", "rareNotices", "askNotices", "trainerNotices", "screenNotices", "sound" }
+function S.IsQuiet() return ns.db.settings.quietSaved ~= nil end
+-- On: the lesser notices off, what they were kept to come back; off: as they were.
+function S.SetQuiet(on)
+	local st = ns.db.settings
+	if on and not st.quietSaved then
+		st.quietSaved = {}
+		for _, k in ipairs(S.QUIET_KEYS) do st.quietSaved[k] = st[k]; st[k] = false end
+	elseif not on and st.quietSaved then
+		for _, k in ipairs(S.QUIET_KEYS) do if st.quietSaved[k] ~= nil then st[k] = st.quietSaved[k] end end
+		st.quietSaved = nil
+	end
+end
 
 function S.OfferReload()
 	StaticPopupDialogs["LEVELMATES_RELOAD"] = StaticPopupDialogs["LEVELMATES_RELOAD"] or {

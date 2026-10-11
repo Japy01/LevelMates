@@ -29,3 +29,12 @@ assert(table.concat(kinds, ",") == "hb,ping", "re-announced after share on: " ..
 assert(#ns.Settings.pages == 3 and ns.Settings.pages[2].name == ns.L.OPT_PAGE_SHARE and ns.Settings.pages[3].name == ns.L.OPT_PAGE_NOTICES, "three pages")
 local function on(page, key) for _, s in ipairs(page.settings) do if s.key == key then return true end end end
 assert(on(ns.Settings.pages[1], "share") and on(ns.Settings.pages[2], "sharePos") and on(ns.Settings.pages[3], "helpNotices"), "each switch on its page")
+
+-- quiet mode: the lesser notices off, back as they were
+local S = ns.Settings
+ns.db.settings.rareNotices = false   -- my own choice before
+S.SetQuiet(true)
+assert(S.IsQuiet() and not ns.db.settings.levelNotices and not ns.db.settings.screenNotices and not ns.db.settings.sound, "quiet")
+assert(ns.db.settings.helpNotices and ns.db.settings.lfgNotices and ns.db.settings.goalNotices, "help, groups and goals stay")
+S.SetQuiet(false)
+assert(not S.IsQuiet() and ns.db.settings.levelNotices and ns.db.settings.sound and ns.db.settings.rareNotices == false, "back as they were")
