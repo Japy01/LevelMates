@@ -204,8 +204,7 @@ L.MACRO_RUN_WARN = "Careful: this macro runs code or changes settings."
 L.CARD_WAYPOINT = "Waypoint"
 
 -- Window style
-L.CARD_LEVELS = "Lv %d-%d"; L.OPT_STYLE = "Window style"; L.STYLE_GOLD = "LevelMates (brown and gold)"; L.STYLE_CLASSIC = "Classic (the game's frames)"
-L.OPT_STYLE_TT = "The look of LevelMates' windows. A change asks to reload the interface."
+L.CARD_LEVELS = "Lv %d-%d"
 
 -- Guild market
 L.BTN_GIFT_ADD = "Offer"; L.GIFT_DIALOG_TITLE = "Offer an item"; L.HEAD_WISHES = "Wishes and market"

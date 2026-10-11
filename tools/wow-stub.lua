@@ -381,3 +381,6 @@ function Region:SetGradient(o, a, b) self.gradient = { o, a, b } end
 function CreateColor(r, g, b, a) return { r = r, g = g, b = b, a = a } end
 function Region:LockHighlight() self.lit = true end
 function Region:UnlockHighlight() self.lit = false end
+function Region:SetBlendMode() end
+function Region:SetDesaturated(v) self.desaturated = v end
+function Region:SetShadowColor() end

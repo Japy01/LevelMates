@@ -11,7 +11,7 @@ local function hb(name, level, z, g, s, class) STUB.Receive("LVLM", C.Encode("hb
 hb("Mario", 30, 1421, 1, 1, "MAGE"); hb("Ana", 12, 1412, 0, 0, "WARRIOR"); hb("Luis", 22, 1421, 1, 0)
 B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 
-local function same(a, b) return a and b and a[1] == b[1] and a[2] == b[2] and a[3] == b[3] end
+local function same(a, b) if not (a and b) then return false end; local r, g, bl = ns.Skin.Ink(b[1], b[2], b[3]); return math.abs(a[1] - r) < 1e-9 and math.abs(a[2] - g) < 1e-9 and math.abs(a[3] - bl) < 1e-9 end   -- written in ink on the page
 assert(B.frame:GetHeight() == B.CHROME + (B.MIN_ROWS + 3) * B.ROW_H, "compact with few mates: " .. tostring(B.frame:GetHeight()))
 assert(B.frame.TitleText.text == L.BOARD_TITLE .. " - Test Guild (3)", "title counts mates: " .. tostring(B.frame.TitleText.text))
 assert(B.headText[2].text == L.COL_LEVEL .. " v" and B.headText[3].text == L.COL_ZONE, "level header shows high-to-low: " .. tostring(B.headText[2].text))

@@ -16,15 +16,21 @@ local hidden
 ButtonFrameTemplate_HidePortrait = function(f) hidden = f end
 local atticHidden
 ButtonFrameTemplate_HideAttic = function(f) atticHidden = f end
+local portrait
+local realCreate2 = CreateFrame
+CreateFrame = function(kind, name, parent, template)
+	local f = realCreate2(kind, name, parent, template)
+	if template == "ButtonFrameTemplate" then function f:SetPortraitToAsset(t) portrait = t end end
+	return f
+end
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
-ns.db.settings.style = "classic"   -- the game's own frames
 ns.Board.Toggle()
 assert(#created == 1 and ns.Board.frame == created[1], "board built from ButtonFrameTemplate")
-assert(hidden == ns.Board.frame, "portrait hidden")
+assert(hidden ~= ns.Board.frame and portrait == "Interface\\AddOns\\LevelMates\\Media\\icon", "the portrait shows LevelMates' icon")
 assert(ns.Board.frame.TitleContainer.TitleText.text == ns.L.BOARD_TITLE .. " - Test Guild (0)", "title set on TitleContainer.TitleText: " .. tostring(ns.Board.frame.TitleContainer.TitleText.text))
 -- header and bottom controls follow the real anchors of the inset
 assert(ns.Board.TOP == 30 + 60 and ns.Board.BOTTOM == 30, "layout derived from the inset: TOP=" .. tostring(ns.Board.TOP) .. " BOTTOM=" .. tostring(ns.Board.BOTTOM))
 assert(ns.Board.CHROME == ns.Board.TOP + ns.Board.ROW_H + ns.Board.BOTTOM + 10, "chrome height follows: " .. tostring(ns.Board.CHROME))
 assert(ns.Board.helpButton:GetHeight() + 4 <= ns.Board.BOTTOM, "help button under the inset")
-assert(atticHidden == ns.Board.frame, "the empty 60px attic is hidden so content starts under the title")
+assert(atticHidden ~= ns.Board.frame, "the top band stays: the icon tabs live there")

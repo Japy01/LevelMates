@@ -28,6 +28,8 @@ B.CONTENT_KEYS = { "home", "mates", "lfg", "journal", "feed", "goals", "wishes",
 local TAB_LABELS = { home = "TAB_HOME", guild = "TAB_GUILD", mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT" }
 B.TAB_LABELS = TAB_LABELS
 local HEAD_KEY = { home = "HOME", mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT" }
+local TAB_ICON = { home = "Interface\\Icons\\INV_Misc_Book_09", mates = "Interface\\Icons\\Spell_Holy_PrayerOfFortitude",
+	lfg = "Interface\\Icons\\INV_Misc_Key_03", guild = "Interface\\Icons\\INV_BannerPVP_02", journal = "Interface\\Icons\\INV_Misc_Note_01" }
 local function KnownTab(key) for _, k in ipairs(B.CONTENT_KEYS) do if k == key then return key end end; return "home" end
 -- The main tab a page belongs to: the Guild tab's sub-sections belong to "guild".
 function B.MainOf(key) for _, k in ipairs(B.GUILD_KEYS) do if k == key then return "guild" end end; return key end
@@ -68,17 +70,8 @@ local function ClassColor(class)
 end
 
 local function Build()
-	-- The journal-style frame (gold border, dark inset) when the client has it; the basic frame otherwise.
-	local f
-	if ButtonFrameTemplate_HidePortrait then   -- the game's own frame in both styles (as its character sheet)
-		local ok, frame = pcall(CreateFrame, "Frame", "LevelMatesBoard", UIParent, "ButtonFrameTemplate")
-		if ok and frame then
-			f = frame
-			ButtonFrameTemplate_HidePortrait(f)
-			if ButtonFrameTemplate_HideAttic then ButtonFrameTemplate_HideAttic(f) end   -- the template reserves an empty 60px band above the inset
-		end
-	end
-	f = f or ns.Skin.Window("LevelMatesBoard", UIParent)
+	-- The guild book: the game's own frame with its round portrait, the top band for the icon tabs, a parchment page.
+	local f = ns.Skin.Window("LevelMatesBoard", UIParent, true)
 	B.frame = f
 	-- Lay the content out from the inset's real anchors, so it sits inside the dark recess whatever the template does.
 	local insetTop, insetBottom = 24, 26
@@ -107,25 +100,18 @@ local function Build()
 	B.restedText:SetPoint("LEFT", B.heading, "RIGHT", 12, 0); B.restedText:SetTextColor(0.6, 0.8, 1)
 	B.subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 34)); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
+	if _G.Fancy24Font then B.heading:SetFontObject("Fancy24Font") end   -- the game's decorative letters, as the spellbook's titles
 	local divider = f:CreateTexture(nil, "ARTWORK")
-	divider:SetColorTexture(1, 0.82, 0, 0.35); divider:SetHeight(1)
-	if ns.Skin.On() and divider.SetGradient and CreateColor then   -- gold fading out to the right
-		divider:SetColorTexture(1, 1, 1, 1); divider:SetGradient("HORIZONTAL", CreateColor(1, 0.82, 0, 0.8), CreateColor(1, 0.82, 0, 0))
-	end
+	divider:SetAtlas(ns.Skin.DIVIDER); divider:SetHeight(10)
+	divider:SetPoint("TOPLEFT", B.MARGIN - 4, -(B.TOP - 12)); divider:SetPoint("TOPRIGHT", -B.MARGIN - 40, -(B.TOP - 12))
 	B.divider = divider
-	if ns.Skin.On() then   -- a box behind the heading and subtitle, and a dark strip behind the column names
-		local on = f.Inset and f.Inset.CreateTexture and f.Inset or f
-		local head = ns.Skin.Box(on, ns.Skin.C.box, ns.Skin.C.boxBorder)
-		ns.Skin.WarmInset(f)
-		head:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN - 4, -(insetTop + 4)); head:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP - 12))
-		local strip = ns.Skin.Box(on, ns.Skin.C.strip)
-		strip:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN - 4, -(B.TOP - 4)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 2))
-		B.headBox, B.colStrip = head, strip
-		divider:Hide()   -- the box's border does its job
-	end
-	divider:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 8)); divider:SetPoint("TOPRIGHT", -B.MARGIN, -(B.TOP - 8))
+	local on = f.Inset and f.Inset.CreateTexture and f.Inset or f
+	local strip = on:CreateTexture(nil, "BACKGROUND", nil, 2)   -- a faint band behind the column names
+	strip:SetColorTexture(unpack(ns.Skin.C.strip))
+	strip:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN - 4, -(B.TOP - 2)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 4))
+	B.colStrip = strip
 	local search = CreateFrame("EditBox", nil, f, "SearchBoxTemplate")
-	search:SetSize(150, 20); search:SetPoint("TOPRIGHT", -B.MARGIN - 6, -(insetTop + 12))
+	search:SetSize(170, 20); search:SetPoint("TOPRIGHT", f, "TOPRIGHT", -16, -(insetTop - 44))   -- in the top band, as the spellbook's
 	if search.Instructions then search.Instructions:SetText(L.SEARCH_HINT) end
 	search:SetScript("OnTextChanged", function(self) B.search = self:GetText() or ""; B.Refresh() end)
 	-- "Discord": the current tab as text to paste in Discord (every tab).
@@ -334,17 +320,10 @@ local function Build()
 	B.tabs = {}
 	local tabList, prevTab = {}, nil
 	for i, key in ipairs(B.TAB_KEYS) do
-		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i)
-		b:SetID(i); b:SetText(L[TAB_LABELS[key]])
-		if b.skinTab then   -- flat tabs under the window, sized to their text
-			local fs = b:GetFontString()
-			local w = fs and fs.GetStringWidth and fs:GetStringWidth() or (#L[TAB_LABELS[key]] * 7)
-			b:SetSize(math.max(56, math.floor(w) + 20), 24)
-			if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 2, 0) else b:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 6, 1) end
-		else
-			if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", -16, 0) else b:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 11, 2) end
-			if PanelTemplates_TabResize then PanelTemplates_TabResize(b, 0) end
-		end
+		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i, TAB_ICON[key], L[TAB_LABELS[key]])
+		b:SetID(i)
+		-- in the top band, right of the portrait, as the spellbook's
+		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 10, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", f.gameFrame and 66 or 16, -(insetTop - 46)) end
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.tabs[key], tabList[i], prevTab = b, b, b
 	end
@@ -491,6 +470,14 @@ local function Build()
 		btn:SetScript("OnClick", function(self) if self.helpId then ns.Help.Coming(self.helpId) end end)
 		B.helpRows[i] = { text = text, button = btn }
 	end
+	-- dark ink for every text written on the parchment
+	local Ink = ns.Skin.InkFont
+	Ink(B.heading); Ink(B.restedText); Ink(B.subtitle); Ink(f.empty); Ink(B.journalPageText); Ink(B.nearLabel); Ink(B.palLabel)
+	for _, fs in ipairs(B.headText) do Ink(fs) end
+	for _, r in ipairs(B.rows) do Ink(r.name); Ink(r.level); Ink(r.zone); Ink(r.group); Ink(r.xph) end
+	for _, hr in ipairs(B.helpRows) do Ink(hr.text) end
+	Ink(B.recruitPreview); Ink(B.recruitStatus)
+	B.heading:SetTextColor(1, 0.82, 0); B.restedText:SetTextColor(0.6, 0.8, 1); B.subtitle:SetTextColor(0.8, 0.8, 0.8)
 end
 
 local function RefreshHelp()
@@ -643,15 +630,15 @@ B.PAL_TINT = { 0.2, 0.8, 0.3, 0.15 }
 -- Row background: the partner tint for a match, otherwise the zebra stripe.
 local function RowBg(r, i, tint)
 	if tint then r.bg:SetColorTexture(unpack(B.PAL_TINT))
-	elseif ns.Skin.On() then r.bg:SetColorTexture(0, 0, 0, 0); if r.stripe then r.stripe:SetShown(i % 2 == 1) end   -- the character sheet's stripes
+	elseif ns.Skin.On() then r.bg:SetColorTexture(0, 0, 0, 0); if r.stripe then r.stripe:Show() end   -- a thin line under each row, as the spellbook's lists
 	else r.bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0) end
 end
 
 -- A section header row: in this style the character sheet's plaque with the text centred in white.
 local function SectionHeader(r)
 	if r.plaque then
-		r.bg:SetColorTexture(0, 0, 0, 0); r.stripe:Hide(); r.plaque:Show()   -- the character sheet's plaque, centred white text
-		r.name:SetWidth(ROW_W - (ROW_H - 4) - 4 - 30); r.name:SetJustifyH("CENTER"); r.name:SetTextColor(1, 1, 1)
+		r.bg:SetColorTexture(0, 0, 0, 0); r.stripe:Hide(); r.plaque:Show()   -- a soft band, the section's name and count
+		r.name:SetWidth(ROW_W - (ROW_H - 4) - 4); r.name:SetTextColor(1, 0.82, 0)
 		r.button.tall = true
 	else
 		r.bg:SetColorTexture(1, 0.82, 0, 0.08)

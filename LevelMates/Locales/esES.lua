@@ -205,8 +205,7 @@ L.MACRO_RUN_WARN = "Cuidado: esta macro ejecuta código o cambia ajustes."
 L.CARD_WAYPOINT = "Ruta"
 
 -- Estilo de ventanas
-L.CARD_LEVELS = "Nv %d-%d"; L.OPT_STYLE = "Estilo de ventanas"; L.STYLE_GOLD = "LevelMates (marrón y dorado)"; L.STYLE_CLASSIC = "Clásico (marcos del juego)"
-L.OPT_STYLE_TT = "El aspecto de las ventanas de LevelMates. Al cambiarlo te propone recargar la interfaz."
+L.CARD_LEVELS = "Nv %d-%d"
 
 -- Mercadillo de la hermandad
 L.BTN_GIFT_ADD = "Ofrecer"; L.GIFT_DIALOG_TITLE = "Ofrecer un objeto"; L.HEAD_WISHES = "Deseos y mercadillo"

@@ -1,16 +1,17 @@
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
-ns.db.settings.style = "classic"   -- the game's own frames
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local B = ns.Board
 B.Toggle()
-assert(B.frame.Tabs and #B.frame.Tabs == #B.TAB_KEYS and B.frame.numTabs == #B.TAB_KEYS, "classic tabs, one per key")
+assert(B.frame.Tabs and #B.frame.Tabs == #B.TAB_KEYS, "a tab per main key")
 for i, key in ipairs(B.TAB_KEYS) do
-	assert(B.tabs[key].template == "PanelTabButtonTemplate" and B.frame.Tabs[i] == B.tabs[key], "classic tab " .. key)
+	assert(B.tabs[key].skinTab and B.tabs[key].icon.texture and B.tabs[key].label == ns.L[B.TAB_LABELS[key]] and B.frame.Tabs[i] == B.tabs[key], "an icon tab with its name: " .. key)
 end
 local first, second = B.tabs[B.TAB_KEYS[1]], B.tabs[B.TAB_KEYS[2]]
-assert(first.point[1] == "TOPLEFT" and first.point[2] == B.frame and first.point[3] == "BOTTOMLEFT", "hanging under the window")
+assert(first.point[1] == "TOPLEFT" and first.point[2] == B.frame and first.point[3] == "TOPLEFT", "in the top band")
 assert(second.point[1] == "LEFT" and second.point[2] == first, "side by side")
+first.scripts.OnEnter(first)
+assert(GameTooltip.lines[1] == ns.L.TAB_HOME, "its name on hover")
 B.tabs.journal.scripts.OnClick(B.tabs.journal)
 assert(B.frame.selectedTab == 5 and B.tabs.journal.enabled == false and B.tabs.mates.enabled == true, "journal selected")
 assert(ns.char.boardTab == "journal", "remembered")

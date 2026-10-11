@@ -8,4 +8,4 @@ assert(L.TAB_MATES == "Hermanos" and L.HEAD_GOALS == "Metas", "Spanish forced: "
 assert(BINDING_NAME_LEVELMATES_PANIC == "Pedir ayuda ya", "panic binding in Spanish: " .. tostring(BINDING_NAME_LEVELMATES_PANIC))
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 ns.Board.Toggle()
-assert(ns.Board.tabs.mates.text == "Hermanos", "the board in Spanish")
+assert(ns.Board.tabs.mates.label == "Hermanos", "the board in Spanish")

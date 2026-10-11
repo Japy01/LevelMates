@@ -11,5 +11,6 @@ local function mineRow() for i = 1, #B.rows do local r = B.rows[i]; if r.button:
 for _, tab in ipairs({ "crafts", "wishes", "goals" }) do
 	B.ShowTab(tab)
 	local r = mineRow()
-	assert(r and r.name.color[1] == 0.78 and r.name.color[2] == 0.61, "my name in my class colour on " .. tab)
+	local ir, ig = ns.Skin.Ink(0.78, 0.61)
+	assert(r and math.abs(r.name.color[1] - ir) < 1e-9 and math.abs(r.name.color[2] - ig) < 1e-9, "my name in my class colour (in ink) on " .. tab)
 end

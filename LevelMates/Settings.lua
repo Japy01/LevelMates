@@ -63,15 +63,6 @@ ns.On("LM_LOADED", function()
 	Lang("auto", L.OPT_LANGUAGE .. ": " .. L.LANGUAGE_AUTO)
 	Lang("enUS", L.OPT_LANGUAGE .. ": English")
 	Lang("esES", L.OPT_LANGUAGE .. ": Español")
-	-- window style: LevelMates' own (brown and gold) or the game's classic frames; a change asks for a reload
-	local function Style(value, name)
-		local proxy = Settings.RegisterProxySetting(category, "LevelMates_style_" .. value, Settings.VarType.Boolean, name, (ns.db.settings.style or "gold") == value,
-			function() return (ns.db.settings.style or "gold") == value end,
-			function(v) if v and ns.db.settings.style ~= value then ns.db.settings.style = value; S.OfferReload() end end)
-		Settings.CreateCheckbox(category, proxy, L.OPT_STYLE_TT)
-	end
-	Style("gold", L.OPT_STYLE .. ": " .. L.STYLE_GOLD)
-	Style("classic", L.OPT_STYLE .. ": " .. L.STYLE_CLASSIC)
 	Bool(category, "debug", L.OPT_DEBUG)
 	Settings.RegisterAddOnCategory(category)
 end)
