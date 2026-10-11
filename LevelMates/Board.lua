@@ -105,8 +105,7 @@ local function Build()
 	divider:SetAtlas(ns.Skin.DIVIDER); divider:SetHeight(10)
 	divider:SetPoint("TOPLEFT", B.MARGIN - 4, -(B.TOP - 12)); divider:SetPoint("TOPRIGHT", -B.MARGIN - 40, -(B.TOP - 12))
 	B.divider = divider
-	local on = f.Inset and f.Inset.CreateTexture and f.Inset or f
-	local strip = on:CreateTexture(nil, "BACKGROUND", nil, 2)   -- a faint band behind the column names
+	local strip = f:CreateTexture(nil, "BORDER")   -- a faint band behind the column names
 	strip:SetColorTexture(unpack(ns.Skin.C.strip))
 	strip:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN - 4, -(B.TOP - 2)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 4))
 	B.colStrip = strip

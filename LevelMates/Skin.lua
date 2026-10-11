@@ -65,18 +65,20 @@ end
 -- The parchment page over a window's inner panel (the inset frame of the game's template, or our own), with the
 -- spellbook's ribbon at its top right.
 function SK.Page(f, ribbon)
-	local on = f.Inset and f.Inset.CreateTexture and f.Inset or f
-	if on.page then return on.page end
-	local page = on:CreateTexture(nil, "BACKGROUND", nil, 1)
+	if f.page then return f.page end
+	-- On the window itself, where the inner panel was: the game draws the panel (a child frame) over the window's own
+	-- texts, so a page on it would cover the heading. The panel is hidden; it still gives the page its place.
+	local page = f:CreateTexture(nil, "BACKGROUND", nil, 7)
 	page:SetColorTexture(unpack(SK.C.page))
 	if SK.HasAtlas(SK.PAGE) then page:SetAtlas(SK.PAGE) end   -- else the plain parchment colour
-	if on == f then page:SetAllPoints(f.Inset) else page:SetAllPoints(on) end
-	on.page = page
-	if ribbon and SK.HasAtlas(SK.RIBBON) then
-		local r = on:CreateTexture(nil, "ARTWORK")
-		r:SetAtlas(SK.RIBBON); r:SetSize(34, 92)
-		r:SetPoint("TOPRIGHT", page, "TOPRIGHT", -18, 4)
-		on.ribbon, f.Ribbon = r, r
+	page:SetAllPoints(f.Inset)
+	if f.Inset and f.Inset.Hide and f.Inset.CreateTexture then f.Inset:Hide() end
+	f.page = page
+	if ribbon and SK.HasAtlas(SK.RIBBON) then   -- the ribbon hangs at the page's right edge, clear of the columns
+		local r = f:CreateTexture(nil, "ARTWORK")
+		r:SetAtlas(SK.RIBBON); r:SetSize(28, 80)
+		r:SetPoint("TOPLEFT", page, "TOPRIGHT", -14, 6)
+		f.Ribbon = r
 	end
 	return page
 end

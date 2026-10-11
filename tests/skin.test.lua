@@ -8,7 +8,7 @@ assert(SK.On(), "one style")
 B.Toggle()
 local f = B.frame
 assert(f.template == "ButtonFrameTemplate" or f.template == "BackdropTemplate", "the game's own frame (or a plain one)")
-local page = (f.Inset and f.Inset.page) or f.page
+local page = f.page
 assert(page and page.atlas == SK.PAGE and f.Ribbon and f.Ribbon.atlas == SK.RIBBON, "a parchment page with the spellbook's ribbon")
 assert(B.divider.atlas == SK.DIVIDER and B.colStrip, "the spellbook's divider, a band for the columns")
 assert(B.rows[1].stripe and B.rows[1].name.inked and B.heading.inked, "row lines; texts in ink")

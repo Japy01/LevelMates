@@ -9,7 +9,7 @@ local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STU
 -- C1: small windows keep the game's dark panel (their texts are light): no parchment there
 ns.MateCard.Show("Nadie")
 local mf = ns.MateCard.frame
-assert(not ((mf.Inset and mf.Inset.page) or mf.page), "no parchment under light text")
+assert(not mf.page, "no parchment under light text")
 
 -- I2: colour codes in a text (item links, quality colours) are written in ink too
 B.Toggle()
