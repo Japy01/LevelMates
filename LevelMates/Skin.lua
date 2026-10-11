@@ -24,7 +24,8 @@ SK.HEAD_H = 22   -- a section header row
 function SK.On() return true end   -- one style: the book (kept as a function for the code paths that ask)
 
 -- Text written on the parchment: the colour a fill asks for, in ink (darker, so it reads on paper).
-function SK.Ink(r, g, b) return (r or 1) * 0.36, (g or 1) * 0.30, (b or 1) * 0.22 end
+-- Near-black brown for white, the same hue darkened for colours: the spellbook's own text is that dark.
+function SK.Ink(r, g, b) return (r or 1) * 0.22, (g or 1) * 0.176, (b or 1) * 0.12 end
 -- Colour codes inside a text (item links, quality colours) in ink too: a white or grey item would vanish on paper.
 function SK.InkText(s)
 	if type(s) ~= "string" then return s end
