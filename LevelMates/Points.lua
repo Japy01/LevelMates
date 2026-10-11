@@ -20,7 +20,9 @@ function PT.Week(t) return math.floor(((t or now()) - MONDAY) / (7 * 86400)) end
 
 -- My points belong to the guild I am in: a new guild starts from zero, the old one's are kept for a return.
 local function mine()
-	local guild = GetGuildInfo("player") or "?"
+	local guild = GetGuildInfo("player")
+	if not guild and ns.char.points then return ns.char.points end   -- the guild is not known yet: the old points stay where they are
+	guild = guild or "?"
 	ns.char.pointsByGuild = ns.char.pointsByGuild or {}
 	if ns.char.points and not ns.char.pointsByGuild[guild] then ns.char.pointsByGuild[guild] = ns.char.points end   -- from before: this guild's
 	ns.char.points = nil
