@@ -171,13 +171,15 @@ local function Build()
 		btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		local bg = btn:CreateTexture(nil, "BACKGROUND")   -- zebra striping
 		bg:SetAllPoints(btn); bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0)
-		btn:SetHighlightTexture("Interface/QuestFrame/UI-QuestLogTitleHighlight", "ADD")
+		local hl = btn:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(0.45, 0.28, 0.08, 0.16)   -- a soft brown shade: a white glow washes the page out
+		btn:SetHighlightTexture(hl)
 		local icon = btn:CreateTexture(nil, "ARTWORK")   -- class icon, left of the name
 		icon:SetSize(ROW_H - 4, ROW_H - 4); icon:SetPoint("LEFT", 0, 0)
 		local r = { bg = bg, icon = icon, button = btn, stripe = ns.Skin.Stripe(btn), plaque = ns.Skin.Plaque(btn), name = Col(btn, B.COLS[1] - (ROW_H - 4) - 4), level = Col(btn, B.COLS[2], "CENTER"), zone = Col(btn, B.COLS[3]), group = Col(btn, B.COLS[4], "CENTER"), xph = Col(btn, B.COLS[5], "RIGHT") }
 		-- Professions tab: a rank bar in the third column
-		r.barBg = btn:CreateTexture(nil, "ARTWORK"); r.barBg:SetColorTexture(1, 1, 1, 0.12); r.barBg:SetSize(B.BAR_W, 8); r.barBg:Hide()
-		r.barFill = btn:CreateTexture(nil, "OVERLAY"); r.barFill:SetColorTexture(0.9, 0.7, 0.15, 0.9); r.barFill:SetHeight(8); r.barFill:Hide()
+		-- progress bars: the game's own status bar texture (as health and mana), dark gold on a brown groove
+		r.barBg = btn:CreateTexture(nil, "ARTWORK"); r.barBg:SetColorTexture(0.24, 0.14, 0.05, 0.45); r.barBg:SetSize(B.BAR_W, 10); r.barBg:Hide()
+		r.barFill = btn:CreateTexture(nil, "OVERLAY"); r.barFill:SetTexture("Interface/TargetingFrame/UI-StatusBar"); r.barFill:SetVertexColor(0.80, 0.55, 0.12); r.barFill:SetHeight(8); r.barFill:Hide()
 		r.name:SetPoint("LEFT", icon, "RIGHT", 4, 0); r.level:SetPoint("LEFT", r.name, "RIGHT", B.GAP, 0); r.zone:SetPoint("LEFT", r.level, "RIGHT", B.GAP, 0); r.group:SetPoint("LEFT", r.zone, "RIGHT", B.GAP, 0); r.xph:SetPoint("LEFT", r.group, "RIGHT", B.GAP, 0)
 		btn:SetScript("OnClick", function(self, mouse)
 			if B.tab == "home" then
@@ -476,7 +478,6 @@ local function Build()
 	local Ink = ns.Skin.InkFont
 	Ink(B.heading); Ink(B.restedText); Ink(B.subtitle); Ink(f.empty); Ink(B.journalPageText); Ink(B.palLabel)   -- not nearLabel: it sits on the dark bar under the page
 	for _, label in ipairs(B.recruitLabels) do Ink(label) end
-	for _, edit in ipairs(B.recruitEdit) do Ink(edit) end
 	for _, fs in ipairs(B.headText) do Ink(fs) end
 	for _, r in ipairs(B.rows) do Ink(r.name); Ink(r.level); Ink(r.zone); Ink(r.group); Ink(r.xph) end
 	for _, hr in ipairs(B.helpRows) do Ink(hr.text) end
