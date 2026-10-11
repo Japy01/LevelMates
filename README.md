@@ -39,8 +39,8 @@ The board opens on **Home**: the guild level and this week's challenge, what is 
 
 ### Help and notices
 - **Ask for help** with an elite: guildmates get a notice and a waypoint, and an "On my way" button. A **panic key** (Key Bindings → LevelMates, or `/lm panico`) asks at once.
-- **Rare sightings**: a rare you see is announced to guildmates in that zone, with a [Waypoint] link.
-- **Notices** for what matters, also in the middle of the screen; a [Congratulate] link when a guildmate levels up; a notice when a guildmate runs a newer LevelMates.
+- **Rare sightings**: a rare you see is announced to guildmates in that zone, with a [Waypoint] link. Every route (from a card, the right-click menu or a sighting) is followed on screen and said in chat.
+- **Notices** for what matters, also in the middle of the screen; a [Congratulate] link when a guildmate levels up; a notice when a guildmate runs a newer LevelMates. **Quiet mode** (Options > Notices) keeps only help requests, groups and goals.
 - **Copy for Discord**: the "Discord" button puts the current tab into a box as ready-to-paste Discord text. Nothing is sent anywhere.
 
 ### Officers
