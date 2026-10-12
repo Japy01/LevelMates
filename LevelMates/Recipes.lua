@@ -54,10 +54,27 @@ local function myWindow()
 	end
 	return true
 end
+-- The profession's line as our skills know it (171 Alchemy…): a newer client may give a child id with its parent.
+local KNOWN_LINES = {}
+for _, id in ipairs(ns.Professions.IDS) do KNOWN_LINES[id] = true end
+local told
 local function line()
 	local info = C_TradeSkillUI.GetBaseProfessionInfo and C_TradeSkillUI.GetBaseProfessionInfo()
 	if type(info) ~= "table" or not info.professionID then return nil end
-	return info.professionID, info.skillLevel or 0, info.maxSkillLevel or 0
+	local id = info.professionID
+	if not KNOWN_LINES[id] and info.parentProfessionID and KNOWN_LINES[info.parentProfessionID] then id = info.parentProfessionID end
+	if not KNOWN_LINES[id] then
+		if not told then told = true; ns.Log("recipes: unknown profession id %s (parent %s)", tostring(info.professionID), tostring(info.parentProfessionID)) end
+		return nil
+	end
+	return id, info.skillLevel or 0, info.maxSkillLevel or 0
+end
+local function outputItem(rid)
+	local out = C_TradeSkillUI.GetRecipeOutputItemData and C_TradeSkillUI.GetRecipeOutputItemData(rid)
+	local item = type(out) == "table" and (out.itemID or tonumber(tostring(out.hyperlink or ""):match("item:(%d+)") or ""))
+	if item then return item end
+	local link = C_TradeSkillUI.GetRecipeItemLink and C_TradeSkillUI.GetRecipeItemLink(rid)   -- older clients
+	return link and tonumber(tostring(link):match("item:(%d+)") or "")
 end
 function RC.Scan()
 	if not myWindow() then return end
@@ -70,8 +87,7 @@ function RC.Scan()
 	for _, rid in ipairs(C_TradeSkillUI.GetAllRecipeIDs() or {}) do
 		local info = C_TradeSkillUI.GetRecipeInfo(rid)
 		if info and info.learned ~= false then
-			local out = C_TradeSkillUI.GetRecipeOutputItemData and C_TradeSkillUI.GetRecipeOutputItemData(rid)
-			local item = out and (out.itemID or tonumber(tostring(out.hyperlink or ""):match("item:(%d+)") or ""))
+			local item = outputItem(rid)
 			if item then items[#items + 1] = item else spells[#spells + 1] = rid end
 		end
 	end
@@ -80,7 +96,9 @@ function RC.Scan()
 	local old = mine[id]
 	local new = { r = math.min(450, rank), m = math.min(450, max), items = items, spells = spells, t = time() }
 	mine[id] = new
-	if not old or RC.Encode(old.items) ~= RC.Encode(items) or RC.Encode(old.spells) ~= RC.Encode(spells) or old.r ~= new.r or old.m ~= new.m then
+	while #items > RC.MAX do table.remove(items) end
+	while #spells > RC.MAX do table.remove(spells) end
+	if not old or RC.Encode(old.items) ~= RC.Encode(items) or RC.Encode(old.spells) ~= RC.Encode(spells) then   -- the rank alone travels in pf
 		ns.Fire("LM_RECIPES_CHANGED", id)
 	end
 end
@@ -100,7 +118,7 @@ ev:SetScript("OnEvent", later)
 ------------------------------------------------------------------ sharing
 -- One `rcp` per profession: p (its line), r/m (rank/max), i (items) and s (spells), encoded as above; long lists go in
 -- chunks. Through the personal-state helper: pending while it cannot go, again to newcomers, nothing when sharing is off.
-local function idlist(v) return type(v) == "string" and #v <= 1800 and v:match("^[0-9a-z%-]*$") ~= nil end
+local function idlist(v) return type(v) == "string" and #v <= 3200 and v:match("^[0-9a-z%-]*$") ~= nil end   -- 800 ids fit
 C.SCHEMA.rcp = { p = C.V.int(1, 2000), r = C.V.int(0, 450), m = C.V.int(0, 450), i = idlist, s = idlist }
 C.REQUIRED.rcp = { "p" }
 local function build()
@@ -112,7 +130,7 @@ local function build()
 	table.sort(out, function(a, b) return a.p < b.p end)
 	return #out > 0 and out or nil
 end
-local share = ns.Sync.Personal("rcp", build, { save = "recipesPending",
+local share = ns.Sync.Personal("rcp", build, { save = "recipesPending", helloGap = 600,   -- long lists: newcomers get them at most every 10 minutes
 	worth = function() return next(RC.Mine()) ~= nil end,
 	enabled = function() return ns.db.settings.shareProfessions end })
 -- A real change goes out 8 s later (one message for a burst of changes).
@@ -131,6 +149,7 @@ local function theirs()
 	return ns.db.recipes[g]
 end
 local index   -- item id -> { { name, line } }, rebuilt when something changed
+local building
 local function changed() index = nil; ns.Fire("LM_PROFESSIONS_CHANGED") end
 ns.On("LM_RECIPES_CHANGED", function() index = nil end)
 
@@ -157,15 +176,21 @@ function RC.Of(name)
 	if name == ns.Me() then return RC.Mine() end
 	local e = theirs()[name]
 	if not e then return {} end
-	for p, x in pairs(e) do if GetServerTime() - (x.t or 0) > RC.FORGET then e[p] = nil; index = nil end end
+	local gone = false
+	for p, x in pairs(e) do if GetServerTime() - (x.t or 0) > RC.FORGET then e[p] = nil; gone = true end end
 	if not next(e) then theirs()[name] = nil end
+	if gone and not building then index = nil end   -- a rebuild in progress already leaves them out
 	return e
 end
 local function build_index()
+	building = true
 	index = {}
 	local function add(name, p, list) for _, id in ipairs(list or {}) do index[id] = index[id] or {}; table.insert(index[id], { name, p }) end end
 	for p, e in pairs(RC.Mine()) do add(ns.Me(), p, e.items) end
-	for name in pairs(theirs()) do for p, e in pairs(RC.Of(name)) do add(name, p, e.items) end end
+	local names = {}
+	for name in pairs(theirs()) do names[#names + 1] = name end   -- RC.Of may drop someone: not while iterating
+	for _, name in ipairs(names) do for p, e in pairs(RC.Of(name)) do add(name, p, e.items) end end
+	building = false
 end
 -- Who crafts an item: { name, line, r, m, t, online }, online first, then the highest rank.
 function RC.WhoCrafts(itemId)

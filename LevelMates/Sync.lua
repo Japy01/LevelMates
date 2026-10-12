@@ -286,6 +286,7 @@ function S.Personal(kind, build, opts)
 	end
 	local function isPending() return P.pending or (opts.save and ns.char and ns.char[opts.save]) or false end
 	local function enabled() return not opts.enabled or opts.enabled() end
+	local lastSent = -math.huge   -- when it last went out (big states skip hellos for a while)
 	local function go(prio)
 		if not enabled() then setPending(false); return false end
 		local fields = build()
@@ -294,6 +295,7 @@ function S.Personal(kind, build, opts)
 		local ok = C.IsReady()
 		for _, f in ipairs(list) do ok = ok and C.SendBig(kind, f, prio) end
 		setPending(not ok)
+		if ok then lastSent = GetTime() end
 		return ok
 	end
 	local function worth() return not opts.worth or opts.worth() end
@@ -302,6 +304,10 @@ function S.Personal(kind, build, opts)
 	ns.On("LM_HB_SENT", function() if isPending() then go() end end)
 	ns.On("LM_COMM_DROPPED", function(k) if k == kind then setPending(true) end end)
 	ns.On("LM_ANNOUNCED", function() if isPending() or worth() then go() end end)
-	ns.On("LM_HELLO_ANSWERED", function() if worth() then go() end end)   -- the roster already jitters and coalesces hellos
+	ns.On("LM_HELLO_ANSWERED", function()   -- the roster already jitters and coalesces hellos
+		if not worth() then return end
+		if opts.helloGap and GetTime() - lastSent < opts.helloGap then return end   -- big states: not for every login
+		go()
+	end)
 	return P
 end
