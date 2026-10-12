@@ -453,3 +453,11 @@ C_TradeSkillUI = {
 		for _, r in ipairs(STUB.trade and STUB.trade.recipes or {}) do if r.id == id and r.item then return { itemID = r.item, hyperlink = "item:" .. r.item } end end
 	end,
 }
+
+-- The guild bank: STUB.bank = { money, tabs = { { name, icon, view = true, slots = { [slot] = { id, n } } } } }
+function GetNumGuildBankTabs() return STUB.bank and #STUB.bank.tabs or 0 end
+function GetGuildBankTabInfo(t) local x = STUB.bank.tabs[t]; return x.name, x.icon or 134400, x.view ~= false end
+function QueryGuildBankTab(t) STUB.bankQueried = (STUB.bankQueried or 0) + 1 end
+function GetGuildBankItemLink(t, s) local x = STUB.bank.tabs[t].slots[s]; return x and ("|Hitem:" .. x.id .. "::::|h[Item " .. x.id .. "]|h") end
+function GetGuildBankItemInfo(t, s) local x = STUB.bank.tabs[t].slots[s]; if x then return 134400, x.n end; return nil, 0 end
+function GetGuildBankMoney() return STUB.bank and STUB.bank.money or 0 end

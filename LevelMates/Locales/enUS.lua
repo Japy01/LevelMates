@@ -287,3 +287,4 @@ L.RC_THEIR_RECIPES = "Their recipes"; L.RC_THEIRS = "%s · %s (click to go back)
 L.RC_TOOLTIP = "Crafted by: %s"; L.TRAIN_JOURNEYMAN = "train: Journeyman"; L.TRAIN_EXPERT = "train: Expert"; L.TRAIN_ARTISAN = "train: Artisan"
 L.MOTD_NEW = "%s: message of the day: %s"; L.NOTE_NOT_ALLOWED = "You cannot write that."
 L.FEED_JOIN = "joined the guild"; L.FEED_LEAVE = "is no longer in the guild"; L.FEED_R60 = "reached level %d"; L.RACE_FIRST = "%s is the first of the guild to reach level %d!"; L.RACE_REACHED = "%s reached level %d."
+L.OPT_BANK = "Share the guild bank when I open it"; L.OPT_BANK_TT = "What you see in the guild bank goes to your guildmates when you close it, so they know what is there."
