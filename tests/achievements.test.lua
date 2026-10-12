@@ -60,3 +60,15 @@ assert(rows >= 10 and got >= 5 and pending >= 1, "achieved and pending listed: "
 ns.db.settings.shareAchievements = false
 AC.SetSharing()
 assert(last("ac").ids == nil, "withdrawn")
+
+-- the backfill counts the real journal, not the /lm sim samples (and runs again for those counted wrong before)
+ns.char.journal = {
+	{ k = "dungeon", mates = { "Mario" }, t = 1 }, { k = "quest", t = 1 }, { k = "quest", t = 1 },
+	{ k = "quest", t = 1, sim = true }, { k = "death", t = 1 },
+}
+ns.char.stats, ns.char.statsInit = {}, true   -- counted by the old, wrong backfill
+ns.Fire("LM_LOADED")
+local s = ns.char.stats
+assert(s.d == 1 and s.q == 2 and s.dead == 1, "real entries only: " .. tostring(s.d) .. "/" .. tostring(s.q) .. "/" .. tostring(s.dead))
+ns.Fire("LM_LOADED")
+assert(ns.char.stats.q == 2, "once")

@@ -492,11 +492,13 @@ local function Build()
 	ns.Skin.InkPass()
 end
 
-local function RefreshHelp()
+-- `skip`: rows at the foot left to the pager (a long Mates list); the requests go in the ones above.
+local function RefreshHelp(skip)
+	skip = skip or 0
 	local H = ns.Help
 	local ids = H and H.List() or {}
 	for i = 1, HELP_ROWS do
-		local row, id = B.helpRows[i], ids[i]
+		local row, id = B.helpRows[i], i > skip and ids[i - skip] or nil
 		local h = id and H.active[id]
 		row.button.helpId = id
 		if h then
@@ -1329,10 +1331,11 @@ function B.OpenShareMacroMenu(owner)
 	end)
 end
 
--- Pages of ROWS for the long tabs (journal, goals, wishes); the pager sits in the help-rows area.
-local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", home = "homePage", feed = "feedPage" }
+-- Pages of ROWS for the long tabs (journal, goals, wishes, a long Mates list…); the pager sits in the help-rows area.
+local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", home = "homePage", feed = "feedPage", mates = "matePage" }
+local function PageKey() if B.tab == "lfg" then return B.lfgCalendar and "calendarPage" or nil end; return PAGE_KEY[B.tab] end
 local function Page(all)
-	local key = PAGE_KEY[B.tab]
+	local key = PageKey()
 	local pages = math.max(1, math.ceil(#all / ROWS))
 	B[key] = math.min(math.max(1, B[key] or 1), pages)
 	local list = {}
@@ -1343,7 +1346,7 @@ local function Page(all)
 end
 function B.TurnPage(step)
 	ResetBars()
-	local key = PAGE_KEY[B.tab]
+	local key = PageKey()
 	if key then B[key] = (B[key] or 1) + step; B.Refresh() end
 end
 
@@ -1437,7 +1440,8 @@ function B.Refresh()
 		for _, p in ipairs(ns.Personal.List()) do all[#all + 1] = p end
 		list, pages = Page(all)
 	else
-		list = lfg and (B.lfgCalendar and CalendarVisible() or GridVisible()) or Visible()
+		if lfg and not B.lfgCalendar then list = GridVisible()
+		else list, pages = Page(lfg and CalendarVisible() or Visible()) end
 	end
 	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or home and B.HCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
 	SetHeaders()
@@ -1494,13 +1498,14 @@ function B.Refresh()
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
 	ns.Skin.InkPass()   -- what this page wrote, in ink
-	if (goals or wishes or crafts or feed or class or recruit or home) and pages and pages > 1 then   -- the pager only when there is more than one page
+	local paged = pages and pages > 1
+	if (goals or wishes or crafts or feed or class or recruit or home or B.tab == "mates" or lfg) and paged then   -- the pager only when there is more than one page
 		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
 	end
 	if journal or goals or wishes or crafts or feed or recruit or class or home then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else
-		RefreshHelp()
+		RefreshHelp(paged and 1 or 0)   -- a long list: its pager at the foot, the requests above it
 	end
 end
 

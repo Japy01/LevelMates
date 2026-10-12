@@ -98,18 +98,20 @@ ns.On("LM_POINT_EVENT", function(cat, level) if cat ~= "l" then count(cat) else 
 ns.On("LM_JOURNAL_ADDED", function(e) if e.k == "death" and not e.sim then count("dead") end end)
 ns.On("LM_CHALLENGE_DONE", function() award("challenge") end)
 
--- The first time: what the journal already holds, without notices.
+-- Once: what the journal already holds, without notices. The counts never go below the journal's (so a second run,
+-- for those whose first one counted only the /lm sim samples, adds nothing twice).
 local function backfill()
-	if ns.char.statsInit then return end
-	ns.char.statsInit = true
-	local s = stats()
+	if ns.char.statsInit == 2 then return end
+	ns.char.statsInit = 2
+	local s, d, q, dead = stats(), 0, 0, 0
 	for _, e in ipairs(ns.Journal.List("all", "")) do
-		if e.sim then -- samples from /lm sim are not real
-		if e.k == "dungeon" and e.mates and #e.mates > 0 then s.d = (s.d or 0) + 1
-		elseif e.k == "quest" then s.q = (s.q or 0) + 1
-		elseif e.k == "death" then s.dead = (s.dead or 0) + 1 end
+		if not e.sim then   -- samples from /lm sim are not real
+			if e.k == "dungeon" and e.mates and #e.mates > 0 then d = d + 1
+			elseif e.k == "quest" then q = q + 1
+			elseif e.k == "death" then dead = dead + 1 end
 		end
 	end
+	s.d, s.q, s.dead = math.max(s.d or 0, d), math.max(s.q or 0, q), math.max(s.dead or 0, dead)
 end
 ns.On("LM_LOADED", function() backfill(); AC.Check(); quiet = false end)
 
