@@ -156,7 +156,11 @@ C.SCHEMA = {
 	bye  = {},
 	ping = {},
 }
-local REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, ping = {} }
+C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, ping = {} }
+
+local REQUIRED = C.REQUIRED
+-- the field checks, for the record layer's types
+C.V = { text = text, word = word, int = int, num = num, idlist = idlist, itemids = itemids, oneOf = oneOf, roles = roles }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
@@ -385,6 +389,84 @@ local meKeys = {}
 local function isMe(sender, name)
 	return meKeys[norm(sender)] or meKeys[norm(name)] or false
 end
+local function deliver(kind, fields, name, sender, channel)
+	C.stats.received = C.stats.received + 1
+	for _, fn in ipairs(handlers[kind] or {}) do fn(fields, name, sender, channel) end
+end
+
+------------------------------------------------------------------ blobs
+-- A message too big for one goes as chunks of kind "bl": k = blob id, i = "index/total", p = up to 150 chars of the
+-- inner message ("kind~k=v;k=v", escaped as any field). Reassembled in any order, duplicates ignored, and an
+-- incomplete blob is dropped after 30 s. No acknowledgements: whatever is lost goes again on the next occasion.
+C.SCHEMA.bl = { k = word(8), i = chunkIndex(7), p = function(v) return type(v) == "string" and #v >= 1 and #v <= 150 end }
+C.REQUIRED.bl = { "k", "i", "p" }
+C.BLOB_PART, C.BLOB_WAIT = 150, 30
+local blobSeq = 0
+local function innerText(kind, fields)
+	local ok, why = C.Validate(kind, fields)
+	if not ok then return nil, why end
+	local keys, parts = {}, {}
+	for k in pairs(fields) do keys[#keys + 1] = k end
+	table.sort(keys)
+	for _, k in ipairs(keys) do parts[#parts + 1] = k .. "=" .. esc(fields[k]) end
+	return kind .. "~" .. table.concat(parts, ";")
+end
+-- One message when it fits, else chunks; same prio, target (a whisper) and opts as C.Send / C.Whisper. The
+-- opts.onSent of a blob fires when its last chunk went.
+function C.SendBig(kind, fields, prio, target, opts)
+	if C.Encode(kind, fields) then
+		if target then return C.Whisper(kind, fields, target, prio, opts) end
+		return C.Send(kind, fields, prio, opts)
+	end
+	local inner, why = innerText(kind, fields)
+	if not inner then ns.Log("blob %s: %s", kind, tostring(why)); return false end
+	local total = math.ceil(#inner / C.BLOB_PART)
+	if total > 99 then return false end
+	blobSeq = (blobSeq + 1) % 10000
+	local id = string.format("%04x%04d", math.floor(GetTime()) % 65536, blobSeq)
+	local parts = {}
+	for i = 1, total do
+		parts[i] = { k = id, i = i .. "/" .. total, p = inner:sub((i - 1) * C.BLOB_PART + 1, i * C.BLOB_PART) }
+		if not C.Encode("bl", parts[i]) then return false end   -- escaping made a chunk too long: nothing rather than half
+	end
+	local ok = true
+	for i = 1, total do
+		local o = opts and { hold = opts.hold, onSent = i == total and opts.onSent or nil } or nil
+		if target then ok = C.Whisper("bl", parts[i], target, prio, o) and ok else ok = C.Send("bl", parts[i], prio, o) and ok end
+	end
+	return ok
+end
+local buffers = {}   -- [name .. ":" .. id] = { total, parts, have, at }
+local function onChunk(f, name, sender, channel)
+	local idx, total = f.i:match("^(%d+)/(%d+)$")
+	idx, total = tonumber(idx), tonumber(total)
+	if not idx or idx < 1 or idx > total then return end
+	local key = name .. ":" .. f.k
+	local b = buffers[key]
+	if b and (b.total ~= total or GetTime() - b.at > C.BLOB_WAIT) then b = nil end
+	if not b then b = { total = total, parts = {}, have = 0, at = GetTime() }; buffers[key] = b end
+	if b.parts[idx] then return end
+	b.parts[idx] = f.p; b.have = b.have + 1
+	if b.have < b.total then return end
+	buffers[key] = nil
+	local kind, body = table.concat(b.parts):match("^([%w_]+)~(.*)$")
+	if not kind or kind == "bl" then C.stats.bad = C.stats.bad + 1; return end
+	local fields = {}
+	for pair in (body .. ";"):gmatch("([^;]*);") do
+		if pair ~= "" then
+			local k, v = pair:match("^([%w_]+)=(.*)$")
+			if not k then C.stats.bad = C.stats.bad + 1; return end
+			fields[k] = unesc(v)
+		end
+	end
+	local schema = C.SCHEMA[kind]
+	if schema then for k, v in pairs(fields) do if NUMERIC[schema[k]] and v:match(CANON) then fields[k] = tonumber(v) end end end
+	if not C.Validate(kind, fields) then C.stats.bad = C.stats.bad + 1; return end
+	deliver(kind, fields, name, sender, channel)
+end
+handlers.bl = { onChunk }
+ns.Every("blobs", 10, function() for k, b in pairs(buffers) do if GetTime() - b.at > C.BLOB_WAIT then buffers[k] = nil end end end)
+
 -- 0.3.x clients: not data any more (clean cut). Mark them, and give them one old-style heartbeat with my version
 -- every 5 minutes, so their own "a newer LevelMates exists" notice tells them to update.
 local lastLegacyHb = -math.huge
@@ -416,8 +498,7 @@ local function onAddonMessage(prefix, text, channel, sender)
 	if channel ~= "GUILD" and ns.Roster and ns.Roster.IsGuildmate and not ns.Roster.IsGuildmate(name) then C.stats.bad = C.stats.bad + 1; return end
 	local kind, fields = C.Decode(text)
 	if not kind then C.stats.bad = C.stats.bad + 1; return end
-	C.stats.received = C.stats.received + 1
-	for _, fn in ipairs(handlers[kind] or {}) do fn(fields, name, sender) end
+	deliver(kind, fields, name, sender, channel)
 end
 
 -- Feed a message into the receive path as if it had arrived (used by /lm sim). Sends nothing.
