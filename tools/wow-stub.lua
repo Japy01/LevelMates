@@ -472,3 +472,11 @@ function GetItemIcon(id) return 1000 + (tonumber(id) or 0) end
 function UnitRace(u) return "Human", "Human", STUB.raceId or 1 end
 function UnitSex(u) return STUB.sex or 2 end
 function InCombatLockdown() return STUB.inCombat == true end
+
+-- DressUpModel calls, recorded
+function Region:SetUnit(u) self.unit = u end
+function Region:SetCustomRace(r, s) self.race, self.sex = r, s end
+function Region:Undress() self.tried = {} end
+function Region:TryOn(link) self.tried = self.tried or {}; table.insert(self.tried, link) end
+function Region:SetCamDistanceScale() end
+function Region:ClearModel() self.unit, self.race, self.tried = nil, nil, nil end

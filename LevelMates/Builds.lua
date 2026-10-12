@@ -125,11 +125,12 @@ C.OnMessage("tb", function(f, name)
 	ns.Fire("LM_BUILDS_CHANGED")
 end)
 
+-- Any class (cards show everyone's build); the Class tab keeps to mine (BU.List).
 local function fresh(name, e)
-	return e.t >= time() - BU.FORGET_DAYS * 86400 and e.c == myClass() and name ~= me() and (e.sim or R.IsGuildmate(name))
+	return e.t >= time() - BU.FORGET_DAYS * 86400 and name ~= me() and (e.sim or R.IsGuildmate(name))
 end
 
--- A guildmate's build, when they are of my class.
+-- A guildmate's build, of any class.
 function BU.Of(name)
 	local e = store()[name]
 	if e and fresh(name, e) then return { name = name, c = e.c, s = e.s, l = e.l, p = e.p, b = e.b, t = e.t } end
@@ -142,7 +143,7 @@ function BU.List(search)
 	if m.p and (q == "" or me():lower():find(q, 1, true)) then out[1] = { name = me(), c = m.c, s = m.s, l = m.l, p = m.p, b = m.b, mine = true } end
 	for name, e in pairs(store()) do
 		if e.t < time() - BU.FORGET_DAYS * 86400 then store()[name] = nil
-		elseif fresh(name, e) and (q == "" or name:lower():find(q, 1, true)) then
+		elseif fresh(name, e) and e.c == myClass() and (q == "" or name:lower():find(q, 1, true)) then
 			others[#others + 1] = { name = name, c = e.c, s = e.s, l = e.l, p = e.p, b = e.b, t = e.t }
 		end
 	end
@@ -156,7 +157,7 @@ function BU.PointsText(e)
 	local names = {}
 	for _, g in ipairs(BU.Groups()) do names[g.id] = g.name end
 	local parts = {}
-	for id, n in tostring(e.p or ""):gmatch("(%d+):(%d+)") do parts[#parts + 1] = (names[tonumber(id)] or ("#" .. id)) .. " " .. n end
+	for id, n in tostring(e.p or ""):gmatch("(%d+):(%d+)") do parts[#parts + 1] = names[tonumber(id)] and (names[tonumber(id)] .. " " .. n) or n end   -- another class: its branch names are not in my tree
 	return table.concat(parts, " / ")
 end
 

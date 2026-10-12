@@ -296,3 +296,4 @@ L.GUILD_RANK_N = "rango %d"; L.MEMBER_DAYS = "hace %d días"; L.MEMBER_CARD = "F
 L.HIST_JOIN = "entró"; L.HIST_LEAVE = "salió"; L.HIST_RANKUP = "ascendido (rango %s)"; L.HIST_RANKDOWN = "degradado (rango %s)"; L.HIST_R60 = "llegó al nivel %s"
 L.ALTS_PROVEN = "misma cuenta"; L.ALTS_SAID = "según dice"; L.RACE_FIRST_TAG = "primero de la hermandad"; L.RACE_CLASS_TAG = "primero de su clase"; L.RACE_BEFORE_TAG = "ya estaba"
 L.OPT_GEAR = "Compartir mi equipo"; L.OPT_GEAR_TT = "Los objetos que llevas, su nivel y encantamientos, y tu raza para el modelo: tus compañeros los ven en tu ficha."
+L.GEAR_LINE = "Nivel de objeto %d (%d/17)"; L.GEAR_BUTTON = "Equipo"; L.GEAR_ILVL = "Nivel de objeto %d"

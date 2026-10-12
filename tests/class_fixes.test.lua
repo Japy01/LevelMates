@@ -25,7 +25,8 @@ STUB.Receive("LVLM2", C.Encode("hb", { l = 22, z = 1421, c = "MAGE" }), "GUILD",
 STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", p = "1001:3" }), "GUILD", "Mario-Testrealm")
 assert(BU.Of("Mario") == nil, "no level or spec: ignored")
 STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 62, l = 22, p = "2001:9" }), "GUILD", "Ana-Testrealm")
-assert(BU.Of("Ana") == nil, "a mage claiming to be a warrior is still a mage")
+assert(BU.Of("Ana") and BU.Of("Ana").c == "MAGE", "a mage claiming to be a warrior is still a mage")
+for _, e in ipairs(BU.List()) do assert(e.name ~= "Ana", "and not on my class tab") end
 B.ShowTab("class")   -- and the tab draws
 assert(B.tab == "class")
 

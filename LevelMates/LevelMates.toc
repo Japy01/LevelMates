@@ -66,6 +66,7 @@ Points.lua
 Home.lua
 Achievements.lua
 MateCard.lua
+GearWindow.lua
 DungeonPanel.lua
 Alts.lua
 GoalDialog.lua

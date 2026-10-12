@@ -39,6 +39,8 @@ function MC.Lines(name)
 		local role, guessed = ns.Roles.Of(name)
 		lines[#lines + 1] = string.format(L.CARD_ROLE, L["ROLE_" .. role] .. (guessed and " ?" or ""))
 	end
+	local gear = ns.Gear and ns.Gear.Of(name)
+	if gear and (gear.filled or 0) > 0 then lines[#lines + 1] = string.format(L.GEAR_LINE, gear.avg, gear.filled) end
 	if name == ns.Me() and ns.Alts then   -- my own card: my characters in this guild
 		lines[#lines + 1] = L.CARD_MY_CHARS
 		local all = ns.Alts.MyAlts()
@@ -116,6 +118,10 @@ local function Build()
 		if m and m.x and m.y and m.mapId then ns.Help.WaypointTo(m.mapId, m.x, m.y, MC.name) end
 	end)
 	MC.build = Btn(L.CLASS_VIEW_BUILD, 276, function() ns.Builds.Open(ns.Builds.Of(MC.name)) end)
+	-- their gear (top right): the paper doll and the model
+	MC.gear = ns.Skin.Button(f)
+	MC.gear:SetSize(80, 20); MC.gear:SetPoint("TOPRIGHT", -14, -30); MC.gear:SetText(L.GEAR_BUTTON)
+	MC.gear:SetScript("OnClick", function() ns.GearWindow.Open(MC.name) end)
 	MC.questButtons = {}
 	for i = 1, MC.MAX_QUESTS do
 		local b = ns.Skin.Button(f)
@@ -141,6 +147,8 @@ function MC.Refresh()
 	MC.waypoint:SetShown(m and m.x and m.y and m.mapId and true or false)
 	local b = ns.Builds.Of(name)
 	MC.build:SetShown(b and b.b and true or false)
+	local gear = ns.Gear.Of(name)
+	MC.gear:SetShown(gear ~= nil and (gear.filled or 0) > 0)
 	local missing = MC.MissingQuests(name) or {}
 	for i, qb in ipairs(MC.questButtons) do
 		local q = missing[i]
