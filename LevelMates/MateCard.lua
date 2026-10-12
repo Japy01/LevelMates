@@ -149,6 +149,7 @@ function MC.Refresh()
 	MC.build:SetShown(b and b.b and true or false)
 	local gear = ns.Gear.Of(name)
 	MC.gear:SetShown(gear ~= nil and (gear.filled or 0) > 0)
+	MC.frame.body:SetWidth(MC.gear:IsShown() and 260 or 348)   -- the Gear button sits at the top right: the text keeps clear of it
 	local missing = MC.MissingQuests(name) or {}
 	for i, qb in ipairs(MC.questButtons) do
 		local q = missing[i]
@@ -172,5 +173,5 @@ function MC.Show(name)
 end
 
 ns.On("LM_ROW_CLICK", MC.Show)
-for _, e in ipairs({ "LM_ALTS_CHANGED", "LM_MATE_QUESTS", "LM_ROSTER_CHANGED", "LM_BUILDS_CHANGED", "LM_PROFESSIONS_CHANGED", "LM_WISHES_CHANGED", "LM_FEED_CHANGED", "LM_MEETUPS_CHANGED", "LM_GOALS_CHANGED" }) do ns.On(e, function() ns.Dirty("card") end) end
+for _, e in ipairs({ "LM_ALTS_CHANGED", "LM_MATE_QUESTS", "LM_ROSTER_CHANGED", "LM_BUILDS_CHANGED", "LM_PROFESSIONS_CHANGED", "LM_WISHES_CHANGED", "LM_FEED_CHANGED", "LM_MEETUPS_CHANGED", "LM_GOALS_CHANGED", "LM_GEAR_CHANGED", "LM_ROLES_CHANGED" }) do ns.On(e, function() ns.Dirty("card") end) end
 ns.OnRedraw("card", function() return MC.frame and MC.frame:IsShown() end, function() MC.Refresh() end)

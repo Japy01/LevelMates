@@ -48,8 +48,9 @@ local function Build()
 	f:Hide()
 end
 
--- The unit the game can show for this name, if any (in my group, or my target).
+-- The unit the game can show for this name, if any (me, in my group, or my target).
 local function unitFor(name)
+	if name == ns.Me() then return "player" end
 	if UnitName and UnitName("target") == name then return "target" end
 	for i = 1, 4 do if UnitName and UnitName("party" .. i) == name then return "party" .. i end end
 end
@@ -80,6 +81,7 @@ function GW.Open(name)
 	if unit then m:SetUnit(unit); m:Show()
 	elseif g.r and (g.x == 2 or g.x == 3) then
 		local ok = pcall(function()
+			m:SetUnit("player")   -- a player model first: SetCustomRace changes a loaded model
 			m:SetCustomRace(g.r, g.x - 2)
 			m:Undress()
 			for slot = 1, 19 do local s = g.slots[slot]; if s and slot ~= 4 and slot ~= 19 then m:TryOn("item:" .. s.id) end end
