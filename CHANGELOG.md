@@ -2,6 +2,8 @@
 
 ## 0.4.0
 
+- **Members** (Guild tab): the whole guild with shared notes, the history of joins, departures and promotions, the alts of each member and the race to 60; the officers' own message of the day at the top of Home.
+- **Bank** (Guild tab): whoever opens the guild bank shares what is in it.
 - **Recipes**: yours are read from your own profession window and shared; search an item on the Professions tab to see who crafts it and ask them; browse someone's recipes; item tooltips name crafters; a hint when a rank is full and it is time to train.
 - **Quest board**: Alt+click a quest in your log to look for people for it; guildmates say "Me too"; a Quests view with filters, and a notice when someone looks for a quest you have. Together lists group quests in common.
 - **Map**: pins on continents too, the same size at any zoom, bundled when crowded, a click to route there, fresh positions when the map opens, old pins gone after five minutes; optional names on the pins.
