@@ -2,6 +2,7 @@
 
 ## 0.4.0
 
+- **Armory**: your gear is shared (with its switch); a guildmate's card shows their item level, counted right, and a Gear window with their paper doll and model; cards show builds of every class.
 - **Members** (Guild tab): the whole guild with shared notes, the history of joins, departures and promotions, the alts of each member and the race to 60; the officers' own message of the day at the top of Home.
 - **Bank** (Guild tab): whoever opens the guild bank shares what is in it.
 - **Recipes**: yours are read from your own profession window and shared; search an item on the Professions tab to see who crafts it and ask them; browse someone's recipes; item tooltips name crafters; a hint when a rank is full and it is time to train.
