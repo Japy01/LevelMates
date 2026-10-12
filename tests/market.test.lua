@@ -8,8 +8,8 @@ STUB.items[765] = "|cffffffff|Hitem:765::::::::20:::::::|h[Silverleaf]|h|r"
 STUB.items[2318] = "|cffffffff|Hitem:2318::::::::20:::::::|h[Light Leather]|h|r"
 
 -- the wire: priced offers in their own kind
-assert(C.Validate("sl", { p = "2589:15000,765:1" }) and C.Validate("sl", {}), "sl format")
-assert(not C.Validate("sl", { p = "2589:0" }) and not C.Validate("sl", { p = "2589" }) and not C.Validate("sl", { p = "1:1,2:1,3:1,4:1,5:1,6:1,7:1,8:1,9:1,10:1,11:1" }), "a price, at most ten")
+assert(C.Validate("sl", STUB.Rec{ p = "2589:15000,765:1" }) and C.Validate("sl", STUB.Rec{}), "sl format")
+assert(not C.Validate("sl", STUB.Rec{ p = "2589:0" }) and not C.Validate("sl", STUB.Rec{ p = "2589" }) and not C.Validate("sl", STUB.Rec{ p = "1:1,2:1,3:1,4:1,5:1,6:1,7:1,8:1,9:1,10:1,11:1" }), "a price, at most ten")
 
 -- prices typed in gold
 assert(GF.ParsePrice("") == nil and GF.ParsePrice("0") == nil, "empty or 0: free")
@@ -28,15 +28,15 @@ assert(last("sl").p == nil, "withdrawn")
 STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
 W.Add(STUB.items[2318])
 STUB.printed = {}
-STUB.Receive("LVLM2", C.Encode("gv", { ids = "765" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("sl", { p = "2318:25000" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ ids = "765" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("sl", STUB.Rec{ p = "2318:25000" }), "GUILD", "Mario-Testrealm")
 local his = {}
 for _, g in ipairs(GF.List()) do if g.name == "Mario" then his[g.id] = g end end
 assert(his[765] and not his[765].price and his[2318] and his[2318].price == 25000, "free and priced")
 local told
 for _, line in ipairs(STUB.printed) do if line:find("Mario", 1, true) and line:find("[Light Leather]", 1, true) and line:find(GF.Money(25000), 1, true) then told = true end end
 assert(told, "a wish on sale is told, with its price")
-STUB.Receive("LVLM2", C.Encode("gv", {}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{}), "GUILD", "Mario-Testrealm")
 his = {}
 for _, g in ipairs(GF.List()) do if g.name == "Mario" then his[g.id] = g end end
 assert(not his[765] and his[2318], "his free list emptied; the priced one stays")

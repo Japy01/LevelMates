@@ -1,11 +1,12 @@
 -- Gifts.lua: the guild market. Items I offer (up to 10), free or for a price: the free ones go out in `gv` (as wishes do
 -- in `wl`, so older versions still see them), the priced ones in `sl`. A guildmate reserves or buys one with `gr`, first
 -- come; payment and handing over are up to them (trade or mail): the addon never touches gold. Giveaways and wishes are matched both ways with a notice.
--- Spec 2026-10-10-levelmates-social-leveling-design (A2).
+-- My lists are sync records (one gv and one sl per seller, kept and handed over by everyone, so a late login sees the
+-- market of sellers who are offline). Specs 2026-10-10-levelmates-social-leveling-design (A2) and 2026-10-12 sync v2.
 local _, ns = ...
 local GF = {}
 ns.Gifts = GF
-local L, C, R, W = ns.L, ns.Comm, ns.Roster, ns.Wishlist
+local L, C, R, W, S = ns.L, ns.Comm, ns.Roster, ns.Wishlist, ns.Sync
 GF.MAX, GF.FORGET_DAYS = 10, 30
 
 local function me() return ns.Me() end
@@ -20,21 +21,17 @@ local function link(id) return W.Link(id) or string.format(L.WISH_UNKNOWN, id) e
 
 function GF.Has(id) for _, g in ipairs(mine()) do if g.id == id then return g end end end
 
--- A refused send stays pending in the character's saved data and goes out after the next heartbeat.
-local sentAt
-local function send(prio)
+-- My lists as records (the sync layer keeps them pending until they really went, and hands them to late logins).
+local LIFE = GF.FORGET_DAYS * 86400
+local function myKey() return (me():gsub("[^%w]", "")):sub(1, 12) end
+local function send()
 	local ids, sale = {}, {}
 	for _, g in ipairs(mine()) do
 		if g.price then sale[#sale + 1] = g.id .. ":" .. g.price else ids[#ids + 1] = g.id end
 	end
-	local fields, priced = {}, {}
-	if #ids > 0 then fields.ids = table.concat(ids, ",") end
-	if #sale > 0 then priced.p = table.concat(sale, ",") end
-	local ok = C.Send("gv", fields, prio)
-	ok = C.Send("sl", priced, prio) and ok
-	if ok then ns.char.giftPending, sentAt = nil, GetTime(); return true end
-	ns.char.giftPending = true
-	return false
+	S.Put("gv", myKey(), { ids = #ids > 0 and table.concat(ids, ",") or nil })
+	S.Put("sl", myKey(), { p = #sale > 0 and table.concat(sale, ",") or nil })
+	return true
 end
 
 -- Prices: typed in gold ("1,5" = 1 gold 50 silver), kept in copper. nil = free, false = not a price.
@@ -56,7 +53,7 @@ function GF.Money(copper)
 	if c > 0 then out[#out + 1] = c .. "c" end
 	return table.concat(out, " ")
 end
-local function resend() if sentAt ~= GetTime() then send() end end
+
 
 -- Others' giveaways: updated in the last 30 days, by someone still in the guild (or a sample).
 local function others()
@@ -89,7 +86,7 @@ function GF.Add(text, price)
 	local list = mine()
 	if #list >= GF.MAX then ns.Say(L.GIFT_FULL, GF.MAX); return false end
 	list[#list + 1] = { id = id, t = time(), price = price or nil }
-	send("now")
+	send()
 	for _, name in ipairs(W.WantedBy(id)) do if name ~= me() then tell(name .. ":w:" .. id, L.GIFT_WANTED, name, link(id)) end end
 	ns.Fire("LM_WISHES_CHANGED")
 	return true
@@ -98,7 +95,7 @@ end
 function GF.Remove(id)
 	local list = mine()
 	for i, g in ipairs(list) do
-		if g.id == id then table.remove(list, i); send("now"); ns.Fire("LM_WISHES_CHANGED"); return true end
+		if g.id == id then table.remove(list, i); send(); ns.Fire("LM_WISHES_CHANGED"); return true end
 	end
 	return false
 end
@@ -129,8 +126,8 @@ function GF.GivenBy(id)
 	return names
 end
 
-C.OnMessage("gv", function(f, name)
-	if not R.mates[name] then return end
+-- A seller's free list (a record; a removed or empty one clears it).
+local function onFree(f, name, live)
 	local t = theirs()
 	if f.ids == nil then
 		if t[name] and t[name].sale then t[name].ids = {} else t[name] = nil end   -- a seller keeps their priced offers
@@ -140,13 +137,12 @@ C.OnMessage("gv", function(f, name)
 		for id in tostring(f.ids):gmatch("%d+") do id = tonumber(id); ids[#ids + 1] = id; reserved[id] = old[id] end
 		for id in pairs(t[name] and t[name].sale or {}) do reserved[id] = old[id] end
 		t[name] = { ids = ids, sale = t[name] and t[name].sale, t = time(), reserved = reserved }
-		for _, id in ipairs(ids) do if W.Has(id) then tell(name .. ":g:" .. id, L.GIFT_FOR_YOU, name, link(id)) end end
+		if live then for _, id in ipairs(ids) do if W.Has(id) then tell(name .. ":g:" .. id, L.GIFT_FOR_YOU, name, link(id)) end end end
 	end
 	ns.Fire("LM_WISHES_CHANGED")
-end)
-
-C.OnMessage("sl", function(f, name)
-	if not R.mates[name] then return end
+end
+-- A seller's priced list.
+local function onSale(f, name, live)
 	local t = theirs()
 	local sale = {}
 	for id, price in tostring(f.p or ""):gmatch("(%d+):(%d+)") do sale[tonumber(id)] = tonumber(price) end
@@ -156,10 +152,18 @@ C.OnMessage("sl", function(f, name)
 		t[name] = t[name] or { ids = {}, reserved = {} }
 		t[name].sale, t[name].t = sale, time()
 		t[name].reserved = t[name].reserved or {}
-		for id, price in pairs(sale) do if W.Has(id) then tell(name .. ":s:" .. id, L.SALE_FOR_YOU, name, link(id), GF.Money(price)) end end
+		if live then for id, price in pairs(sale) do if W.Has(id) then tell(name .. ":s:" .. id, L.SALE_FOR_YOU, name, link(id), GF.Money(price)) end end end
 	end
 	ns.Fire("LM_WISHES_CHANGED")
-end)
+end
+local function onRecord(apply)
+	return function(rec, _, how)
+		if how == "mine" or how == "expired" then return end
+		apply(rec.dead and {} or rec.d, rec.o, how == "live")
+	end
+end
+S.Define("gv", { class = "board", life = LIFE, fields = { ids = C.V.itemids(10) }, onChange = onRecord(onFree) })
+S.Define("sl", { class = "board", life = LIFE, fields = { p = C.V.saleList }, onChange = onRecord(onSale) })
 
 -- A guildmate's wishes against my giveaways (the wishlist module stores them).
 C.OnMessage("wl", function(f, name)
@@ -205,10 +209,8 @@ ns.On("LM_HELLO_ANSWERED", function()
 	for _, g in ipairs(mine()) do if g.reservedBy then C.Send("gro", { i = g.id, by = g.reservedBy }) end end
 end)
 
-ns.On("LM_HELLO_ANSWERED", function() if #mine() > 0 then resend() end end)
-ns.On("LM_ANNOUNCED", function() if #mine() > 0 then resend() end end)
-ns.On("LM_HB_SENT", function() if ns.char.giftPending then send() end end)
-ns.On("LM_COMM_DROPPED", function(kind) if kind == "gv" or kind == "sl" then ns.char.giftPending = true end end)
+-- 0.3.x kept a pending mark for a list that could not go out: it goes now as records.
+ns.On("LM_WORLD", function() if ns.char.giftPending then ns.char.giftPending = nil; send() end end)
 
 if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
 	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)

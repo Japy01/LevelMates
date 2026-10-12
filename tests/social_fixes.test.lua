@@ -27,7 +27,7 @@ assert(again == 0, "and only once")
 
 -- #2: a reservation counts when the giver confirms it; a second reserver sees the first one's
 STUB.items[1011] = link(1011, "Thing")
-STUB.Receive("LVLM2", C.Encode("gv", { ids = "1011" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ ids = "1011" }), "GUILD", "Ana-Testrealm")
 assert(GF.Reserve("Ana", 1011) and last("gr").i == 1011, "asked")
 local row
 for _, g in ipairs(GF.List()) do if g.name == "Ana" and g.id == 1011 then row = g end end

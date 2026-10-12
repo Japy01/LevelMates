@@ -156,7 +156,7 @@ C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y
 
 local REQUIRED = C.REQUIRED
 -- the field checks, for the record layer's types
-C.V = { text = text, word = word, int = int, num = num, idlist = idlist, itemids = itemids, oneOf = oneOf, roles = roles }
+C.V = { text = text, word = word, int = int, num = num, idlist = idlist, itemids = itemids, oneOf = oneOf, roles = roles, saleList = saleList }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
