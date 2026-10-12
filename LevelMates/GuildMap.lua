@@ -1,24 +1,38 @@
--- GuildMap.lua: guildmates who share their position, as class-icon pins on the world map being shown, and the
--- busiest zone for the Guildmates tab. Spec 2026-10-10-levelmates-social-leveling-design (B3).
+-- GuildMap.lua: guildmates who share their position, as class-icon pins on the world map being shown (their zone's
+-- map or a continent), the same size at any zoom, bundled when crowded; a click routes there. Opening the map asks
+-- for fresh positions. And the busiest zone for the Guildmates tab.
+-- Specs 2026-10-10-levelmates-social-leveling-design (B3) and 2026-10-12-levelmates-quests-map-design (3).
 local _, ns = ...
 local GM = {}
 ns.GuildMap = GM
-local L, R = ns.L, ns.Roster
+local L, R, C = ns.L, ns.Roster, ns.Comm
 GM.pins = {}
-local SIZE = 16
+GM.SIZE = 18
 
 local function pin(i)
 	local p = GM.pins[i]
 	if p then return p end
 	p = CreateFrame("Button", nil, WorldMapFrame:GetCanvas())
-	p:SetSize(SIZE, SIZE); p:SetFrameStrata("HIGH")
+	p:SetSize(GM.SIZE, GM.SIZE); p:SetFrameStrata("HIGH")
 	p.icon = p:CreateTexture(nil, "OVERLAY"); p.icon:SetAllPoints()
+	p.count = p:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"); p.count:SetPoint("CENTER")
+	p.label = p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); p.label:SetPoint("BOTTOM", p, "TOP", 0, 1)
 	p:SetScript("OnEnter", function(self)
-		local m = R.mates[self.mate]
-		if not (GameTooltip and m) then return end
+		if not (GameTooltip and self.names) then return end
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		GameTooltip:AddLine(string.format("%s (%d)", self.mate, m.level or 0), 1, 1, 1)
+		for _, name in ipairs(self.names) do
+			local m = R.mates[name]
+			if m then
+				local role, guessed = ns.Roles.Of(name)
+				local age = math.max(0, GetTime() - (m.posAt or GetTime()))
+				GameTooltip:AddLine(string.format("%s (%d) · %s%s · %s", name, m.level or 0, L["ROLE_" .. role], guessed and " ?" or "", ns.Journal.Duration(age)), 1, 1, 1)
+			end
+		end
 		GameTooltip:Show()
+	end)
+	-- a click (a hardware event): the route to them, or to the first of a bundle
+	p:SetScript("OnClick", function(self)
+		if self.route then ns.Help.WaypointTo(self.route.mapId, self.route.mx, self.route.my, self.mate) end
 	end)
 	p:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 	GM.pins[i] = p
@@ -31,20 +45,35 @@ local function classIcon(tex, class)
 	tex:SetTexture("Interface\\Minimap\\PartyRaidBlips"); tex:SetTexCoord(0.875, 1, 0.25, 0.5)   -- a plain dot
 end
 
+-- The map's zoom: pins scale against it so they keep their size on screen.
+local function canvasScale()
+	local sc = WorldMapFrame.ScrollContainer
+	local s = sc and sc.GetCanvasScale and sc:GetCanvasScale()
+	return (type(s) == "number" and s > 0) and s or 1
+end
+local function firstName(name) return (tostring(name):match("^(%S+)")) or name end
 function GM.Refresh()
 	if not WorldMapFrame or not WorldMapFrame.GetCanvas then return end
 	local canvas, mapId, i = WorldMapFrame:GetCanvas(), WorldMapFrame:GetMapID(), 0
-	if ns.db.settings.mapPins and WorldMapFrame:IsShown() then
-		for name, m in pairs(R.mates) do
-			if m.mapId == mapId and m.x and m.y then
-				i = i + 1
-				local p = pin(i)
-				p.mate = name
-				classIcon(p.icon, m.class)
-				p:ClearAllPoints()
-				p:SetPoint("CENTER", canvas, "TOPLEFT", canvas:GetWidth() * m.x / 100, -canvas:GetHeight() * m.y / 100)
-				p:Show()
+	if ns.db.settings.mapPins and WorldMapFrame:IsShown() and mapId then
+		local scale = 1 / canvasScale()
+		for _, e in ipairs(GM.Layout(mapId, canvas:GetWidth(), canvas:GetHeight(), GM.SIZE / scale)) do
+			i = i + 1
+			local p = pin(i)
+			p.mate, p.names, p.route = e.names[1], e.names, e
+			p:SetScale(scale)
+			if #e.names > 1 then   -- a bundle: a gold disc with the count
+				p.icon:SetTexture("Interface\\Minimap\\PartyRaidBlips"); p.icon:SetTexCoord(0.5, 0.625, 0, 0.25)
+				p.count:SetText(tostring(#e.names)); p.count:Show(); p.label:Hide()
+			else
+				local m = R.mates[e.names[1]]
+				classIcon(p.icon, m and m.class)
+				p.count:Hide()
+				p.label:SetText(firstName(e.names[1])); p.label:SetShown(ns.db.settings.mapNames == true)
 			end
+			p:ClearAllPoints()
+			p:SetPoint("CENTER", canvas, "TOPLEFT", e.x / scale, -e.y / scale)
+			p:Show()
 		end
 	end
 	for j = i + 1, #GM.pins do GM.pins[j]:Hide() end
@@ -61,16 +90,33 @@ function GM.Busiest()
 	return best and bestN or 0, best
 end
 
+-- Opening the map asks the guild for fresh positions (at most every 30 s); those who share theirs answer with a
+-- heartbeat after a random wait (at most once every 30 s), so a crowd opening maps does not flood the channel.
+C.SCHEMA.mpq = {}; C.REQUIRED.mpq = {}
+GM.ASK_GAP = 30
+local lastAsk, lastAnswer = -math.huge, -math.huge
+local function ask()
+	if GetTime() - lastAsk < GM.ASK_GAP or not ns.db.settings.mapPins then return end
+	lastAsk = GetTime()
+	C.Send("mpq", {})
+end
+C.OnMessage("mpq", function()
+	if not ns.db.settings.sharePos or GetTime() - lastAnswer < GM.ASK_GAP then return end
+	lastAnswer = GetTime()
+	C_Timer.After(0.5 + math.random() * 6, function() R.SendHeartbeat(true) end)
+end)
+
 local hooked = false
 local function hook()
 	if hooked or not WorldMapFrame or not WorldMapFrame.OnMapChanged then return end
 	hooked = true
-	hooksecurefunc(WorldMapFrame, "OnMapChanged", GM.Refresh)
-	WorldMapFrame:HookScript("OnShow", GM.Refresh)
+	hooksecurefunc(WorldMapFrame, "OnMapChanged", function() ask(); GM.Refresh() end)   -- opening the map changes it too
+	WorldMapFrame:HookScript("OnShow", function() ask(); GM.Refresh() end)
 end
+ns.OnRedraw("map", function() return WorldMapFrame and WorldMapFrame:IsShown() end, function() GM.Refresh() end)
 ns.On("LM_WORLD", hook)
-ns.On("LM_ROSTER_CHANGED", function() if WorldMapFrame and WorldMapFrame:IsShown() then GM.Refresh() end end)
-ns.On("LM_MATE_MOVED", function() if WorldMapFrame and WorldMapFrame:IsShown() then GM.Refresh() end end)   -- a position alone
+ns.On("LM_ROSTER_CHANGED", function() ns.Dirty("map") end)
+ns.On("LM_MATE_MOVED", function() ns.Dirty("map") end)   -- a position alone
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:SetScript("OnEvent", function(_, _, name) if name == "Blizzard_WorldMap" then hook() end end)

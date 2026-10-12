@@ -279,3 +279,4 @@ L.QH_POST_BUTTON = "Search for a quest…"; L.QH_POST = "Look for a group"; L.QH
 L.QH_THEIRS = "%s: %s"; L.QH_MINE = "You: %s"; L.QH_ALSO = "Also looking: %s"; L.QH_EMPTY = "Nobody is looking for people for a quest right now."
 L.QH_FILTER_ALL = "Show: all"; L.QH_FILTER_ZONE = "Show: my zone"; L.QH_FILTER_LEVEL = "Show: my level ±5"; L.QH_FILTER_GROUP = "Show: group quests"
 L.TOGETHER_QUESTS = "Group quests in common"
+L.OPT_MAP_NAMES = "Names on the map pins"; L.OPT_MAP_NAMES_TT = "The first name above each guildmate's pin on the world map."

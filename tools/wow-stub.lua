@@ -69,7 +69,8 @@ function Region:SetJustifyH() end
 function Region:SetWordWrap(v) self.wordWrap = v end
 function Region:SetJustifyV() end
 function Region:SetAlpha() end
-function Region:SetScale() end
+function Region:SetScale(s) self.scale = s end
+function Region:GetScale() return self.scale or 1 end
 function Region:GetID() return self.id or 0 end
 function Region:SetID(id) self.id = id end
 function Region:SetFrameStrata() end

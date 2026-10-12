@@ -280,3 +280,4 @@ L.QH_POST_BUTTON = "Buscar para una misión…"; L.QH_POST = "Buscar grupo"; L.Q
 L.QH_THEIRS = "%s: %s"; L.QH_MINE = "Tú: %s"; L.QH_ALSO = "También buscan: %s"; L.QH_EMPTY = "Ahora nadie busca gente para una misión."
 L.QH_FILTER_ALL = "Ver: todas"; L.QH_FILTER_ZONE = "Ver: mi zona"; L.QH_FILTER_LEVEL = "Ver: mi nivel ±5"; L.QH_FILTER_GROUP = "Ver: de grupo"
 L.TOGETHER_QUESTS = "Misiones de grupo en común"
+L.OPT_MAP_NAMES = "Nombres en los marcadores del mapa"; L.OPT_MAP_NAMES_TT = "El nombre de pila sobre el marcador de cada compañero en el mapa del mundo."
