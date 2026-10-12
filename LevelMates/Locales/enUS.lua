@@ -271,3 +271,5 @@ L.DP_INVITE_ALL = "Invite all"; L.DP_DISCORD = "Discord"; L.DP_ADD = "Add…"; L
 L.BTN_TOGETHER = "Together"; L.HEAD_TOGETHER = "Together"; L.SUB_TOGETHER = "Groups you could make right now, from who is online and their roles. Click one: make it a run or invite everyone."
 L.TOGETHER_FILLED = "%d of 5"; L.TOGETHER_CLICK = "Click"; L.TOGETHER_RUN = "Make it a run (in 15 minutes)"; L.TOGETHER_EMPTY = "Nobody online fits a dungeon with you right now."
 L.CARD_ROLE = "Role: %s"; L.OPT_ROLE_T = "My role: tank"; L.OPT_ROLE_H = "My role: healer"; L.OPT_ROLE_D = "My role: damage"; L.OPT_ROLE_TT = "The role you play in runs, shared with the guild. Without one, your class decides (marked with ?)."
+L.DP_DISCORD_WAITING = "A Discord line is waiting (the game blocked it): send it now."
+L.RUN_TOO_LONG = "The run's line-up is too long to share (very long names): not added."

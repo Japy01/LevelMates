@@ -9,6 +9,7 @@ ns.Discord = DC
 local L = ns.L
 DC.MAX, DC.COOLDOWN = 236, 30
 local held = {}            -- runId -> line
+local heldIn = {}          -- runId -> dungeon id (the run itself may be gone: a cancel)
 local blockedAt = -math.huge
 local sending, sendingLine  -- the run and line going out right now (for ADDON_ACTION_BLOCKED)
 
@@ -24,9 +25,13 @@ function DC.Available()
 	return true
 end
 
--- What is still free: "faltan: sanador, 2 daño" or "completa".
-local function freeText(m)
+-- What is still free: "faltan: sanador, 2 daño" or "completa". A join counts the joiner (the leader places them a
+-- moment later), a leave or a removal frees their slot.
+local function freeText(m, kind, who, role)
 	local s = ns.Meetups.Slots(m)
+	local function drop(name) for _, r in ipairs({ "T", "H", "D" }) do for i = #s[r], 1, -1 do if s[r][i] == name then table.remove(s[r], i) end end end end
+	if kind == "join" and role and #s[role] < ns.Meetups.CAP[role] then drop(who); table.insert(s[role], who)
+	elseif kind == "leave" or kind == "remove" then drop(who) end
 	local parts = {}
 	for _, role in ipairs({ "T", "H", "D" }) do
 		local free = ns.Meetups.CAP[role] - #s[role]
@@ -46,7 +51,7 @@ function DC.Line(kind, m, who, role)
 	elseif kind == "remove" then head = string.format(L.DC_REMOVE, m.by, who, dungeon, when)
 	else head = string.format(L.DC_CANCEL, dungeon, when, m.by) end
 	local line = "[LevelMates] " .. head
-	if kind ~= "cancel" then line = line .. " · " .. freeText(m) end
+	if kind ~= "cancel" then line = line .. " · " .. freeText(m, kind, who, role) end
 	line = line:gsub("|", "")
 	local note = m.n and m.n ~= "" and tostring(m.n):gsub("|", "") or nil
 	if note then
@@ -79,10 +84,18 @@ end
 function DC.Run(kind, m, who, role)
 	if not (m and m.dc) or not DC.Available() then return "off" end
 	local line = DC.Line(kind, m, who, role)
+	heldIn[m.id] = m.d
 	if blocked() then held[m.id] = line; ns.Fire("LM_DISCORD_CHANGED"); return "held" end
 	return post(m.id, line) and "sent" or "held"
 end
 function DC.Held(runId) return held[runId] end
+-- Lines waiting for a click, of one dungeon: { { id, line } }, for its panel.
+function DC.HeldFor(d)
+	local out = {}
+	for id, line in pairs(held) do if heldIn[id] == d then out[#out + 1] = { id = id, line = line } end end
+	table.sort(out, function(a, b) return a.id < b.id end)
+	return out
+end
 -- Called from a click (the dungeon panel's "Send to Discord").
 function DC.SendHeld(runId)
 	local line = held[runId]

@@ -149,9 +149,11 @@ place = function(id)
 		if not has(slots, name) and not kicked(id)[name] and #slots[role] < M.CAP[role] then table.insert(slots[role], name) end
 	end
 	local text = encode(slots)
-	if text ~= before and #text <= 200 then S.Put("qm", id, { m = text, _exp = rec.e }) end
+	if #text > 200 then ns.Say(L.RUN_TOO_LONG); return false end   -- five long names: the line-up cannot travel
+	if text ~= before then S.Put("qm", id, { m = text, _exp = rec.e }) end
+	return true
 end
-M.Place = function(id) place(id) end
+M.Place = function(id) return place(id) end
 
 -- Called from clicks (the dungeon panel): the leader adds someone to a free role, or takes someone out.
 function M.AddMember(id, name, role)
@@ -161,7 +163,7 @@ function M.AddMember(id, name, role)
 	if has(M.Slots(m), name) or not M.Free(m, role) then return false end
 	kicked(id)[name] = nil
 	hand(id)[name] = role
-	place(id)
+	if not place(id) then hand(id)[name] = nil; return false end
 	ns.Discord.Run("add", view(rec), name, role)
 	return true
 end

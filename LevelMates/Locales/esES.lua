@@ -272,3 +272,5 @@ L.DP_INVITE_ALL = "Invitar a todos"; L.DP_DISCORD = "Discord"; L.DP_ADD = "Añad
 L.BTN_TOGETHER = "Juntos"; L.HEAD_TOGETHER = "Juntos"; L.SUB_TOGETHER = "Grupos que podríais hacer ahora, con quien está conectado y sus roles. Pulsa uno: hazlo partida o invita a todos."
 L.TOGETHER_FILLED = "%d de 5"; L.TOGETHER_CLICK = "Clic"; L.TOGETHER_RUN = "Hacerlo partida (en 15 minutos)"; L.TOGETHER_EMPTY = "Ahora mismo nadie conectado encaja contigo en una mazmorra."
 L.CARD_ROLE = "Rol: %s"; L.OPT_ROLE_T = "Mi rol: tanque"; L.OPT_ROLE_H = "Mi rol: sanador"; L.OPT_ROLE_D = "Mi rol: daño"; L.OPT_ROLE_TT = "El rol que haces en las partidas, compartido con la hermandad. Sin elegirlo, decide tu clase (marcado con ?)."
+L.DP_DISCORD_WAITING = "Hay una línea para Discord esperando (el juego la bloqueó): envíala ahora."
+L.RUN_TOO_LONG = "La lista de la partida es demasiado larga para compartirla (nombres muy largos): no se añade."

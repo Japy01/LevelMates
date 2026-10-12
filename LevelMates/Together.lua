@@ -33,7 +33,7 @@ local function build(d, all)
 	end
 	for _, role in ipairs({ "T", "H" }) do   -- then guessed tanks and healers
 		for _, p in ipairs(cands) do
-			if slots[role] < CAP[role] and not used[p.name] and RO.Can(p.class, role) then put(p, role, true) end
+			if slots[role] < CAP[role] and not used[p.name] and select(2, RO.Of(p.name)) and RO.Can(p.class, role) then put(p, role, true) end   -- never against a chosen role
 		end
 	end
 	for _, p in ipairs(cands) do   -- the rest as damage

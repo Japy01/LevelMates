@@ -1199,6 +1199,11 @@ local function FillTogether(list)
 		end
 	end
 end
+-- 15 minutes from t (a date table), up to the next quarter hour: day offset (0 today, 1 tomorrow), hour, minute.
+function B.SoonSlot(t)
+	local total = math.ceil((t.hour * 60 + t.min + 15) / 15) * 15
+	return math.floor(total / 1440), math.floor(total % 1440 / 60), total % 60
+end
 -- A suggestion's click: make it a run (the dialog, in 15 minutes) or invite everyone in it.
 function B.OpenTogetherMenu(e)
 	local s = e.s
@@ -1206,12 +1211,7 @@ function B.OpenTogetherMenu(e)
 	for _, row in ipairs(s.rows) do names[#names + 1] = row.name end
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
 		root:CreateTitle(ns.Dungeons.Name(s.d))
-		root:CreateButton(L.TOGETHER_RUN, function()
-			ns.Fire("LM_MEET_HERE", s.d)
-			local D = ns.MeetDialog
-			local soon = date("*t", time() + 15 * 60)
-			D.dayOffset, D.hour, D.minute = (soon.day ~= date("*t").day) and 1 or 0, soon.hour, math.floor(soon.min / 15) * 15
-		end)
+		root:CreateButton(L.TOGETHER_RUN, function() ns.MeetDialog.OpenAt(s.d, B.SoonSlot(date("*t"))) end)
 		root:CreateButton(L.DP_INVITE_ALL, function() B.InviteAll(names) end)
 	end)
 end

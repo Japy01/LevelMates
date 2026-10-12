@@ -111,4 +111,12 @@ function Dlg.Open(d)
 	Dlg.frame:Show()
 end
 
+-- Open with a day (0 = today), hour and minute already chosen (Together's "make it a run").
+function Dlg.OpenAt(d, offset, hour, minute)
+	Dlg.Open(d)
+	if not Dlg.frame or not Dlg.frame:IsShown() then return end
+	Dlg.dayOffset, Dlg.hour, Dlg.minute = offset, hour, minute
+	Labels()
+end
+
 ns.On("LM_MEET_HERE", Dlg.Open)

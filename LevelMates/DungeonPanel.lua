@@ -44,6 +44,7 @@ function DP.Rows(id)
 		end
 		for _, name in ipairs(s.waiting) do meets[#meets + 1] = { kind = "waiting", meet = m, name = name } end
 	end
+	for _, h in ipairs(ns.Discord.HeldFor(id)) do meets[#meets + 1] = { kind = "held", id = h.id, line = h.line } end   -- Discord lines waiting for a click
 	section(out, "meet", meets)
 	local mates = {}
 	for _, name in ipairs(R.List()) do
@@ -166,10 +167,8 @@ function DP.Refresh()
 					for _, role in ipairs({ "T", "H", "D" }) do for _, n in ipairs(s[role]) do names[#names + 1] = n end end
 					btns[1] = { L.DP_CANCEL, function() ns.Meetups.Cancel(m.id) end }
 					btns[2] = { L.DP_INVITE_ALL, function() ns.Board.InviteAll(names) end }
-					if ns.Discord.Held(m.id) then btns[3] = { L.DP_DISCORD, function() ns.Discord.SendHeld(m.id) end } end
 				elseif ns.Meetups.MyRole(m.id) then
 					btns[1] = { L.DP_LEAVE, function() ns.Meetups.Leave(m.id) end }
-					if ns.Discord.Held(m.id) then btns[2] = { L.DP_DISCORD, function() ns.Discord.SendHeld(m.id) end } end
 				else
 					local k = 0
 					for _, role in ipairs({ "T", "H", "D" }) do   -- only the roles with a free slot
@@ -186,6 +185,9 @@ function DP.Refresh()
 					line.text:SetText(label .. L.RUN_FREE); line.text:SetTextColor(0.55, 0.55, 0.55)
 					if m.by == me() then btns[1] = { L.DP_ADD, function() DP.AddMenu(m, e.role) end } end
 				end
+			elseif e.kind == "held" then
+				line.text:SetText("   " .. L.DP_DISCORD_WAITING); line.text:SetTextColor(0.55, 0.6, 1)
+				btns[1] = { L.DP_DISCORD, function() ns.Discord.SendHeld(e.id) end }
 			elseif e.kind == "waiting" then
 				line.text:SetText("   " .. string.format(L.RUN_WAITING, e.name)); line.text:SetTextColor(0.8, 0.7, 0.5)
 			elseif e.kind == "mate" then
