@@ -274,3 +274,4 @@ L.TOGETHER_FILLED = "%d de 5"; L.TOGETHER_CLICK = "Clic"; L.TOGETHER_RUN = "Hace
 L.CARD_ROLE = "Rol: %s"; L.OPT_ROLE_T = "Mi rol: tanque"; L.OPT_ROLE_H = "Mi rol: sanador"; L.OPT_ROLE_D = "Mi rol: daño"; L.OPT_ROLE_TT = "El rol que haces en las partidas, compartido con la hermandad. Sin elegirlo, decide tu clase (marcado con ?)."
 L.DP_DISCORD_WAITING = "Hay una línea para Discord esperando (el juego la bloqueó): envíala ahora."
 L.RUN_TOO_LONG = "La lista de la partida es demasiado larga para compartirla (nombres muy largos): no se añade."
+L.QH_NOTICE_HAVE = "%s busca gente para «%s» (tú también la tienes)."; L.QH_NOTICE_LEVEL = "%s busca grupo para «%s» (nivel %d)."; L.QH_POSTED = "Buscando gente para «%s»: la hermandad lo ve durante dos horas."

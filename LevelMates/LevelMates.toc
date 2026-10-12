@@ -39,6 +39,7 @@ LFG.lua
 ChatAds.lua
 Meetups.lua
 Discord.lua
+Questhub.lua
 LfgDialog.lua
 MeetDialog.lua
 Partner.lua

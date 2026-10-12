@@ -429,3 +429,6 @@ function UpdateAddOnMemoryUsage() end
 function GetAddOnMemoryUsage() return 1234 end
 
 function UnitAffectingCombat(u) return STUB.inCombat == true end
+
+STUB.questTags = {}
+C_QuestLog.GetQuestTagInfo = function(id) return STUB.questTags[id] end

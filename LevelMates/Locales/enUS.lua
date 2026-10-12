@@ -273,3 +273,4 @@ L.TOGETHER_FILLED = "%d of 5"; L.TOGETHER_CLICK = "Click"; L.TOGETHER_RUN = "Mak
 L.CARD_ROLE = "Role: %s"; L.OPT_ROLE_T = "My role: tank"; L.OPT_ROLE_H = "My role: healer"; L.OPT_ROLE_D = "My role: damage"; L.OPT_ROLE_TT = "The role you play in runs, shared with the guild. Without one, your class decides (marked with ?)."
 L.DP_DISCORD_WAITING = "A Discord line is waiting (the game blocked it): send it now."
 L.RUN_TOO_LONG = "The run's line-up is too long to share (very long names): not added."
+L.QH_NOTICE_HAVE = "%s is looking for people for \"%s\" (you have it too)."; L.QH_NOTICE_LEVEL = "%s is looking for a group for \"%s\" (level %d)."; L.QH_POSTED = "Looking for people for \"%s\": the guild sees it for two hours."
