@@ -29,7 +29,7 @@ assert(table.concat(shape, ",") == "#185,Tester,#129,Mario,Tester,#186,Ana,Teste
 local head = rows[3]
 assert(head.icon:IsShown() and head.icon.texture and head.name.text == P.Name(129) .. " (2)", "header: icon, name, count")
 local mario, me1, ana = rows[4], rows[5], rows[7]
-assert(mario.group.text == "75/75" and mario.xph.text == L.ONLINE and mario.barFill:IsShown() and mario.barFill:GetWidth() == B.BAR_W, "full bar, online")
+assert(mario.group.text == "75/75" and mario.xph.text == L.ONLINE .. " · " .. L.TRAIN_JOURNEYMAN and mario.barFill:IsShown() and mario.barFill:GetWidth() == B.BAR_W, "full bar, online, time to train")
 assert(me1.group.text == "37/75" and me1.xph.text == "" and math.abs(me1.barFill:GetWidth() - B.BAR_W * 37 / 75) < 0.01, "my row: partial bar, no 'online'")
 assert(ana.group.text == "40" and ana.xph.text ~= "" and ana.xph.text ~= L.ONLINE, "no max known: just the rank; offline: when seen")
 -- right click a header: nothing; a guildmate: the menu
