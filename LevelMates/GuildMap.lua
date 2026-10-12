@@ -74,3 +74,75 @@ ns.On("LM_MATE_MOVED", function() if WorldMapFrame and WorldMapFrame:IsShown() t
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:SetScript("OnEvent", function(_, _, name) if name == "Blizzard_WorldMap" then hook() end end)
+
+------------------------------------------------------------------ layout
+-- Where each guildmate goes on the map being viewed: their zone position as is on that zone's map, or converted
+-- through world coordinates onto a continent (or any map that holds their zone); positions older than five minutes
+-- are left out; four or more within one pin's size become a bundle. { { x, y, names, mapId, mx, my } } in canvas
+-- pixels (mapId, mx, my: where the first of them is, for a route). Me: counted for bundles, never drawn.
+GM.STALE, GM.BUNDLE = 300, 4
+local function project(from, x, y, to)
+	if from == to then return x, y end
+	if not (C_Map.GetWorldPosFromMapPos and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
+	local ok, a, b = pcall(C_Map.GetWorldPosFromMapPos, from, CreateVector2D(x, y))
+	if not ok then return nil end
+	local cont, world = a, b
+	if type(a) == "table" then cont, world = 0, a end
+	if type(world) ~= "table" then return nil end
+	local ok2, c, d = pcall(C_Map.GetMapPosFromWorldPos, cont, world, to)
+	if not ok2 then return nil end
+	local pos = type(d) == "table" and d or (type(c) == "table" and c) or nil
+	if not pos then return nil end
+	local px, py
+	if pos.GetXY then px, py = pos:GetXY() else px, py = pos.x, pos.y end
+	if not px or not py or px < 0 or px > 1 or py < 0 or py > 1 then return nil end
+	return px, py
+end
+function GM.Layout(mapId, w, h, pinPx)
+	local points, now = {}, GetTime()
+	for name, m in pairs(R.mates) do
+		if m.x and m.y and m.mapId and (now - (m.posAt or 0)) <= GM.STALE then
+			local px, py = project(m.mapId, m.x / 100, m.y / 100, mapId)
+			if px then points[#points + 1] = { x = px * w, y = py * h, name = name, mapId = m.mapId, mx = m.x, my = m.y } end
+		end
+	end
+	local myMap = C_Map.GetBestMapForUnit("player")
+	local myPos = myMap and C_Map.GetPlayerMapPosition and C_Map.GetPlayerMapPosition(myMap, "player")
+	if myPos then
+		local mx, my = myPos:GetXY()
+		local px, py = project(myMap, mx, my, mapId)
+		if px then points[#points + 1] = { x = px * w, y = py * h, me = true } end
+	end
+	table.sort(points, function(a, b)
+		if a.y ~= b.y then return a.y < b.y end
+		if a.x ~= b.x then return a.x < b.x end
+		return (a.name or "") < (b.name or "")
+	end)
+	local used, out = {}, {}
+	for i, p in ipairs(points) do
+		if not used[i] then
+			local near = { i }
+			for j = i + 1, #points do
+				if not used[j] then
+					local dx, dy = points[j].x - p.x, points[j].y - p.y
+					if dx * dx + dy * dy <= pinPx * pinPx then near[#near + 1] = j end
+				end
+			end
+			if #near >= GM.BUNDLE then
+				local sx, sy, names, first = 0, 0, {}, nil
+				for _, j in ipairs(near) do
+					used[j] = true
+					local q = points[j]
+					sx, sy = sx + q.x, sy + q.y
+					if not q.me then names[#names + 1] = q.name; first = first or q end
+				end
+				table.sort(names)
+				if #names > 0 then out[#out + 1] = { x = sx / #near, y = sy / #near, names = names, mapId = first.mapId, mx = first.mx, my = first.my } end
+			else
+				used[i] = true
+				if not p.me then out[#out + 1] = { x = p.x, y = p.y, names = { p.name }, mapId = p.mapId, mx = p.mx, my = p.my } end
+			end
+		end
+	end
+	return out
+end
