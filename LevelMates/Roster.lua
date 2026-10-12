@@ -30,6 +30,8 @@ local function buildGuildSet()
 	return set
 end
 function R.InvalidateGuildRoster() guildSet = nil end
+-- The guild list has arrived from the server (I am on it): until then nobody can be told apart from a stranger.
+function R.RosterLoaded() return R.IsGuildmate(ns.Me()) end
 function R.IsGuildmate(name)
 	if not guildSet or GetTime() - guildSetAt > ROSTER_TTL then
 		guildSet = buildGuildSet(); guildSetAt = GetTime()
@@ -194,6 +196,7 @@ ev:SetScript("OnEvent", function(_, event)
 		C_Timer.After(2, function() questDebounce = false; R.SendQuests() end)
 	elseif event == "GUILD_ROSTER_UPDATE" or event == "CLUB_MEMBER_ADDED" or event == "CLUB_MEMBER_REMOVED" then
 		R.InvalidateGuildRoster()
+		ns.Fire("LM_GUILD_ROSTER")   -- what waited for the list (catch-up arriving at login) is looked at again
 	else
 		if event == "PLAYER_LEVEL_UP" then xpWindow = {} end   -- the XP bar resets: old samples would give nonsense
 		C_Timer.After(0.5, function() R.SendHeartbeat(false) end)

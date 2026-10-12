@@ -79,6 +79,15 @@ function ns.Me()
 	return name
 end
 
+-- A name as an id part: 8 hex digits of a hash of the whole name (accents and spaces included), so "Élia" and
+-- "Ëlia" never share one and a name with no plain letters still has one.
+function ns.NameKey(name)
+	local h = 5381
+	name = tostring(name or "")
+	for i = 1, #name do h = (h * 33 + name:byte(i)) % 4294967296 end
+	return string.format("%04x%04x", math.floor(h / 65536), h % 65536)
+end
+
 function ns.PlayerKey() return ns.Me() .. "-" .. GetRealmName() end
 
 -- "Mario-ClassicBetaPvP" -> "Mario" when the realm is mine. Ambiguate() left my own realm in place on Forever,

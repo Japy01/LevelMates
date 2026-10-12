@@ -23,7 +23,7 @@ function GF.Has(id) for _, g in ipairs(mine()) do if g.id == id then return g en
 
 -- My lists as records (the sync layer keeps them pending until they really went, and hands them to late logins).
 local LIFE = GF.FORGET_DAYS * 86400
-local function myKey() return (me():gsub("[^%w]", "")):sub(1, 12) end
+local function myKey() return ns.NameKey(me()) end
 local function send()
 	local ids, sale = {}, {}
 	for _, g in ipairs(mine()) do
@@ -162,8 +162,9 @@ local function onRecord(apply)
 		apply(rec.dead and {} or rec.d, rec.o, how == "live")
 	end
 end
-S.Define("gv", { class = "board", life = LIFE, fields = { ids = C.V.itemids(10) }, onChange = onRecord(onFree) })
-S.Define("sl", { class = "board", life = LIFE, fields = { p = C.V.saleList }, onChange = onRecord(onSale) })
+local function ownKey(id, owner) return id == ns.NameKey(owner) end   -- one list per seller, under their own name
+S.Define("gv", { class = "board", life = LIFE, fields = { ids = C.V.itemids(10) }, onChange = onRecord(onFree), idOwner = ownKey })
+S.Define("sl", { class = "board", life = LIFE, fields = { p = C.V.saleList }, onChange = onRecord(onSale), idOwner = ownKey })
 
 -- A guildmate's wishes against my giveaways (the wishlist module stores them).
 C.OnMessage("wl", function(f, name)
@@ -209,8 +210,14 @@ ns.On("LM_HELLO_ANSWERED", function()
 	for _, g in ipairs(mine()) do if g.reservedBy then C.Send("gro", { i = g.id, by = g.reservedBy }) end end
 end)
 
--- 0.3.x kept a pending mark for a list that could not go out: it goes now as records.
-ns.On("LM_WORLD", function() if ns.char.giftPending then ns.char.giftPending = nil; send() end end)
+-- At login and /reload (the guild known by then): my lists go out again when the guild has no live record of them
+-- (my first 0.4 login, a 0.3.x pending mark) or they would expire within a week.
+ns.On("LM_ANNOUNCED", function()
+	if #mine() == 0 and not ns.char.giftPending then return end
+	local soon = GetServerTime() + 7 * 86400
+	local gv, sl = S.Get("gv", myKey()), S.Get("sl", myKey())
+	if ns.char.giftPending or not (gv and sl) or gv.e < soon or sl.e < soon then ns.char.giftPending = nil; send() end
+end)
 
 if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
 	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)

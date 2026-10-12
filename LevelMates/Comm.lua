@@ -479,6 +479,7 @@ local function onLegacy(channel, sender)
 		.. ";v=" .. esc(ns.VERSION) .. ";z=" .. (C_Map.GetBestMapForUnit("player") or 0)
 	C_ChatInfo.SendAddonMessage(C.LEGACY_PREFIX, old, "GUILD")
 end
+C.waiting = {}   -- whispers that arrived before the guild list (see below)
 local function onAddonMessage(prefix, text, channel, sender)
 	if prefix == C.LEGACY_PREFIX then
 		if not (issecretvalue and issecretvalue(sender)) then onLegacy(channel, sender) end
@@ -490,12 +491,27 @@ local function onAddonMessage(prefix, text, channel, sender)
 	if channel == "CHANNEL" and active ~= "channel" then return end
 	local name = ns.ShortName(sender)
 	if isMe(sender, name) then return end
-	-- GUILD reaches members only; the hidden channel and whispers are open to anyone: guildmates only there
-	if channel ~= "GUILD" and ns.Roster and ns.Roster.IsGuildmate and not ns.Roster.IsGuildmate(name) then C.stats.bad = C.stats.bad + 1; return end
+	-- GUILD reaches members only; the hidden channel and whispers are open to anyone: guildmates only there. Before
+	-- the guild list has loaded (login), nobody can be checked: keep it, ask for the list, and look again when it comes.
+	if channel ~= "GUILD" and ns.Roster and ns.Roster.IsGuildmate and not ns.Roster.IsGuildmate(name) then
+		if ns.Roster.RosterLoaded and not ns.Roster.RosterLoaded() and #C.waiting < 200 then
+			C.waiting[#C.waiting + 1] = { prefix, text, channel, sender }
+			if C_GuildInfo and C_GuildInfo.GuildRoster then C_GuildInfo.GuildRoster() end
+			return
+		end
+		C.stats.bad = C.stats.bad + 1; return
+	end
 	local kind, fields = C.Decode(text)
 	if not kind then C.stats.bad = C.stats.bad + 1; return end
 	deliver(kind, fields, name, sender, channel)
 end
+
+ns.On("LM_GUILD_ROSTER", function()
+	if #C.waiting == 0 or not ns.Roster.RosterLoaded() then return end
+	local list = C.waiting
+	C.waiting = {}
+	for _, m in ipairs(list) do onAddonMessage(m[1], m[2], m[3], m[4]) end
+end)
 
 -- Feed a message into the receive path as if it had arrived (used by /lm sim). Sends nothing.
 function C.Inject(text, sender) onAddonMessage(C.PREFIX, text, "GUILD", sender) end

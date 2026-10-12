@@ -7,7 +7,8 @@ local S = {}
 ns.Sync = S
 local C, R = ns.Comm, ns.Roster
 local types = {}
-S.FUTURE = 300   -- a rev further ahead than this is a broken clock, not news
+S.FUTURE = 300
+S.BATCH = 20     -- records a catch-up hands over per type   -- a rev further ahead than this is a broken clock, not news
 local inQueue = setmetatable({}, { __mode = "k" })   -- records queued but not out yet (never saved)
 
 local function now() return GetServerTime() end
@@ -39,9 +40,9 @@ local function send(rec, target)
 	if rec.dead then
 		local f = { t = rec.t, id = rec.id, v = rec.v, e = rec.e }
 		if rec.o ~= me() or target then f.o = rec.o end
-		if target then ok = C.Whisper("x", f, target, spec.lane, opts) else ok = C.Send("x", f, spec.lane, opts) end
+		if target then ok = C.Whisper("x", f, target, "normal", opts) else ok = C.Send("x", f, spec.lane, opts) end
 	else
-		ok = C.SendBig(rec.t, wire(rec, target), spec.lane, target, opts)
+		ok = C.SendBig(rec.t, wire(rec, target), target and "normal" or spec.lane, target, opts)   -- catch-up never ahead of help
 	end
 	if ok and mine then inQueue[rec] = true end
 	return ok
@@ -51,7 +52,8 @@ S.Send = send
 -- spec: { class = "board"|"personal", life = seconds, fields = { name = check }, required = { names },
 --         lane = "urgent"|"normal", may = function(rec, who) -> may who change it (default: its owner),
 --         max = live records kept, onChange = function(rec, old, how) how = "mine"|"live"|"catchup"|"expired",
---         relayKeep = function(rec) -> hand it to newcomers, relayMax = n newest at most }
+--         relayKeep = function(rec) -> hand it to newcomers, relayMax = n newest at most,
+--         idOwner = function(id, owner) -> may this owner hold this id (ids made from a name) }
 function S.Define(t, spec)
 	spec.class = spec.class or "board"
 	spec.may = spec.may or function(rec, who) return rec.o == who end
@@ -104,6 +106,7 @@ function S.Receive(t, f, sender, catchup)
 	if owner == me() then return end
 	if not trusted(owner) or not trusted(sender) then return end
 	if f.v > now() + S.FUTURE or f.e < now() then return end
+	if spec.idOwner and not spec.idOwner(f.id, owner) then return end   -- an id made from someone else's name
 	local s = store(t)
 	local old = s[f.id]
 	if old and old.o ~= owner and not spec.may(old, owner) then return end   -- an id belongs to its owner
@@ -115,7 +118,7 @@ function S.Receive(t, f, sender, catchup)
 		for _, r in pairs(s) do if not r.dead and r.e >= now() then n = n + 1 end end
 		if n >= spec.max then return end
 	end
-	local rec = { t = t, id = f.id, o = old and old.o or owner, v = f.v, e = f.e, d = d }
+	local rec = { t = t, id = f.id, o = old and old.o or owner, v = f.v, e = math.min(f.e, now() + spec.life + S.FUTURE), d = d }   -- never longer than the type lives
 	s[f.id] = rec
 	fire(spec, rec, old and not old.dead and old or nil, catchup and "catchup" or "live")
 end
@@ -129,11 +132,12 @@ C.OnMessage("x", function(f, sender)
 	if owner ~= sender and spec.class == "personal" then return end
 	if owner == me() or not trusted(owner) or not trusted(sender) then return end
 	if f.v > now() + S.FUTURE or f.e < now() then return end
+	if spec.idOwner and not spec.idOwner(f.id, owner) then return end
 	local s = store(f.t)
 	local old = s[f.id]
 	if old and old.v >= f.v then return end
 	if old and not spec.may(old, owner) then return end
-	s[f.id] = { t = f.t, id = f.id, o = old and old.o or owner, v = f.v, e = f.e, dead = true }
+	s[f.id] = { t = f.t, id = f.id, o = old and old.o or owner, v = f.v, e = math.min(f.e, now() + spec.life + S.FUTURE), dead = true }
 	if old and not old.dead then fire(spec, s[f.id], old, "live") end
 end)
 
@@ -148,12 +152,16 @@ function S.List(t, keep)
 	table.sort(out, function(a, b) if a.v ~= b.v then return a.v < b.v end; return a.id < b.id end)
 	return out
 end
--- How many records and tombstones of a type I hold, and a sum of their revs: two clients with the same digest
--- (almost certainly) hold the same.
+-- What a catch-up hands on: live records and tombstones, no samples, what the type keeps for newcomers.
+local function relayable(spec, r)
+	return r.e >= now() and not (r.d and r.d.sim) and (r.dead or not spec.relayKeep or spec.relayKeep(r))
+end
+-- How many of those I hold, and a sum of their revs: two clients with the same digest (almost certainly) hold the
+-- same, so nobody answers a newcomer who already has it all.
 function S.Digest(t)
-	local n, sum = 0, 0
+	local spec, n, sum = types[t], 0, 0
 	for _, r in pairs(store(t)) do
-		if r.e >= now() and not (r.d and r.d.sim) then n = n + 1; sum = (sum + r.v + (r.dead and 7 or 0)) % 2147483647 end
+		if relayable(spec, r) then n = n + 1; sum = (sum + r.v + (r.dead and 7 or 0)) % 2147483647 end
 	end
 	return n, sum
 end
@@ -185,16 +193,17 @@ local function batch(t, to)
 	local spec = types[t]
 	local list = {}
 	for _, r in pairs(store(t)) do
-		if r.e >= now() and not (r.d and r.d.sim) and (not spec.relayKeep or r.dead or spec.relayKeep(r)) then list[#list + 1] = r end
+		if relayable(spec, r) and r.o ~= to then list[#list + 1] = r end   -- not what the asker made: they have it
 	end
 	table.sort(list, function(a, b) if a.v ~= b.v then return a.v < b.v end; return a.id < b.id end)
-	local first = math.max(1, #list - (spec.relayMax or #list) + 1)
+	local first = math.max(1, #list - (spec.relayMax or S.BATCH) + 1)   -- the newest, oldest first
 	for i = first, #list do send(list[i], to) end
 end
 -- Two of us may claim in the same instant: the claimer waits 1.5 s and, if someone else claimed meanwhile, only the
 -- one whose name sorts first sends.
 local rivals = {}   -- [key] = the lowest other name that claimed it while mine was pending
 local function answer(t, to)
+	if IsInInstance and IsInInstance() then return end   -- my claim could not go out there: others answer
 	local key = to .. ":" .. t
 	if claimed[key] and GetTime() - claimed[key] < 30 then return end
 	claimed[key] = GetTime()
@@ -246,6 +255,10 @@ ns.Every("sync-prune", 60, function()
 		end
 	end
 end)
+-- The queue dropped something (held too long, over its cap) or stopped: whatever of mine was waiting there is not
+-- queued any more; still pending, it goes with the next heartbeat.
+ns.On("LM_COMM_DROPPED", function() for r in pairs(inQueue) do inQueue[r] = nil end end)
+ns.On("LM_COMM_STOPPED", function() for r in pairs(inQueue) do inQueue[r] = nil end end)
 -- What did not go out (not ready, or lost with a /reload while held) goes with the next heartbeat.
 ns.On("LM_HB_SENT", function()
 	for t in pairs(types) do

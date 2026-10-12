@@ -18,7 +18,7 @@ end
 local rev = 0
 local function V() rev = rev + 1; return GetServerTime() + rev end
 local function QD(id, d, at, n) return C.Encode("qd", { id = id, d = d, at = at, n = n, v = V(), e = GetServerTime() + 86400 }) end
-local function QJ(id, r, who) return C.Encode("qj", { id = id .. "." .. who, r = r, v = V(), e = GetServerTime() + 86400 }) end
+local function QJ(id, r, who) return C.Encode("qj", { id = id .. "." .. ns.NameKey(who), r = r, v = V(), e = GetServerTime() + 86400 }) end
 local function X(t, id) return C.Encode("x", { t = t, id = id, v = V(), e = GetServerTime() + 86400 }) end
 local function pick(text) for _, e in ipairs(entries) do if e.text == text then e.cb(); return true end end; return false end
 
@@ -40,7 +40,7 @@ STUB.Receive("LVLM2", QJ(mine.id, "H", "Ana"), "GUILD", "Ana-Testrealm")
 assert(minenow().joined.Ana == "H" and said(string.format(L.MEET_JOINED, "Ana", D.Name(5), M.When(mine), L.ROLE_H)) == 1, "Ana joins")
 STUB.Receive("LVLM2", QJ(mine.id, "D", "Nadie"), "GUILD", "Nadie-Testrealm")
 assert(not minenow().joined.Nadie, "strangers cannot")
-STUB.Receive("LVLM2", X("qj", mine.id .. ".Ana"), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", X("qj", mine.id .. "." .. ns.NameKey("Ana")), "GUILD", "Ana-Testrealm")
 assert(not minenow().joined.Ana, "Ana leaves")
 
 -- a guildmate's meetup; I join it from the card
@@ -54,11 +54,11 @@ for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 4 then card = c
 assert(card.badge:IsShown() and card.badge.text == M.When(M.List(4)[1]) .. " · 1", "the card shows the next meetup")
 card.scripts.OnClick(card, "RightButton")
 assert(pick(string.format(L.MEET_JOIN, M.When(M.List(4)[1]), L.ROLE_T)), "join as tank")
-assert(last("qj").id == "mario01.Tester" and last("qj").r == "T" and M.MyRole("mario01") == "T", "qj sent, remembered")
+assert(last("qj").id == "mario01." .. ns.NameKey("Tester") and last("qj").r == "T" and M.MyRole("mario01") == "T", "qj sent, remembered")
 card.scripts.OnEnter(card)
 assert(table.concat(GameTooltip.lines, "\n"):find("Tester", 1, true), "the tooltip lists who joined")
 card.scripts.OnClick(card, "RightButton")
-assert(pick(string.format(L.MEET_LEAVE, M.When(M.List(4)[1]))) and last("x").t == "qj" and last("x").id == "mario01.Tester", "leave")
+assert(pick(string.format(L.MEET_LEAVE, M.When(M.List(4)[1]))) and last("x").t == "qj" and last("x").id == "mario01." .. ns.NameKey("Tester"), "leave")
 assert(M.Join("mario01", "T"), "join again")
 
 -- reminder: 15 minutes before, once, only if mine or joined
@@ -85,7 +85,7 @@ assert(M.Join("luis0001", "D"))
 local n = #STUB.sent
 STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Ana-Testrealm"); STUB.Advance(10)
 local qd, qj = 0, 0
-for i = n + 1, #STUB.sent do local k, ff = C.Decode(STUB.sent[i].msg); if k == "qd" then qd = qd + 1 elseif k == "qj" and ff.id == "luis0001.Tester" then qj = qj + 1 end end
+for i = n + 1, #STUB.sent do local k, ff = C.Decode(STUB.sent[i].msg); if k == "qd" then qd = qd + 1 elseif k == "qj" and ff.id == "luis0001." .. ns.NameKey("Tester") then qj = qj + 1 end end
 assert(qd >= 1 and qj == 1, "handed over to the newcomer: the meetups I hold and my join")
 
 -- gone 3 hours after the hour

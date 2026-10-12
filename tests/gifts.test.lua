@@ -21,11 +21,11 @@ for id = 1003, 1010 do GF.Remove(id) end
 
 -- matching both ways
 assert(W.Add(link(1011)))
-STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ ids = "1011,1012" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ id = ns.NameKey("Ana"), ids = "1011,1012"}), "GUILD", "Ana-Testrealm")
 assert(said(string.format(L.GIFT_FOR_YOU, "Ana", link(1011, "Thing 11"))), "Ana gives what I want")
 STUB.Receive("LVLM2", C.Encode("wl", { ids = "1002" }), "GUILD", "Mario-Testrealm")
 assert(said(string.format(L.GIFT_WANTED, "Mario", link(1002, "Thing 2"))), "Mario wants what I give")
-STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ ids = "1006" }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ id = ns.NameKey("Luis"), ids = "1006"}), "GUILD", "Luis-Testrealm")
 assert(W.Add(link(1006)) and said(string.format(L.GIFT_FOR_YOU, "Luis", link(1006, "Thing 6"))), "a new wish finds a giveaway")
 assert(#GF.GivenBy(1011) == 1 and GF.GivenBy(1011)[1] == "Ana", "who gives it")
 

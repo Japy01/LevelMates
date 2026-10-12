@@ -13,8 +13,8 @@ local LIFE = 8 * 86400
 local function me() return ns.Me() end
 function M.Now() return math.floor(time() / 60) end   -- minutes since 1970
 local function newId() return string.format("%04x%04x", math.random(0, 65535), math.random(0, 65535)):sub(1, 8) end
--- A joiner's part of a join id: letters and digits of the name (names can hold spaces; ids cannot).
-local function key(name) return (tostring(name):gsub("[^%w]", "")):sub(1, 12) end
+-- A joiner's part of a join id: a key of the whole name (names can hold spaces and accents; ids cannot).
+local function key(name) return ns.NameKey(name) end
 local function joinId(id, name) return id .. "." .. key(name) end
 local function changed() ns.Fire("LM_MEETUPS_CHANGED") end
 
@@ -27,6 +27,7 @@ S.Define("qd", { class = "board", life = LIFE, lane = "urgent", max = M.MAX + 10
 		changed()
 	end })
 S.Define("qj", { class = "board", life = LIFE, lane = "urgent",
+	idOwner = function(id, owner) return id:match("%.([^%.]+)$") == key(owner) end,   -- only my own join
 	fields = { r = C.V.oneOf("T", "H", "D") }, required = { "r" },
 	onChange = function(rec, old, how)
 		local m = S.Get("qd", (rec.id:match("^([^%.]+)%.")))

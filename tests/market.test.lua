@@ -28,15 +28,15 @@ assert(last("sl").p == nil, "withdrawn")
 STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
 W.Add(STUB.items[2318])
 STUB.printed = {}
-STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ ids = "765" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("sl", STUB.Rec{ p = "2318:25000" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ id = ns.NameKey("Mario"), ids = "765"}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("sl", STUB.Rec{ id = ns.NameKey("Mario"), p = "2318:25000"}), "GUILD", "Mario-Testrealm")
 local his = {}
 for _, g in ipairs(GF.List()) do if g.name == "Mario" then his[g.id] = g end end
 assert(his[765] and not his[765].price and his[2318] and his[2318].price == 25000, "free and priced")
 local told
 for _, line in ipairs(STUB.printed) do if line:find("Mario", 1, true) and line:find("[Light Leather]", 1, true) and line:find(GF.Money(25000), 1, true) then told = true end end
 assert(told, "a wish on sale is told, with its price")
-STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ id = ns.NameKey("Mario") }), "GUILD", "Mario-Testrealm")
 his = {}
 for _, g in ipairs(GF.List()) do if g.name == "Mario" then his[g.id] = g end end
 assert(not his[765] and his[2318], "his free list emptied; the priced one stays")

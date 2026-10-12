@@ -7,7 +7,7 @@ STUB.items[765] = "|cffffffff|Hitem:765::::::::20:::::::|h[Silverleaf]|h|r"
 STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR", g = 1, s = 1, x = 40, y = 50 }), "GUILD", "Mario-Testrealm")
 STUB.Receive("LVLM2", C.Encode("pf", { p = "171:120,182:95" }), "GUILD", "Mario-Testrealm")
 STUB.Receive("LVLM2", C.Encode("wl", { ids = "2589" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ ids = "765" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ id = ns.NameKey("Mario"), ids = "765"}), "GUILD", "Mario-Testrealm")
 STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
 ns.Feed.AddSample("Mario", "lvl", 24, nil, 5)
 

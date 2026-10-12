@@ -18,7 +18,7 @@ STUB.Receive("LVLM2", C.Encode("help", { t = "Ogro", z = 1412, x = 40, y = 50, i
 STUB.Receive("LVLM2", C.Encode("lfg", { d = 5, r = "H", id = "lfg00001", m = 20 }), "GUILD", "Mario-Testrealm")
 ns.Meetups.AddSample("Mario", 6, 30, {})
 ns.Wishlist.Add(STUB.items[2589])
-STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ ids = "2589" }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", STUB.Rec{ id = ns.NameKey("Luis"), ids = "2589"}), "GUILD", "Luis-Testrealm")
 ns.char.trainer = { seen = true, spells = { { name = "Blink", level = 20 } } }
 ns.Trainer.LevelUp(20)
 rows = HM.Rows()
