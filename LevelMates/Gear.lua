@@ -54,7 +54,7 @@ function GE.Read()
 	local _, _, race = UnitRace("player")
 	local old = ns.char.gear
 	ns.char.gear = { slots = slots, avg = avg, filled = filled, r = race, x = UnitSex("player"), t = time() }
-	if not old or GE.Encode(old.slots) ~= GE.Encode(slots) then ns.Fire("LM_GEAR_CHANGED") end
+	if not old or GE.Encode(old.slots) ~= GE.Encode(slots) then ns.Fire("LM_MY_GEAR_CHANGED"); ns.Fire("LM_GEAR_CHANGED") end
 end
 
 -- Sharing: through the personal-state helper (pending while it cannot go; newcomers at most every 10 minutes).
@@ -67,7 +67,7 @@ local share = ns.Sync.Personal("eq", function()
 	return { g = GE.Encode(g.slots), a = g.avg, r = g.r and g.r >= 1 and g.r <= 100 and g.r or nil, x = (g.x == 2 or g.x == 3) and g.x or nil }
 end, { save = "gearPending", helloGap = 600, worth = function() return GE.Mine() ~= nil end,
 	enabled = function() return ns.db.settings.shareGear end })
-ns.On("LM_GEAR_CHANGED", function() share.Mark() end)
+ns.On("LM_MY_GEAR_CHANGED", function() share.Mark() end)   -- mine only: theirs arriving must not echo mine
 
 -- Theirs.
 local function theirs()

@@ -307,7 +307,7 @@ function S.Personal(kind, build, opts)
 	P.IsPending = isPending
 	ns.On("LM_HB_SENT", function() if isPending() then go() end end)
 	ns.On("LM_COMM_DROPPED", function(k) if k == kind then setPending(true) end end)
-	ns.On("LM_ANNOUNCED", function() if isPending() or worth() then go() end end)
+	ns.On("LM_ANNOUNCED", function() if (isPending() or worth()) and GetTime() - lastSent >= 1 then go() end end)   -- not twice in the same breath
 	ns.On("LM_HELLO_ANSWERED", function()   -- the roster already jitters and coalesces hellos
 		if not worth() then return end
 		if opts.helloGap and GetTime() - lastSent < opts.helloGap then return end   -- big states: not for every login
