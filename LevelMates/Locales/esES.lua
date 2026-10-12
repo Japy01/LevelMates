@@ -261,3 +261,8 @@ L.REPORT_QUEUE = "Cola"; L.REPORT_HELD = "retenidos"; L.REPORT_DROPPED = "descar
 L.STATUS_QUEUE = "cola: %d esperando, %d retenidos, %d descartados"; L.STATUS_MEMORY = "memoria: %.0f KB (%.0f KB tras recoger)"
 L.RUN_ROLE_FULL = "Ese rol ya está completo en esta partida."
 L.INVITE_ALL = "Invitados %d: %s. No conectados: %s."
+L.DC_NEW = "%s · %s · líder %s"; L.DC_JOIN = "%s se apunta como %s · %s · %s"; L.DC_LEAVE = "%s se sale · %s · %s"
+L.DC_ADD = "%s añade a %s como %s · %s · %s"; L.DC_REMOVE = "%s quita a %s · %s · %s"; L.DC_CANCEL = "Cancelada: %s · %s (líder %s)"
+L.DC_FREE = "faltan: %s"; L.DC_FULL = "completa"
+L.DISCORD_NO_GUILD = "Tu hermandad no ha enlazado un canal de Discord (líder: Hermandad > Ajustes > Control de hermandad > Discord, con \"chat separado\")."
+L.DISCORD_NO_USER = "Vincula primero tu cuenta de Discord (Opciones > Social): el juego solo deja escribir en el canal de Discord de la hermandad a quien la tiene vinculada."

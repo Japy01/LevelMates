@@ -260,3 +260,8 @@ L.REPORT_QUEUE = "Queue"; L.REPORT_HELD = "held"; L.REPORT_DROPPED = "dropped"; 
 L.STATUS_QUEUE = "queue: %d waiting, %d held, %d dropped"; L.STATUS_MEMORY = "memory: %.0f KB (%.0f KB after a collect)"
 L.RUN_ROLE_FULL = "That role is full in this run."
 L.INVITE_ALL = "Invited %d: %s. Not online: %s."
+L.DC_NEW = "%s · %s · leader %s"; L.DC_JOIN = "%s joins as %s · %s · %s"; L.DC_LEAVE = "%s leaves · %s · %s"
+L.DC_ADD = "%s adds %s as %s · %s · %s"; L.DC_REMOVE = "%s takes %s out · %s · %s"; L.DC_CANCEL = "Cancelled: %s · %s (leader %s)"
+L.DC_FREE = "missing: %s"; L.DC_FULL = "full"
+L.DISCORD_NO_GUILD = "Your guild has not linked a Discord channel (guild master: Guild > Settings > Guild Control > Discord, with \"separate chat\")."
+L.DISCORD_NO_USER = "Link your Discord account first (Options > Social): the game lets only linked players write in the guild's Discord channel."

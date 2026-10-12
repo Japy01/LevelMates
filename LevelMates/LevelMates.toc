@@ -38,6 +38,7 @@ Rares.lua
 LFG.lua
 ChatAds.lua
 Meetups.lua
+Discord.lua
 LfgDialog.lua
 MeetDialog.lua
 Partner.lua

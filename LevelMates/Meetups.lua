@@ -162,6 +162,7 @@ function M.AddMember(id, name, role)
 	kicked(id)[name] = nil
 	hand(id)[name] = role
 	place(id)
+	ns.Discord.Run("add", view(rec), name, role)
 	return true
 end
 function M.RemoveMember(id, name)
@@ -170,6 +171,7 @@ function M.RemoveMember(id, name)
 	hand(id)[name] = nil
 	kicked(id)[name] = true
 	place(id)
+	ns.Discord.Run("remove", view(rec), name)
 	return true
 end
 
@@ -194,14 +196,18 @@ function M.Create(d, at, note, role, discord)
 	local id = newId()
 	if not S.Put("qd", id, { d = d, at = at, n = clean ~= "" and clean or nil, r = role, dc = discord and 1 or 0, _exp = (at + M.KEEP) * 60 }) then return false end
 	place(id)
+	if discord then ns.Discord.Run("new", view(S.Get("qd", id))) end
 	return true
 end
 
 function M.Cancel(id)
 	local rec = S.Get("qd", id)
 	if not rec or rec.o ~= me() then return false end
+	local m = view(rec)
 	if S.Get("qm", id) then S.Remove("qm", id) end
-	return S.Remove("qd", id)
+	if not S.Remove("qd", id) then return false end
+	ns.Discord.Run("cancel", m)
+	return true
 end
 
 function M.Join(id, role)
@@ -210,12 +216,17 @@ function M.Join(id, role)
 	if not C.IsReady() then ns.Say(L.MEET_NOT_NOW); return false end
 	local m = view(rec)
 	if not M.Free(m, role) and has(M.Slots(m), me()) ~= role then ns.Say(L.RUN_ROLE_FULL); return false end
-	return S.Put("qj", joinId(id, me()), { r = role, _exp = rec.e })
+	if not S.Put("qj", joinId(id, me()), { r = role, _exp = rec.e }) then return false end
+	ns.Discord.Run("join", view(rec), me(), role)
+	return true
 end
 
 function M.Leave(id)
 	if not S.Get("qj", joinId(id, me())) then return false end
-	return S.Remove("qj", joinId(id, me()))
+	if not S.Remove("qj", joinId(id, me())) then return false end
+	local rec = S.Get("qd", id)
+	if rec then ns.Discord.Run("leave", view(rec), me()) end
+	return true
 end
 
 -- The reminder: 15 minutes before, once, for mine and the ones I joined.
