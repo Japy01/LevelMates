@@ -190,3 +190,35 @@ function RC.Known()
 	table.sort(out)
 	return out
 end
+
+------------------------------------------------------------------ search and ask
+-- Items someone crafts, from an item link, an item number or a part of a known item's name (names the client has
+-- not loaded yet are skipped this time and found once it has them). At most ten.
+function RC.Find(text)
+	text = tostring(text or "")
+	local id = tonumber(text:match("item:(%d+)") or "") or tonumber(text)
+	if id then
+		if not index then build_index() end
+		return index[id] and { id } or {}
+	end
+	local q = strtrim(text):lower()
+	if #q < 3 then return {} end
+	local out = {}
+	for _, item in ipairs(RC.Known()) do
+		local name = GetItemInfo(item)
+		if name and name:lower():find(q, 1, true) then out[#out + 1] = item; if #out >= 10 then break end end
+	end
+	return out
+end
+function RC.Link(item) local _, link = GetItemInfo(item); return link or ("item:" .. item) end
+
+-- policy: click paths only (RC.Ask is called from the Crafts tab's menu): "Could you make me [item]?", once a minute
+-- per person and item.
+local asked = {}
+function RC.Ask(name, item)
+	local key = name .. ":" .. item
+	if GetTime() - (asked[key] or -math.huge) < 60 then ns.Say(L.RC_ASKED_ALREADY, name); return false end
+	asked[key] = GetTime()
+	SendChatMessage(string.format(L.RC_ASK, RC.Link(item)), "WHISPER", nil, name)
+	return true
+end

@@ -197,7 +197,9 @@ local function Build()
 				return
 			end
 			if B.tab == "crafts" then
-				if mouse == "RightButton" and self.craftName and not self.craftMine then B.OpenCraftMenu(self.craftName) end
+				if self.recipesHeader then B.recipesOf = nil; B.Refresh()   -- back to the professions
+				elseif self.crafter then B.OpenCraftMenu(self.crafter.name, self.entryItem)
+				elseif mouse == "RightButton" and self.craftName and not self.craftMine then B.OpenCraftMenu(self.craftName) end
 				return
 			end
 			if B.tab == "wishes" then
@@ -860,10 +862,34 @@ local function FillCrafts(list)
 	for i = 1, ROWS do
 		local r, c = B.rows[i], list[i]
 		r.button.mate, r.button.adId, r.button.entry, r.button.goalId, r.button.personalMine = nil, nil, nil, nil, nil
+		r.button.craftItem, r.button.crafter, r.button.recipeItem, r.button.recipesHeader = c and c.craftItem, c and c.crafter, c and c.recipeItem, c and c.recipesHeader
+		r.button.entryItem = c and c.item
 		r.button.craftHeader = c and c.header or nil
 		r.button.craftName, r.button.craftMine = c and not c.header and c.name or nil, c and c.mine or nil
 		r.barBg:Hide(); r.barFill:Hide()
-		if c and c.header then   -- the profession: icon, name and how many have it
+		if c and (c.craftItem or c.recipesHeader) then   -- "who crafts [item]", or someone's recipes of a profession
+			r.icon:Hide()
+			r.name:SetText(c.craftItem and string.format(L.RC_WHO, ns.Recipes.Link(c.craftItem)) or c.recipesHeader); r.name:SetTextColor(1, 0.82, 0)
+			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText(c.recipesHeader and L.RC_BACK or "")
+			r.button:Show()
+			SectionHeader(r)
+		elseif c and c.crafter then   -- someone who crafts it: profession and rank, online or when last seen
+			local w = c.crafter
+			r.icon:Hide()
+			r.name:SetText("   " .. w.name); r.name:SetTextColor(1, 1, 1)
+			r.level:SetText(""); r.zone:SetText(ns.Professions.Name(w.line) .. " " .. w.r .. "/" .. w.m); r.zone:SetTextColor(0.8, 0.8, 0.8)
+			r.group:SetText("")
+			if w.online then r.xph:SetText(L.ONLINE); r.xph:SetTextColor(unpack(B.GROUP_COLORS.open))
+			else r.xph:SetText(string.format(L.FEED_AGO, ns.Journal.Duration(math.max(0, GetServerTime() - (w.t or 0))))); r.xph:SetTextColor(0.7, 0.7, 0.7) end
+			r.button:Show()
+			RowBg(r, i, false)
+		elseif c and c.recipeItem then   -- one of their recipes
+			r.icon:Hide()
+			r.name:SetText("   " .. ns.Recipes.Link(c.recipeItem)); r.name:SetTextColor(1, 1, 1)
+			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
+			r.button:Show()
+			RowBg(r, i, false)
+		elseif c and c.header then   -- the profession: icon, name and how many have it
 			r.icon:SetTexture(ns.Professions.Icon(c.header)); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:Show()
 			r.name:SetText(ns.Professions.Name(c.header) .. " (" .. c.count .. ")"); r.name:SetTextColor(1, 0.82, 0)
 			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
@@ -890,15 +916,40 @@ local function FillCrafts(list)
 	end
 end
 
-function B.OpenCraftMenu(name)
+-- item: when the row is "who crafts [item]", the menu offers to ask for it.
+function B.OpenCraftMenu(name, item)
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
 		root:CreateTitle(name)
-		root:CreateButton(L.MENU_WHISPER, function() B.Whisper(name) end)
-		if R.mates[name] then root:CreateButton(L.MENU_INVITE, function() B.Invite(name) end) end
+		if item and name ~= ns.Me() then root:CreateButton(string.format(L.RC_ASK_MENU, ns.Recipes.Link(item)), function() ns.Recipes.Ask(name, item) end) end
+		root:CreateButton(L.RC_THEIR_RECIPES, function() B.recipesOf = name; B.craftPage = 1; B.Refresh() end)
+		if name ~= ns.Me() then
+			root:CreateButton(L.MENU_WHISPER, function() B.Whisper(name) end)
+			if R.mates[name] then root:CreateButton(L.MENU_INVITE, function() B.Invite(name) end) end
+		end
 	end)
 end
 
-local function CraftsVisible() return ns.Professions.Groups(B.search) end
+-- The Crafts tab: someone's recipes (after "Their recipes"); otherwise who crafts what the search names, then the
+-- professions as always.
+local function CraftsVisible()
+	local out = {}
+	if B.recipesOf then
+		for line, e in pairs(ns.Recipes.Of(B.recipesOf)) do
+			out[#out + 1] = { recipesHeader = string.format(L.RC_THEIRS, B.recipesOf, ns.Professions.Name(line)), line = line }
+			for _, item in ipairs(e.items or {}) do out[#out + 1] = { recipeItem = item } end
+		end
+		if #out == 0 then out[1] = { recipesHeader = string.format(L.RC_NONE, B.recipesOf) } end
+		return out
+	end
+	if B.search and B.search ~= "" then
+		for _, item in ipairs(ns.Recipes.Find(B.search)) do
+			out[#out + 1] = { craftItem = item }
+			for _, w in ipairs(ns.Recipes.WhoCrafts(item)) do out[#out + 1] = { crafter = w, item = item } end
+		end
+	end
+	for _, row in ipairs(ns.Professions.Groups(B.search)) do out[#out + 1] = row end
+	return out
+end
 
 local function FillWishes(list)
 	for i = 1, ROWS do
@@ -1686,6 +1737,7 @@ end
 
 function B.SetTab(key)
 	ResetBars()
+	B.recipesOf = nil   -- someone's recipes are a look inside the Crafts tab, not a place to come back to
 	key = KnownTab(Resolve(key))
 	if B.MainOf(key) == "guild" and (key ~= "recruit" or R.IAmOfficer()) then ns.char.guildSub = key end
 	ns.char.boardTab, B.tab, B.search = key, key, ""
