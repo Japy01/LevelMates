@@ -44,6 +44,9 @@ function F.Text(e)
 	elseif e.k == "pgl" then return string.format(L.FEED_PGL, e.a)
 	elseif e.k == "gol" then return string.format(L.FEED_GOL, e.b or "")
 	elseif e.k == "dth" then return string.format(L.FEED_DTH, e.a, e.b or "?")
+	elseif e.k == "join" then return L.FEED_JOIN
+	elseif e.k == "leave" then return L.FEED_LEAVE
+	elseif e.k == "r60" then return string.format(L.FEED_R60, e.a)
 	elseif e.k == "ach" then local a = ns.Achievements and ns.Achievements.LIST[e.a]; return string.format(L.FEED_ACH, a and ns.Achievements.Link(a.id) or "?") end
 	return ""
 end

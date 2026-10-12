@@ -41,6 +41,7 @@ Meetups.lua
 Discord.lua
 Questhub.lua
 GuildNotes.lua
+GuildHistory.lua
 LfgDialog.lua
 MeetDialog.lua
 Partner.lua

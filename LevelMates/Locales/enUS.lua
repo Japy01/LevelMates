@@ -286,3 +286,4 @@ L.RC_WHO = "Who crafts %s"; L.RC_ASK_MENU = "Ask for %s"; L.RC_ASK = "Hi! Could 
 L.RC_THEIR_RECIPES = "Their recipes"; L.RC_THEIRS = "%s · %s (click to go back)"; L.RC_NONE = "%s has not shared recipes yet (click to go back)"; L.RC_BACK = "Back"
 L.RC_TOOLTIP = "Crafted by: %s"; L.TRAIN_JOURNEYMAN = "train: Journeyman"; L.TRAIN_EXPERT = "train: Expert"; L.TRAIN_ARTISAN = "train: Artisan"
 L.MOTD_NEW = "%s: message of the day: %s"; L.NOTE_NOT_ALLOWED = "You cannot write that."
+L.FEED_JOIN = "joined the guild"; L.FEED_LEAVE = "is no longer in the guild"; L.FEED_R60 = "reached level %d"; L.RACE_FIRST = "%s is the first of the guild to reach level %d!"; L.RACE_REACHED = "%s reached level %d."

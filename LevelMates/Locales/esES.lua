@@ -287,3 +287,4 @@ L.RC_WHO = "Quién fabrica %s"; L.RC_ASK_MENU = "Pedir %s"; L.RC_ASK = "¡Hola! 
 L.RC_THEIR_RECIPES = "Sus recetas"; L.RC_THEIRS = "%s · %s (pulsa para volver)"; L.RC_NONE = "%s aún no ha compartido recetas (pulsa para volver)"; L.RC_BACK = "Volver"
 L.RC_TOOLTIP = "Lo fabrica: %s"; L.TRAIN_JOURNEYMAN = "entrenar: Oficial"; L.TRAIN_EXPERT = "entrenar: Experto"; L.TRAIN_ARTISAN = "entrenar: Artesano"
 L.MOTD_NEW = "%s: mensaje del día: %s"; L.NOTE_NOT_ALLOWED = "No puedes escribir eso."
+L.FEED_JOIN = "entró en la hermandad"; L.FEED_LEAVE = "ya no está en la hermandad"; L.FEED_R60 = "llegó al nivel %d"; L.RACE_FIRST = "¡%s es el primero de la hermandad en llegar al nivel %d!"; L.RACE_REACHED = "%s llegó al nivel %d."
