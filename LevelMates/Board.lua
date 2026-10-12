@@ -188,7 +188,8 @@ local function Build()
 			end
 			if B.tab == "feed" then return end
 			if B.tab == "lfg" then   -- the run calendar, or a suggestion of Together
-				if self.meet then B.OpenMeetMenu(self.meet) elseif self.togetherEntry then B.OpenTogetherMenu(self.togetherEntry) end
+				if self.meet then B.OpenMeetMenu(self.meet) elseif self.togetherEntry then B.OpenTogetherMenu(self.togetherEntry)
+				elseif self.questEntry then B.OpenQuestMenu(self.questEntry) end
 				return
 			end
 			if B.tab == "class" then
@@ -215,7 +216,16 @@ local function Build()
 		end)
 		btn:SetScript("OnEnter", function(self)
 			if not GameTooltip then return end
-			if B.tab == "lfg" and self.adId then   -- Dungeons tab: the whole note
+			if B.tab == "lfg" and self.questEntry then   -- a quest post: their objectives, mine, who else looks
+				local p = self.questEntry
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:AddLine(p.t, 1, 0.82, 0)
+				if p.ob then GameTooltip:AddLine(string.format(L.QH_THEIRS, p.by, p.ob), 1, 1, 1, true) end
+				local mine = ns.QuestProgress and ns.QuestProgress.Objectives and ns.QuestProgress.Objectives(p.q)
+				if mine then GameTooltip:AddLine(string.format(L.QH_MINE, mine), 0.6, 0.8, 1, true) end
+				if #p.joined > 0 then GameTooltip:AddLine(string.format(L.QH_ALSO, table.concat(p.joined, ", ")), 0.8, 0.8, 0.8, true) end
+				GameTooltip:Show()
+			elseif B.tab == "lfg" and self.adId then   -- Dungeons tab: the whole note
 				local a = ns.LFG.ads[self.adId]
 				if a and a.n then GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(a.n, 1, 1, 1, true); GameTooltip:Show() end
 			elseif B.tab == "goals" and self.goalId then   -- goals: who is missing a level goal
@@ -397,13 +407,38 @@ local function Build()
 	-- Dungeons tab: "Calendar" (bottom right) swaps the cards for the next 7 days of meetups.
 	local calendar = ns.Skin.Button(f)
 	calendar:SetSize(120, 20); calendar:SetPoint("BOTTOMRIGHT", -12, 3); calendar:SetText(L.BTN_CALENDAR)
-	calendar:SetScript("OnClick", function() B.lfgCalendar = not B.lfgCalendar; B.lfgTogether = false; B.Refresh() end)
+	calendar:SetScript("OnClick", function() B.lfgCalendar = not B.lfgCalendar; B.lfgTogether, B.lfgQuests = false, false; B.Refresh() end)
 	B.lfgCalendarButton = calendar
 	-- "Together": groups the addon suggests from who is online (left of Calendar)
 	local together = ns.Skin.Button(f)
 	together:SetSize(120, 20); together:SetPoint("RIGHT", calendar, "LEFT", -6, 0); together:SetText(L.BTN_TOGETHER)
-	together:SetScript("OnClick", function() B.lfgTogether = not B.lfgTogether; B.lfgCalendar = false; B.Refresh() end)
+	together:SetScript("OnClick", function() B.lfgTogether = not B.lfgTogether; B.lfgCalendar, B.lfgQuests = false, false; B.Refresh() end)
 	B.togetherButton = together
+	-- "Quests": the guild quest board (left of Together); its filter and "Search for a quest" take the bottom left
+	local quests = ns.Skin.Button(f)
+	quests:SetSize(120, 20); quests:SetPoint("RIGHT", together, "LEFT", -6, 0); quests:SetText(L.BTN_QUESTS)
+	quests:SetScript("OnClick", function() B.lfgQuests = not B.lfgQuests; B.lfgCalendar, B.lfgTogether = false, false; B.Refresh() end)
+	B.questsButton = quests
+	B.questFilter = "all"
+	local FILTERS = { "all", "zone", "level", "group" }
+	local filterB = ns.Skin.Button(f)
+	filterB:SetSize(140, 20); filterB:SetPoint("BOTTOMLEFT", 12, 3)
+	filterB:SetScript("OnClick", function()
+		for i, k in ipairs(FILTERS) do if k == B.questFilter then B.questFilter = FILTERS[i % #FILTERS + 1]; break end end
+		B.Refresh()
+	end)
+	B.questFilterButton = filterB
+	local postB = ns.Skin.Button(f)
+	postB:SetSize(170, 20); postB:SetPoint("LEFT", filterB, "RIGHT", 6, 0); postB:SetText(L.QH_POST_BUTTON)
+	postB:SetScript("OnClick", function(self)
+		MenuUtil.CreateContextMenu(self, function(_, root)
+			root:CreateTitle(L.QH_POST_BUTTON)
+			for _, q in ipairs(ns.Questhub.MyQuests()) do
+				root:CreateButton(q.title, function() ns.Questhub.Toggle(q.id); B.Refresh() end)
+			end
+		end)
+	end)
+	B.questPostButton = postB
 	-- "My role: Tank Healer Damage" (bottom left of the Groups tab)
 	local roleLine = CreateFrame("Frame", nil, f)
 	roleLine:SetSize(260, 20); roleLine:SetPoint("BOTTOMLEFT", 12, 3)
@@ -1174,6 +1209,11 @@ local function TogetherVisible()
 		out[#out + 1] = { header = true, s = s }
 		for _, row in ipairs(s.rows) do out[#out + 1] = { s = s, row = row } end
 	end
+	local gq = ns.Together.GroupQuests()
+	if #gq > 0 then
+		out[#out + 1] = { header = true, questsHeader = true }
+		for _, q in ipairs(gq) do out[#out + 1] = { quest = q } end
+	end
 	return out
 end
 local function FillTogether(list)
@@ -1181,7 +1221,19 @@ local function FillTogether(list)
 		local r, c = B.rows[i], list[i]
 		r.button.mate, r.button.adId, r.button.meet = nil, nil, nil
 		r.button.togetherEntry = c
-		if c and c.header then
+		if c and c.questsHeader then
+			r.icon:Hide()
+			r.name:SetText(L.TOGETHER_QUESTS); r.name:SetTextColor(1, 0.82, 0)
+			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
+			r.button:Show()
+			SectionHeader(r)
+		elseif c and c.quest then
+			r.icon:Hide()
+			r.name:SetText("   " .. c.quest.title); r.name:SetTextColor(1, 1, 1)
+			r.level:SetText(""); r.zone:SetText(table.concat(c.quest.with, ", ")); r.zone:SetTextColor(0.6, 0.8, 1); r.group:SetText(""); r.xph:SetText(L.TOGETHER_CLICK)
+			r.button:Show()
+			RowBg(r, i, false)
+		elseif c and c.header then
 			local d = ns.Dungeons.Get(c.s.d)
 			r.icon:Hide()
 			r.name:SetText(ns.Dungeons.Name(c.s.d)); r.name:SetTextColor(1, 0.82, 0)
@@ -1206,6 +1258,15 @@ function B.SoonSlot(t)
 end
 -- A suggestion's click: make it a run (the dialog, in 15 minutes) or invite everyone in it.
 function B.OpenTogetherMenu(e)
+	if e.questsHeader then return end
+	if e.quest then   -- a group quest in common: post it, or invite who has it
+		MenuUtil.CreateContextMenu(B.frame, function(_, root)
+			root:CreateTitle(e.quest.title)
+			root:CreateButton(L.QH_POST, function() ns.Questhub.Post(e.quest.q) end)
+			root:CreateButton(L.DP_INVITE_ALL, function() B.InviteAll(e.quest.with) end)
+		end)
+		return
+	end
 	local s = e.s
 	local names = {}
 	for _, row in ipairs(s.rows) do names[#names + 1] = row.name end
@@ -1213,6 +1274,45 @@ function B.OpenTogetherMenu(e)
 		root:CreateTitle(ns.Dungeons.Name(s.d))
 		root:CreateButton(L.TOGETHER_RUN, function() ns.MeetDialog.OpenAt(s.d, B.SoonSlot(date("*t"))) end)
 		root:CreateButton(L.DP_INVITE_ALL, function() B.InviteAll(names) end)
+	end)
+end
+
+-- Groups tab, Quests view: the guild's quest posts.
+local function QuestsVisible() return ns.Questhub.List(B.questFilter) end
+local function FillQuests(list)
+	local myLevel = UnitLevel("player")
+	for i = 1, ROWS do
+		local r, p = B.rows[i], list[i]
+		r.button.mate, r.button.adId, r.button.meet, r.button.togetherEntry = nil, nil, nil, nil
+		r.button.questEntry = p
+		if p then
+			r.icon:Hide()
+			r.name:SetText(p.t); if p.g == 1 then r.name:SetTextColor(1, 0.82, 0.4) else r.name:SetTextColor(1, 1, 1) end   -- group quests in gold
+			r.level:SetText(p.l and p.l > 0 and tostring(p.l) or "")
+			if p.l and math.abs(p.l - myLevel) <= ns.Questhub.RANGE then r.level:SetTextColor(0.4, 1, 0.4) else r.level:SetTextColor(1, 1, 1) end
+			r.zone:SetText(p.z or ""); r.zone:SetTextColor(0.8, 0.8, 0.8)
+			r.group:SetText(p.by .. (#p.joined > 0 and (" +" .. #p.joined) or "")); r.group:SetTextColor(1, 1, 1)
+			r.xph:SetText(ns.Journal.Duration(math.max(0, GetServerTime() - p.at))); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show()
+			RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+-- A post's click: me too / not me, whisper, invite; mine: invite all, withdraw.
+function B.OpenQuestMenu(p)
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		root:CreateTitle(p.t)
+		if p.by == ns.Me() then
+			root:CreateButton(L.DP_INVITE_ALL, function() B.InviteAll(p.joined) end)
+			root:CreateButton(L.QH_WITHDRAW, function() ns.Questhub.Withdraw(p.q); B.Refresh() end)
+		else
+			if ns.Questhub.IJoined(p.id) then root:CreateButton(L.QH_NOT_ME, function() ns.Questhub.NotMe(p.id); B.Refresh() end)
+			else root:CreateButton(L.QH_ME_TOO, function() ns.Questhub.MeToo(p.id); B.Refresh() end) end
+			root:CreateButton(L.DP_WHISPER, function() B.Whisper(p.by) end)
+			root:CreateButton(L.DP_INVITE, function() B.Invite(p.by) end)
+		end
 	end)
 end
 
@@ -1398,7 +1498,7 @@ end
 
 -- Pages of ROWS for the long tabs (journal, goals, wishes, a long Mates list…); the pager sits in the help-rows area.
 local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", home = "homePage", feed = "feedPage", mates = "matePage" }
-local function PageKey() if B.tab == "lfg" then return B.lfgCalendar and "calendarPage" or B.lfgTogether and "togetherPage" or nil end; return PAGE_KEY[B.tab] end
+local function PageKey() if B.tab == "lfg" then return B.lfgCalendar and "calendarPage" or B.lfgTogether and "togetherPage" or B.lfgQuests and "questsPage" or nil end; return PAGE_KEY[B.tab] end
 local function Page(all)
 	local key = PageKey()
 	local pages = math.max(1, math.ceil(#all / ROWS))
@@ -1455,7 +1555,11 @@ local function RefreshTabs()
 	B.lfgCalendarButton:SetText(B.lfgCalendar and L.BTN_CARDS or L.BTN_CALENDAR)
 	B.togetherButton:SetShown(lfg)
 	B.togetherButton:SetText(B.lfgTogether and L.BTN_CARDS or L.BTN_TOGETHER)
-	B.roleLine:SetShown(lfg)
+	B.questsButton:SetShown(lfg)
+	B.questsButton:SetText(B.lfgQuests and L.BTN_CARDS or L.BTN_QUESTS)
+	B.roleLine:SetShown(lfg and not B.lfgQuests)
+	B.questFilterButton:SetShown(lfg and B.lfgQuests); B.questPostButton:SetShown(lfg and B.lfgQuests)
+	B.questFilterButton:SetText(L["QH_FILTER_" .. B.questFilter:upper()])
 	for role, b in pairs(B.roleButtons) do b:SetEnabled(role ~= ns.Roles.Mine()) end   -- mine is pressed in
 	B.lfgButton:SetText(ns.LFG.mine and L.BTN_LFG_CANCEL or L.BTN_LFG)
 	B.journalClear:SetShown(journal and B.journalView ~= "ach"); B.journalFilterButton:SetShown(journal and B.journalView ~= "ach")
@@ -1509,8 +1613,8 @@ function B.Refresh()
 		for _, p in ipairs(ns.Personal.List()) do all[#all + 1] = p end
 		list, pages = Page(all)
 	else
-		if lfg and not B.lfgCalendar and not B.lfgTogether then list = GridVisible()
-		else list, pages = Page(lfg and (B.lfgTogether and TogetherVisible() or CalendarVisible()) or Visible()) end
+		if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then list = GridVisible()
+		else list, pages = Page(lfg and (B.lfgTogether and TogetherVisible() or B.lfgQuests and QuestsVisible() or CalendarVisible()) or Visible()) end
 	end
 	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or home and B.HCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
 	SetHeaders()
@@ -1519,6 +1623,7 @@ function B.Refresh()
 	B.subtitle:SetText(journal and ns.Journal.PaceText() or feed and B.feedDeaths and string.format(L.FEED_CEMETERY_SUB, B.feedDeathCount or 0) or L["SUB_" .. hk])
 	if lfg and B.lfgCalendar then B.heading:SetText(L.HEAD_CALENDAR); B.subtitle:SetText(L.SUB_CALENDAR) end
 	if lfg and B.lfgTogether then B.heading:SetText(L.HEAD_TOGETHER); B.subtitle:SetText(L.SUB_TOGETHER) end
+	if lfg and B.lfgQuests then B.heading:SetText(L.HEAD_QUESTS); B.subtitle:SetText(L.SUB_QUESTS) end
 	if recruit and B.recruitView == "inactive" then B.heading:SetText(L.HEAD_INACTIVE); B.subtitle:SetText(L.SUB_INACTIVE) end
 	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
 	B.subtitle:SetShown(B.MainOf(B.tab) ~= "guild")   -- the sub-section buttons sit there
@@ -1526,7 +1631,7 @@ function B.Refresh()
 	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
-	if lfg and not B.lfgCalendar and not B.lfgTogether then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
+	if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
 	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
 	local rested = ns.Rested and ns.Rested.Mine()
@@ -1539,8 +1644,8 @@ function B.Refresh()
 		end
 	end
 	B.restedText:SetText(top)
-	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) elseif B.lfgTogether then FillTogether(list) else FillGrid(list) end else FillMates(list) end
-	if not lfg or B.lfgCalendar or B.lfgTogether then for _, c in ipairs(B.cards) do c:Hide() end end
+	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) elseif B.lfgTogether then FillTogether(list) elseif B.lfgQuests then FillQuests(list) else FillGrid(list) end else FillMates(list) end
+	if not lfg or B.lfgCalendar or B.lfgTogether or B.lfgQuests then for _, c in ipairs(B.cards) do c:Hide() end end
 	if not crafts and not home then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
 	-- rows one under another; a section header (plaque) takes more height, and the window grows with it
 	local y, extra = 0, 0
@@ -1560,7 +1665,7 @@ function B.Refresh()
 		elseif crafts then emptyText = #ns.Professions.List() > 0 and L.EMPTY_FILTERED or L.CRAFTS_EMPTY
 		elseif wishes then emptyText = L.WISH_EMPTY
 		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD
-		elseif lfg then emptyText = B.lfgCalendar and L.CAL_EMPTY or B.lfgTogether and L.TOGETHER_EMPTY or L.EMPTY_FILTERED   -- every dungeon has a card: empty only when the search hides them all
+		elseif lfg then emptyText = B.lfgCalendar and L.CAL_EMPTY or B.lfgTogether and L.TOGETHER_EMPTY or B.lfgQuests and L.QH_EMPTY or L.EMPTY_FILTERED   -- every dungeon has a card: empty only when the search hides them all
 		elseif #R.List() > 0 then emptyText = L.EMPTY_FILTERED
 		else emptyText = L.EMPTY end
 	end
@@ -1709,5 +1814,6 @@ ns.On("LM_QUESTIONS_CHANGED", function() ns.Dirty("board") end)
 ns.On("LM_POINTS_CHANGED", function() ns.Dirty("board") end)
 ns.On("LM_ACHIEVEMENTS_CHANGED", function() ns.Dirty("board") end)
 ns.On("LM_ROLES_CHANGED", function() ns.Dirty("board") end)
+ns.On("LM_QUESTHUB_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("clase", function() B.ShowTab("class") end)
 ns.Slash("class", function() B.ShowTab("class") end)

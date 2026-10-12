@@ -47,6 +47,21 @@ local function build(d, all)
 	return { d = d.id, rows = rows, filled = #rows, candidates = #cands }
 end
 
+-- Group quests in common: quests of my log tagged group/elite/dungeon, not complete, that at least one guildmate
+-- online also has (from the quest lists of those who share them). { { q, title, with = {names} } }
+function T.GroupQuests()
+	local out = {}
+	for _, q in ipairs(ns.Questhub.MyQuests()) do
+		if q.group and not (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.id)) then
+			local with = {}
+			for _, name in ipairs(R.List()) do local m = R.mates[name]; if m.quests and m.quests[q.id] then with[#with + 1] = name end end
+			if #with > 0 then out[#out + 1] = { q = q.id, title = q.title, with = with } end
+		end
+	end
+	table.sort(out, function(a, b) if #a.with ~= #b.with then return #a.with > #b.with end; return a.q < b.q end)
+	return out
+end
+
 -- At most five, the fullest first, then the most candidates, then the higher dungeon.
 function T.Suggest()
 	local all, out = people(), {}

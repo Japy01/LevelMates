@@ -274,3 +274,8 @@ L.CARD_ROLE = "Role: %s"; L.OPT_ROLE_T = "My role: tank"; L.OPT_ROLE_H = "My rol
 L.DP_DISCORD_WAITING = "A Discord line is waiting (the game blocked it): send it now."
 L.RUN_TOO_LONG = "The run's line-up is too long to share (very long names): not added."
 L.QH_NOTICE_HAVE = "%s is looking for people for \"%s\" (you have it too)."; L.QH_NOTICE_LEVEL = "%s is looking for a group for \"%s\" (level %d)."; L.QH_POSTED = "Looking for people for \"%s\": the guild sees it for two hours."
+L.BTN_QUESTS = "Quests"; L.HEAD_QUESTS = "Quests"; L.SUB_QUESTS = "Guildmates looking for people for a quest. Alt+click a quest in your log to post yours. Click a row to join in."
+L.QH_POST_BUTTON = "Search for a quest…"; L.QH_POST = "Look for a group"; L.QH_WITHDRAW = "Withdraw"; L.QH_ME_TOO = "Me too"; L.QH_NOT_ME = "Take me off"
+L.QH_THEIRS = "%s: %s"; L.QH_MINE = "You: %s"; L.QH_ALSO = "Also looking: %s"; L.QH_EMPTY = "Nobody is looking for people for a quest right now."
+L.QH_FILTER_ALL = "Show: all"; L.QH_FILTER_ZONE = "Show: my zone"; L.QH_FILTER_LEVEL = "Show: my level ±5"; L.QH_FILTER_GROUP = "Show: group quests"
+L.TOGETHER_QUESTS = "Group quests in common"

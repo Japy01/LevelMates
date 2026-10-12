@@ -275,3 +275,8 @@ L.CARD_ROLE = "Rol: %s"; L.OPT_ROLE_T = "Mi rol: tanque"; L.OPT_ROLE_H = "Mi rol
 L.DP_DISCORD_WAITING = "Hay una línea para Discord esperando (el juego la bloqueó): envíala ahora."
 L.RUN_TOO_LONG = "La lista de la partida es demasiado larga para compartirla (nombres muy largos): no se añade."
 L.QH_NOTICE_HAVE = "%s busca gente para «%s» (tú también la tienes)."; L.QH_NOTICE_LEVEL = "%s busca grupo para «%s» (nivel %d)."; L.QH_POSTED = "Buscando gente para «%s»: la hermandad lo ve durante dos horas."
+L.BTN_QUESTS = "Misiones"; L.HEAD_QUESTS = "Misiones"; L.SUB_QUESTS = "Compañeros que buscan gente para una misión. Alt+clic en una misión de tu registro para publicar la tuya. Pulsa una fila para unirte."
+L.QH_POST_BUTTON = "Buscar para una misión…"; L.QH_POST = "Buscar grupo"; L.QH_WITHDRAW = "Retirar"; L.QH_ME_TOO = "Yo también"; L.QH_NOT_ME = "Quitarme"
+L.QH_THEIRS = "%s: %s"; L.QH_MINE = "Tú: %s"; L.QH_ALSO = "También buscan: %s"; L.QH_EMPTY = "Ahora nadie busca gente para una misión."
+L.QH_FILTER_ALL = "Ver: todas"; L.QH_FILTER_ZONE = "Ver: mi zona"; L.QH_FILTER_LEVEL = "Ver: mi nivel ±5"; L.QH_FILTER_GROUP = "Ver: de grupo"
+L.TOGETHER_QUESTS = "Misiones de grupo en común"
