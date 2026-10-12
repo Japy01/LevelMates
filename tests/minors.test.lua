@@ -51,7 +51,7 @@ assert(warned, "a warning on /run macros")
 assert(ns.Builds and true)
 
 -- wall: the cemetery count ignores the search; deaths are not re-sent once the option is off
-STUB.Receive("LVLM2", C.Encode("fe", { k = "dth", a = 24, b = "Duskwood", t = F.Now() }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", STUB.Rec{ k = "dth", a = 24, b = "Duskwood", t = F.Now() }), "GUILD", "Mario-Testrealm")
 STUB.Fire("PLAYER_DEAD"); STUB.Advance(1)
 B.ShowTab("feed"); B.feedDeaths = true; B.search = "mario"; B.Refresh()
 assert(B.subtitle.text == string.format(L.FEED_CEMETERY_SUB, 2), "the week's deaths, whatever the search: " .. tostring(B.subtitle.text))
@@ -59,7 +59,7 @@ B.feedDeaths, B.search = false, ""
 ns.db.settings.shareDeaths = false
 local before = #STUB.sent
 STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
-for i = before + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); assert(not (k == "fe" and f.k == "dth"), "no deaths re-sent once off") end
+for i = before + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); assert(not (k == "fe" and f.k == "dth" and (f.o == nil or f.o == "Tester")), "none of my deaths re-sent once off") end
 
 -- calendar: a meetup that already started is not offered
 M.AddSample("Mario", 5, -30, {})

@@ -15,7 +15,7 @@ J.Add("dungeon", { name = "Ragefire Chasm", mates = { "Mario" } })
 J.Add("item", { link = link(9001, "Blue Sword"), q = 3 })
 STUB.inInstance = false
 local n = #STUB.sent
-ns.Fire("LM_HB_SENT")
+STUB.Fire("ZONE_CHANGED_NEW_AREA"); STUB.Advance(5)   -- held inside, out on leaving
 local dun, itm = false, false
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "fe" and f.k == "dun" then dun = true elseif k == "fe" and f.k == "itm" then itm = true end end
 assert(dun and itm, "sent after the dungeon")

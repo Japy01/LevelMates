@@ -34,7 +34,7 @@ STUB.Fire("ZONE_CHANGED_NEW_AREA"); STUB.Advance(3)
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); assert(not (k == "pt" and f.t == 3), "an hour old: gone") end
 -- the cap
 STUB.inInstance = true
-for i = 1, 305 do C.Send("fe", { k = "lvl", a = i, t = 1 }, nil, { hold = true }) end
+for i = 1, 305 do C.Send("rr", { n = "Raro" .. i, z = 1412, x = 1, y = 1 }, nil, { hold = true }) end
 assert(C.stats.queued <= 300 and C.stats.dropped >= 5, "capped: " .. C.stats.queued)
 STUB.inInstance = false
 STUB.Fire("ZONE_CHANGED_NEW_AREA"); STUB.Advance(400)

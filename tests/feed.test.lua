@@ -9,8 +9,8 @@ STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
 R.InvalidateGuildRoster()
 assert(ns.db.settings.shareFeed == true and ns.db.settings.feedLoot == true, "defaults on")
 local now = F.Now()
-assert(C.Validate("fe", { k = "lvl", a = 30, t = now }) and C.Validate("fe", { k = "dun", a = 0, b = "Minas · Ana", t = now }), "fe format")
-assert(C.Validate("fe", { k = "gol", a = 1, t = now }) == false and C.Validate("fe", { k = "lvl", a = 30 }) == false, "fe kinds and fields")
+assert(C.Validate("fe", STUB.Rec{ k = "lvl", a = 30, t = now }) and C.Validate("fe", STUB.Rec{ k = "dun", a = 0, b = "Minas · Ana", t = now }), "fe format")
+assert(C.Validate("fe", STUB.Rec{ k = "gol", a = 1, t = now }) == false and C.Validate("fe", STUB.Rec{ k = "lvl", a = 30 }) == false, "fe kinds and fields")
 
 -- what I live goes out
 J.Add("level", { level = 21 })
@@ -35,15 +35,15 @@ assert(last("fe").k == "pgl" and last("fe").a == 25, "personal goal reached")
 
 -- guildmates'
 STUB.Receive("LVLM2", C.Encode("hb", { l = 29, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 29, t = now - 5 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 29, t = now - 5 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 50, t = now }), "GUILD", "Nadie-Testrealm")
-STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 31, t = now + 60 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", STUB.Rec{ k = "lvl", a = 29, t = now - 5 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", STUB.Rec{ k = "lvl", a = 29, t = now - 5 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", STUB.Rec{ k = "lvl", a = 50, t = now }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", STUB.Rec{ k = "lvl", a = 31, t = now + 60 }), "GUILD", "Mario-Testrealm")
 local mario = 0
 for _, e in ipairs(F.List()) do if e.who == "Mario" then mario = mario + 1 end end
 assert(mario == 1, "once, from the roster, not from the future")
 STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 30, t = now }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", STUB.Rec{ k = "lvl", a = 30, t = now }), "GUILD", "Mario-Testrealm")
 mario = 0
 for _, e in ipairs(F.List()) do if e.who == "Mario" and e.a == 30 then mario = mario + 1 end end
 assert(mario == 1, "a level-up seen by heartbeat and by message: once")

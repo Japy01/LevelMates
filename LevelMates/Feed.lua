@@ -1,10 +1,11 @@
 -- Feed.lua: the guild wall. What I live (a level, a dungeon with guildmates, rare-or-better loot, my personal goal)
--- goes out in its own kind `fe`; guildmates' arrive the same way; guild goals reached and level-ups seen by
--- heartbeat are added locally. Spec 2026-10-10-levelmates-social-leveling-design (A1).
+-- goes out as a sync record of type `fe` (kept and handed over by everyone, so a late login sees the last two days
+-- even of guildmates who are offline); guild goals reached and level-ups seen by heartbeat are added locally.
+-- Specs 2026-10-10-levelmates-social-leveling-design (A1) and 2026-10-12-levelmates-sync-v2-design.
 local _, ns = ...
 local F = {}
 ns.Feed = F
-local L, C, R = ns.L, ns.Comm, ns.Roster
+local L, C, R, S = ns.L, ns.Comm, ns.Roster, ns.Sync
 F.MAX, F.DAYS, F.RESEND = 200, 7, 5
 
 local function me() return ns.Me() end
@@ -59,32 +60,32 @@ function F.List(search, deathsOnly)
 	return out
 end
 
--- Dungeons and loot happen inside instances, where nothing can be sent: what cannot go out stays pending and
--- goes after the next heartbeat outside (the newest five of the last day).
-local function sendEntry(e)
-	if C.Send("fe", { k = e.k, a = e.a, b = e.b, t = e.t }) then e.pending = nil; return true end
-	e.pending = true
-	return false
+-- My entries are records: the sync layer holds them inside a dungeon until I leave, and hands the last two days
+-- (at most 40 entries) to whoever logs in later. A record id: the author, the minute, the kind and the value.
+local function recordId(who, k, a, t)
+	return string.format("%s%x%s%x", (tostring(who):gsub("[^%w]", "")):sub(1, 8), t, k, math.min(a or 0, 1048575))
 end
+S.Define("fe", { class = "board", life = F.DAYS * 86400,
+	fields = { k = C.V.oneOf("lvl", "dun", "itm", "pgl", "dth", "ach"), a = C.V.int(0, 999999), b = C.V.text(60), t = C.V.int(0, 100000000) },
+	required = { "k", "a", "t" },
+	relayKeep = function(r)
+		if r.o == me() and ((r.d.k == "dth" and not ns.db.settings.shareDeaths) or (r.d.k == "ach" and not ns.db.settings.shareAchievements) or not ns.db.settings.shareFeed) then return false end   -- switched off since: not handed on
+		return r.d.t and r.d.t >= F.Now() - 2 * 1440
+	end, relayMax = 40,
+	onChange = function(rec, _, how)
+		if rec.dead or how == "mine" or how == "expired" then return end
+		local f, now = rec.d, F.Now()
+		if f.t > now + 10 or f.t < now - F.DAYS * 1440 then return end
+		F.Add({ who = rec.o, k = f.k, a = f.a, b = f.b, t = f.t })
+	end })
 local function share(k, a, b)
 	local e = { who = me(), k = k, a = a or 0, b = b, t = F.Now() }
 	F.Add(e)
-	if ns.db.settings.shareFeed then sendEntry(e) end
+	if ns.db.settings.shareFeed then
+		S.Put("fe", recordId(e.who, k, e.a, e.t), { k = k, a = e.a, b = b, t = e.t, _exp = (e.t + F.DAYS * 1440) * 60 })
+	end
 end
 F.Share = share   -- for other modules (achievements)
-ns.On("LM_HB_SENT", function()
-	if not ns.db.settings.shareFeed then return end
-	local n, cutoff = 0, F.Now() - 1440
-	for _, e in ipairs(store()) do
-		if e.t < cutoff or n >= F.RESEND then break end
-		if e.pending and e.who == me() and (e.k ~= "dth" or ns.db.settings.shareDeaths) and (e.k ~= "ach" or ns.db.settings.shareAchievements) then n = n + 1; sendEntry(e) end
-	end
-end)
-ns.On("LM_COMM_DROPPED", function(kind)
-	if kind ~= "fe" then return end
-	local cutoff = F.Now() - 10
-	for _, e in ipairs(store()) do if e.who == me() and e.k ~= "gol" and e.t >= cutoff then e.pending = true end end
-end)
 
 ns.On("LM_JOURNAL_ADDED", function(e)
 	if e.sim then return end
@@ -102,25 +103,6 @@ ns.On("LM_MYGOAL_REACHED", function(level) share("pgl", level) end)
 ns.On("LM_GOAL_REACHED", function(g) F.Add({ who = "", k = "gol", a = 0, b = ns.Goals.Text(g), t = F.Now() }) end)
 ns.On("LM_MATE_LEVELUP", function(name, level) F.Add({ who = name, k = "lvl", a = level, t = F.Now() }) end)
 
-C.OnMessage("fe", function(f, name)
-	if not R.mates[name] then return end   -- only people the roster knows
-	local now = F.Now()
-	if f.t > now + 10 or f.t < now - F.DAYS * 1440 then return end
-	F.Add({ who = name, k = f.k, a = f.a, b = f.b, t = f.t })
-end)
-
--- A newcomer gets what I lived in the last 24 hours (the newest five).
-ns.On("LM_HELLO_ANSWERED", function()
-	if not ns.db.settings.shareFeed then return end
-	local n, cutoff = 0, F.Now() - 1440
-	for _, e in ipairs(store()) do
-		if n >= F.RESEND or e.t < cutoff then break end
-		if e.who == me() and e.k ~= "gol" and not e.sim and (e.k ~= "dth" or ns.db.settings.shareDeaths) then
-			C.Send("fe", { k = e.k, a = e.a, b = e.b, t = e.t })
-			n = n + 1
-		end
-	end
-end)
 
 -- Simulation support (/lm sim muro): local samples, never sent.
 function F.AddSample(who, k, a, b, minutesAgo) F.Add({ who = who, k = k, a = a or 0, b = b, t = F.Now() - (minutesAgo or 0), sim = true }) end

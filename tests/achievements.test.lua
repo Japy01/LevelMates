@@ -4,7 +4,7 @@ local AC, C, L, J = ns.Achievements, ns.Comm, ns.L, ns.Journal
 local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STUB.sent[i].msg); if k == kind then return f end end end
 assert(ns.db.settings.shareAchievements == true, "on by default")
 assert(#AC.LIST >= 20, "about twenty")
-assert(C.Validate("ac", { ids = "1,2,7" }) and C.Validate("fe", { k = "ach", a = 3, t = 1 }), "wire")
+assert(C.Validate("ac", { ids = "1,2,7" }) and C.Validate("fe", STUB.Rec{ k = "ach", a = 3, t = 1 }), "wire")
 
 -- from the journal already there: not from zero (level 20 → levels 10 and 20)
 J.Add("dungeon", { name = "Deadmines", mates = { "Mario" } })

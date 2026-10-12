@@ -4,7 +4,7 @@ STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, F, B, L = ns.Comm, ns.Feed, ns.Board, ns.L
 local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STUB.sent[i].msg); if k == kind then return f end end end
 assert(ns.db.settings.shareDeaths == true, "on by default")
-assert(C.Validate("fe", { k = "dth", a = 23, b = "The Barrens", t = 1 }), "deaths travel on the wall")
+assert(C.Validate("fe", STUB.Rec{ k = "dth", a = 23, b = "The Barrens", t = 1 }), "deaths travel on the wall")
 
 -- my death goes to the wall: level and zone, nothing else
 STUB.player.zone = "The Barrens"
@@ -21,8 +21,8 @@ ns.db.settings.shareDeaths = true
 
 -- guildmates' deaths, and the cemetery filter
 STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("fe", { k = "dth", a = 24, b = "Duskwood", t = F.Now() }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 25, t = F.Now() }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", STUB.Rec{ k = "dth", a = 24, b = "Duskwood", t = F.Now() }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", STUB.Rec{ k = "lvl", a = 25, t = F.Now() }), "GUILD", "Mario-Testrealm")
 assert(#F.List(nil, true) == 2 and #F.List() == 3, "only deaths: " .. #F.List(nil, true) .. "/" .. #F.List())
 B.Toggle(); B.ShowTab("feed")
 assert(B.feedCemetery and B.feedCemetery:IsShown(), "the Cemetery button on the wall")

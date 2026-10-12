@@ -414,3 +414,13 @@ function STUB.Drain()
 	STUB.drained = #STUB.sent
 	return table.concat(out, "\n")
 end
+
+-- A record's wire fields for tests: an id (unless given), a rev that always grows, an expiry a day ahead.
+STUB.recSeq = 0
+function STUB.Rec(f)
+	STUB.recSeq = STUB.recSeq + 1
+	f.id = f.id or ("r" .. STUB.recSeq)
+	f.v = f.v or (GetServerTime() + STUB.recSeq)
+	f.e = f.e or (GetServerTime() + 86400)
+	return f
+end
