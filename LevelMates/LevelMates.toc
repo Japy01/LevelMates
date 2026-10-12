@@ -52,6 +52,7 @@ Personal.lua
 Wishlist.lua
 Gifts.lua
 Professions.lua
+Recipes.lua
 Builds.lua
 Macros.lua
 Ask.lua

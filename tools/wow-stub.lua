@@ -433,3 +433,20 @@ function UnitAffectingCombat(u) return STUB.inCombat == true end
 
 STUB.questTags = {}
 C_QuestLog.GetQuestTagInfo = function(id) return STUB.questTags[id] end
+
+-- My profession window: STUB.trade = { line, rank, max, recipes = { { id, item | spell, learned } }, linked, guild, npc }
+C_TradeSkillUI = {
+	IsTradeSkillReady = function() return STUB.trade ~= nil end,
+	IsTradeSkillLinked = function() return STUB.trade ~= nil and STUB.trade.linked == true end,
+	IsTradeSkillGuild = function() return STUB.trade ~= nil and STUB.trade.guild == true end,
+	IsTradeSkillGuildMember = function() return false end,
+	IsNPCCrafting = function() return STUB.trade ~= nil and STUB.trade.npc == true end,
+	GetBaseProfessionInfo = function() local t = STUB.trade; return t and { professionID = t.line, skillLevel = t.rank, maxSkillLevel = t.max } end,
+	GetAllRecipeIDs = function() local out = {}; for _, r in ipairs(STUB.trade and STUB.trade.recipes or {}) do out[#out + 1] = r.id end; return out end,
+	GetRecipeInfo = function(id)
+		for _, r in ipairs(STUB.trade and STUB.trade.recipes or {}) do if r.id == id then return { recipeID = id, learned = r.learned ~= false, alternateVerb = r.spell and "Enchant" or nil } end end
+	end,
+	GetRecipeOutputItemData = function(id)
+		for _, r in ipairs(STUB.trade and STUB.trade.recipes or {}) do if r.id == id and r.item then return { itemID = r.item, hyperlink = "item:" .. r.item } end end
+	end,
+}
