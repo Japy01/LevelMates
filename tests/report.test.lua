@@ -28,3 +28,11 @@ local sent = #STUB.sent
 SlashCmdList.LEVELMATES("informe")
 assert(ns.DiscordCopy.frame:IsShown() and ns.DiscordCopy.box.text:find(ns.VERSION, 1, true), "in the copy box")
 assert(#STUB.sent == sent, "nothing sent")
+
+-- sync v2: the queue (held, dropped), the records kept and old-version guildmates in the report; memory in /lm debug
+local text2 = ns.Report.Text()
+assert(text2:find(ns.L.REPORT_QUEUE, 1, true) and text2:find(ns.L.REPORT_RECORDS, 1, true) and text2:find(ns.L.REPORT_OLD, 1, true), "queue, records and old versions in the report")
+local before = #STUB.printed
+SlashCmdList.LEVELMATES("debug")
+local said = table.concat(STUB.printed, "\n", before + 1)
+assert(said:find("KB", 1, true), "memory in /lm debug: " .. said)

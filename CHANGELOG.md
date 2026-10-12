@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0
+
+- **New sync.** Meetups and who joins them, the guild wall, class questions and market offers are kept by everyone and handed to whoever logs in later, even when their author is offline. Removed things stay removed.
+- What you do inside a dungeon (cancelling a meetup, a wall entry) goes out when you leave instead of being lost; help requests and groups go first.
+- The book redraws at most twice a second, and only when something really changed.
+- Characters with a surname ("Name Surname") are recognised as themselves: your own card, ads and meetups.
+- Achievements count your real journal; long Mates and calendar lists have pages.
+- `/lm debug` and `/lm informe` show the message queue, the records kept and guildmates still on an old version.
+- **Clean cut:** 0.4.0 and 0.3.x no longer see each other. Guildmates on 0.3.x get the game's "newer version" notice, and their card says so.
+
 ## 0.3.2
 
 - **Quiet mode** (Options > Notices): only help requests, groups and goals; the other notices, the screen messages and the sound go off, and come back as they were.

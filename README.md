@@ -55,6 +55,10 @@ Everything goes only to your own guild, as addon messages. In `/lm options` you 
 - **Only when you use them**: the questions you ask your class, the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join.
 - **Off by default**, only if you turn them on: your position (map, rare sightings), your quests (quest matching and progress), XP per hour and rested XP.
 
+What the whole guild sees (your meetups and the ones you join, your wall entries, the questions you ask your class, your market offers) is kept by guildmates and handed to whoever logs in later, even while you are offline, until it expires (a meetup after its hour, the wall after a week, a question after a day). Removing one removes it everywhere.
+
+Guildmates on LevelMates 0.3 and 0.4 do not see each other: everyone needs 0.4 or newer.
+
 Turning "Appear on the board" off stops everything: you send nothing and see nobody. The journal never leaves your computer. Group ads in public chat are only read, on your computer, and can be turned off.
 
 ## Policy
@@ -133,6 +137,10 @@ Todo va solo a tu hermandad, como mensajes de addon. En `/lm opciones` puedes ap
 - **Activado por defecto**, con un interruptor para dejar de hacerlo: tus puntos de hermandad (cuántos niveles, mazmorras, misiones, ayudas, regalos y quedadas); tus otros personajes de la misma hermandad (alts); tus profesiones y su nivel; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
 - **Solo cuando los usas**: las preguntas a tu clase, las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas.
 - **Apagado por defecto**, solo si lo activas: tu posición (mapa, avistamiento de raros), tus misiones (emparejar misiones y su progreso), la XP por hora y la XP descansada.
+
+Lo que ve toda la hermandad (tus quedadas y aquellas a las que te apuntas, tus entradas del muro, las preguntas a tu clase y tus ofertas del mercadillo) lo guardan tus compañeros y se lo pasan a quien entra después, aunque tú no estés conectado, hasta que caduca (una quedada tras su hora, el muro a la semana, una pregunta al día). Si lo borras, se borra en todos.
+
+LevelMates 0.3 y 0.4 no se ven entre sí: todos necesitáis la 0.4 o posterior.
 
 Si apagas "Aparecer en el tablón", se detiene todo: no envías nada y no ves a nadie. El diario nunca sale de tu ordenador. Los anuncios de grupo del chat público solo se leen, en tu ordenador, y se puede apagar.
 

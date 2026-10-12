@@ -257,3 +257,5 @@ L.GROUPXP_NONE = "Las barras de XP vuelven a estar activas; salen cuando vas en 
 L.OPT_QUIET = "Modo tranquilo"; L.OPT_QUIET_TT = "Solo lo importante: ayudas, grupos y metas. Los demás avisos, los del centro de la pantalla y el sonido se apagan; al desactivarlo vuelven como estaban."
 L.ROUTE_SET = "Ruta marcada hacia %s: %s (%.0f, %.0f). Sigue el marcador en pantalla o en el mapa."; L.ROUTE_FAIL = "El juego no permite poner marcadores en %s."; L.ROUTE_SPOT = "el avistamiento"
 L.CARD_OLD_VERSION = "Usa un LevelMates antiguo (0.3): tiene que actualizar para veros."
+L.REPORT_QUEUE = "Cola"; L.REPORT_HELD = "retenidos"; L.REPORT_DROPPED = "descartados"; L.REPORT_RECORDS = "Registros"; L.REPORT_OLD = "Compañeros con versión antigua"
+L.STATUS_QUEUE = "cola: %d esperando, %d retenidos, %d descartados"; L.STATUS_MEMORY = "memoria: %.0f KB (%.0f KB tras recoger)"

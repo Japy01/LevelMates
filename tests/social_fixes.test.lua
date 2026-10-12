@@ -45,7 +45,7 @@ assert(last("gro") and last("gro").i == 1012 and last("gro").by == "Mario", "I c
 STUB.Receive("LVLM2", C.Encode("gr", { i = 1012, to = "Tester" }), "GUILD", "Luis-Testrealm")
 assert(last("gro").by == "Mario", "Luis gets nothing")
 n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(20)   -- after the catch-up batch for Luis
 local gro = false
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "gro" and f.i == 1012 then gro = true end end
 assert(gro, "re-sent to a newcomer")

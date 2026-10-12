@@ -424,3 +424,6 @@ function STUB.Rec(f)
 	f.e = f.e or (GetServerTime() + 86400)
 	return f
 end
+
+function UpdateAddOnMemoryUsage() end
+function GetAddOnMemoryUsage() return 1234 end

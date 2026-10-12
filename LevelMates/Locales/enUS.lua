@@ -256,3 +256,5 @@ L.GROUPXP_NONE = "Group XP bars are back; they show while you are grouped with g
 L.OPT_QUIET = "Quiet mode"; L.OPT_QUIET_TT = "Only what matters: help requests, groups and goals. The other notices, the messages in the middle of the screen and the sound are off; turning it off brings them back as they were."
 L.ROUTE_SET = "Route set to %s: %s (%.0f, %.0f). Follow the pin on screen or on the map."; L.ROUTE_FAIL = "The game does not allow a map pin in %s."; L.ROUTE_SPOT = "the sighting"
 L.CARD_OLD_VERSION = "Uses an old LevelMates (0.3): they need to update to see you."
+L.REPORT_QUEUE = "Queue"; L.REPORT_HELD = "held"; L.REPORT_DROPPED = "dropped"; L.REPORT_RECORDS = "Records"; L.REPORT_OLD = "Guildmates on an old version"
+L.STATUS_QUEUE = "queue: %d waiting, %d held, %d dropped"; L.STATUS_MEMORY = "memory: %.0f KB (%.0f KB after a collect)"

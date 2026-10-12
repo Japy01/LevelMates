@@ -35,6 +35,13 @@ function RP.Text()
 	for v, k in pairs(versions) do parts[#parts + 1] = v .. " ×" .. k end
 	table.sort(parts)
 	add("%s (%d): %s", L.REPORT_MATES, count, #parts > 0 and table.concat(parts, ", ") or "-")
+	add("%s: %d %s, %d %s, %d %s", L.REPORT_QUEUE, s.queued, L.REPORT_QUEUED, s.held or 0, L.REPORT_HELD, s.dropped or 0, L.REPORT_DROPPED)
+	local recs = {}
+	for _, t in ipairs(ns.Sync.Types()) do recs[#recs + 1] = t .. "=" .. #ns.Sync.List(t) end
+	add("%s: %s", L.REPORT_RECORDS, #recs > 0 and table.concat(recs, " ") or "-")
+	local old = 0
+	for _ in pairs(ns.Roster.legacy or {}) do old = old + 1 end
+	add("%s: %d", L.REPORT_OLD, old)   -- guildmates still on 0.3.x (a count: no names in a report)
 	local p = ns.Points.Mine()
 	add("%s: %d · %s %d", L.REPORT_POINTS, p.t, L.REPORT_GUILD_TOTAL, ns.Points.GuildTotal())
 	local changed = {}
