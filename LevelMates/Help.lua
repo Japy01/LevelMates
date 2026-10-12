@@ -64,10 +64,10 @@ function H.Cancel()
 end
 
 function H.Expire()
-	local now = GetTime()
-	for id, h in pairs(H.active) do if now - h.at > EXPIRE then H.active[id] = nil end end
-	if H.mine and now - H.mine.at > EXPIRE then H.mine = nil end
-	ns.Fire("LM_HELP_CHANGED")
+	local now, gone = GetTime(), false
+	for id, h in pairs(H.active) do if now - h.at > EXPIRE then H.active[id] = nil; gone = true end end
+	if H.mine and now - H.mine.at > EXPIRE then H.mine = nil; gone = true end
+	if gone then ns.Fire("LM_HELP_CHANGED") end   -- the check runs every minute: redraw only when something went
 end
 
 -- Active requests, oldest first (for the board).

@@ -61,6 +61,7 @@ assert(entries == nil, "no menu on someone else's goal")
 rows[2].button.scripts.OnClick(rows[2].button, "RightButton")
 assert(entries and entries[1].text == L.MYGOAL_REMOVE, "remove on my own row")
 entries[1].cb()
+STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(not P.Mine() and #visible() == 2, "removed")
 
 B.tabs.mates.scripts.OnClick(B.tabs.mates)

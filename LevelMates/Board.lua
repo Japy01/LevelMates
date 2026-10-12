@@ -1550,9 +1550,11 @@ function B.OpenMenu(name)
 	end)
 end
 
-ns.On("LM_ROSTER_CHANGED", B.Refresh)
-ns.On("LM_HELP_CHANGED", B.Refresh)
+ns.On("LM_ROSTER_CHANGED", function() ns.Dirty("board") end)
+ns.On("LM_HELP_CHANGED", function() ns.Dirty("board") end)
 ns.On("LM_TOGGLE_BOARD", B.Toggle)
+-- Changes from the guild redraw the open page at most twice a second; clicks still redraw at once.
+ns.OnRedraw("board", function() return B.frame and B.frame:IsShown() end, function() B.Refresh() end)
 ns.On("LM_LOADED", function()
 	if AddonCompartmentFrame and ns.db.settings.minimap then
 		AddonCompartmentFrame:RegisterAddon({ text = L.BOARD_TITLE, icon = "Interface\\AddOns\\LevelMates\\Media\\icon", func = B.Toggle })
@@ -1568,7 +1570,7 @@ local guildFrame = CreateFrame("Frame")
 guildFrame:RegisterEvent("PLAYER_GUILD_UPDATE")
 guildFrame:SetScript("OnEvent", function() B.Refresh() end)
 
-ns.On("LM_LFG_CHANGED", B.Refresh)
+ns.On("LM_LFG_CHANGED", function() ns.Dirty("board") end)
 -- Chat ads come in streams: one redraw a second at most, and only while the Dungeons tab shows them.
 local chatPending = false
 ns.On("LM_CHATADS_CHANGED", function()
@@ -1579,33 +1581,33 @@ end)
 ns.Slash("lfg", function() B.ShowTab("lfg") end)
 ns.Slash("grupo", function() B.ShowTab("lfg") end)
 
-ns.On("LM_PARTNER_CHANGED", B.Refresh)
+ns.On("LM_PARTNER_CHANGED", function() ns.Dirty("board") end)
 
-ns.On("LM_RESTED_CHANGED", B.Refresh)
+ns.On("LM_RESTED_CHANGED", function() ns.Dirty("board") end)
 
-ns.On("LM_JOURNAL_CHANGED", B.Refresh)
+ns.On("LM_JOURNAL_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("diario", function() B.ShowTab("journal") end)
 ns.Slash("journal", function() B.ShowTab("journal") end)
 
-ns.On("LM_GOALS_CHANGED", B.Refresh)
+ns.On("LM_GOALS_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("metas", function() B.ShowTab("goals") end)
 ns.Slash("goals", function() B.ShowTab("goals") end)
 
-ns.On("LM_WISHES_CHANGED", B.Refresh)
+ns.On("LM_WISHES_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("deseos", function() B.ShowTab("wishes") end)
 ns.Slash("wishlist", function() B.ShowTab("wishes") end)
 
-ns.On("LM_PROFESSIONS_CHANGED", B.Refresh)
+ns.On("LM_PROFESSIONS_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("oficios", function() B.ShowTab("crafts") end)
 ns.Slash("professions", function() B.ShowTab("crafts") end)
 
-ns.On("LM_FEED_CHANGED", B.Refresh)
+ns.On("LM_FEED_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("muro", function() B.ShowTab("feed") end)
 ns.Slash("wall", function() B.ShowTab("feed") end)
 
-ns.On("LM_MEETUPS_CHANGED", B.Refresh)
+ns.On("LM_MEETUPS_CHANGED", function() ns.Dirty("board") end)
 
-ns.On("LM_RECRUIT_CHANGED", B.Refresh)
+ns.On("LM_RECRUIT_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("reclutar", function() B.ShowTab("recruit") end)
 -- /lm tinta 1-5: how dark the text on the page is, tried live.
 local function SetInk(rest)
@@ -1618,10 +1620,10 @@ end
 ns.Slash("tinta", SetInk); ns.Slash("ink", SetInk)
 ns.Slash("recruit", function() B.ShowTab("recruit") end)
 
-ns.On("LM_BUILDS_CHANGED", B.Refresh)
-ns.On("LM_MACROS_CHANGED", B.Refresh)
-ns.On("LM_QUESTIONS_CHANGED", B.Refresh)
-ns.On("LM_POINTS_CHANGED", B.Refresh)
-ns.On("LM_ACHIEVEMENTS_CHANGED", B.Refresh)
+ns.On("LM_BUILDS_CHANGED", function() ns.Dirty("board") end)
+ns.On("LM_MACROS_CHANGED", function() ns.Dirty("board") end)
+ns.On("LM_QUESTIONS_CHANGED", function() ns.Dirty("board") end)
+ns.On("LM_POINTS_CHANGED", function() ns.Dirty("board") end)
+ns.On("LM_ACHIEVEMENTS_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("clase", function() B.ShowTab("class") end)
 ns.Slash("class", function() B.ShowTab("class") end)

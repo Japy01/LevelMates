@@ -192,4 +192,5 @@ function DP.Open(id)
 end
 function DP.Close() if DP.frame then DP.frame:Hide() end end
 
-for _, e in ipairs({ "LM_LFG_CHANGED", "LM_MEETUPS_CHANGED", "LM_CHATADS_CHANGED", "LM_ROSTER_CHANGED" }) do ns.On(e, DP.Refresh) end
+for _, e in ipairs({ "LM_LFG_CHANGED", "LM_MEETUPS_CHANGED", "LM_CHATADS_CHANGED", "LM_ROSTER_CHANGED" }) do ns.On(e, function() ns.Dirty("dungeon") end) end
+ns.OnRedraw("dungeon", function() return DP.frame and DP.frame:IsShown() end, function() DP.Refresh() end)

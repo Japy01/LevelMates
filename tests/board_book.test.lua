@@ -49,4 +49,5 @@ B.ShowTab("home")
 local bar = B.rows[2].barFill
 local w0 = bar:GetWidth()
 ns.Points.AddSample("Luis", { t = 60 })
+STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(bar:GetWidth() ~= w0, "the new width at once")

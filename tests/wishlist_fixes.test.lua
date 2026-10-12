@@ -26,6 +26,7 @@ assert(shown() == 20 and B.journalNext:IsShown() and B.journalPageText.text == s
 B.journalNext.scripts.OnClick(B.journalNext)
 assert(shown() == 10 and B.rows[1].name.text == "Mario" and B.journalPageText.text == string.format(L.J_PAGE, 2, 2), "page 2 has Mario's wishes (by name)")
 for _, who in ipairs({ "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("wl", {}), "GUILD", who .. "-Testrealm") end
+STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(shown() == 10 and not B.journalNext:IsShown(), "one page: no pager")
 
 -- #3: a whole-state send dropped from the queue on entering an instance goes out again later

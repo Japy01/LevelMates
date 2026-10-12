@@ -64,6 +64,7 @@ for _, hr in ipairs(B.helpRows) do assert(not hr.text:IsShown(), "help rows hidd
 
 -- empty
 STUB.iAmOfficer = true; G.Delete("j2"); STUB.iAmOfficer = false
+STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(#visible() == 0 and B.frame.empty.text == L.GOAL_EMPTY, "empty text")
 
 -- back to guildmates; /lm metas

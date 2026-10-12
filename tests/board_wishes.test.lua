@@ -46,6 +46,7 @@ assert(entries == nil, "no menu on someone else's wish")
 rows[1].button.scripts.OnClick(rows[1].button, "RightButton")
 assert(entries and entries[1].text == L.WISH_REMOVE, "remove on mine")
 entries[1].cb()
+STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(not W.Has(2589) and #visible() == 2, "removed")
 
 -- "Add wish" and Shift+click
@@ -66,6 +67,7 @@ assert(D.box:GetText() == "", "closed again: nothing captured")
 -- empty, other tabs, slash
 for _, w in ipairs(W.List()) do if w.mine then W.Remove(w.id) end end
 STUB.Receive("LVLM2", C.Encode("wl", {}), "GUILD", "Mario-Testrealm")
+STUB.Advance(0.6)
 assert(#visible() == 0 and B.frame.empty.text == L.WISH_EMPTY, "empty text")
 B.tabs.mates.scripts.OnClick(B.tabs.mates)
 assert(not B.wishAdd:IsShown(), "only on the Wishes tab")

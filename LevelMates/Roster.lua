@@ -144,12 +144,16 @@ end
 C.OnMessage("hb", function(f, name)
 	local m = R.mates[name] or { quests = {} }
 	local before = m.level
+	-- what the pages show: only a change of these redraws them (a heartbeat every 30 s per mate adds up)
+	local same = before ~= nil and m.level == f.l and m.mapId == f.z and m.inGroup == (f.g == 1) and m.hasSlot == (f.s == 1)
+		and m.xph == f.r and m.class == f.c and m.version == f.v
+	local moved = m.x ~= f.x or m.y ~= f.y
 	m.level, m.mapId, m.inGroup, m.hasSlot = f.l, f.z, f.g == 1, f.s == 1
 	m.x, m.y, m.xph, m.class, m.version = f.x, f.y, f.r, f.c, f.v
 	m.seenAt = GetTime()
 	R.mates[name] = m
 	if before and f.l > before then ns.Fire("LM_MATE_LEVELUP", name, f.l) end   -- a mate I already knew
-	ns.Fire("LM_ROSTER_CHANGED")
+	if not same then ns.Fire("LM_ROSTER_CHANGED") elseif moved then ns.Fire("LM_MATE_MOVED", name) end
 end)
 -- Guildmates heard only on the 0.3.x prefix: they do not see us (clean cut); their card says so.
 R.legacy = {}

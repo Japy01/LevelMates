@@ -70,6 +70,7 @@ local function hook()
 end
 ns.On("LM_WORLD", hook)
 ns.On("LM_ROSTER_CHANGED", function() if WorldMapFrame and WorldMapFrame:IsShown() then GM.Refresh() end end)
+ns.On("LM_MATE_MOVED", function() if WorldMapFrame and WorldMapFrame:IsShown() then GM.Refresh() end end)   -- a position alone
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:SetScript("OnEvent", function(_, _, name) if name == "Blizzard_WorldMap" then hook() end end)

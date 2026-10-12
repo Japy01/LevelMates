@@ -25,4 +25,5 @@ ana.button.scripts.OnEnter(ana.button)
 assert(GameTooltip.hidden, "no tooltip when there is nothing to say")
 
 STUB.player.level = 60; STUB.Fire("PLAYER_LEVEL_UP", 60)
+STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(not B.restedText.text:find(L.RESTED_MINE:match("^[^%%]+"), 1, true), "hidden at max level (the busiest zone may remain)")

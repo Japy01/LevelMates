@@ -50,6 +50,7 @@ assert(RC.Last().by == "Jefa", "members' rc ignored")
 -- shared templates: officers only
 STUB.Receive("LVLM2", C.Encode("rt", { i = 3, x = "Plantilla de Jefa", v = time() }), "GUILD", "Jefa-Testrealm")
 STUB.Receive("LVLM2", C.Encode("rt", { i = 3, x = "Spam de Mario", v = time() + 10 }), "GUILD", "Mario-Testrealm")
+STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(RC.Templates()[3] == "Plantilla de Jefa" and B.recruitEdit[3]:GetText() == "Plantilla de Jefa", "Jefa's template")
 
 -- not in the channel: refused with the reason

@@ -60,4 +60,5 @@ assert(B.tab == "feed", "the Guild tab opens")
 B.ShowTab("home")
 local before = B.rows[2].group.text
 ns.Points.AddSample("Luis", { t = 777 })
+STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(B.rows[2].group.text ~= before, "Home redrawn when points change")
