@@ -6,7 +6,7 @@ local DP = {}
 ns.DungeonPanel = DP
 local L, R = ns.L, ns.Roster
 local unpack = unpack or table.unpack
-DP.WIDTH, DP.LINES, DP.LINE_H = 320, 18, 24
+DP.WIDTH, DP.LINES, DP.LINE_H = 320, 24, 24
 
 local function me() return ns.Me() end
 local function Cap(s) return (s:gsub("^%l", string.upper)) end
@@ -36,7 +36,14 @@ function DP.Rows(id)
 	for _, a in ipairs(ns.ChatAds.For(id)) do chat[#chat + 1] = { kind = "chat", ad = a } end
 	section(out, "chat", chat)
 	local meets = {}
-	for _, m in ipairs(ns.Meetups.List(id)) do meets[#meets + 1] = { kind = "meet", meet = m } end
+	for _, m in ipairs(ns.Meetups.List(id)) do   -- each run, then its five slots and who waits
+		meets[#meets + 1] = { kind = "meet", meet = m }
+		local s = ns.Meetups.Slots(m)
+		for _, role in ipairs({ "T", "H", "D" }) do
+			for k = 1, ns.Meetups.CAP[role] do meets[#meets + 1] = { kind = "slot", meet = m, role = role, name = s[role][k], confirmed = s.confirmed } end
+		end
+		for _, name in ipairs(s.waiting) do meets[#meets + 1] = { kind = "waiting", meet = m, name = name } end
+	end
 	section(out, "meet", meets)
 	local mates = {}
 	for _, name in ipairs(R.List()) do
@@ -152,15 +159,35 @@ function DP.Refresh()
 				btns[1] = { L.DP_WHISPER, function() ns.Board.Whisper(e.ad.full) end }
 			elseif e.kind == "meet" then
 				local m = e.meet
-				local joined = joinedText(m.joined)
-				line.text:SetText(ns.Meetups.When(m) .. " · " .. m.by .. (joined ~= "" and (" · " .. joined) or "")); line.text:SetTextColor(0.6, 0.8, 1)
-				if m.by == me() then btns[1] = { L.DP_CANCEL, function() ns.Meetups.Cancel(m.id) end }
-				elseif ns.Meetups.MyRole(m.id) then btns[1] = { L.DP_LEAVE, function() ns.Meetups.Leave(m.id) end }
+				line.text:SetText(ns.Meetups.When(m) .. " · " .. m.by .. " · " .. ns.Meetups.Count(m) .. "/5" .. (m.n and (" · " .. m.n) or "")); line.text:SetTextColor(0.6, 0.8, 1)
+				if m.by == me() then
+					local s = ns.Meetups.Slots(m)
+					local names = {}
+					for _, role in ipairs({ "T", "H", "D" }) do for _, n in ipairs(s[role]) do names[#names + 1] = n end end
+					btns[1] = { L.DP_CANCEL, function() ns.Meetups.Cancel(m.id) end }
+					btns[2] = { L.DP_INVITE_ALL, function() ns.Board.InviteAll(names) end }
+					if ns.Discord.Held(m.id) then btns[3] = { L.DP_DISCORD, function() ns.Discord.SendHeld(m.id) end } end
+				elseif ns.Meetups.MyRole(m.id) then
+					btns[1] = { L.DP_LEAVE, function() ns.Meetups.Leave(m.id) end }
+					if ns.Discord.Held(m.id) then btns[2] = { L.DP_DISCORD, function() ns.Discord.SendHeld(m.id) end } end
 				else
-					btns[1] = { Cap(L.ROLE_T), function() ns.Meetups.Join(m.id, "T") end }
-					btns[2] = { Cap(L.ROLE_H), function() ns.Meetups.Join(m.id, "H") end }
-					btns[3] = { Cap(L.ROLE_D), function() ns.Meetups.Join(m.id, "D") end }
+					local k = 0
+					for _, role in ipairs({ "T", "H", "D" }) do   -- only the roles with a free slot
+						if ns.Meetups.Free(m, role) then k = k + 1; btns[k] = { Cap(L["ROLE_" .. role]), function() ns.Meetups.Join(m.id, role) end } end
+					end
 				end
+			elseif e.kind == "slot" then
+				local m = e.meet
+				local label = "   " .. Cap(L["ROLE_" .. e.role]) .. ": "
+				if e.name then
+					line.text:SetText(label .. e.name .. (e.confirmed and "" or (" " .. L.RUN_UNCONFIRMED))); line.text:SetTextColor(1, 1, 1)
+					if m.by == me() and e.name ~= me() then btns[1] = { L.DP_REMOVE, function() ns.Meetups.RemoveMember(m.id, e.name) end } end
+				else
+					line.text:SetText(label .. L.RUN_FREE); line.text:SetTextColor(0.55, 0.55, 0.55)
+					if m.by == me() then btns[1] = { L.DP_ADD, function() DP.AddMenu(m, e.role) end } end
+				end
+			elseif e.kind == "waiting" then
+				line.text:SetText("   " .. string.format(L.RUN_WAITING, e.name)); line.text:SetTextColor(0.8, 0.7, 0.5)
 			elseif e.kind == "mate" then
 				local m = R.mates[e.name]
 				line.text:SetText(e.name .. " · " .. string.format(L.LEVEL_N, m and m.level or 0)); line.text:SetTextColor(1, 1, 1)
@@ -190,7 +217,20 @@ function DP.Open(id)
 	if ns.Board.frame and not DP.hooked then DP.hooked = true; ns.Board.frame:HookScript("OnHide", DP.Close) end   -- closes with the book
 	DP.Refresh()
 end
+-- The leader's "Add…": guildmates online who are not in the run yet.
+function DP.AddMenu(m, role)
+	local s = ns.Meetups.Slots(m)
+	local inRun = {}
+	for _, r in ipairs({ "T", "H", "D" }) do for _, n in ipairs(s[r]) do inRun[n] = true end end
+	MenuUtil.CreateContextMenu(DP.frame, function(_, root)
+		root:CreateTitle(string.format(L.RUN_ADD_AS, L["ROLE_" .. role]))
+		for _, name in ipairs(R.List()) do
+			if not inRun[name] then root:CreateButton(name, function() ns.Meetups.AddMember(m.id, name, role); DP.Refresh() end) end
+		end
+	end)
+end
+
 function DP.Close() if DP.frame then DP.frame:Hide() end end
 
-for _, e in ipairs({ "LM_LFG_CHANGED", "LM_MEETUPS_CHANGED", "LM_CHATADS_CHANGED", "LM_ROSTER_CHANGED" }) do ns.On(e, function() ns.Dirty("dungeon") end) end
+for _, e in ipairs({ "LM_LFG_CHANGED", "LM_MEETUPS_CHANGED", "LM_CHATADS_CHANGED", "LM_ROSTER_CHANGED", "LM_DISCORD_CHANGED", "LM_ROLES_CHANGED" }) do ns.On(e, function() ns.Dirty("dungeon") end) end
 ns.OnRedraw("dungeon", function() return DP.frame and DP.frame:IsShown() end, function() DP.Refresh() end)

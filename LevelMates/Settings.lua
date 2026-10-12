@@ -34,6 +34,14 @@ ns.On("LM_LOADED", function()
 	S.pages[1] = category
 	-- General
 	Bool(category, "share", L.OPT_SHARE, L.OPT_SHARE_TT, function(v) if v then ns.Comm.Start() else ns.Comm.Stop() end; ns.Fire("LM_ROSTER_CHANGED") end)
+	-- my role in runs: three radio-like checkboxes (also on the Groups tab)
+	for _, role in ipairs({ "T", "H", "D" }) do
+		local proxy = Settings.RegisterProxySetting(category, "LevelMates_role_" .. role, Settings.VarType.Boolean, L["OPT_ROLE_" .. role], false,
+			function() return ns.Roles.Mine() == role end,
+			function(v) if v then ns.Roles.Set(role) end end)
+		Settings.CreateCheckbox(category, proxy, L.OPT_ROLE_TT)
+		table.insert(category.settings or {}, proxy)
+	end
 	-- language: three radio-like checkboxes; a change asks for a reload (the texts are read at load)
 	local function Lang(value, name)
 		local proxy = Settings.RegisterProxySetting(category, "LevelMates_language_" .. value, Settings.VarType.Boolean, name, (ns.db.settings.language or "auto") == value,

@@ -12,7 +12,7 @@ STUB.Receive("LVLM2", C.Encode("lfg", { d = 5, r = "H", id = "lfg00001", m = 20,
 STUB.Fire("CHAT_MSG_CHANNEL", "LFM DM need tank", "Pepe-Testrealm", "", "2. Trade", "", "", 0, 2, "Trade")
 ns.Meetups.AddSample("Ana", 5, 90, { Mario = "D" })
 local rows = DP.Rows(5)
-assert(kinds(rows) == "#groups,ad,contact,#chat,chat,#meet,meet,#mates,mate,mate", "sections: " .. kinds(rows))
+assert(kinds(rows) == "#groups,ad,contact,#chat,chat,#meet,meet,slot,slot,slot,slot,slot,#mates,mate,mate", "sections (a run with its five slots): " .. kinds(rows))
 local mates = {}
 for _, r in ipairs(rows) do if r.kind == "mate" then mates[#mates + 1] = r.name end end
 table.sort(mates)

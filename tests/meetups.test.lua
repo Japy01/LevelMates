@@ -51,7 +51,7 @@ assert(M.List(4)[1].by == "Mario", "Ana cannot take Mario's meetup as hers")
 B.ShowTab("lfg")
 local card
 for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 4 then card = c end end
-assert(card.badge:IsShown() and card.badge.text == M.When(M.List(4)[1]) .. " · 1", "the card shows the next meetup")
+assert(card.badge:IsShown() and card.badge.text == M.When(M.List(4)[1]) .. " · 1/5", "the card shows the next run and its slots")
 card.scripts.OnClick(card, "RightButton")
 assert(pick(string.format(L.MEET_JOIN, M.When(M.List(4)[1]), L.ROLE_T)), "join as tank")
 assert(last("qj").id == "mario01." .. ns.NameKey("Tester") and last("qj").r == "T" and M.MyRole("mario01") == "T", "qj sent, remembered")

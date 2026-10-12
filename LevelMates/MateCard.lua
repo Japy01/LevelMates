@@ -35,6 +35,10 @@ end
 function MC.Lines(name)
 	local m, lines = R.mates[name], {}
 	if R.legacy and R.legacy[name] then lines[#lines + 1] = L.CARD_OLD_VERSION end
+	if name ~= ns.Me() or not ns.Alts then
+		local role, guessed = ns.Roles.Of(name)
+		lines[#lines + 1] = string.format(L.CARD_ROLE, L["ROLE_" .. role] .. (guessed and " ?" or ""))
+	end
 	if name == ns.Me() and ns.Alts then   -- my own card: my characters in this guild
 		lines[#lines + 1] = L.CARD_MY_CHARS
 		local all = ns.Alts.MyAlts()
