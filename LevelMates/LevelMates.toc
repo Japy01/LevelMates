@@ -21,6 +21,7 @@ Comm.lua
 Roster.lua
 Sync.lua
 Roles.lua
+Together.lua
 Version.lua
 Cheers.lua
 Settings.lua
