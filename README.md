@@ -15,7 +15,8 @@ The board opens on **Home**: the guild level and this week's challenge, what is 
 - **Board** (`/lm`, the minimap button or a key under Key Bindings → LevelMates): guildmates online with LevelMates, with class, level, zone and group state. Sort by level or zone, filter to players near your level, and right-click a row to invite, whisper or set a waypoint. The busiest zone is shown next to the heading.
 - **Leveling partner**: tick "Looking for a partner" and guildmates within 3 levels who also ticked it appear at the top.
 - **Quest matching**: when you accept a quest, you are told which guildmate on your map has it too (with Questie: who could pick it up). Grouped with guildmates, their progress on the quests you share shows when you hover their name.
-- **Guild map**: guildmates who share their position appear on the world map.
+- **Guild map**: guildmates who share their position appear on the world map, on their zone and on the continent, the same size at any zoom; four or more together become one pin with a count, and a click sets a route to them. Opening the map asks for fresh positions; pins older than five minutes go.
+- **Quest board**: Alt+click a quest in your log (or "Search for a quest" on the Groups tab) and the guild sees you are looking for people for it, with your objectives, for two hours or until you turn it in. Guildmates say "Me too", whisper or invite; the Quests view filters by zone, level or group quests, and you are told when someone looks for a quest you have. Together also lists the group quests you share with guildmates online.
 - **Rested XP** next to the heading, with a notice at the maximum.
 - **Group XP bars**: grouped with guildmates, a small window shows everyone's XP in the level.
 - **Trainer reminder**: leveling up tells you which spells wait at your class trainer.
@@ -56,7 +57,7 @@ Everything goes only to your own guild, as addon messages. In `/lm options` you 
 
 - **Always** (while "Appear on the board" is on): your level, zone, class and group state.
 - **On by default**, with a switch to stop: your guild points (counts of levels, dungeons, quests, helps, gifts and meetups); your other characters in the same guild (alts); your professions and ranks; your XP percent, only while grouped with a guildmate; your deaths (level and zone) on the wall; your talent build (points per branch, level and the build code); your level-ups, dungeons with guildmates, rare loot and personal goal on the guild wall.
-- **Only when you use them**: the questions you ask your class, the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join, and the role you pick (tank, healer, damage).
+- **Only when you use them**: the questions you ask your class, the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join, the role you pick (tank, healer, damage), and the quests you post on the quest board (title, level, zone and your objectives).
 - **Off by default**, only if you turn them on: your position (map, rare sightings), your quests (quest matching and progress), XP per hour and rested XP.
 
 What the whole guild sees (your meetups and the ones you join, your wall entries, the questions you ask your class, your market offers) is kept by guildmates and handed to whoever logs in later, even while you are offline, until it expires (a meetup after its hour, the wall after a week, a question after a day). Removing one removes it everywhere.
@@ -102,7 +103,8 @@ El tablón se abre en **Inicio**: el nivel de la hermandad y el reto de la seman
 - **Tablón** (`/lm`, el botón del minimapa o una tecla en Atajos de teclado → LevelMates): los hermanos conectados con LevelMates, con clase, nivel, zona y si están en grupo. Ordena por nivel o zona, filtra a los de tu nivel y haz clic derecho en una fila para invitar, susurrar o poner un punto de ruta. Junto al título sale la zona con más hermanos.
 - **Compañero de subida**: marca "Busco compañero" y los hermanos a 3 niveles o menos que también lo marcan salen arriba.
 - **Misiones**: al aceptar una misión te dice qué hermano de tu mapa también la tiene (con Questie, quién podría cogerla). En grupo con hermanos, su progreso en las misiones que compartís sale al pasar el ratón por su nombre.
-- **Mapa de la hermandad**: los hermanos que comparten su posición salen en el mapa del mundo.
+- **Mapa de la hermandad**: los hermanos que comparten su posición salen en el mapa del mundo, en su zona y en el del continente, del mismo tamaño con cualquier zoom; cuatro o más juntos se ven como un solo marcador con el número, y un clic pone la ruta hacia ellos. Al abrir el mapa se piden posiciones frescas; los marcadores de más de cinco minutos desaparecen.
+- **Tablón de misiones**: Alt+clic en una misión de tu registro (o "Buscar para una misión" en la pestaña Grupos) y la hermandad ve que buscas gente para ella, con tus objetivos, durante dos horas o hasta que la entregues. Los compañeros dicen "Yo también", susurran o invitan; la vista Misiones filtra por zona, nivel o misiones de grupo, y te avisa si alguien busca gente para una misión que tienes. Juntos muestra además las misiones de grupo que compartes con compañeros conectados.
 - **XP descansada** junto al título, con aviso al llegar al máximo.
 - **Barras de XP del grupo**: en grupo con hermanos, una ventanita muestra la XP de todos en el nivel.
 - **Recordatorio de entrenador**: al subir de nivel te dice qué hechizos te esperan en tu entrenador de clase.
@@ -143,7 +145,7 @@ Todo va solo a tu hermandad, como mensajes de addon. En `/lm opciones` puedes ap
 
 - **Siempre** (mientras "Aparecer en el tablón" esté activado): tu nivel, zona, clase y si estás en grupo.
 - **Activado por defecto**, con un interruptor para dejar de hacerlo: tus puntos de hermandad (cuántos niveles, mazmorras, misiones, ayudas, regalos y quedadas); tus otros personajes de la misma hermandad (alts); tus profesiones y su nivel; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
-- **Solo cuando los usas**: las preguntas a tu clase, las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas, y el rol que eliges (tanque, sanador, daño).
+- **Solo cuando los usas**: las preguntas a tu clase, las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas, el rol que eliges (tanque, sanador, daño) y las misiones que publicas en el tablón (título, nivel, zona y tus objetivos).
 - **Apagado por defecto**, solo si lo activas: tu posición (mapa, avistamiento de raros), tus misiones (emparejar misiones y su progreso), la XP por hora y la XP descansada.
 
 Lo que ve toda la hermandad (tus quedadas y aquellas a las que te apuntas, tus entradas del muro, las preguntas a tu clase y tus ofertas del mercadillo) lo guardan tus compañeros y se lo pasan a quien entra después, aunque tú no estés conectado, hasta que caduca (una quedada tras su hora, el muro a la semana, una pregunta al día). Si lo borras, se borra en todos.

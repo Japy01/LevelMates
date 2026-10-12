@@ -2,6 +2,8 @@
 
 ## 0.4.0
 
+- **Quest board**: Alt+click a quest in your log to look for people for it; guildmates say "Me too"; a Quests view with filters, and a notice when someone looks for a quest you have. Together lists group quests in common.
+- **Map**: pins on continents too, the same size at any zoom, bundled when crowded, a click to route there, fresh positions when the map opens, old pins gone after five minutes; optional names on the pins.
 - **Runs**: meetups have five slots (1 tank, 1 healer, 3 damage) and a leader who keeps the official line-up; late joins for a full role wait, the leader adds or removes by hand, and **Invite all** invites the run.
 - **My role** (tank, healer, damage), shared; guessed from the class when unset.
 - **Together**: groups you could make right now from who is online, by level and role.
