@@ -27,7 +27,7 @@ assert(f and f.t == m.t and f.w == PT.Week(time()) and f.d == 1, "shared")
 STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
 ns.Meetups.AddSample("Mario", 5, 10, {})
 local meet = ns.Meetups.List()[1]
-ns.char.meetJoins = { [meet.id] = "T" }
+ns.Sync.Store("qj")[meet.id .. ".Tester"] = { t = "qj", id = meet.id .. ".Tester", o = "Tester", v = 1, e = GetServerTime() + 86400, d = { r = "T" } }   -- I joined it
 STUB.partyMembers = { Mario = true }
 STUB.Advance(60 * 12)
 local before = PT.Mine().t

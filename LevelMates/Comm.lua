@@ -133,9 +133,7 @@ C.SCHEMA = {
 	lfj  = { id = word(8), r = oneOf("T", "H", "D") },
 	lfjx = { id = word(8) },
 	qd   = { id = word(8), d = int(1, 99), at = int(0, 100000000), n = text(40) },
-	qdx  = { id = word(8) },
 	qj   = { id = word(8), r = oneOf("T", "H", "D") },
-	qjx  = { id = word(8) },
 	rt   = { i = int(1, 3), x = text(200), v = int(0, 4000000000) },
 	rc   = { t = int(0, 4000000000) },
 	gv   = { ids = itemids(10) },
@@ -156,7 +154,7 @@ C.SCHEMA = {
 	bye  = {},
 	hi   = { s = function(v) return type(v) == "string" and #v <= 200 and not v:find("[%c|]") end },
 }
-C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qdx = { "id" }, qj = { "id", "r" }, qjx = { "id" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, hi = { "s" } }
+C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, fe = { "k", "a", "t" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qj = { "id", "r" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, hi = { "s" } }
 
 local REQUIRED = C.REQUIRED
 -- the field checks, for the record layer's types

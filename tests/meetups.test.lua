@@ -14,10 +14,16 @@ MenuUtil.CreateContextMenu = function(owner, fn)
 	local root = { CreateTitle = function() end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
 	fn(owner, root)
 end
+-- records on the wire: a meetup, a join (id = meetup.joiner), a removal (x); revs only grow
+local rev = 0
+local function V() rev = rev + 1; return GetServerTime() + rev end
+local function QD(id, d, at, n) return C.Encode("qd", { id = id, d = d, at = at, n = n, v = V(), e = GetServerTime() + 86400 }) end
+local function QJ(id, r, who) return C.Encode("qj", { id = id .. "." .. who, r = r, v = V(), e = GetServerTime() + 86400 }) end
+local function X(t, id) return C.Encode("x", { t = t, id = id, v = V(), e = GetServerTime() + 86400 }) end
 local function pick(text) for _, e in ipairs(entries) do if e.text == text then e.cb(); return true end end; return false end
 
-assert(C.Validate("qd", { id = "m1", d = 5, at = now + 60 }) and C.Validate("qdx", { id = "m1" }) and C.Validate("qj", { id = "m1", r = "H" }) and C.Validate("qjx", { id = "m1" }), "formats")
-assert(C.Validate("qj", { id = "m1", r = "X" }) == false and C.Validate("qd", { id = "m1", d = 5 }) == false, "limits")
+assert(C.Validate("qd", { id = "m1", d = 5, at = now + 60, v = 1, e = 2 }) and C.Validate("qj", { id = "m1.Ana", r = "H", v = 1, e = 2 }), "formats")
+assert(C.Validate("qj", { id = "m1", r = "X", v = 1, e = 2 }) == false and C.Validate("qd", { id = "m1", d = 5, v = 1, e = 2 }) == false, "limits")
 
 -- creating
 assert(not M.Create(5, now + 2, "") and not M.Create(5, now + 8 * 1440, ""), "not now, not past 7 days")
@@ -26,36 +32,37 @@ local f = last("qd")
 assert(f.d == 5 and f.at == now + 60 and f.n == "traed agua", "shared")
 assert(M.Create(2, now + 120, "") and not M.Create(4, now + 180, "") and said(L.MEET_FULL) == 1, "two per person")
 local mine = M.List(5)[1]
+local function minenow() return M.List(5)[1] end
 assert(M.When(mine) == string.format("%s %02d:%02d", L["DAY_" .. date("*t", mine.at * 60).wday], date("*t", mine.at * 60).hour, date("*t", mine.at * 60).min), "day and time")
 
 -- guildmates join mine; I am told
-STUB.Receive("LVLM2", C.Encode("qj", { id = mine.id, r = "H" }), "GUILD", "Ana-Testrealm")
-assert(mine.joined.Ana == "H" and said(string.format(L.MEET_JOINED, "Ana", D.Name(5), M.When(mine), L.ROLE_H)) == 1, "Ana joins")
-STUB.Receive("LVLM2", C.Encode("qj", { id = mine.id, r = "D" }), "GUILD", "Nadie-Testrealm")
-assert(not mine.joined.Nadie, "strangers cannot")
-STUB.Receive("LVLM2", C.Encode("qjx", { id = mine.id }), "GUILD", "Ana-Testrealm")
-assert(not mine.joined.Ana, "Ana leaves")
+STUB.Receive("LVLM2", QJ(mine.id, "H", "Ana"), "GUILD", "Ana-Testrealm")
+assert(minenow().joined.Ana == "H" and said(string.format(L.MEET_JOINED, "Ana", D.Name(5), M.When(mine), L.ROLE_H)) == 1, "Ana joins")
+STUB.Receive("LVLM2", QJ(mine.id, "D", "Nadie"), "GUILD", "Nadie-Testrealm")
+assert(not minenow().joined.Nadie, "strangers cannot")
+STUB.Receive("LVLM2", X("qj", mine.id .. ".Ana"), "GUILD", "Ana-Testrealm")
+assert(not minenow().joined.Ana, "Ana leaves")
 
 -- a guildmate's meetup; I join it from the card
-STUB.Receive("LVLM2", C.Encode("qd", { id = "mario01", d = 4, at = now + 30, n = "vamos" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", QD("mario01", 4, now + 30, "vamos"), "GUILD", "Mario-Testrealm")
 assert(said(string.format(L.MEET_NEW, "Mario", D.Name(4), M.When({ at = now + 30 }))) == 1, "new meetup notice")
-STUB.Receive("LVLM2", C.Encode("qd", { id = "mario01", d = 4, at = now + 30 }), "GUILD", "Ana-Testrealm")
-assert(M.List(4)[1].by == "Mario", "only its creator re-sends it")
+STUB.Receive("LVLM2", C.Encode("qd", { id = "mario01", d = 4, at = now + 30, v = V(), e = GetServerTime() + 86400 }), "GUILD", "Ana-Testrealm")
+assert(M.List(4)[1].by == "Mario", "Ana cannot take Mario's meetup as hers")
 B.ShowTab("lfg")
 local card
 for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 4 then card = c end end
 assert(card.badge:IsShown() and card.badge.text == M.When(M.List(4)[1]) .. " · 1", "the card shows the next meetup")
 card.scripts.OnClick(card, "RightButton")
 assert(pick(string.format(L.MEET_JOIN, M.When(M.List(4)[1]), L.ROLE_T)), "join as tank")
-assert(last("qj").id == "mario01" and last("qj").r == "T" and M.MyRole("mario01") == "T", "qj sent, remembered")
+assert(last("qj").id == "mario01.Tester" and last("qj").r == "T" and M.MyRole("mario01") == "T", "qj sent, remembered")
 card.scripts.OnEnter(card)
 assert(table.concat(GameTooltip.lines, "\n"):find("Tester", 1, true), "the tooltip lists who joined")
 card.scripts.OnClick(card, "RightButton")
-assert(pick(string.format(L.MEET_LEAVE, M.When(M.List(4)[1]))) and last("qjx").id == "mario01", "leave")
+assert(pick(string.format(L.MEET_LEAVE, M.When(M.List(4)[1]))) and last("x").t == "qj" and last("x").id == "mario01.Tester", "leave")
 assert(M.Join("mario01", "T"), "join again")
 
 -- reminder: 15 minutes before, once, only if mine or joined
-STUB.Receive("LVLM2", C.Encode("qd", { id = "ana00001", d = 6, at = now + 20 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", QD("ana00001", 6, now + 20), "GUILD", "Ana-Testrealm")
 STUB.Advance(16 * 60)
 M.Tick(); M.Tick()
 assert(said(string.format(L.MEET_SOON, D.Name(4), M.When(M.List(4)[1]))) == 1, "reminded once for the joined one")
@@ -65,21 +72,21 @@ assert(said(string.format(L.MEET_SOON, D.Name(6), M.When(M.List(6)[1]))) == 0, "
 card = nil
 for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 5 then card = c end end
 card.scripts.OnClick(card, "RightButton")
-assert(pick(string.format(L.MEET_CANCEL, M.When(M.List(5)[1]))) and last("qdx") and #M.List(5) == 0, "cancelled")
-STUB.Receive("LVLM2", C.Encode("qdx", { id = "mario01" }), "GUILD", "Ana-Testrealm")
+assert(pick(string.format(L.MEET_CANCEL, M.When(M.List(5)[1]))) and last("x").t == "qd" and #M.List(5) == 0, "cancelled")
+STUB.Receive("LVLM2", X("qd", "mario01"), "GUILD", "Ana-Testrealm")
 assert(#M.List(4) == 1, "nobody else can cancel it")
-STUB.Receive("LVLM2", C.Encode("qdx", { id = "mario01" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", X("qd", "mario01"), "GUILD", "Mario-Testrealm")
 assert(#M.List(4) == 0 and not M.MyRole("mario01"), "Mario cancels it")
 
 -- newcomers get my meetups and joins (after the 16 minutes above the guildmates re-announce themselves)
 for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", nm .. "-Testrealm") end
-STUB.Receive("LVLM2", C.Encode("qd", { id = "luis0001", d = 3, at = now + 300 }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", QD("luis0001", 3, now + 300), "GUILD", "Luis-Testrealm")
 assert(M.Join("luis0001", "D"))
 local n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Ana-Testrealm"); STUB.Advance(10)
 local qd, qj = 0, 0
-for i = n + 1, #STUB.sent do local k, ff = C.Decode(STUB.sent[i].msg); if k == "qd" then qd = qd + 1 elseif k == "qj" and ff.id == "luis0001" then qj = qj + 1 end end
-assert(qd == 1 and qj == 1, "re-sent: my meetup and my join")
+for i = n + 1, #STUB.sent do local k, ff = C.Decode(STUB.sent[i].msg); if k == "qd" then qd = qd + 1 elseif k == "qj" and ff.id == "luis0001.Tester" then qj = qj + 1 end end
+assert(qd >= 1 and qj == 1, "handed over to the newcomer: the meetups I hold and my join")
 
 -- gone 3 hours after the hour
 STUB.Advance(8 * 3600)

@@ -59,11 +59,12 @@ assert(said(string.format(L.MEET_SOON, ns.Dungeons.Name(5), M.When(mine))) == 1,
 assert(LevelMatesDB.chars[ns.PlayerKey()].meetReminded[mine.id] == true, "saved")
 for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", nm .. "-Testrealm") end
 
--- #4: a cancel that cannot go out is refused
+-- #4: a cancel inside a dungeon is kept and goes out after leaving (sync v2)
 STUB.inInstance = true
-assert(not M.Cancel(mine.id) and #M.List(5) == 1 and said(L.MEET_NOT_NOW) >= 1, "kept, and why")
+assert(M.Cancel(mine.id) and #M.List(5) == 0 and ns.Sync.Store("qd")[mine.id].pending, "cancelled here, waiting to go out")
 STUB.inInstance = false
-assert(M.Cancel(mine.id) and #M.List(5) == 0, "cancelled outside")
+STUB.Fire("ZONE_CHANGED_NEW_AREA"); STUB.Advance(5)
+assert(not ns.Sync.Store("qd")[mine.id].pending, "out after leaving")
 
 -- #5: the dialog's time is the local wall-clock time on that day (DST-safe through time(table))
 local Dlg = ns.MeetDialog
