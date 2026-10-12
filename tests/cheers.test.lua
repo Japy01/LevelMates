@@ -2,7 +2,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, L = ns.Comm, ns.L
-local function hb(name, level) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = 1421 }), "GUILD", name .. "-Testrealm") end
+local function hb(name, level) STUB.Receive("LVLM2", C.Encode("hb", { l = level, z = 1421 }), "GUILD", name .. "-Testrealm") end
 local function lines(text) local n = 0; for _, p in ipairs(STUB.printed) do if p:find(text, 1, true) then n = n + 1 end end; return n end
 hb("Mario", 20); hb("Ana", 30)
 assert(lines(string.format(L.LEVELUP_NOTICE, "Mario", 20)) == 0 and lines(string.format(L.LEVELUP_NOTICE, "Ana", 30)) == 0, "first sight is not a level-up")

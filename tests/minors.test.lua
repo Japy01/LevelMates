@@ -38,8 +38,8 @@ createWorks = true
 macros[#macros + 1] = { name = "Contrahechizoñññ", body = "/cast X" }
 STUB.printed = {}
 assert(not MA.Share("Contrahechizoñññ") and STUB.printed[#STUB.printed]:find(string.format(L.MACRO_LONG, "Contrahechizoñññ"), 1, true), "a name too long is said so")
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("mc", { n = "Risky", x = "/run DoSomething()" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("mc", { n = "Risky", x = "/run DoSomething()" }), "GUILD", "Mario-Testrealm")
 local titles = {}
 MenuUtil.CreateContextMenu = function(owner, fn) titles = {}; local root = { CreateTitle = function(_, t) titles[#titles + 1] = t end, CreateButton = function() end }; fn(owner, root) end
 B.OpenClassMenu({ kind = "guild", m = MA.Guild()[1] })
@@ -51,14 +51,14 @@ assert(warned, "a warning on /run macros")
 assert(ns.Builds and true)
 
 -- wall: the cemetery count ignores the search; deaths are not re-sent once the option is off
-STUB.Receive("LVLM", C.Encode("fe", { k = "dth", a = 24, b = "Duskwood", t = F.Now() }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", { k = "dth", a = 24, b = "Duskwood", t = F.Now() }), "GUILD", "Mario-Testrealm")
 STUB.Fire("PLAYER_DEAD"); STUB.Advance(1)
 B.ShowTab("feed"); B.feedDeaths = true; B.search = "mario"; B.Refresh()
 assert(B.subtitle.text == string.format(L.FEED_CEMETERY_SUB, 2), "the week's deaths, whatever the search: " .. tostring(B.subtitle.text))
 B.feedDeaths, B.search = false, ""
 ns.db.settings.shareDeaths = false
 local before = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
 for i = before + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); assert(not (k == "fe" and f.k == "dth"), "no deaths re-sent once off") end
 
 -- calendar: a meetup that already started is not offered

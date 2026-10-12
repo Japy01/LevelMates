@@ -13,8 +13,8 @@ assert(invite and invite.xph.text == L.HOME_COPY, "alone: the invite")
 invite.button.scripts.OnClick(invite.button, "LeftButton")
 assert(ns.DiscordCopy.frame:IsShown() and ns.DiscordCopy.box.text == ns.Home.InviteText(), "copy box with the invite")
 -- a help request: "On my way" from Home
-STUB.Receive("LVLM", C.Encode("hb", { l = 21, z = 1412, c = "MAGE" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("help", { t = "Ogro", z = 1412, x = 40, y = 50, id = "h0000001" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 21, z = 1412, c = "MAGE" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("help", { t = "Ogro", z = 1412, x = 40, y = 50, id = "h0000001" }), "GUILD", "Ana-Testrealm")
 B.Refresh()
 local help
 for _, r in ipairs(shown()) do if r.button.homeEntry.kind == "help" then help = r end end

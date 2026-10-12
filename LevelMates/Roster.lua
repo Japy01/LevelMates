@@ -151,6 +151,9 @@ C.OnMessage("hb", function(f, name)
 	if before and f.l > before then ns.Fire("LM_MATE_LEVELUP", name, f.l) end   -- a mate I already knew
 	ns.Fire("LM_ROSTER_CHANGED")
 end)
+-- Guildmates heard only on the 0.3.x prefix: they do not see us (clean cut); their card says so.
+R.legacy = {}
+ns.On("LM_LEGACY_SEEN", function(name) R.legacy[name] = GetTime() end)
 C.OnMessage("bye", function(_, name) if R.mates[name] then R.mates[name] = nil; ns.Fire("LM_ROSTER_CHANGED") end end)
 -- A newcomer's ping gets my heartbeat and my quest list (so matching works both ways), jittered 0-5 s and
 -- coalesced: a login storm of pings produces one answer.

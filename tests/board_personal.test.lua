@@ -7,10 +7,10 @@ STUB.guildMembers = { Tester = true, Mario = true, Jefa = true }
 STUB.guildRoles = { Jefa = 2 }
 R.InvalidateGuildRoster()
 STUB.player.level = 30
-STUB.Receive("LVLM", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Jefa-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 18, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("go", { id = "j1", ty = "lvl", a = 30, s = today, e = today + 3 }), "GUILD", "Jefa-Testrealm")
-STUB.Receive("LVLM", C.Encode("gp", { l = 20, e = today + 2 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 18, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("go", { id = "j1", ty = "lvl", a = 30, s = today, e = today + 3 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gp", { l = 20, e = today + 2 }), "GUILD", "Mario-Testrealm")
 local entries
 MenuUtil.CreateContextMenu = function(owner, fn)
 	entries = {}

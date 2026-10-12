@@ -24,7 +24,7 @@ local f = last("pt")
 assert(f and f.t == m.t and f.w == PT.Week(time()) and f.d == 1, "shared")
 
 -- a meetup attended: in its hour, grouped with its creator
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
 ns.Meetups.AddSample("Mario", 5, 10, {})
 local meet = ns.Meetups.List()[1]
 ns.char.meetJoins = { [meet.id] = "T" }
@@ -37,12 +37,12 @@ assert(before == m.t + 10, "meetup attended: " .. before)
 STUB.partyMembers = {}
 
 -- guildmates' points, the guild total and level
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")   -- back on the board after the meetup wait
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")   -- back on the board after the meetup wait
 local week = PT.Week(time())
-STUB.Receive("LVLM", C.Encode("pt", { t = 300, w = week, l = 4, d = 2, h = 3, q = 20 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("pt", { t = 50, w = week - 1, l = 9, d = 9, h = 9, q = 9 }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("pt", { t = 9999, w = week }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pt", { t = 300, w = week, l = 4, d = 2, h = 3, q = 20 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pt", { t = 50, w = week - 1, l = 9, d = 9, h = 9, q = 9 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pt", { t = 9999, w = week }), "GUILD", "Nadie-Testrealm")
 local total = PT.GuildTotal()
 assert(total == PT.Mine().t + 300 + 50, "the guild total: " .. total)
 local lvl, into, need = PT.Level(350)
@@ -61,11 +61,11 @@ ns.db.points = ns.db.points or {}
 local idx = week % 4 + 1
 assert(ch.cat == PT.CHALLENGES[idx].cat, "rotates with the week")
 STUB.printed = {}
-STUB.Receive("LVLM", C.Encode("pt", { t = 99999, w = week, l = 999, d = 999, h = 999, q = 9999 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pt", { t = 99999, w = week, l = 999, d = 999, h = 999, q = 9999 }), "GUILD", "Mario-Testrealm")
 local said = 0
 for _, line in ipairs(STUB.printed) do if line:find(L.CHALLENGE_DONE_SHORT, 1, true) then said = said + 1 end end
 assert(said == 1 and PT.Challenge().done, "done, told once")
-STUB.Receive("LVLM", C.Encode("pt", { t = 99999, w = week, l = 999, d = 999, h = 999, q = 9999 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pt", { t = 99999, w = week, l = 999, d = 999, h = 999, q = 9999 }), "GUILD", "Mario-Testrealm")
 said = 0
 for _, line in ipairs(STUB.printed) do if line:find(L.CHALLENGE_DONE_SHORT, 1, true) then said = said + 1 end end
 assert(said == 1, "not again")

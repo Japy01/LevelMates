@@ -4,7 +4,7 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, L = ns.Comm, ns.Board, ns.L
 for _, n in ipairs({ { "Mario", 30 }, { "Ana", 12 }, { "Marta", 22 } }) do
-	STUB.Receive("LVLM", C.Encode("hb", { l = n[2], z = 1421 }), "GUILD", n[1] .. "-Testrealm")
+	STUB.Receive("LVLM2", C.Encode("hb", { l = n[2], z = 1421 }), "GUILD", n[1] .. "-Testrealm")
 end
 B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 local function shown()

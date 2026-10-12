@@ -3,8 +3,8 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, G, L = ns.Comm, ns.LFG, ns.L
 STUB.player.level = 15
-local function mate(name, level) STUB.Receive("LVLM", C.Encode("hb", { l = level or 15, z = 1421 }), "GUILD", name .. "-Testrealm") end
-local function ad(from, f) STUB.Receive("LVLM", C.Encode("lfg", f), "GUILD", from .. "-Testrealm") end
+local function mate(name, level) STUB.Receive("LVLM2", C.Encode("hb", { l = level or 15, z = 1421 }), "GUILD", name .. "-Testrealm") end
+local function ad(from, f) STUB.Receive("LVLM2", C.Encode("lfg", f), "GUILD", from .. "-Testrealm") end
 local function lastKind() return (C.Decode(STUB.sent[#STUB.sent].msg)) end
 mate("Mario", 18); mate("Ana", 12); mate("Luis", 15)
 assert(ns.db.settings.lfgNotices == true, "notices on by default")

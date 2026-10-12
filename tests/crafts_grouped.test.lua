@@ -13,10 +13,10 @@ assert(ns.char.skills[129].max == 75, "max rank kept")
 assert(C.Validate("pf", { p = "129:37:75,185:7" }) and C.Validate("pf", { p = "129:37:451" }) == false, "rank:max pairs")
 assert(last("pf") and last("pf").p == "129:37:75,185:7:75,186:6:75", "shared with the max: " .. tostring(last("pf") and last("pf").p))
 
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("pf", { p = "129:75:75" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("pf", { p = "186:40" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pf", { p = "129:75:75" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pf", { p = "186:40" }), "GUILD", "Ana-Testrealm")
 R.mates.Ana = nil   -- Ana logged off
 
 -- grouped by profession: a header with its icon, then who has it, highest first

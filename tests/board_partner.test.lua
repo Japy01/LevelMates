@@ -3,8 +3,8 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, P, L = ns.Comm, ns.Board, ns.Partner, ns.L
 STUB.player.level = 20; STUB.player.mapId = 1421
-local function mate(name, level, z) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = z }), "GUILD", name .. "-Testrealm") end
-local function pal(name) STUB.Receive("LVLM", C.Encode("pal", { p = 1 }), "GUILD", name .. "-Testrealm") end
+local function mate(name, level, z) STUB.Receive("LVLM2", C.Encode("hb", { l = level, z = z }), "GUILD", name .. "-Testrealm") end
+local function pal(name) STUB.Receive("LVLM2", C.Encode("pal", { p = 1 }), "GUILD", name .. "-Testrealm") end
 mate("Alto", 40, 1421); mate("Lejos", 22, 1412); mate("Cerca", 19, 1421); mate("Solo", 21, 1421); mate("Marcado", 30, 1421)
 pal("Lejos"); pal("Cerca"); pal("Marcado")
 B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates

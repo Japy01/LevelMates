@@ -3,7 +3,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, J, L = ns.Comm, ns.Journal, ns.L
-local function mate(name) STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", name .. "-Testrealm") end
+local function mate(name) STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", name .. "-Testrealm") end
 local function first() return J.List("all", "")[1] end
 
 -- 1a. a collapsed "Professions" header hides the lines; that is not unlearning, and expanding is not learning

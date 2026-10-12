@@ -2,7 +2,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, P, R, L = ns.Comm, ns.Personal, ns.Roster, ns.L
-local function mate(name, level) STUB.Receive("LVLM", C.Encode("hb", { l = level or 20, z = 1421 }), "GUILD", name .. "-Testrealm") end
+local function mate(name, level) STUB.Receive("LVLM2", C.Encode("hb", { l = level or 20, z = 1421 }), "GUILD", name .. "-Testrealm") end
 local function last() return C.Decode(STUB.sent[#STUB.sent].msg) end
 local today = math.floor(time() / 86400)
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true }
@@ -24,22 +24,22 @@ assert(P.ProgressText(P.List()[1]) == "30/40" and not P.IsDone(P.List()[1]), "my
 
 -- others
 mate("Mario", 22)
-STUB.Receive("LVLM", C.Encode("gp", { l = 30, e = today + 3 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("gp", { l = 30, e = today + 3 }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gp", { l = 30, e = today + 3 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gp", { l = 30, e = today + 3 }), "GUILD", "Nadie-Testrealm")
 local list = P.List()
 assert(#list == 2 and list[2].name == "Mario" and P.ProgressText(list[2]) == "22/30" and P.Text(list[2]) == string.format(L.MYGOAL_TEXT, 30), "Mario's goal, not a stranger's")
-STUB.Receive("LVLM", C.Encode("gp", { l = 50, e = today - 5 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("gp", { l = 50, e = today + 400 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gp", { l = 50, e = today - 5 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gp", { l = 50, e = today + 400 }), "GUILD", "Mario-Testrealm")
 assert(P.List()[2].l == 30, "expired or far-off deadlines are ignored")
-STUB.Receive("LVLM", C.Encode("gp", { l = 0, e = today }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gp", { l = 0, e = today }), "GUILD", "Mario-Testrealm")
 assert(#P.List() == 1, "Mario withdrew his")
-STUB.Receive("LVLM", C.Encode("gp", { l = 30, e = today + 3 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gp", { l = 30, e = today + 3 }), "GUILD", "Mario-Testrealm")
 ns.db.personal[GetGuildInfo("player")].Mario.e = today - 3
 assert(#P.List() == 1, "others' goals expire too")
 
 -- newcomers get mine
 local n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
 local got = false
 for i = n + 1, #STUB.sent do local kk, ff = C.Decode(STUB.sent[i].msg); if kk == "gp" and ff.l == 40 then got = true end end
 assert(got, "a newcomer gets my goal")

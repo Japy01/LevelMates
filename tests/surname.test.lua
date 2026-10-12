@@ -13,7 +13,7 @@ assert(not ns.MateCard.whisper:IsShown() and not ns.MateCard.invite:IsShown(), "
 -- my own message echoed back by the server is not a guildmate's
 local C = ns.Comm
 local before = ns.Roster.mates["Gigasamba Caramba"]
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1412, c = "MAGE" }), "GUILD", "Gigasamba Caramba-" .. GetRealmName())
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1412, c = "MAGE" }), "GUILD", "Gigasamba Caramba-" .. GetRealmName())
 assert(ns.Roster.mates["Gigasamba Caramba"] == before, "my echo ignored")
 -- a plain name stays as it is
 UnitName = function(u) if u == "player" then return "Mario", nil end; return realUnitName(u) end

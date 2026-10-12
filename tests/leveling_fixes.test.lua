@@ -6,8 +6,8 @@ local function count(kind, from) local n = 0; for i = from + 1, #STUB.sent do if
 local function said(text) local n = 0; for _, p in ipairs(STUB.printed) do if p:find(text, 1, true) then n = n + 1 end end; return n end
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true }
 R.InvalidateGuildRoster()
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Ana-Testrealm")
 
 -- #1a: a sighting carries my position: only with "share position" on (and sightings on)
 STUB.player.mapId = 1412
@@ -26,7 +26,7 @@ assert(count("rr", n) == 1, "both on: sent")
 -- #1b: quest progress only with "share quests" on
 STUB.quests = { 101 }
 STUB.objectives[101] = { { numFulfilled = 2, numRequired = 10, finished = false } }
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "101" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "101" }), "GUILD", "Mario-Testrealm")
 STUB.partyMembers.Mario = true
 ns.db.settings.shareQuests = false
 n = #STUB.sent
@@ -38,13 +38,13 @@ assert(count("qo", n) == 1, "shared: sent")
 
 -- #2: a groupmate who comes back (reload) gets my progress again
 n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "101" }), "GUILD", "Mario-Testrealm"); STUB.Advance(3)
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "101" }), "GUILD", "Mario-Testrealm"); STUB.Advance(3)
 assert(count("qo", n) == 1, "re-sent to him")
 
 -- #3: only my group's progress counts; an old completion is not news
-STUB.Receive("LVLM", C.Encode("qo", { i = 101, o = "5/10" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qo", { i = 101, o = "5/10" }), "GUILD", "Ana-Testrealm")
 assert(not (R.mates.Ana.progress and R.mates.Ana.progress[101]), "Ana is not in my group: ignored")
-STUB.Receive("LVLM", C.Encode("qo", { i = 101, o = "10/10" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qo", { i = 101, o = "10/10" }), "GUILD", "Mario-Testrealm")
 assert(said(string.format(L.QUEST_DONE, "Mario", "Quest 101")) == 0, "first word from him is already complete: not announced")
 assert(#Q.Shared("Mario") == 1, "but shown")
 

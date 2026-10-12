@@ -3,7 +3,7 @@ local _, ns = ...
 local C = ns.Comm
 C.Start()
 STUB.Advance(1)
-assert(STUB.prefixes["LVLM"], "prefix registered")
+assert(STUB.prefixes["LVLM2"], "prefix registered")
 -- guild transport by default (auto → guild first)
 C.Send("hb", { l = 22, z = 1421 })
 STUB.Advance(0.5)
@@ -11,20 +11,20 @@ assert(#STUB.sent == 1 and STUB.sent[1].chatType == "GUILD", "hb sent on GUILD")
 -- receive from another player
 local got
 C.OnMessage("hb", function(f, name, full) got = { f = f, name = name, full = full } end)
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "GUILD", "Mario-Testrealm")
 assert(got and got.name == "Mario" and got.full == "Mario-Testrealm" and got.f.l == 30, "message dispatched")
 -- own message ignored
 got = nil
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "GUILD", "Tester-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "GUILD", "Tester-Testrealm")
 assert(got == nil, "own echo ignored")
 -- Forever shows the sender as "Name Realm" in the spike's echo (screenshot): own echo must be dropped in every spelling
 for _, spelled in ipairs({ "Tester Testrealm", "Tester-Testrealm", "Tester", "TesterTestrealm" }) do
 	got = nil
-	STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "GUILD", spelled)
+	STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "GUILD", spelled)
 	assert(got == nil, "own echo ignored as '" .. spelled .. "'")
 end
 -- malformed counted, not dispatched
-STUB.Receive("LVLM", "v1\31hb\31l=9999", "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", "v1\31hb\31l=9999", "GUILD", "Mario-Testrealm")
 assert(C.stats.bad == 1 and got == nil, "bad counted")
 -- lockdown queues and compacts hb
 STUB.lockdown = true
@@ -101,26 +101,26 @@ local realGetClubMembers = C_Club.GetClubMembers
 C_Club.GetClubMembers = function(...) lookups = lookups + 1; return realGetClubMembers(...) end
 got = nil
 local badBefore = C.stats.bad
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Stranger-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Stranger-Testrealm")
 assert(got == nil and C.stats.bad == badBefore + 1, "stranger dropped and counted")
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Mario-Testrealm")
 assert(got and got.name == "Mario", "guildmate accepted on channel")
-STUB.Receive("LVLM", C.Encode("hb", { l = 31, z = 1 }), "CHANNEL", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 31, z = 1 }), "CHANNEL", "Mario-Testrealm")
 assert(lookups == 1, "roster cached, looked up once, got " .. lookups)
 got = nil
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "GUILD", "Mario-Testrealm")
 assert(got and got.name == "Mario", "GUILD is server-authenticated: accepted on any transport")
 -- a new member shows up after the roster changes
 STUB.guildMembers.Nuevo = true
 got = nil
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Nuevo-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Nuevo-Testrealm")
 assert(got == nil, "not yet on the cached roster")
 STUB.Fire("GUILD_ROSTER_UPDATE")
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Nuevo-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Nuevo-Testrealm")
 assert(got and got.name == "Nuevo", "accepted after roster update")
 -- no roster API at all: fail closed on the hidden channel
 C_Club.GetGuildClubId = function() return nil end
 STUB.Fire("GUILD_ROSTER_UPDATE")
 got = nil
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1 }), "CHANNEL", "Mario-Testrealm")
 assert(got == nil, "without a roster nobody is trusted on the channel")

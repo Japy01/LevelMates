@@ -16,8 +16,8 @@ assert(last and last.link == named and last.q == 3, "the journal records it with
 
 -- #2: more than 20 wishes: pages
 for _, who in ipairs({ "Mario", "Ana", "Luis" }) do
-	STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", who .. "-Testrealm")
-	STUB.Receive("LVLM", C.Encode("wl", { ids = "1,2,3,4,5,6,7,8,9,10" }), "GUILD", who .. "-Testrealm")
+	STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", who .. "-Testrealm")
+	STUB.Receive("LVLM2", C.Encode("wl", { ids = "1,2,3,4,5,6,7,8,9,10" }), "GUILD", who .. "-Testrealm")
 end
 assert(#W.List() == 30, "30 wishes")
 B.ShowTab("wishes")
@@ -25,7 +25,7 @@ local function shown() local n = 0; for i = 1, #B.rows do if B.rows[i].button:Is
 assert(shown() == 20 and B.journalNext:IsShown() and B.journalPageText.text == string.format(L.J_PAGE, 1, 2), "page 1 of 2")
 B.journalNext.scripts.OnClick(B.journalNext)
 assert(shown() == 10 and B.rows[1].name.text == "Mario" and B.journalPageText.text == string.format(L.J_PAGE, 2, 2), "page 2 has Mario's wishes (by name)")
-for _, who in ipairs({ "Ana", "Luis" }) do STUB.Receive("LVLM", C.Encode("wl", {}), "GUILD", who .. "-Testrealm") end
+for _, who in ipairs({ "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("wl", {}), "GUILD", who .. "-Testrealm") end
 assert(shown() == 10 and not B.journalNext:IsShown(), "one page: no pager")
 
 -- #3: a whole-state send dropped from the queue on entering an instance goes out again later

@@ -2,8 +2,8 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, X, L = ns.Comm, ns.Rested, ns.L
-local function mate(name) STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", name .. "-Testrealm") end
-local function rx(name, p) STUB.Receive("LVLM", C.Encode("rx", { p = p }), "GUILD", name .. "-Testrealm") end
+local function mate(name) STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", name .. "-Testrealm") end
+local function rx(name, p) STUB.Receive("LVLM2", C.Encode("rx", { p = p }), "GUILD", name .. "-Testrealm") end
 local function sentRx(from)
 	local out = {}
 	for i = from, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "rx" then out[#out + 1] = f.p end end
@@ -57,7 +57,7 @@ assert(#s == 1 and s[1] == 100, "a big change goes out with a heartbeat: " .. ta
 
 -- a newcomer gets it right after my heartbeat
 n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Nuevo-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Nuevo-Testrealm")
 STUB.Advance(6)
 local order = {}
 for i = n + 1, #STUB.sent do local k = C.Decode(STUB.sent[i].msg); if k == "hb" or k == "rx" then order[#order + 1] = k end end
@@ -86,7 +86,7 @@ assert(X.Of("Stranger") == nil, "unknown ignored")
 rx("Mario", -1)
 assert(X.Of("Mario") == nil, "-1 clears")
 rx("Ana", 80)
-STUB.Receive("LVLM", C.Encode("bye", {}), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("bye", {}), "GUILD", "Ana-Testrealm")
 assert(X.Of("Ana") == nil, "bye clears")
 
 -- "Appear on the board" off: -1 before the transport stops, others forgotten

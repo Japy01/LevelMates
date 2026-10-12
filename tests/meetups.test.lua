@@ -6,7 +6,7 @@ local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STU
 local function said(text) local n = 0; for _, p in ipairs(STUB.printed) do if p:find(text, 1, true) then n = n + 1 end end; return n end
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
 R.InvalidateGuildRoster()
-for _, n in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", n .. "-Testrealm") end
+for _, n in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", n .. "-Testrealm") end
 local now = M.Now()
 local entries
 MenuUtil.CreateContextMenu = function(owner, fn)
@@ -29,17 +29,17 @@ local mine = M.List(5)[1]
 assert(M.When(mine) == string.format("%s %02d:%02d", L["DAY_" .. date("*t", mine.at * 60).wday], date("*t", mine.at * 60).hour, date("*t", mine.at * 60).min), "day and time")
 
 -- guildmates join mine; I am told
-STUB.Receive("LVLM", C.Encode("qj", { id = mine.id, r = "H" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qj", { id = mine.id, r = "H" }), "GUILD", "Ana-Testrealm")
 assert(mine.joined.Ana == "H" and said(string.format(L.MEET_JOINED, "Ana", D.Name(5), M.When(mine), L.ROLE_H)) == 1, "Ana joins")
-STUB.Receive("LVLM", C.Encode("qj", { id = mine.id, r = "D" }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qj", { id = mine.id, r = "D" }), "GUILD", "Nadie-Testrealm")
 assert(not mine.joined.Nadie, "strangers cannot")
-STUB.Receive("LVLM", C.Encode("qjx", { id = mine.id }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qjx", { id = mine.id }), "GUILD", "Ana-Testrealm")
 assert(not mine.joined.Ana, "Ana leaves")
 
 -- a guildmate's meetup; I join it from the card
-STUB.Receive("LVLM", C.Encode("qd", { id = "mario01", d = 4, at = now + 30, n = "vamos" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qd", { id = "mario01", d = 4, at = now + 30, n = "vamos" }), "GUILD", "Mario-Testrealm")
 assert(said(string.format(L.MEET_NEW, "Mario", D.Name(4), M.When({ at = now + 30 }))) == 1, "new meetup notice")
-STUB.Receive("LVLM", C.Encode("qd", { id = "mario01", d = 4, at = now + 30 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qd", { id = "mario01", d = 4, at = now + 30 }), "GUILD", "Ana-Testrealm")
 assert(M.List(4)[1].by == "Mario", "only its creator re-sends it")
 B.ShowTab("lfg")
 local card
@@ -55,7 +55,7 @@ assert(pick(string.format(L.MEET_LEAVE, M.When(M.List(4)[1]))) and last("qjx").i
 assert(M.Join("mario01", "T"), "join again")
 
 -- reminder: 15 minutes before, once, only if mine or joined
-STUB.Receive("LVLM", C.Encode("qd", { id = "ana00001", d = 6, at = now + 20 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qd", { id = "ana00001", d = 6, at = now + 20 }), "GUILD", "Ana-Testrealm")
 STUB.Advance(16 * 60)
 M.Tick(); M.Tick()
 assert(said(string.format(L.MEET_SOON, D.Name(4), M.When(M.List(4)[1]))) == 1, "reminded once for the joined one")
@@ -66,17 +66,17 @@ card = nil
 for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 5 then card = c end end
 card.scripts.OnClick(card, "RightButton")
 assert(pick(string.format(L.MEET_CANCEL, M.When(M.List(5)[1]))) and last("qdx") and #M.List(5) == 0, "cancelled")
-STUB.Receive("LVLM", C.Encode("qdx", { id = "mario01" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qdx", { id = "mario01" }), "GUILD", "Ana-Testrealm")
 assert(#M.List(4) == 1, "nobody else can cancel it")
-STUB.Receive("LVLM", C.Encode("qdx", { id = "mario01" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("qdx", { id = "mario01" }), "GUILD", "Mario-Testrealm")
 assert(#M.List(4) == 0 and not M.MyRole("mario01"), "Mario cancels it")
 
 -- newcomers get my meetups and joins (after the 16 minutes above the guildmates re-announce themselves)
-for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", nm .. "-Testrealm") end
-STUB.Receive("LVLM", C.Encode("qd", { id = "luis0001", d = 3, at = now + 300 }), "GUILD", "Luis-Testrealm")
+for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", nm .. "-Testrealm") end
+STUB.Receive("LVLM2", C.Encode("qd", { id = "luis0001", d = 3, at = now + 300 }), "GUILD", "Luis-Testrealm")
 assert(M.Join("luis0001", "D"))
 local n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
 local qd, qj = 0, 0
 for i = n + 1, #STUB.sent do local k, ff = C.Decode(STUB.sent[i].msg); if k == "qd" then qd = qd + 1 elseif k == "qj" and ff.id == "luis0001" then qj = qj + 1 end end
 assert(qd == 1 and qj == 1, "re-sent: my meetup and my join")

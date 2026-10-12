@@ -13,8 +13,8 @@ local C, GX, MC, T, L = ns.Comm, ns.GroupXP, ns.MateCard, ns.Trainer, ns.L
 local function count(kind, from) local n = 0; for i = (from or 0) + 1, #STUB.sent do if C.Decode(STUB.sent[i].msg) == kind then n = n + 1 end end; return n end
 
 -- 1: a storm of roster updates with the same guildmates sends once
-STUB.Receive("LVLM", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 19, z = 1421, c = "PRIEST" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 19, z = 1421, c = "PRIEST" }), "GUILD", "Ana-Testrealm")
 STUB.Advance(3)   -- the login timers settle first
 STUB.partyMembers = { Mario = true }
 local n = #STUB.sent
@@ -28,7 +28,7 @@ STUB.Fire("GROUP_ROSTER_UPDATE"); STUB.Advance(3)
 assert(count("xp", n) == 2, "a new guildmate in the group gets mine at once")
 
 -- 2: in a dungeon the bars stay (paused), and leaving it sends at once
-STUB.Receive("LVLM", C.Encode("xp", { p = 80, l = 21 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("xp", { p = 80, l = 21 }), "GUILD", "Mario-Testrealm")
 STUB.inInstance = true
 STUB.Fire("PLAYER_ENTERING_WORLD", false, false)
 STUB.Advance(400); GX.Refresh()
@@ -37,16 +37,16 @@ assert(GX.frame.title.text == L.GROUPXP_PAUSED, "marked as paused")
 STUB.inInstance = false
 n = #STUB.sent
 STUB.Fire("PLAYER_ENTERING_WORLD", false, false); STUB.Advance(3)
-STUB.Receive("LVLM", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm"); STUB.Advance(3)   -- he is back on the board
+STUB.Receive("LVLM2", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm"); STUB.Advance(3)   -- he is back on the board
 assert(count("xp", n) == 1, "out again: mine goes at once")
-STUB.Receive("LVLM", C.Encode("xp", { p = 82, l = 21 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("xp", { p = 82, l = 21 }), "GUILD", "Mario-Testrealm")
 assert(GX.frame:IsShown() and GX.frame.title.text == L.GROUPXP_TITLE, "live again")
 
 -- 3: share buttons stack from the bottom, whatever their number
 C_QuestLog.GetLogIndexForQuestID = function() return 1 end
 C_QuestLog.IsPushableQuest = function() return true end
 STUB.quests = { 101 }
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "999" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "999" }), "GUILD", "Mario-Testrealm")
 MC.Show("Mario")
 assert(MC.questButtons[1]:IsShown() and MC.questButtons[1].point[3] == 40, "the only button sits right above the others: " .. tostring(MC.questButtons[1].point[3]))
 

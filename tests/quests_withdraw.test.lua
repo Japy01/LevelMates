@@ -16,12 +16,12 @@ ns.db.settings.shareQuests = false
 R.WithdrawQuests()
 assert(last("q").i == "0/0", "withdrawn")
 -- receiving: empty clears, withdraw forgets that they share
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "101,102" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "101,102" }), "GUILD", "Mario-Testrealm")
 assert(R.mates.Mario.quests[101] and R.mates.Mario.questsKnown, "his quests")
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "0" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "0" }), "GUILD", "Mario-Testrealm")
 assert(not R.mates.Mario.quests[101] and R.mates.Mario.questsKnown, "none now")
-STUB.Receive("LVLM", C.Encode("q", { i = "0/0", ids = "0" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "0/0", ids = "0" }), "GUILD", "Mario-Testrealm")
 assert(not R.mates.Mario.questsKnown, "no longer shared")
 -- a send refused (in a dungeon) is tried again later
 ns.db.settings.shareQuests = true

@@ -20,9 +20,9 @@ for i = n + 1, #STUB.sent do assert(C.Decode(STUB.sent[i].msg) ~= "fe", "the opt
 ns.db.settings.shareDeaths = true
 
 -- guildmates' deaths, and the cemetery filter
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("fe", { k = "dth", a = 24, b = "Duskwood", t = F.Now() }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("fe", { k = "lvl", a = 25, t = F.Now() }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", { k = "dth", a = 24, b = "Duskwood", t = F.Now() }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 25, t = F.Now() }), "GUILD", "Mario-Testrealm")
 assert(#F.List(nil, true) == 2 and #F.List() == 3, "only deaths: " .. #F.List(nil, true) .. "/" .. #F.List())
 B.Toggle(); B.ShowTab("feed")
 assert(B.feedCemetery and B.feedCemetery:IsShown(), "the Cemetery button on the wall")

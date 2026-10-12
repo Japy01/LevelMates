@@ -6,10 +6,10 @@ local today = math.floor(time() / 86400)
 STUB.guildMembers = { Tester = true, Mario = true, Jefa = true }
 STUB.guildRoles = { Jefa = 2 }
 R.InvalidateGuildRoster()
-STUB.Receive("LVLM", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Jefa-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 18, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("go", { id = "j1", ty = "lvl", a = 30, s = today, e = today + 3 }), "GUILD", "Jefa-Testrealm")
-STUB.Receive("LVLM", C.Encode("go", { id = "j2", ty = "cnt", a = 50, w = "qst", s = today, e = today + 7 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 18, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("go", { id = "j1", ty = "lvl", a = 30, s = today, e = today + 3 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("go", { id = "j2", ty = "cnt", a = 50, w = "qst", s = today, e = today + 7 }), "GUILD", "Jefa-Testrealm")
 B.Toggle()
 local function visible()
 	local out = {}

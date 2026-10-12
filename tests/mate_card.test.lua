@@ -4,11 +4,11 @@ STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, L, MC = ns.Comm, ns.Board, ns.L, ns.MateCard
 STUB.items[2589] = "|cffffffff|Hitem:2589::::::::20:::::::|h[Linen Cloth]|h|r"
 STUB.items[765] = "|cffffffff|Hitem:765::::::::20:::::::|h[Silverleaf]|h|r"
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR", g = 1, s = 1, x = 40, y = 50 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("pf", { p = "171:120,182:95" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("wl", { ids = "2589" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("gv", { ids = "765" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR", g = 1, s = 1, x = 40, y = 50 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pf", { p = "171:120,182:95" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("wl", { ids = "2589" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", { ids = "765" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
 ns.Feed.AddSample("Mario", "lvl", 24, nil, 5)
 
 local text = table.concat(MC.Lines("Mario"), "\n")
@@ -40,7 +40,7 @@ MC.build.scripts.OnClick(MC.build)
 assert((STUB.printed[#STUB.printed] or ""):find("|Htalentbuild:71:24:CODEmario|h", 1, true), "view build")
 
 -- someone with nothing shared: just the basics, no waypoint or build
-STUB.Receive("LVLM", C.Encode("hb", { l = 12, z = 1412, c = "MAGE" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 12, z = 1412, c = "MAGE" }), "GUILD", "Ana-Testrealm")
 MC.Show("Ana")
 assert(#MC.Lines("Ana") >= 1 and not MC.waypoint:IsShown() and not MC.build:IsShown(), "the basics only")
 

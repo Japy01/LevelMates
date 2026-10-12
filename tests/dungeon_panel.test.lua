@@ -5,10 +5,10 @@ local DP, B, C, L = ns.DungeonPanel, ns.Board, ns.Comm, ns.L
 local function kinds(rows) local out = {}; for _, r in ipairs(rows) do out[#out + 1] = r.header and ("#" .. r.header) or r.kind end; return table.concat(out, ",") end
 
 -- what the panel shows for the Deadmines (17-26)
-STUB.Receive("LVLM", C.Encode("hb", { l = 21, z = 1412, c = "MAGE" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 19, z = 1412, c = "PRIEST", g = 0 }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 50, z = 1412 }), "GUILD", "Luis-Testrealm")
-STUB.Receive("LVLM", C.Encode("lfg", { d = 5, r = "H", id = "lfg00001", m = 20, n = "rápido" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 21, z = 1412, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 19, z = 1412, c = "PRIEST", g = 0 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 50, z = 1412 }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfg", { d = 5, r = "H", id = "lfg00001", m = 20, n = "rápido" }), "GUILD", "Mario-Testrealm")
 STUB.Fire("CHAT_MSG_CHANNEL", "LFM DM need tank", "Pepe-Testrealm", "", "2. Trade", "", "", 0, 2, "Trade")
 ns.Meetups.AddSample("Ana", 5, 90, { Mario = "D" })
 local rows = DP.Rows(5)
@@ -57,7 +57,7 @@ ns.On("LM_LFG_HERE", function(id) here = id end)
 DP.lfgButton.scripts.OnClick(DP.lfgButton)
 assert(here == 5, "look for a group here")
 -- it follows changes and closes with the board
-STUB.Receive("LVLM", C.Encode("lfgx", { id = "lfg00001" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfgx", { id = "lfg00001" }), "GUILD", "Mario-Testrealm")
 assert(not kinds(DP.Rows(5)):find("ad", 1, true), "the withdrawn ad is gone")
 B.frame:Hide(); B.frame.scripts.OnHide = B.frame.scripts.OnHide
 DP.Close()

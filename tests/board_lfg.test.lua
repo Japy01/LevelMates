@@ -3,8 +3,8 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, G, D, L = ns.Comm, ns.Board, ns.LFG, ns.Dungeons, ns.L
 STUB.player.level = 15
-local function mate(name, level, class) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = 1421, c = class }), "GUILD", name .. "-Testrealm") end
-local function ad(from, f) STUB.Receive("LVLM", C.Encode("lfg", f), "GUILD", from .. "-Testrealm") end
+local function mate(name, level, class) STUB.Receive("LVLM2", C.Encode("hb", { l = level, z = 1421, c = class }), "GUILD", name .. "-Testrealm") end
+local function ad(from, f) STUB.Receive("LVLM2", C.Encode("lfg", f), "GUILD", from .. "-Testrealm") end
 mate("Mario", 18, "MAGE"); mate("Ana", 12)
 ad("Mario", { d = 2, r = "TD", n = "con agua", id = "m0000001", m = 15 })
 STUB.Advance(31)

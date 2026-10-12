@@ -28,8 +28,8 @@ ns.db.settings.shareAlts = true
 -- a guildmate's alts on their card and in the board tooltip
 STUB.guildMembers = { Tester = true, Mario = true, Mariomago = true, Ana = true }
 ns.Roster.InvalidateGuildRoster()
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("al", { n = "Mariomago,Fuera" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("al", { n = "Mariomago,Fuera" }), "GUILD", "Mario-Testrealm")
 local of = AL.Of("Mario")
 assert(#of == 1 and of[1] == "Mariomago", "only alts still in the guild")
 assert(table.concat(MC.Lines("Mario"), "\n"):find(string.format(L.CARD_ALTS, "Mariomago"), 1, true), "on the card")

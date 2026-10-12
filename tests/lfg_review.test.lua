@@ -4,14 +4,14 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, G = ns.Comm, ns.LFG
 STUB.player.level = 15
-local function mate(name) STUB.Receive("LVLM", C.Encode("hb", { l = 15, z = 1421 }), "GUILD", name .. "-Testrealm") end
-local function ad(from, f) STUB.Receive("LVLM", C.Encode("lfg", f), "GUILD", from .. "-Testrealm") end
+local function mate(name) STUB.Receive("LVLM2", C.Encode("hb", { l = 15, z = 1421 }), "GUILD", name .. "-Testrealm") end
+local function ad(from, f) STUB.Receive("LVLM2", C.Encode("lfg", f), "GUILD", from .. "-Testrealm") end
 
 -- 1. a newcomer must get my heartbeat before my ad, every time (otherwise the ad arrives from a stranger and is dropped)
 assert(G.Post(2, "T"))
 for round = 1, 8 do
 	local n = #STUB.sent
-	STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Nuevo" .. round .. "-Testrealm")
+	STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Nuevo" .. round .. "-Testrealm")
 	STUB.Advance(6)
 	local order = {}
 	for i = n + 1, #STUB.sent do local k = C.Decode(STUB.sent[i].msg); if k == "hb" or k == "lfg" then order[#order + 1] = k end end
@@ -25,7 +25,7 @@ mate("Mario"); mate("Ana")
 ad("Ana", { d = 3, r = "H", id = "a0000001", m = 20 })
 ad("Mario", { d = 5, r = "T", id = "a0000001", m = 20 })
 assert(G.ads.a0000001.name == "Ana" and G.ads.a0000001.d == 3, "Mario cannot take over Ana's ad")
-STUB.Receive("LVLM", C.Encode("lfgx", { id = "a0000001" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfgx", { id = "a0000001" }), "GUILD", "Ana-Testrealm")
 assert(G.ads.a0000001 == nil, "and Ana can still withdraw it")
 
 -- 3. a re-send never moves the clock forward
@@ -40,7 +40,7 @@ assert(G.ads.a0000002.endsAt == ends, "a lying or rounded-up re-send does not ex
 mate("Mario")
 ad("Mario", { d = 2, r = "T", id = "m0000001", m = 20 })
 assert(G.ads.m0000001)
-STUB.Receive("LVLM", C.Encode("bye", {}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("bye", {}), "GUILD", "Mario-Testrealm")
 assert(G.ads.m0000001 == nil, "bye removes the poster's ad")
 
 -- 4b. turning sharing off withdraws my ad before the transport stops

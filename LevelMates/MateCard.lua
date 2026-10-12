@@ -34,6 +34,7 @@ end
 -- The card's text, one line per thing known about them.
 function MC.Lines(name)
 	local m, lines = R.mates[name], {}
+	if R.legacy and R.legacy[name] then lines[#lines + 1] = L.CARD_OLD_VERSION end
 	if name == ns.Me() and ns.Alts then   -- my own card: my characters in this guild
 		lines[#lines + 1] = L.CARD_MY_CHARS
 		local all = ns.Alts.MyAlts()

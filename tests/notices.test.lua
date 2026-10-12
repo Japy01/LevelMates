@@ -15,18 +15,18 @@ ns.db.settings.screenNotices = true
 
 -- an ad for my level reaches the screen
 STUB.player.level = 15
-STUB.Receive("LVLM", C.Encode("hb", { l = 16, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("lfg", { d = 2, r = "T", id = "ad000001", m = 20 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 16, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfg", { d = 2, r = "T", id = "ad000001", m = 20 }), "GUILD", "Mario-Testrealm")
 assert(UIErrorsFrame.messages[#UIErrorsFrame.messages]:find("Mario", 1, true), "LFG notice on screen")
 
 -- versions
 assert(V.Newer("0.2.0", "0.1.9") and V.Newer("1.0", "0.9.9") and V.Newer("v0.1.1", "0.1.0"), "newer")
 assert(not V.Newer("0.1.0", "0.1.0") and not V.Newer("0.1.0", "0.2") and not V.Newer("dev", "0.1.0") and not V.Newer("0.2.0", "dev"), "not newer")
 ns.VERSION = "0.1.0"
-STUB.Receive("LVLM", C.Encode("hb", { l = 16, z = 1421, v = "0.1.0" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 16, z = 1421, v = "0.1.0" }), "GUILD", "Mario-Testrealm")
 local said = 0
 local function count() said = 0; for _, p in ipairs(STUB.printed) do if p:find(string.format(L.VERSION_NEW, "0.2.0"), 1, true) then said = said + 1 end end; return said end
 assert(count() == 0, "same version: nothing")
-STUB.Receive("LVLM", C.Encode("hb", { l = 16, z = 1421, v = "0.2.0" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 16, z = 1421, v = "0.2.0" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 16, z = 1421, v = "0.2.0" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 16, z = 1421, v = "0.2.0" }), "GUILD", "Mario-Testrealm")
 assert(count() == 1, "newer: told once")

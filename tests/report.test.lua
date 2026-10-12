@@ -2,7 +2,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local RP, C, L = ns.Report, ns.Comm, ns.L
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, v = "0.3.0" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, v = "0.3.0" }), "GUILD", "Mario-Testrealm")
 ns.db.settings.sharePos = true
 
 -- the report: what is needed to understand a problem (guildmates counted by version, no names)

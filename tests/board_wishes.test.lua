@@ -6,8 +6,8 @@ local function link(id, name) return "|cff1eff00|Hitem:" .. id .. "::::::::20:::
 STUB.guildMembers = { Tester = true, Mario = true }
 R.InvalidateGuildRoster()
 STUB.items[1001] = link(1001, "Cool Sword"); STUB.items[2589] = link(2589, "Linen")
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("wl", { ids = "1001,4242" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("wl", { ids = "1001,4242" }), "GUILD", "Mario-Testrealm")
 assert(W.Add(link(2589)))
 local entries
 MenuUtil.CreateContextMenu = function(owner, fn)
@@ -65,7 +65,7 @@ assert(D.box:GetText() == "", "closed again: nothing captured")
 
 -- empty, other tabs, slash
 for _, w in ipairs(W.List()) do if w.mine then W.Remove(w.id) end end
-STUB.Receive("LVLM", C.Encode("wl", {}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("wl", {}), "GUILD", "Mario-Testrealm")
 assert(#visible() == 0 and B.frame.empty.text == L.WISH_EMPTY, "empty text")
 B.tabs.mates.scripts.OnClick(B.tabs.mates)
 assert(not B.wishAdd:IsShown(), "only on the Wishes tab")

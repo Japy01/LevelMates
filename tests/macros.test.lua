@@ -57,22 +57,22 @@ assert(not MA.Share("s5"), "five at most")
 assert(MA.Unshare("Pull") and not MA.IsShared("Pull") and last("mcx").n == "Pull", "withdrawn")
 -- a newcomer gets them again
 local n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
 local again = 0
 for i = n + 1, #STUB.sent do if C.Decode(STUB.sent[i].msg) == "mc" then again = again + 1 end end
 assert(again == 4, "re-sent to newcomers: " .. again)
 -- a deleted macro stops being shared
 for i, m in ipairs(macros) do if m.name == "s1" then table.remove(macros, i) end end
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
 assert(not MA.IsShared("s1"), "gone with the macro")
 
 -- guildmates': only my class
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 22, z = 1421, c = "MAGE" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("mc", { n = "Tank", x = "/cast Taunt" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("mc", { n = "Sheep", x = "/cast Polymorph" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("mc", { n = "X", x = "/cast X" }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 22, z = 1421, c = "MAGE" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("mc", { n = "Tank", x = "/cast Taunt" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("mc", { n = "Sheep", x = "/cast Polymorph" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("mc", { n = "X", x = "/cast X" }), "GUILD", "Nadie-Testrealm")
 local g = MA.Guild()
 assert(#g == 1 and g[1].by == "Mario" and g[1].name == "Tank" and g[1].body == "/cast Taunt", "Mario's, my class")
-STUB.Receive("LVLM", C.Encode("mcx", { n = "Tank" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("mcx", { n = "Tank" }), "GUILD", "Mario-Testrealm")
 assert(#MA.Guild() == 0, "withdrawn")

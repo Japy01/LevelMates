@@ -8,13 +8,13 @@ STUB.guildMembers = { Tester = true, Mario = true, Jefa = true }
 STUB.guildRoles = { Jefa = 2 }
 R.InvalidateGuildRoster()
 STUB.player.level = 20
-STUB.Receive("LVLM", C.Encode("hb", { l = 18, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 40, z = 1412 }), "GUILD", "Jefa-Testrealm")
-STUB.Receive("LVLM", C.Encode("lfg", { d = 5, r = "T", id = "ad01", m = 20, n = "vamos ya" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("go", { id = "j1", ty = "lvl", a = 30, s = today, e = today + 3 }), "GUILD", "Jefa-Testrealm")
-STUB.Receive("LVLM", C.Encode("gp", { l = 25, e = today + 2 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 18, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 40, z = 1412 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfg", { d = 5, r = "T", id = "ad01", m = 20, n = "vamos ya" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("go", { id = "j1", ty = "lvl", a = 30, s = today, e = today + 3 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gp", { l = 25, e = today + 2 }), "GUILD", "Mario-Testrealm")
 STUB.items[1001] = link(1001, "Cool Sword")
-STUB.Receive("LVLM", C.Encode("wl", { ids = "1001,4242" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("wl", { ids = "1001,4242" }), "GUILD", "Mario-Testrealm")
 local D = ns.DiscordCopy
 assert(D, "module loaded")
 
@@ -46,7 +46,7 @@ assert(t:find("Ragefire Chasm", 1, true) and t:find("[Green Boots]", 1, true) an
 -- at most one Discord message
 for i = 1, 80 do STUB.guildMembers["Relleno" .. i] = true end
 R.InvalidateGuildRoster()
-for i = 1, 80 do STUB.Receive("LVLM", C.Encode("hb", { l = 10, z = 1421 }), "GUILD", "Relleno" .. i .. "-Testrealm") end
+for i = 1, 80 do STUB.Receive("LVLM2", C.Encode("hb", { l = 10, z = 1421 }), "GUILD", "Relleno" .. i .. "-Testrealm") end
 t = D.Text("mates")
 assert(#t <= 2000 and t:find(L.DC_MORE:gsub("%%d.*", ""), 1, true), "cut to 2000 with '…and N more': " .. #t)
 

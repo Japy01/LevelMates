@@ -41,19 +41,19 @@ PlayerSpellsFrame = { TalentsFrame = { GetLoadoutExportString = function() error
 assert(BU.Mine().b == nil, "no code when the game cannot give one")
 
 -- guildmates: only my class is listed
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 22, z = 1421, c = "MAGE" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:0,1002:0,1003:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("tb", { c = "MAGE", s = 62, l = 22, p = "2001:13" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", s = 71, l = 30, p = "1001:21" }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 22, z = 1421, c = "MAGE" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:0,1002:0,1003:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "MAGE", s = 62, l = 22, p = "2001:13" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 71, l = 30, p = "1001:21" }), "GUILD", "Nadie-Testrealm")
 local list = BU.List()
 assert(#list == 2 and list[1].mine and list[2].name == "Mario", "me first, then my class: " .. #list)
 assert(BU.PointsText(list[2]) == "Armas 0 / Furia 0 / Protección 15", "branch names from my own tree: " .. BU.PointsText(list[2]))
 assert(BU.PointsText({ p = "1001:3,9999:2" }) == "Armas 3 / #9999 2", "an unknown branch")
 assert(BU.Of("Mario").l == 24 and BU.Of("Ana") == nil, "Of: same class only")
-STUB.Receive("LVLM", C.Encode("tb", {}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", {}), "GUILD", "Mario-Testrealm")
 assert(#BU.List() == 1, "Mario withdrew")
-STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:0,1002:0,1003:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:0,1002:0,1003:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
 
 -- View build: the game's own window, from a click
 local ref

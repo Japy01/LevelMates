@@ -11,8 +11,8 @@ assert(C.Validate("xp", { p = 45, l = 20 }) and not C.Validate("xp", { p = 101, 
 STUB.player.xp = 450
 STUB.Fire("PLAYER_XP_UPDATE", "player"); STUB.Advance(31)
 assert(count("xp") == 0, "not in a group")
-STUB.Receive("LVLM", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 19, z = 1421, c = "PRIEST" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 19, z = 1421, c = "PRIEST" }), "GUILD", "Ana-Testrealm")
 assert(not (GX.frame and GX.frame:IsShown()), "no window alone")
 
 -- grouped with Mario: mine goes out, at most every 30 seconds
@@ -27,8 +27,8 @@ STUB.Advance(30)
 assert(count("xp", n) == 1 and last("xp").p == 52, "once the 30 seconds pass, the newest")
 
 -- theirs: a bar per grouped guildmate, me first
-STUB.Receive("LVLM", C.Encode("xp", { p = 80, l = 21 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("xp", { p = 10, l = 19 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("xp", { p = 80, l = 21 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("xp", { p = 10, l = 19 }), "GUILD", "Ana-Testrealm")
 local rows = GX.Rows()
 assert(#rows == 2 and rows[1].mine and rows[1].pct == 52 and rows[2].name == "Mario" and rows[2].pct == 80 and rows[2].level == 21, "me and Mario; Ana is not in my group")
 assert(GX.frame and GX.frame:IsShown(), "the window shows")
@@ -47,8 +47,8 @@ assert(count("xp", n) == 0 and not GX.frame:IsShown(), "off: nothing sent or sho
 -- minimise and close
 ns.db.settings.groupXp = true
 STUB.partyMembers = { Mario = true }
-STUB.Receive("LVLM", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("xp", { p = 70, l = 21 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 21, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("xp", { p = 70, l = 21 }), "GUILD", "Mario-Testrealm")
 assert(GX.frame:IsShown(), "shown")
 GX.frame.minimize.scripts.OnClick(GX.frame.minimize)
 assert(GX.frame:GetHeight() == 22 and not GX.frame.rows[1].text:IsShown(), "minimised: the title only")

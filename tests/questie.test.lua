@@ -4,10 +4,10 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, M = ns.Comm, ns.Match
 STUB.player.mapId = 1421
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "1098" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 12, z = 1421 }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "1098" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "1098" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 12, z = 1421 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "1098" }), "GUILD", "Ana-Testrealm")
 
 -- no Questie installed: nothing changes
 assert(ns.Questie.CanTake(959, 30) == nil, "no Questie -> nil")

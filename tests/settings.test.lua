@@ -6,7 +6,7 @@ for _, s in ipairs(ns.Settings.AllSettings()) do names[#names + 1] = s.name end
 assert(#names >= 9, "all switches registered: " .. #names)
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, R = ns.Comm, ns.Roster
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
 assert(#R.List() == 1, "mate known")
 -- toggling share off stops comm, forgets everyone and refuses to send
 local share

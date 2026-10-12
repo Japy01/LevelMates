@@ -38,8 +38,8 @@ STUB.player.level = 30; STUB.Fire("PLAYER_LEVEL_UP", 30)
 assert(AC.Has("lvl30"), "level 30")
 
 -- guildmates': on their card
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("ac", { ids = AC.Index("lvl10") .. "," .. AC.Index("dun1") }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ac", { ids = AC.Index("lvl10") .. "," .. AC.Index("dun1") }), "GUILD", "Mario-Testrealm")
 assert(#AC.Of("Mario") == 2, "Mario's two")
 local card = table.concat(ns.MateCard.Lines("Mario"), "\n")
 assert(card:find(string.format(L.CARD_ACH, 2), 1, true), "on his card: " .. card)

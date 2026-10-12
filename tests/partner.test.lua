@@ -3,8 +3,8 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, P, L = ns.Comm, ns.Partner, ns.L
 STUB.player.level = 20
-local function mate(name, level, z) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = z or 1421 }), "GUILD", name .. "-Testrealm") end
-local function pal(name, p) STUB.Receive("LVLM", C.Encode("pal", { p = p }), "GUILD", name .. "-Testrealm") end
+local function mate(name, level, z) STUB.Receive("LVLM2", C.Encode("hb", { l = level, z = z or 1421 }), "GUILD", name .. "-Testrealm") end
+local function pal(name, p) STUB.Receive("LVLM2", C.Encode("pal", { p = p }), "GUILD", name .. "-Testrealm") end
 local function lastKind() return (C.Decode(STUB.sent[#STUB.sent].msg)) end
 assert(ns.db.settings.palNotices == true, "notices on by default")
 assert(P.IsOn() == false, "off by default")
@@ -52,14 +52,14 @@ assert(P.Matches("Rosa") and #STUB.printed == printed + 2, "notices off: silent"
 ns.db.settings.palNotices = true
 
 -- marks go away with bye and with p=0
-STUB.Receive("LVLM", C.Encode("bye", {}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("bye", {}), "GUILD", "Mario-Testrealm")
 assert(not P.Marked("Mario"), "bye clears the mark")
 pal("Ana", 0)
 assert(not P.Marked("Ana"), "p=0 clears")
 
 -- a newcomer gets my mark right after my heartbeat
 local n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Nuevo-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Nuevo-Testrealm")
 STUB.Advance(6)
 local order = {}
 for i = n + 1, #STUB.sent do local kk = C.Decode(STUB.sent[i].msg); if kk == "hb" or kk == "pal" then order[#order + 1] = kk end end

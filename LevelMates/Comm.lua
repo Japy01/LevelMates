@@ -1,10 +1,12 @@
--- Comm.lua: wire format and (Task 2) transport. Format: "v1<US>kind<US>k=v;k=v", US = \031.
+-- Comm.lua: wire format and transport. Format: "2<US>kind<US>k=v;k=v", US = \031, on its own prefix (protocol v2:
+-- a clean cut from 0.3.x, whose prefix is only listened to for telling them to update).
 local _, ns = ...
 local C = {}
 ns.Comm = C
-C.VERSION = "v1"
-C.PREFIX = "LVLM"
-C.MAX_BYTES = 255
+C.VERSION = "2"
+C.PREFIX = "LVLM2"
+C.LEGACY_PREFIX = "LVLM"
+C.MAX_BYTES = 240
 local US = "\031"
 
 local function esc(s)
@@ -322,7 +324,27 @@ local meKeys = {}
 local function isMe(sender, name)
 	return meKeys[norm(sender)] or meKeys[norm(name)] or false
 end
+-- 0.3.x clients: not data any more (clean cut). Mark them, and give them one old-style heartbeat with my version
+-- every 5 minutes, so their own "a newer LevelMates exists" notice tells them to update.
+local lastLegacyHb = -math.huge
+local function onLegacy(channel, sender)
+	if channel ~= "GUILD" then return end
+	local name = ns.ShortName(sender)
+	if isMe(sender, name) then return end
+	C.stats.legacy = (C.stats.legacy or 0) + 1
+	ns.Fire("LM_LEGACY_SEEN", name)
+	if GetTime() - lastLegacyHb < 300 then return end
+	lastLegacyHb = GetTime()
+	local _, class = UnitClass("player")
+	local old = "v1" .. US .. "hb" .. US .. "c=" .. esc(class or "WARRIOR") .. ";l=" .. (UnitLevel("player") or 1)
+		.. ";v=" .. esc(ns.VERSION) .. ";z=" .. (C_Map.GetBestMapForUnit("player") or 0)
+	C_ChatInfo.SendAddonMessage(C.LEGACY_PREFIX, old, "GUILD")
+end
 local function onAddonMessage(prefix, text, channel, sender)
+	if prefix == C.LEGACY_PREFIX then
+		if not (issecretvalue and issecretvalue(sender)) then onLegacy(channel, sender) end
+		return
+	end
 	if prefix ~= C.PREFIX then return end
 	if issecretvalue and (issecretvalue(text) or issecretvalue(sender)) then return end
 	if channel ~= "GUILD" and channel ~= "CHANNEL" then return end
@@ -344,6 +366,7 @@ function C.Start()
 	local myName, myRealm = ns.Me(), GetRealmName()
 	meKeys = { [norm(myName)] = true, [norm(myName .. (myRealm or ""))] = true }
 	C_ChatInfo.RegisterAddonMessagePrefix(C.PREFIX)
+	C_ChatInfo.RegisterAddonMessagePrefix(C.LEGACY_PREFIX)
 	active = pickTransport()
 	if active == "channel" then ensureChannel() end
 	if not frame then

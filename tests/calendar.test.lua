@@ -2,7 +2,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local B, M, L = ns.Board, ns.Meetups, ns.L
-STUB.Receive("LVLM", ns.Comm.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", ns.Comm.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
 M.AddSample("Mario", 5, 90, { Ana = "H" })
 M.AddSample("Ana", 4, 24 * 60, {})
 M.AddSample("Luis", 6, 9 * 24 * 60, {})   -- more than a week away

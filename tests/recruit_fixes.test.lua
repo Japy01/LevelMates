@@ -7,7 +7,7 @@ local function said(text) for i = #STUB.printed, 1, -1 do if STUB.printed[i]:fin
 STUB.guildMembers = { Tester = true, Jefa = true }
 STUB.guildRoles = { Jefa = 2 }
 R.InvalidateGuildRoster()
-STUB.Receive("LVLM", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Jefa-Testrealm")
 STUB.iAmOfficer = true
 STUB.channels[2] = 2
 
@@ -16,7 +16,7 @@ local server = time()
 GetServerTime = function() return server end
 local realTime = time
 time = function(t) if t then return realTime(t) end; return server - 300 end   -- my PC is 5 minutes behind
-STUB.Receive("LVLM", C.Encode("rc", { t = server - 30 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("rc", { t = server - 30 }), "GUILD", "Jefa-Testrealm")
 assert(RC.Last() and RC.Last().by == "Jefa" and RC.Last().at == server - 30, "Jefa's post accepted, exact second")
 assert(RC.Wait() == RC.GAP - 30, "the wait counted on the server clock: " .. RC.Wait())
 time = realTime
@@ -27,9 +27,9 @@ ns.db.recruit[GetGuildInfo("player")].last = nil
 assert(RC.SetTemplate(1, "Nueva versión"))
 local v = last("rt").v
 assert(v and v > 0, "edits carry their version")
-STUB.Receive("LVLM", C.Encode("rt", { i = 1, x = "Vieja", v = v - 100 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("rt", { i = 1, x = "Vieja", v = v - 100 }), "GUILD", "Jefa-Testrealm")
 assert(RC.Templates()[1] == "Nueva versión", "older copy ignored")
-STUB.Receive("LVLM", C.Encode("rt", { i = 1, x = "Más nueva", v = v + 100 }), "GUILD", "Jefa-Testrealm")
+STUB.Receive("LVLM2", C.Encode("rt", { i = 1, x = "Más nueva", v = v + 100 }), "GUILD", "Jefa-Testrealm")
 assert(RC.Templates()[1] == "Más nueva", "newer copy wins")
 
 -- #3: a slot taken by our own hidden channel is not Trade

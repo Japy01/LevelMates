@@ -9,7 +9,7 @@ local pushable = { [101] = true, [102] = true, [103] = false, [104] = true }
 C_QuestLog.IsPushableQuest = function(id) return pushable[id] end
 STUB.quests = { 101, 102, 103, 104 }
 STUB.completed = { [104] = true }
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
 
 -- not grouped: nothing about quests
 assert(MC.MissingQuests("Mario") == nil and not table.concat(MC.Lines("Mario"), "\n"):find(L.CARD_NO_QUESTS, 1, true), "only in a group")
@@ -17,7 +17,7 @@ STUB.partyMembers = { Mario = true }
 assert(table.concat(MC.Lines("Mario"), "\n"):find(L.CARD_NO_QUESTS, 1, true), "grouped, but he does not share his quests")
 
 -- he shares them: mine that he lacks, that can be shared and are not done
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "102" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "102" }), "GUILD", "Mario-Testrealm")
 local missing = MC.MissingQuests("Mario")
 assert(#missing == 1 and missing[1].id == 101 and missing[1].title == "Quest 101", "only 101: " .. #missing)
 MC.Show("Mario")

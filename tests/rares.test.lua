@@ -6,7 +6,7 @@ local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STU
 local function count(kind, from) local n = 0; for i = (from or 0) + 1, #STUB.sent do if (C.Decode(STUB.sent[i].msg)) == kind then n = n + 1 end end; return n end
 STUB.guildMembers = { Tester = true, Mario = true }
 R.InvalidateGuildRoster()
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")
 assert(ns.db.settings.rareNotices == true, "on by default")
 ns.db.settings.sharePos = true   -- sightings carry my position: they need position sharing on
 assert(C.Validate("rr", { n = "Mangaleta", z = 1412, x = 42.5, y = 61 }) and C.Validate("rr", { n = "Mangaleta", z = 1412 }) == false, "rr format")
@@ -36,15 +36,15 @@ assert(count("rr", n) == 0, "protected names are not sent")
 issecretvalue = nil
 
 -- a guildmate's sighting: told in the same map, with a [Waypoint] link
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")   -- back in the roster after the 15 minutes above
-STUB.Receive("LVLM", C.Encode("rr", { n = "Rey Mosh", z = 1412, x = 30, y = 40 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")   -- back in the roster after the 15 minutes above
+STUB.Receive("LVLM2", C.Encode("rr", { n = "Rey Mosh", z = 1412, x = 30, y = 40 }), "GUILD", "Mario-Testrealm")
 local line = STUB.printed[#STUB.printed]
 assert(line:find(string.format(L.RARE_SEEN, "Mario", "Rey Mosh", "Map 1412"), 1, true) and line:find("|Haddon:LevelMates:way:1412:30.0:40.0|h", 1, true), "notice with the link")
 assert(UIErrorsFrame.messages[#UIErrorsFrame.messages] == string.format(L.RARE_SEEN, "Mario", "Rey Mosh", "Map 1412"), "on screen")
 local printed = #STUB.printed
-STUB.Receive("LVLM", C.Encode("rr", { n = "Rey Mosh", z = 1412, x = 30, y = 40 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("rr", { n = "Otro", z = 1421, x = 30, y = 40 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("rr", { n = "Extraño", z = 1412, x = 30, y = 40 }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("rr", { n = "Rey Mosh", z = 1412, x = 30, y = 40 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("rr", { n = "Otro", z = 1421, x = 30, y = 40 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("rr", { n = "Extraño", z = 1412, x = 30, y = 40 }), "GUILD", "Nadie-Testrealm")
 assert(#STUB.printed == printed, "no repeats, other maps or strangers")
 -- the link sets the waypoint
 local wp
@@ -57,6 +57,6 @@ printed = #STUB.printed   -- the click says where the route points
 -- option off
 ns.db.settings.rareNotices = false
 STUB.Advance(400)
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("rr", { n = "Rey Mosh", z = 1412, x = 30, y = 40 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("rr", { n = "Rey Mosh", z = 1412, x = 30, y = 40 }), "GUILD", "Mario-Testrealm")
 assert(#STUB.printed == printed, "option off")

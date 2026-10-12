@@ -11,14 +11,14 @@ assert(HM.InviteText():find("LevelMates", 1, true), "an invite to copy")
 
 -- guildmates: near my level or in my zone, help, groups, meetups today, gifts I wish for, trainer
 STUB.items[2589] = "|cffffffff|Hitem:2589::::::::20:::::::|h[Linen Cloth]|h|r"
-STUB.Receive("LVLM", C.Encode("hb", { l = 22, z = 1500, c = "MAGE" }), "GUILD", "Mario-Testrealm")    -- near my level (20)
-STUB.Receive("LVLM", C.Encode("hb", { l = 40, z = 1412, c = "PRIEST" }), "GUILD", "Ana-Testrealm")    -- my zone
-STUB.Receive("LVLM", C.Encode("hb", { l = 50, z = 1600 }), "GUILD", "Luis-Testrealm")                 -- neither
-STUB.Receive("LVLM", C.Encode("help", { t = "Ogro", z = 1412, x = 40, y = 50, id = "h0000001" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("lfg", { d = 5, r = "H", id = "lfg00001", m = 20 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 22, z = 1500, c = "MAGE" }), "GUILD", "Mario-Testrealm")    -- near my level (20)
+STUB.Receive("LVLM2", C.Encode("hb", { l = 40, z = 1412, c = "PRIEST" }), "GUILD", "Ana-Testrealm")    -- my zone
+STUB.Receive("LVLM2", C.Encode("hb", { l = 50, z = 1600 }), "GUILD", "Luis-Testrealm")                 -- neither
+STUB.Receive("LVLM2", C.Encode("help", { t = "Ogro", z = 1412, x = 40, y = 50, id = "h0000001" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfg", { d = 5, r = "H", id = "lfg00001", m = 20 }), "GUILD", "Mario-Testrealm")
 ns.Meetups.AddSample("Mario", 6, 30, {})
 ns.Wishlist.Add(STUB.items[2589])
-STUB.Receive("LVLM", C.Encode("gv", { ids = "2589" }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", { ids = "2589" }), "GUILD", "Luis-Testrealm")
 ns.char.trainer = { seen = true, spells = { { name = "Blink", level = 20 } } }
 ns.Trainer.LevelUp(20)
 rows = HM.Rows()

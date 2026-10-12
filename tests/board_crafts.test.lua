@@ -5,8 +5,8 @@ local C, B, P, R, L = ns.Comm, ns.Board, ns.Professions, ns.Roster, ns.L
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true }
 R.InvalidateGuildRoster()
 ns.char.skills = { [171] = { name = "Alchemy", rank = 120 } }
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("pf", { p = "171:200,164:80" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pf", { p = "171:200,164:80" }), "GUILD", "Mario-Testrealm")
 local entries
 MenuUtil.CreateContextMenu = function(owner, fn)
 	entries = {}

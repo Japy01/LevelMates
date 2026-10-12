@@ -20,9 +20,9 @@ function GetMacroIndexByName(n) for i, m in ipairs(macros) do if m.name == n the
 function GetMacroInfo(i) local m = macros[i - 120]; if m then return m.name, 1, m.body end end
 function CreateMacro(name, icon, body) macros[#macros + 1] = { name = name, body = body }; return #macros end
 local C, R = ns.Comm, ns.Roster
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("mc", { n = "Tank", x = "/cast Taunt\n/yell Here" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("mc", { n = "Tank", x = "/cast Taunt\n/yell Here" }), "GUILD", "Mario-Testrealm")
 B.Refresh()
 local seen = {}
 for _, r in ipairs(B.rows) do if r.button:IsShown() then seen[#seen + 1] = r end end

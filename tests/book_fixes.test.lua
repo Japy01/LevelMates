@@ -39,12 +39,12 @@ assert(PT.Mine().t == t0 + 30, "another dungeon counts")
 
 -- I6: no guild level-up told at first: what is already there is the starting point
 STUB.printed = {}
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("pt", { t = 5000, w = PT.Week() }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pt", { t = 5000, w = PT.Week() }), "GUILD", "Mario-Testrealm")
 for _, line in ipairs(STUB.printed) do assert(not line:find(L.GUILD_LEVEL_UP:sub(1, 10), 1, true), "no level-up for data that was already there") end
 STUB.Advance(61)   -- settled
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("pt", { t = 9000, w = PT.Week() }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("pt", { t = 9000, w = PT.Week() }), "GUILD", "Mario-Testrealm")
 local told = false
 for _, line in ipairs(STUB.printed) do if line:find(string.format(L.GUILD_LEVEL_UP, PT.Level(PT.GuildTotal())), 1, true) then told = true end end
 assert(told, "a real level-up afterwards is told")

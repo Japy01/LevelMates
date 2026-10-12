@@ -34,16 +34,16 @@ ns.Fire("LM_MYGOAL_REACHED", 25)
 assert(last("fe").k == "pgl" and last("fe").a == 25, "personal goal reached")
 
 -- guildmates'
-STUB.Receive("LVLM", C.Encode("hb", { l = 29, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("fe", { k = "lvl", a = 29, t = now - 5 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("fe", { k = "lvl", a = 29, t = now - 5 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("fe", { k = "lvl", a = 50, t = now }), "GUILD", "Nadie-Testrealm")
-STUB.Receive("LVLM", C.Encode("fe", { k = "lvl", a = 31, t = now + 60 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 29, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 29, t = now - 5 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 29, t = now - 5 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 50, t = now }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 31, t = now + 60 }), "GUILD", "Mario-Testrealm")
 local mario = 0
 for _, e in ipairs(F.List()) do if e.who == "Mario" then mario = mario + 1 end end
 assert(mario == 1, "once, from the roster, not from the future")
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("fe", { k = "lvl", a = 30, t = now }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("fe", { k = "lvl", a = 30, t = now }), "GUILD", "Mario-Testrealm")
 mario = 0
 for _, e in ipairs(F.List()) do if e.who == "Mario" and e.a == 30 then mario = mario + 1 end end
 assert(mario == 1, "a level-up seen by heartbeat and by message: once")
@@ -55,7 +55,7 @@ assert(#F.List("mario") >= 1 and #F.List("zzz") == 0, "search")
 
 -- a newcomer gets my last 24 hours, at most five
 n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
 local mine = count("fe", n)
 local resent = 0   -- achievements may post to the wall at the same moment: only the re-sent entries count here
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "fe" and f.k ~= "ach" then resent = resent + 1 end end

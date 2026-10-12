@@ -7,7 +7,7 @@ local C, B, L = ns.Comm, ns.Board, ns.L
 STUB.player.level = 20
 CLASS_ICON_TCOORDS = { MAGE = { 0.25, 0.5, 0, 0.25 }, WARRIOR = { 0, 0.25, 0, 0.25 } }
 STUB.atlases["classicon-mage"] = true   -- Forever draws class icons from atlases; warrior is missing on purpose to exercise the fallback
-local function hb(name, level, z, g, s, class) STUB.Receive("LVLM", C.Encode("hb", { l = level, z = z, g = g or 0, s = s or 0, c = class }), "GUILD", name .. "-Testrealm") end
+local function hb(name, level, z, g, s, class) STUB.Receive("LVLM2", C.Encode("hb", { l = level, z = z, g = g or 0, s = s or 0, c = class }), "GUILD", name .. "-Testrealm") end
 hb("Mario", 30, 1421, 1, 1, "MAGE"); hb("Ana", 12, 1412, 0, 0, "WARRIOR"); hb("Luis", 22, 1421, 1, 0)
 B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 

@@ -14,7 +14,7 @@ local kind, f = C.Decode(last.msg)
 assert(kind == "help" and f.t == "Fuerte Colmillo" and f.z == 1421 and f.x == 50 and f.y == 50, "help sent with position")
 assert(H.mine and H.mine.id == f.id, "own request kept")
 -- receive someone else's on my map → notice + waypoint
-STUB.Receive("LVLM", C.Encode("help", { t = "Elite X", z = 1421, x = 10, y = 20, id = "zz11" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("help", { t = "Elite X", z = 1421, x = 10, y = 20, id = "zz11" }), "GUILD", "Mario-Testrealm")
 assert(H.active.zz11 and H.active.zz11.name == "Mario", "stored")
 assert(STUB.printed[#STUB.printed]:find("Mario"), "notice")
 assert(wp and wp.uiMapID == 1421 and math.abs(wp.x - 0.1) < 0.001, "waypoint set on my map")
@@ -34,10 +34,10 @@ end
 ns.Board.Toggle()
 -- another map: notice, no waypoint
 wp = nil
-STUB.Receive("LVLM", C.Encode("help", { t = "Elite Y", z = 1412, x = 10, y = 20, id = "zz12" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("help", { t = "Elite Y", z = 1412, x = 10, y = 20, id = "zz12" }), "GUILD", "Ana-Testrealm")
 assert(wp == nil, "no waypoint for another map")
 -- helpok clears
-STUB.Receive("LVLM", C.Encode("helpok", { id = "zz11" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("helpok", { id = "zz11" }), "GUILD", "Mario-Testrealm")
 assert(H.active.zz11 == nil, "cleared")
 -- cancel mine sends helpok (before it would expire on its own)
 H.Cancel()
@@ -64,10 +64,10 @@ H.Cancel()
 ns.Fire("LM_HELP_BUTTON")
 assert(StaticPopupDialogs.LEVELMATES_HELP.text:find(ns.L.HELP_POS_WARNING, 1, true), "prompt warns that position is shared")
 -- only the asker can clear a request
-STUB.Receive("LVLM", C.Encode("help", { t = "Elite W", z = 1412, x = 1, y = 1, id = "own01" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("helpok", { id = "own01" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("help", { t = "Elite W", z = 1412, x = 1, y = 1, id = "own01" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("helpok", { id = "own01" }), "GUILD", "Ana-Testrealm")
 assert(H.active.own01, "someone else cannot clear Mario's request")
-STUB.Receive("LVLM", C.Encode("helpok", { id = "own01" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("helpok", { id = "own01" }), "GUILD", "Mario-Testrealm")
 assert(H.active.own01 == nil, "the asker can")
 -- no position available (instance, cinematic): say so, not the generic prompt
 local realPos = C_Map.GetPlayerMapPosition
@@ -94,8 +94,8 @@ do
 	STUB.partyMembers = {}
 	H.Ask("Ogro Chamán")
 	local myId = H.mine.id
-	STUB.Receive("LVLM", C.Encode("helpgo", { id = "other999" }), "GUILD", "Luis-Testrealm")   -- not my request: ignored
-	STUB.Receive("LVLM", C.Encode("helpgo", { id = myId }), "GUILD", "Mario-Testrealm")
+	STUB.Receive("LVLM2", C.Encode("helpgo", { id = "other999" }), "GUILD", "Luis-Testrealm")   -- not my request: ignored
+	STUB.Receive("LVLM2", C.Encode("helpgo", { id = myId }), "GUILD", "Mario-Testrealm")
 	assert(H.mine.helpers.Mario and not H.mine.helpers.Luis, "helpers recorded for my request only")
 	STUB.Fire("GROUP_ROSTER_UPDATE")
 	assert(H.mine, "nobody who said Voy is in my group yet")

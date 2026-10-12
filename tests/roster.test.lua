@@ -21,13 +21,13 @@ STUB.Fire("PLAYER_LEVEL_UP", 21)
 STUB.Advance(1)
 assert(#STUB.sent == n + 1 and STUB.sent[#STUB.sent].msg:find("l=21"), "level change sends hb")
 -- receive mates
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1421, g = 1, s = 1, c = "MAGE" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 12, z = 1412 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421, g = 1, s = 1, c = "MAGE" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 12, z = 1412 }), "GUILD", "Ana-Testrealm")
 assert(R.mates.Mario and R.mates.Mario.level == 30 and R.mates.Mario.inGroup and R.mates.Mario.hasSlot, "mate stored")
 assert(#R.List() == 2, "two mates")
 -- ping from a newcomer → we answer with hb within 0-5 s
 n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
 STUB.Advance(6)
 local hbs = 0
 for i = n + 1, #STUB.sent do if C.Decode(STUB.sent[i].msg) == "hb" then hbs = hbs + 1 end end
@@ -37,8 +37,8 @@ STUB.Advance(121)
 R.Expire()
 assert(#R.List() == 0, "expired after 120 s")
 -- bye removes at once
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("bye", {}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("bye", {}), "GUILD", "Mario-Testrealm")
 assert(R.mates.Mario == nil, "bye removes")
 -- quests only when sharing is on
 STUB.quests = { 1098, 6562 }
@@ -49,12 +49,12 @@ ns.db.settings.shareQuests = true
 STUB.Fire("QUEST_LOG_UPDATE"); STUB.Advance(3)
 assert(STUB.sent[#STUB.sent].msg:find("ids=1098,6562"), "quest ids sent: " .. STUB.sent[#STUB.sent].msg)
 -- mates' quests (Ana expired above; she announces herself again before her quest list, as at login)
-STUB.Receive("LVLM", C.Encode("hb", { l = 12, z = 1412 }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("q", { i = "1/1", ids = "1098,959" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 12, z = 1412 }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "1098,959" }), "GUILD", "Ana-Testrealm")
 assert(R.mates.Ana.quests[1098] and R.mates.Ana.quests[959], "mate quests stored")
 -- a newcomer's ping gets my quest list too, not only a heartbeat (otherwise matching is one-way)
 n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
 STUB.Advance(6)
 local answered = {}
 for i = n + 1, #STUB.sent do local k = select(1, C.Decode(STUB.sent[i].msg)); if k ~= "pt" and k ~= "ac" then answered[#answered + 1] = k end end   -- guild points go too; not the roster's business

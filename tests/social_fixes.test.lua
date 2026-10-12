@@ -7,7 +7,7 @@ local function said(text) local n = 0; for _, p in ipairs(STUB.printed) do if p:
 local function link(id, name) return "|cff0070dd|Hitem:" .. id .. "::::::::20:::::::|h[" .. name .. "]|h|r" end
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
 R.InvalidateGuildRoster()
-for _, n in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", n .. "-Testrealm") end
+for _, n in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", n .. "-Testrealm") end
 
 -- #1: what happens inside a dungeon reaches the wall after leaving it
 STUB.inInstance = true
@@ -27,29 +27,29 @@ assert(again == 0, "and only once")
 
 -- #2: a reservation counts when the giver confirms it; a second reserver sees the first one's
 STUB.items[1011] = link(1011, "Thing")
-STUB.Receive("LVLM", C.Encode("gv", { ids = "1011" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", { ids = "1011" }), "GUILD", "Ana-Testrealm")
 assert(GF.Reserve("Ana", 1011) and last("gr").i == 1011, "asked")
 local row
 for _, g in ipairs(GF.List()) do if g.name == "Ana" and g.id == 1011 then row = g end end
 assert(row.reservedBy == nil, "not mine until Ana confirms")
-STUB.Receive("LVLM", C.Encode("gro", { i = 1011, by = "Luis" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gro", { i = 1011, by = "Luis" }), "GUILD", "Ana-Testrealm")
 for _, g in ipairs(GF.List()) do if g.name == "Ana" and g.id == 1011 then row = g end end
 assert(row.reservedBy == "Luis", "Ana says Luis was first")
-STUB.Receive("LVLM", C.Encode("gro", { i = 1011, by = "Mario" }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gro", { i = 1011, by = "Mario" }), "GUILD", "Luis-Testrealm")
 for _, g in ipairs(GF.List()) do if g.name == "Ana" and g.id == 1011 then row = g end end
 assert(row.reservedBy == "Luis", "only the giver confirms")
 -- the giver's side: confirms the first, re-sends to newcomers
 assert(GF.Add(link(1012, "Mine")))
-STUB.Receive("LVLM", C.Encode("gr", { i = 1012, to = "Tester" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gr", { i = 1012, to = "Tester" }), "GUILD", "Mario-Testrealm")
 assert(last("gro") and last("gro").i == 1012 and last("gro").by == "Mario", "I confirm Mario")
-STUB.Receive("LVLM", C.Encode("gr", { i = 1012, to = "Tester" }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gr", { i = 1012, to = "Tester" }), "GUILD", "Luis-Testrealm")
 assert(last("gro").by == "Mario", "Luis gets nothing")
 n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
 local gro = false
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "gro" and f.i == 1012 then gro = true end end
 assert(gro, "re-sent to a newcomer")
-for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", nm .. "-Testrealm") end
+for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", nm .. "-Testrealm") end
 
 -- #3: the reminder is remembered with the character (a /reload does not repeat it)
 assert(M.Create(5, M.Now() + 30, ""))
@@ -57,7 +57,7 @@ local mine = M.List(5)[1]
 STUB.Advance(16 * 60); M.Tick()
 assert(said(string.format(L.MEET_SOON, ns.Dungeons.Name(5), M.When(mine))) == 1, "reminded")
 assert(LevelMatesDB.chars[ns.PlayerKey()].meetReminded[mine.id] == true, "saved")
-for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", nm .. "-Testrealm") end
+for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", nm .. "-Testrealm") end
 
 -- #4: a cancel that cannot go out is refused
 STUB.inInstance = true

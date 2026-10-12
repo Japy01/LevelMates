@@ -5,12 +5,12 @@ local C, A, B, I, AL, L = ns.Comm, ns.Ask, ns.Board, ns.Inactive, ns.Alts, ns.L
 local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STUB.sent[i].msg); if k == kind then return f end end end
 
 -- 2: a sender gets one question a minute here too
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("ask", { id = "q0000001", x = "uno" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("ask", { id = "q0000002", x = "dos" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000001", x = "uno" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000002", x = "dos" }), "GUILD", "Mario-Testrealm")
 assert(#A.List() == 1, "the second within a minute is dropped")
 STUB.Advance(61)
-STUB.Receive("LVLM", C.Encode("ask", { id = "q0000003", x = "tres" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000003", x = "tres" }), "GUILD", "Mario-Testrealm")
 assert(#A.List() == 2, "a minute later it counts")
 
 -- 1: hovering a question shows it whole, without an error

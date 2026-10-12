@@ -2,7 +2,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, G, P, J, R, L = ns.Comm, ns.Board, ns.LFG, ns.Professions, ns.Journal, ns.Roster, ns.L
-local function hb(name, level) STUB.Receive("LVLM", C.Encode("hb", { l = level or 16, z = 1421 }), "GUILD", name .. "-Testrealm") end
+local function hb(name, level) STUB.Receive("LVLM2", C.Encode("hb", { l = level or 16, z = 1421 }), "GUILD", name .. "-Testrealm") end
 local function sentKinds(from) local out = {}; for i = from + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); out[#out + 1] = { k = k, f = f } end; return out end
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true, Eva = true, Pepe = true }
 R.InvalidateGuildRoster()
@@ -13,20 +13,20 @@ for _, n in ipairs({ "Mario", "Ana", "Luis", "Eva", "Pepe" }) do hb(n) end
 STUB.Advance(31)
 assert(G.Post(5, "T"), "I post")
 local id = G.mine.id
-STUB.Receive("LVLM", C.Encode("lfj", { id = id, r = "H" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("bye", {}), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfj", { id = id, r = "H" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("bye", {}), "GUILD", "Ana-Testrealm")
 assert(not G.mine.joined.Ana, "bye clears the join")
-STUB.Receive("LVLM", C.Encode("lfj", { id = id, r = "D" }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfj", { id = id, r = "D" }), "GUILD", "Luis-Testrealm")
 STUB.Advance(130); R.Expire()
 assert(not G.mine.joined.Luis, "roster expiry clears it too")
 for _, n in ipairs({ "Mario", "Eva", "Pepe" }) do hb(n) end
 -- #1b: my joins are saved with the character (a /reload keeps "Leave")
-STUB.Receive("LVLM", C.Encode("lfg", { d = 2, r = "T", id = "mario001", m = 20 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfg", { d = 2, r = "T", id = "mario001", m = 20 }), "GUILD", "Mario-Testrealm")
 assert(G.Join("mario001", "H") and LevelMatesDB.chars[ns.PlayerKey()].lfgJoins.mario001 == "H", "saved")
 
 -- #2: when the poster re-sends the ad (for a newcomer), I re-send my join after it
 local n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("lfg", { d = 2, r = "T", id = "mario001", m = 19 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfg", { d = 2, r = "T", id = "mario001", m = 19 }), "GUILD", "Mario-Testrealm")
 local again = false
 for _, m in ipairs(sentKinds(n)) do if m.k == "lfj" and m.f.id == "mario001" then again = true end end
 assert(again, "join re-sent after the ad")

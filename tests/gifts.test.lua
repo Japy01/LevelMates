@@ -7,7 +7,7 @@ local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STU
 local function said(text) for _, p in ipairs(STUB.printed) do if p:find(text, 1, true) then return true end end; return false end
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
 R.InvalidateGuildRoster()
-for _, n in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", n .. "-Testrealm") end
+for _, n in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", n .. "-Testrealm") end
 for id = 1, 12 do STUB.items[1000 + id] = link(1000 + id, "Thing " .. id) end
 
 assert(C.Validate("gv", {}) and C.Validate("gv", { ids = "1001,1002" }) and C.Validate("gr", { i = 1001, to = "Ana" }) and C.Validate("gr", { i = 1001 }) == false, "formats")
@@ -21,20 +21,20 @@ for id = 1003, 1010 do GF.Remove(id) end
 
 -- matching both ways
 assert(W.Add(link(1011)))
-STUB.Receive("LVLM", C.Encode("gv", { ids = "1011,1012" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", { ids = "1011,1012" }), "GUILD", "Ana-Testrealm")
 assert(said(string.format(L.GIFT_FOR_YOU, "Ana", link(1011, "Thing 11"))), "Ana gives what I want")
-STUB.Receive("LVLM", C.Encode("wl", { ids = "1002" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("wl", { ids = "1002" }), "GUILD", "Mario-Testrealm")
 assert(said(string.format(L.GIFT_WANTED, "Mario", link(1002, "Thing 2"))), "Mario wants what I give")
-STUB.Receive("LVLM", C.Encode("gv", { ids = "1006" }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gv", { ids = "1006" }), "GUILD", "Luis-Testrealm")
 assert(W.Add(link(1006)) and said(string.format(L.GIFT_FOR_YOU, "Luis", link(1006, "Thing 6"))), "a new wish finds a giveaway")
 assert(#GF.GivenBy(1011) == 1 and GF.GivenBy(1011)[1] == "Ana", "who gives it")
 
 -- reserving: first come
 assert(GF.Reserve("Ana", 1011)); STUB.Advance(12)   -- the burst of gv above used the send allowance
 assert(last("gr").i == 1011 and last("gr").to == "Ana", "I reserve Ana's")
-STUB.Receive("LVLM", C.Encode("gr", { i = 1002, to = "Tester" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gr", { i = 1002, to = "Tester" }), "GUILD", "Mario-Testrealm")
 assert(GF.Has(1002).reservedBy == "Mario" and said(string.format(L.GIFT_RESERVED, "Mario", link(1002, "Thing 2"))), "Mario reserves mine")
-STUB.Receive("LVLM", C.Encode("gr", { i = 1002, to = "Tester" }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("gr", { i = 1002, to = "Tester" }), "GUILD", "Luis-Testrealm")
 assert(GF.Has(1002).reservedBy == "Mario", "first come")
 
 -- tooltip

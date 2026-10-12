@@ -4,9 +4,9 @@ STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, GM, B, R, L = ns.Comm, ns.GuildMap, ns.Board, ns.Roster, ns.L
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
 R.InvalidateGuildRoster()
-STUB.Receive("LVLM", C.Encode("hb", { l = 30, z = 1412, c = "MAGE", x = 40, y = 50 }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Ana-Testrealm")             -- no position shared
-STUB.Receive("LVLM", C.Encode("hb", { l = 25, z = 1421, x = 10, y = 10 }), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1412, c = "MAGE", x = 40, y = 50 }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1412 }), "GUILD", "Ana-Testrealm")             -- no position shared
+STUB.Receive("LVLM2", C.Encode("hb", { l = 25, z = 1421, x = 10, y = 10 }), "GUILD", "Luis-Testrealm")
 assert(ns.db.settings.mapPins == true, "on by default")
 
 -- pins: guildmates sharing their position, on the map shown

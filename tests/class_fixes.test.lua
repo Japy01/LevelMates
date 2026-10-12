@@ -20,11 +20,11 @@ assert(BU.Mine().b == nil, "never a loadout that is not the active one")
 frameConfig = 7
 
 -- I2: a build without level or spec is not stored; the class is what the roster knows
-STUB.Receive("LVLM", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM", C.Encode("hb", { l = 22, z = 1421, c = "MAGE" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", p = "1001:3" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hb", { l = 22, z = 1421, c = "MAGE" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", p = "1001:3" }), "GUILD", "Mario-Testrealm")
 assert(BU.Of("Mario") == nil, "no level or spec: ignored")
-STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", s = 62, l = 22, p = "2001:9" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 62, l = 22, p = "2001:9" }), "GUILD", "Ana-Testrealm")
 assert(BU.Of("Ana") == nil, "a mage claiming to be a warrior is still a mage")
 B.ShowTab("class")   -- and the tab draws
 assert(B.tab == "class")
@@ -33,7 +33,7 @@ assert(B.tab == "class")
 local refd
 SetItemRef = function() refd = true end
 STUB.printed = {}
-STUB.Receive("LVLM", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("tb", { c = "WARRIOR", s = 71, l = 24, p = "1001:15", b = "CODEmario" }), "GUILD", "Mario-Testrealm")
 assert(BU.Open(BU.Of("Mario")), "opened")
 assert(not refd, "the addon does not open the game's talent window itself")
 assert(STUB.printed[#STUB.printed]:find("|Htalentbuild:71:24:CODEmario|h", 1, true), "the link, for a click: " .. tostring(STUB.printed[#STUB.printed]))

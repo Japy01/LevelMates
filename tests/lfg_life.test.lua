@@ -3,8 +3,8 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, G = ns.Comm, ns.LFG
 STUB.player.level = 15
-local function mate(name) STUB.Receive("LVLM", C.Encode("hb", { l = 15, z = 1421 }), "GUILD", name .. "-Testrealm") end
-local function ad(from, f) STUB.Receive("LVLM", C.Encode("lfg", f), "GUILD", from .. "-Testrealm") end
+local function mate(name) STUB.Receive("LVLM2", C.Encode("hb", { l = 15, z = 1421 }), "GUILD", name .. "-Testrealm") end
+local function ad(from, f) STUB.Receive("LVLM2", C.Encode("lfg", f), "GUILD", from .. "-Testrealm") end
 mate("Mario"); mate("Ana")
 
 -- the clock comes from the sender's remaining minutes
@@ -21,9 +21,9 @@ assert(G.ads.m0000002 == nil, "expired by the 60 s ticker, nobody called Expire"
 -- only the author withdraws
 mate("Mario")
 ad("Mario", { d = 2, r = "T", id = "m0000003", m = 20 })
-STUB.Receive("LVLM", C.Encode("lfgx", { id = "m0000003" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfgx", { id = "m0000003" }), "GUILD", "Ana-Testrealm")
 assert(G.ads.m0000003, "someone else cannot withdraw Mario's ad")
-STUB.Receive("LVLM", C.Encode("lfgx", { id = "m0000003" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("lfgx", { id = "m0000003" }), "GUILD", "Mario-Testrealm")
 assert(G.ads.m0000003 == nil, "the author can")
 
 -- my own ad: re-sent to newcomers with the minutes that remain, one answer per storm
@@ -31,7 +31,7 @@ STUB.Advance(31)
 assert(G.Post(2, "T", "hola"))
 STUB.Advance(125)
 local n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Ana-Testrealm")
 STUB.Advance(6)
 local resent
 for i = n + 1, #STUB.sent do
@@ -40,8 +40,8 @@ for i = n + 1, #STUB.sent do
 end
 assert(resent and resent.id == G.mine.id and resent.m <= 18 and resent.m >= 17, "re-sent with the minutes left: " .. tostring(resent and resent.m))
 n = #STUB.sent
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM", C.Encode("ping", {}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Mario-Testrealm")
 STUB.Advance(6)
 local count = 0
 for i = n + 1, #STUB.sent do if (C.Decode(STUB.sent[i].msg)) == "lfg" then count = count + 1 end end
