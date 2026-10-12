@@ -107,4 +107,35 @@ end
 -- Turned in or abandoned: my post goes.
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("QUEST_TURNED_IN"); ev:RegisterEvent("QUEST_REMOVED")
-ev:SetScript("OnEvent", function(_, _, questId) if questId and QH.MineFor(questId) then QH.Withdraw(questId) end end)
+ev:SetScript("OnEvent", function(_, event, questId)
+	if (event == "QUEST_TURNED_IN" or event == "QUEST_REMOVED") and type(questId) == "number" and QH.MineFor(questId) then QH.Withdraw(questId) end
+end)
+
+-- Alt+click on a quest in the game's quest log (whichever log this client has: the map's or the classic one). One
+-- click toggles once even if both hooks fire; the game's own click goes on as usual.
+local lastToggle = {}
+local function onTitleClick(button)
+	if not (IsAltKeyDown and IsAltKeyDown()) or type(button) ~= "table" then return end
+	local id = button.questID
+	if not id then
+		local index = button.questLogIndex or (button.GetID and button:GetID())
+		local info = index and C_QuestLog.GetInfo(index)
+		id = info and not info.isHeader and info.questID
+	end
+	if not id then return end
+	if GetTime() - (lastToggle[id] or -math.huge) < 0.5 then return end
+	lastToggle[id] = GetTime()
+	QH.Toggle(id)
+end
+local hooked = {}
+local function hook()
+	for _, name in ipairs({ "QuestMapLogTitleButton_OnClick", "QuestLogTitleButton_OnClick" }) do
+		if not hooked[name] and type(_G[name]) == "function" then
+			hooked[name] = true
+			hooksecurefunc(name, function(button) onTitleClick(button) end)
+		end
+	end
+end
+ns.On("LM_WORLD", hook)
+ev:RegisterEvent("ADDON_LOADED")
+ev:HookScript("OnEvent", function(_, event) if event == "ADDON_LOADED" then hook() end end)
