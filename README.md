@@ -24,6 +24,10 @@ The board opens on **Home**: the guild level and this week's challenge, what is 
 
 ### Dungeons
 - **Dungeons tab**: a card with artwork for each of the 14 dungeons, highlighted when it fits your level, with how many are looking for a group. Click a card to join a group ("Join Mario as healer"), whisper, invite, look for a group there, or set up a **meetup** ("Saturday 21:00", with a reminder 15 minutes before). Cards also count group ads read from Trade, General and other public channels ("2 looking · 3 in chat"), which you can whisper from the card. **Calendar** lists the next 7 days of meetups.
+- **Runs**: a meetup has five slots (1 tank, 1 healer, 3 damage). The leader holds one and keeps the official line-up: a late join for a full role waits, the leader can add someone by hand or take them out, and **Invite all** invites everyone in it. The card shows "21:00 · 3/5".
+- **My role**: tank, healer or damage, shared with the guild (on the Groups tab and in Options); without one, your class decides (shown with ?).
+- **Together**: groups you could make right now from who is online, their levels and roles; one click makes it a run or invites everyone.
+- **Discord**: tick "Announce in the guild's Discord" when you make a run, and its line goes to your guild's Discord channel through the game's own guild link; joining, leaving and cancelling post their own line. The guild master links the channel (Guild > Settings > Guild Control > Discord, with "separate chat"), and each player links their Discord account (Options > Social). Otherwise, "Copy for Discord".
 
 ### Class
 - **Class tab**: guild talent builds of your class (points per branch and level) with "View build", which puts the build's link in your chat (only you see it) to open it in the game's own viewer; a macro library for each class with spell names in your language, created with a click; and macros your guildmates share with "Share macro". **Ask my class** sends a question to guildmates of your class, answered by whisper.
@@ -52,7 +56,7 @@ Everything goes only to your own guild, as addon messages. In `/lm options` you 
 
 - **Always** (while "Appear on the board" is on): your level, zone, class and group state.
 - **On by default**, with a switch to stop: your guild points (counts of levels, dungeons, quests, helps, gifts and meetups); your other characters in the same guild (alts); your professions and ranks; your XP percent, only while grouped with a guildmate; your deaths (level and zone) on the wall; your talent build (points per branch, level and the build code); your level-ups, dungeons with guildmates, rare loot and personal goal on the guild wall.
-- **Only when you use them**: the questions you ask your class, the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join.
+- **Only when you use them**: the questions you ask your class, the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join, and the role you pick (tank, healer, damage).
 - **Off by default**, only if you turn them on: your position (map, rare sightings), your quests (quest matching and progress), XP per hour and rested XP.
 
 What the whole guild sees (your meetups and the ones you join, your wall entries, the questions you ask your class, your market offers) is kept by guildmates and handed to whoever logs in later, even while you are offline, until it expires (a meetup after its hour, the wall after a week, a question after a day). Removing one removes it everywhere.
@@ -63,7 +67,7 @@ Turning "Appear on the board" off stops everything: you send nothing and see nob
 
 ## Policy
 
-Addon messages only, to your own guild. No combat data, ever. Inviting, whispering, chatting and posting to public channels happen only when you click, never on their own. Messages are small, validated and rate-limited, and nothing is sent while the game restricts addon chat.
+Addon messages only, to your own guild. No combat data, ever. Inviting, whispering, chatting, posting to public channels and to the guild's Discord channel happen only when you click, never on their own. Messages are small, validated and rate-limited, and nothing is sent while the game restricts addon chat.
 
 ## Install
 
@@ -107,6 +111,10 @@ El tablón se abre en **Inicio**: el nivel de la hermandad y el reto de la seman
 
 ### Mazmorras
 - **Pestaña Mazmorras**: una tarjeta con imagen para cada una de las 14 mazmorras, resaltada si es de tu nivel, con cuántos buscan grupo. Clic en una tarjeta para apuntarte a un grupo ("Me apunto con Mario como sanador"), susurrar, invitar, buscar grupo ahí o crear una **quedada** ("sábado 21:00", con recordatorio 15 minutos antes). Las tarjetas cuentan también los anuncios de grupo de Comercio, General y otros canales públicos ("2 buscan · 3 en el chat"), y puedes susurrarles desde la tarjeta. **Calendario** lista las quedadas de los próximos 7 días.
+- **Partidas**: una quedada tiene cinco plazas (1 tanque, 1 sanador, 3 daño). El líder ocupa una y lleva la lista oficial: quien llega tarde a un rol lleno queda en espera, el líder puede añadir a alguien a mano o quitarlo, e **Invitar a todos** invita a los de la partida. La tarjeta muestra "21:00 · 3/5".
+- **Mi rol**: tanque, sanador o daño, compartido con la hermandad (en la pestaña Grupos y en Opciones); sin elegirlo, decide tu clase (con ?).
+- **Juntos**: grupos que podríais hacer ahora con quien está conectado, por nivel y rol; un clic lo convierte en partida o invita a todos.
+- **Discord**: marca "Anunciar en el Discord de la hermandad" al crear la partida y su línea va al canal de Discord de tu hermandad por el enlace del propio juego; apuntarse, salirse y cancelar publican su propia línea. El líder de la hermandad enlaza el canal (Hermandad > Ajustes > Control de hermandad > Discord, con "chat separado") y cada jugador vincula su cuenta de Discord (Opciones > Social). Si no, "Copiar para Discord".
 
 ### Clase
 - **Pestaña Clase**: las builds de talentos de los hermanos de tu clase (puntos por rama y nivel) con "Ver build", que pone el enlace de la build en tu chat (solo lo ves tú) para abrirla en la ventana del propio juego; una biblioteca de macros por clase con los nombres de hechizo en tu idioma, que se crean con un clic; y las macros que comparten tus hermanos con "Compartir macro". **Preguntar a mi clase** manda una pregunta a los hermanos de tu clase, que te responden por susurro.
@@ -135,7 +143,7 @@ Todo va solo a tu hermandad, como mensajes de addon. En `/lm opciones` puedes ap
 
 - **Siempre** (mientras "Aparecer en el tablón" esté activado): tu nivel, zona, clase y si estás en grupo.
 - **Activado por defecto**, con un interruptor para dejar de hacerlo: tus puntos de hermandad (cuántos niveles, mazmorras, misiones, ayudas, regalos y quedadas); tus otros personajes de la misma hermandad (alts); tus profesiones y su nivel; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
-- **Solo cuando los usas**: las preguntas a tu clase, las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas.
+- **Solo cuando los usas**: las preguntas a tu clase, las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas, y el rol que eliges (tanque, sanador, daño).
 - **Apagado por defecto**, solo si lo activas: tu posición (mapa, avistamiento de raros), tus misiones (emparejar misiones y su progreso), la XP por hora y la XP descansada.
 
 Lo que ve toda la hermandad (tus quedadas y aquellas a las que te apuntas, tus entradas del muro, las preguntas a tu clase y tus ofertas del mercadillo) lo guardan tus compañeros y se lo pasan a quien entra después, aunque tú no estés conectado, hasta que caduca (una quedada tras su hora, el muro a la semana, una pregunta al día). Si lo borras, se borra en todos.
@@ -146,7 +154,7 @@ Si apagas "Aparecer en el tablón", se detiene todo: no envías nada y no ves a 
 
 ## Política
 
-Solo mensajes de addon, a tu propia hermandad. Nada de combate, nunca. Invitar, susurrar, escribir en el chat y publicar en canales públicos ocurre solo cuando haces clic, nunca por su cuenta. Los mensajes son pequeños, validados y con límite de ritmo, y no se envía nada mientras el juego restringe el chat de addons.
+Solo mensajes de addon, a tu propia hermandad. Nada de combate, nunca. Invitar, susurrar, escribir en el chat y publicar en canales públicos o en el Discord de la hermandad ocurre solo cuando haces clic, nunca por su cuenta. Los mensajes son pequeños, validados y con límite de ritmo, y no se envía nada mientras el juego restringe el chat de addons.
 
 ## Instalación
 

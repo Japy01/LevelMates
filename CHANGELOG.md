@@ -2,6 +2,10 @@
 
 ## 0.4.0
 
+- **Runs**: meetups have five slots (1 tank, 1 healer, 3 damage) and a leader who keeps the official line-up; late joins for a full role wait, the leader adds or removes by hand, and **Invite all** invites the run.
+- **My role** (tank, healer, damage), shared; guessed from the class when unset.
+- **Together**: groups you could make right now from who is online, by level and role.
+- **Discord**: runs announced in the guild's Discord channel through the game's own guild link, from clicks only (each player needs their Discord account linked; otherwise "Copy for Discord").
 - **New sync.** Meetups and who joins them, the guild wall, class questions and market offers are kept by everyone and handed to whoever logs in later, even when their author is offline. Removed things stay removed.
 - What you do inside a dungeon (cancelling a meetup, a wall entry) goes out when you leave instead of being lost; help requests and groups go first.
 - The book redraws at most twice a second, and only when something really changed.
