@@ -20,6 +20,7 @@ Dungeons.lua
 Comm.lua
 Roster.lua
 Sync.lua
+Roles.lua
 Version.lua
 Cheers.lua
 Settings.lua
