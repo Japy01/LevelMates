@@ -1538,6 +1538,19 @@ end
 
 -- Actions below run only from click handlers (menu entries / row clicks): Forever drops them otherwise.
 function B.Invite(name) C_PartyInfo.InviteUnit(name); ns.Say(L.INVITE_SENT, name) end   -- the server can take a few seconds: say the click worked
+-- Called from a click (a run's or a suggestion's "Invite all"): the online ones, once each, never me; one line says
+-- who was invited and who was not online.
+function B.InviteAll(names)
+	local seen, done, off = {}, {}, {}
+	for _, name in ipairs(names or {}) do
+		if name ~= ns.Me() and not seen[name] then
+			seen[name] = true
+			if R.mates[name] then C_PartyInfo.InviteUnit(name); done[#done + 1] = name else off[#off + 1] = name end
+		end
+	end
+	ns.Say(L.INVITE_ALL, #done, #done > 0 and table.concat(done, ", ") or "-", #off > 0 and table.concat(off, ", ") or "-")
+	return #done, #off
+end
 function B.Whisper(name) ChatFrameUtil.SendTell(name) end
 function B.OpenMenu(name)
 	B.lastMenuFor = name

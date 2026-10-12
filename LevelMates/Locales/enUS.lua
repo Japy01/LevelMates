@@ -259,3 +259,4 @@ L.CARD_OLD_VERSION = "Uses an old LevelMates (0.3): they need to update to see y
 L.REPORT_QUEUE = "Queue"; L.REPORT_HELD = "held"; L.REPORT_DROPPED = "dropped"; L.REPORT_RECORDS = "Records"; L.REPORT_OLD = "Guildmates on an old version"
 L.STATUS_QUEUE = "queue: %d waiting, %d held, %d dropped"; L.STATUS_MEMORY = "memory: %.0f KB (%.0f KB after a collect)"
 L.RUN_ROLE_FULL = "That role is full in this run."
+L.INVITE_ALL = "Invited %d: %s. Not online: %s."
