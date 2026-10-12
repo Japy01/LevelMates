@@ -1,5 +1,5 @@
 -- Recipes.lua: what each one can craft. Mine are read from my own profession window (never someone else's), kept per
--- profession as item ids (and spell ids for enchants), and shared as personal state `rc` in a compact form: sorted
+-- profession as item ids (and spell ids for enchants), and shared as personal state `rcp` in a compact form: sorted
 -- ids as base-36 differences. Then "who crafts this?" and a line in item tooltips.
 -- Spec 2026-10-12-levelmates-recipes-design.
 local _, ns = ...
@@ -98,11 +98,11 @@ for _, e in ipairs({ "TRADE_SKILL_SHOW", "TRADE_SKILL_LIST_UPDATE", "TRADE_SKILL
 ev:SetScript("OnEvent", later)
 
 ------------------------------------------------------------------ sharing
--- One `rc` per profession: p (its line), r/m (rank/max), i (items) and s (spells), encoded as above; long lists go in
+-- One `rcp` per profession: p (its line), r/m (rank/max), i (items) and s (spells), encoded as above; long lists go in
 -- chunks. Through the personal-state helper: pending while it cannot go, again to newcomers, nothing when sharing is off.
 local function idlist(v) return type(v) == "string" and #v <= 1800 and v:match("^[0-9a-z%-]*$") ~= nil end
-C.SCHEMA.rc = { p = C.V.int(1, 2000), r = C.V.int(0, 450), m = C.V.int(0, 450), i = idlist, s = idlist }
-C.REQUIRED.rc = { "p" }
+C.SCHEMA.rcp = { p = C.V.int(1, 2000), r = C.V.int(0, 450), m = C.V.int(0, 450), i = idlist, s = idlist }
+C.REQUIRED.rcp = { "p" }
 local function build()
 	local out = {}
 	for p, e in pairs(RC.Mine()) do
@@ -112,7 +112,7 @@ local function build()
 	table.sort(out, function(a, b) return a.p < b.p end)
 	return #out > 0 and out or nil
 end
-local share = ns.Sync.Personal("rc", build, { save = "recipesPending",
+local share = ns.Sync.Personal("rcp", build, { save = "recipesPending",
 	worth = function() return next(RC.Mine()) ~= nil end,
 	enabled = function() return ns.db.settings.shareProfessions end })
 -- A real change goes out 8 s later (one message for a burst of changes).
@@ -142,7 +142,7 @@ local function plausible(name, rank)
 	local need = rank > 225 and 35 or rank > 150 and 20 or rank > 75 and 10 or 0
 	return level >= need
 end
-C.OnMessage("rc", function(f, name)
+C.OnMessage("rcp", function(f, name)
 	if not plausible(name, f.r or 0) then return end
 	local items, spells = RC.Decode(f.i or ""), RC.Decode(f.s or "")
 	if not items or not spells then return end
