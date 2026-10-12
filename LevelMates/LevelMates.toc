@@ -19,6 +19,7 @@ Skin.lua
 Dungeons.lua
 Comm.lua
 Roster.lua
+Sync.lua
 Version.lua
 Cheers.lua
 Settings.lua

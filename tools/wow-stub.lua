@@ -289,6 +289,8 @@ function time(t)
 	if type(t) == "table" then return STUB.daysFromCivil(t.year, t.month, t.day) * 86400 + (t.hour or 12) * 3600 + (t.min or 0) * 60 + (t.sec or 0) end
 	return 1760000000 + math.floor(STUB.now)
 end
+-- the realm clock: the same as time() here (a test can shift it with STUB.serverSkew)
+function GetServerTime() return 1760000000 + math.floor(STUB.now) + (STUB.serverSkew or 0) end
 function UnitGUID(u) return "Player-1-TESTER" end
 function GetInstanceInfo() return STUB.instanceName or "Mulgore", STUB.inInstance and "party" or "none", 0, "", 5, 0, false, STUB.instanceId or 0 end
 C_SkillInfo = {
