@@ -22,18 +22,14 @@ end
 
 function W.Has(id) for _, w in ipairs(mine()) do if w.id == id then return true end end; return false end
 
--- A refused send (instance, sharing off) stays pending in the character's saved data and goes out after the next heartbeat.
-local sentAt
-local function send(prio)
+-- My list, whole, in `wl` (no ids withdraws it): the sync layer's personal helper keeps a refused send pending in the
+-- character's saved data, sends it after the next heartbeat, and resends a non-empty list to newcomers.
+local P = ns.Sync.Personal("wl", function()
 	local ids = {}
 	for _, w in ipairs(mine()) do ids[#ids + 1] = w.id end
-	local fields = {}
-	if #ids > 0 then fields.ids = table.concat(ids, ",") end
-	if C.Send("wl", fields, prio) then ns.char.wishPending, sentAt = nil, GetTime(); return true end
-	ns.char.wishPending = true
-	return false
-end
-local function resend() if sentAt ~= GetTime() then send() end end   -- the heartbeat may have carried it this instant
+	return { ids = #ids > 0 and table.concat(ids, ",") or nil }
+end, { save = "wishPending", worth = function() return #mine() > 0 end })
+local function send(prio) return P.Mark(prio) end
 
 -- Called from a click (the "Add a wish" dialog).
 function W.Add(link)
@@ -138,10 +134,7 @@ ns.On("LM_MY_LOOT", function(link)
 	end
 end)
 
-ns.On("LM_HELLO_ANSWERED", function() if #mine() > 0 then resend() end end)
-ns.On("LM_ANNOUNCED", function() if #mine() > 0 then resend() end end)
-ns.On("LM_HB_SENT", function() if ns.char.wishPending then send() end end)
-ns.On("LM_COMM_DROPPED", function(kind) if kind == "wl" then ns.char.wishPending = true end end)
+
 
 -- Item tooltips anywhere in the game: who wants it.
 if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then

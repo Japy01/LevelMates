@@ -40,9 +40,10 @@ local function fields()
 	return #names > 0 and { n = table.concat(names, ",") } or {}
 end
 
-function AL.SetSharing() C.Send("al", fields(), "now") end
-ns.On("LM_ANNOUNCED", function() local f = fields(); if f.n then C.Send("al", f) end end)
-ns.On("LM_HELLO_ANSWERED", function() local f = fields(); if f.n then C.Send("al", f) end end)
+-- My alts in `al` (none withdraws them), through the sync layer's personal helper: a refused send (a dungeon) goes
+-- with the next heartbeat; announces and newcomers get them when there are some.
+local PS = ns.Sync.Personal("al", fields, { save = "altsPending", worth = function() return fields().n ~= nil end })
+function AL.SetSharing() PS.Mark("now") end
 
 local function store()
 	ns.db.alts = ns.db.alts or {}

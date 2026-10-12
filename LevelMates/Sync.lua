@@ -241,3 +241,44 @@ ns.On("LM_HB_SENT", function()
 		end
 	end
 end)
+
+------------------------------------------------------------------ personal state
+-- My whole-state messages (my partner flag, my wishes, my build…): sent on change, kept pending while they cannot
+-- go (not ready, refused inside an instance, dropped from the queue) and sent with the next heartbeat, and resent
+-- to newcomers once per burst of hellos. One helper for what each module used to copy.
+-- build() returns the fields (or a list of field tables, or nil for "nothing to send"); opts.enabled() gates it;
+-- opts.save names a flag in the character's saved data that keeps a pending state across a /reload; opts.worth()
+-- says whether there is anything to tell newcomers and announces (an empty list is not resent).
+function S.Personal(kind, build, opts)
+	opts = opts or {}
+	local P = {}
+	local resending = false
+	local function setPending(v)
+		P.pending = v
+		if opts.save and ns.char then ns.char[opts.save] = v or nil end
+	end
+	local function isPending() return P.pending or (opts.save and ns.char and ns.char[opts.save]) or false end
+	local function enabled() return not opts.enabled or opts.enabled() end
+	local function go(prio)
+		if not enabled() then setPending(false); return false end
+		local fields = build()
+		if not fields then setPending(false); return true end
+		local list = fields[1] and fields or { fields }
+		local ok = C.IsReady()
+		for _, f in ipairs(list) do ok = ok and C.SendBig(kind, f, prio) end
+		setPending(not ok)
+		return ok
+	end
+	local function worth() return not opts.worth or opts.worth() end
+	P.Mark = go
+	P.IsPending = isPending
+	ns.On("LM_HB_SENT", function() if isPending() then go() end end)
+	ns.On("LM_COMM_DROPPED", function(k) if k == kind then setPending(true) end end)
+	ns.On("LM_ANNOUNCED", function() if isPending() or worth() then go() end end)
+	ns.On("LM_HELLO_ANSWERED", function()
+		if resending or not worth() then return end
+		resending = true
+		C_Timer.After(math.random() * 5, function() resending = false; go() end)
+	end)
+	return P
+end

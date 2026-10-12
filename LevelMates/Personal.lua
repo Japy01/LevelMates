@@ -22,16 +22,14 @@ function P.Mine()
 	return g
 end
 
--- A refused send (instance, sharing off) stays pending in the character's saved data, so it survives a /reload or a
--- logout and goes out after the next heartbeat.
-local sentAt
-local function send(prio)
+-- My goal in `gp` (level 0 withdraws it): the sync layer's personal helper keeps a refused send pending in the
+-- character's saved data (a /reload or a logout keeps it), sends it after the next heartbeat, and resends a goal to
+-- newcomers.
+local PS = ns.Sync.Personal("gp", function()
 	local g = P.Mine()
-	if C.Send("gp", { l = g and g.l or 0, e = g and g.e or today() }, prio) then ns.char.goalPending, sentAt = nil, GetTime(); return true end
-	ns.char.goalPending = true
-	return false
-end
-local function resend() if sentAt ~= GetTime() then send() end end   -- the heartbeat may have carried it this instant
+	return { l = g and g.l or 0, e = g and g.e or today() }
+end, { save = "goalPending", worth = function() return P.Mine() ~= nil end })
+local function send(prio) return PS.Mark(prio) end
 
 -- Called from a click (the "My goal" dialog).
 function P.Set(level, days)
@@ -96,10 +94,7 @@ ev:RegisterEvent("PLAYER_LEVEL_UP")
 ev:SetScript("OnEvent", function(_, _, level) check(level) end)
 ns.On("LM_WORLD", function() check() end)
 
-ns.On("LM_HELLO_ANSWERED", function() if P.Mine() then resend() end end)
-ns.On("LM_ANNOUNCED", function() if P.Mine() then resend() end end)
-ns.On("LM_HB_SENT", function() if ns.char.goalPending then send() end end)
-ns.On("LM_COMM_DROPPED", function(kind) if kind == "gp" then ns.char.goalPending = true end end)
+
 
 -- Simulation support (/lm sim metas): local samples, never sent.
 function P.AddSample(name, l, e) theirs()[name] = { l = l, e = e, sim = true }; ns.Fire("LM_GOALS_CHANGED") end
