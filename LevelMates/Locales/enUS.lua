@@ -296,3 +296,4 @@ L.HIST_JOIN = "joined"; L.HIST_LEAVE = "left"; L.HIST_RANKUP = "promoted (rank %
 L.ALTS_PROVEN = "same account"; L.ALTS_SAID = "as they say"; L.RACE_FIRST_TAG = "first of the guild"; L.RACE_CLASS_TAG = "first of the class"; L.RACE_BEFORE_TAG = "already there"
 L.OPT_GEAR = "Share my gear"; L.OPT_GEAR_TT = "Your equipped items, their item level and enchants, and your race for the model: guildmates see them on your card."
 L.GEAR_LINE = "Item level %d (%d/17)"; L.GEAR_BUTTON = "Gear"; L.GEAR_ILVL = "Item level %d"
+L.CONFIRM_SURE = "Are you sure?"

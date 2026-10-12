@@ -16,6 +16,7 @@ Locales\esES.lua
 Core.lua
 Scheduler.lua
 Skin.lua
+Widgets.lua
 Dungeons.lua
 Comm.lua
 Roster.lua
