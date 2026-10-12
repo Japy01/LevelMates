@@ -40,7 +40,7 @@ The board opens on **Home**: the guild level and this week's challenge, what is 
 
 ### Items and professions
 - **Wishes tab**: up to 10 items you want, added with Shift+click, and up to 10 you give away. Wishes and giveaways are matched both ways ("Ana gives away [Sword], which is on your list"), a giveaway can be reserved, offers can also have a price in gold ("I'll buy it" tells the seller; you pay by trade or mail), and item tooltips say who wants or gives an item. Looting something a guildmate wants tells you who to pass it to.
-- **Professions tab**: who has each profession and at what rank, grouped by profession.
+- **Professions tab**: who has each profession and at what rank, grouped by profession, with a hint when someone should visit the trainer. Your recipes are read when you open your own profession window and shared (with "Share professions"); search an item by name, number or link to see **who crafts it**, ask them with a whisper, or browse someone's recipes. Item tooltips say who in the guild crafts the item.
 
 ### Help and notices
 - **Ask for help** with an elite: guildmates get a notice and a waypoint, and an "On my way" button. A **panic key** (Key Bindings → LevelMates, or `/lm panico`) asks at once.
@@ -56,7 +56,7 @@ The board opens on **Home**: the guild level and this week's challenge, what is 
 Everything goes only to your own guild, as addon messages. In `/lm options` you can turn each part off.
 
 - **Always** (while "Appear on the board" is on): your level, zone, class and group state.
-- **On by default**, with a switch to stop: your guild points (counts of levels, dungeons, quests, helps, gifts and meetups); your other characters in the same guild (alts); your professions and ranks; your XP percent, only while grouped with a guildmate; your deaths (level and zone) on the wall; your talent build (points per branch, level and the build code); your level-ups, dungeons with guildmates, rare loot and personal goal on the guild wall.
+- **On by default**, with a switch to stop: your guild points (counts of levels, dungeons, quests, helps, gifts and meetups); your other characters in the same guild (alts); your professions, ranks and recipes; your XP percent, only while grouped with a guildmate; your deaths (level and zone) on the wall; your talent build (points per branch, level and the build code); your level-ups, dungeons with guildmates, rare loot and personal goal on the guild wall.
 - **Only when you use them**: the questions you ask your class, the macros you share, your wishes, giveaways, personal goal, dungeon ads, meetups and the groups you join, the role you pick (tank, healer, damage), and the quests you post on the quest board (title, level, zone and your objectives).
 - **Off by default**, only if you turn them on: your position (map, rare sightings), your quests (quest matching and progress), XP per hour and rested XP.
 
@@ -128,7 +128,7 @@ El tablón se abre en **Inicio**: el nivel de la hermandad y el reto de la seman
 
 ### Objetos y profesiones
 - **Pestaña Deseos**: hasta 10 objetos que quieres, añadidos con Mayús+clic, y hasta 10 que regalas. Deseos y regalos se cruzan en los dos sentidos ("Ana regala [Espada], que está en tu lista"), un regalo se puede reservar, también se puede ofrecer con precio en oro ("Lo compro" avisa al vendedor; el pago, por comercio o correo), y el tooltip de un objeto dice quién lo quiere o lo regala. Si te cae algo que quiere un hermano, te avisa para que se lo pases.
-- **Pestaña Oficios**: quién tiene cada profesión y a qué nivel, agrupado por profesión.
+- **Pestaña Oficios**: quién tiene cada profesión y a qué nivel, agrupado por profesión, con un aviso cuando alguien debe ir al entrenador. Tus recetas se leen al abrir tu ventana de profesión y se comparten (con "Compartir profesiones"); busca un objeto por nombre, número o enlace para ver **quién lo fabrica**, pídeselo con un susurro o mira las recetas de alguien. El tooltip de un objeto dice quién lo fabrica en la hermandad.
 
 ### Ayuda y avisos
 - **Pedir ayuda** con un élite: los hermanos reciben un aviso y un punto de ruta, y un botón "Voy". Un **botón de pánico** (Atajos de teclado → LevelMates, o `/lm panico`) la pide al momento.
@@ -144,7 +144,7 @@ El tablón se abre en **Inicio**: el nivel de la hermandad y el reto de la seman
 Todo va solo a tu hermandad, como mensajes de addon. En `/lm opciones` puedes apagar cada parte.
 
 - **Siempre** (mientras "Aparecer en el tablón" esté activado): tu nivel, zona, clase y si estás en grupo.
-- **Activado por defecto**, con un interruptor para dejar de hacerlo: tus puntos de hermandad (cuántos niveles, mazmorras, misiones, ayudas, regalos y quedadas); tus otros personajes de la misma hermandad (alts); tus profesiones y su nivel; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
+- **Activado por defecto**, con un interruptor para dejar de hacerlo: tus puntos de hermandad (cuántos niveles, mazmorras, misiones, ayudas, regalos y quedadas); tus otros personajes de la misma hermandad (alts); tus profesiones, su nivel y tus recetas; tu % de XP, solo mientras vas en grupo con un hermano; tus muertes (nivel y zona) en el muro; tu build de talentos (puntos por rama, nivel y el código de la build); tus subidas de nivel, mazmorras con hermanos, botín raro y meta personal en el muro.
 - **Solo cuando los usas**: las preguntas a tu clase, las macros que compartes, tus deseos, regalos, meta personal, anuncios de mazmorra, quedadas y los grupos a los que te apuntas, el rol que eliges (tanque, sanador, daño) y las misiones que publicas en el tablón (título, nivel, zona y tus objetivos).
 - **Apagado por defecto**, solo si lo activas: tu posición (mapa, avistamiento de raros), tus misiones (emparejar misiones y su progreso), la XP por hora y la XP descansada.
 
