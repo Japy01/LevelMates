@@ -294,3 +294,4 @@ L.MEMBERS_FILTER_ALL = "Show: all"; L.MEMBERS_FILTER_ONLINE = "Show: online"; L.
 L.GUILD_RANK_N = "rank %d"; L.MEMBER_DAYS = "%d days ago"; L.MEMBER_CARD = "Card"; L.NOTE_WRITE = "Write note"; L.NOTE_PROMPT = "Note for %s (everyone with LevelMates sees it):"
 L.HIST_JOIN = "joined"; L.HIST_LEAVE = "left"; L.HIST_RANKUP = "promoted (rank %s)"; L.HIST_RANKDOWN = "demoted (rank %s)"; L.HIST_R60 = "reached level %s"
 L.ALTS_PROVEN = "same account"; L.ALTS_SAID = "as they say"; L.RACE_FIRST_TAG = "first of the guild"; L.RACE_CLASS_TAG = "first of the class"; L.RACE_BEFORE_TAG = "already there"
+L.OPT_GEAR = "Share my gear"; L.OPT_GEAR_TT = "Your equipped items, their item level and enchants, and your race for the model: guildmates see them on your card."

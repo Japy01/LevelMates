@@ -461,3 +461,14 @@ function QueryGuildBankTab(t) STUB.bankQueried = (STUB.bankQueried or 0) + 1 end
 function GetGuildBankItemLink(t, s) local x = STUB.bank.tabs[t].slots[s]; return x and ("|Hitem:" .. x.id .. "::::|h[Item " .. x.id .. "]|h") end
 function GetGuildBankItemInfo(t, s) local x = STUB.bank.tabs[t].slots[s]; if x then return 134400, x.n end; return nil, 0 end
 function GetGuildBankMoney() return STUB.bank and STUB.bank.money or 0 end
+
+-- My gear: STUB.gear[slot] = "|Hitem:id:enchant…|h[Name]|h"; item levels from STUB.ilvl[id] (nil = not loaded yet)
+STUB.gear, STUB.ilvl = {}, {}
+function GetInventoryItemLink(unit, slot) if unit == "player" then return STUB.gear[slot] end end
+C_Item = C_Item or {}
+C_Item.GetDetailedItemLevelInfo = function(link) local id = tonumber(tostring(link):match("item:(%d+)") or ""); return id and STUB.ilvl[id] end
+C_Item.GetItemIconByID = function(id) return 1000 + (id or 0) end
+function GetItemIcon(id) return 1000 + (tonumber(id) or 0) end
+function UnitRace(u) return "Human", "Human", STUB.raceId or 1 end
+function UnitSex(u) return STUB.sex or 2 end
+function InCombatLockdown() return STUB.inCombat == true end
