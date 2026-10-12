@@ -21,7 +21,8 @@ assert(B.subs.goals, "a Guild sub-section")
 B.subs.goals.scripts.OnClick(B.subs.goals)
 assert(B.tab == "goals" and ns.char.boardTab == "goals", "goals tab, remembered")
 assert(B.headText[1].text == L.COL_BY and B.headText[3].text == L.COL_GOAL and B.headText[4].text == L.COL_PROGRESS and B.headText[5].text == L.COL_UNTIL, "headers")
-assert(B.rows[1].zone:GetWidth() == B.GCOLS[3], "goals column widths")
+local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.WIDTH - 2 * B.MARGIN - (#cols - 1) * B.GAP) / sum) end
+assert(B.rows[1].zone:GetWidth() == scaled(B.GCOLS, 3), "goals column widths, in proportion")
 local rows = visible()
 assert(#rows == 2 and rows[1].zone.text == G.Text(G.Get("j1")) and rows[2].zone.text == G.Text(G.Get("j2")), "soonest deadline first")
 assert(rows[1].name.text == "Jefa" and rows[1].group.text == G.ProgressText(G.Get("j1")) and rows[1].xph.text == G.UntilText(G.Get("j1")), "creator, progress, deadline")
@@ -69,7 +70,7 @@ assert(#visible() == 0 and B.frame.empty.text == L.GOAL_EMPTY, "empty text")
 
 -- back to guildmates; /lm metas
 B.tabs.mates.scripts.OnClick(B.tabs.mates)
-assert(not B.goalNew:IsShown() and B.rows[1].zone:GetWidth() == B.COLS[3], "guildmates again")
+assert(not B.goalNew:IsShown() and B.rows[1].zone:GetWidth() == scaled(B.COLS, 3), "guildmates again")
 B.Toggle()
 SlashCmdList["LEVELMATES"]("metas")
 assert(B.frame:IsShown() and B.tab == "goals", "/lm metas")

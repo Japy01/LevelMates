@@ -18,7 +18,8 @@ local function visible() local out = {}; for i = 1, #B.rows do if B.rows[i].butt
 B.ShowTab("crafts")
 assert(B.subs.crafts and B.frame.selectedTab == 4 and B.subs.crafts.lit, "a Guild sub-section, lit")
 assert(B.headText[1].text == L.COL_WHO and B.headText[3].text == L.COL_PROGRESS and B.headText[4].text == L.COL_RANK and B.headText[5].text == L.COL_SEEN, "headers")
-assert(B.rows[1].zone:GetWidth() == B.CCOLS[3], "column widths")
+local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.WIDTH - 2 * B.MARGIN - (#cols - 1) * B.GAP) / sum) end
+assert(B.rows[1].zone:GetWidth() == scaled(B.CCOLS, 3), "column widths, in proportion")
 local function name(r) return (r.name.text:gsub("^%s+", "")) end
 local rows = visible()
 assert(#rows == 5 and rows[1].button.craftHeader == 171 and name(rows[2]) == "Mario" and rows[2].group.text == "200" and rows[2].xph.text == L.ONLINE, "alchemy: Mario first, online")

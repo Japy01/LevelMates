@@ -10,7 +10,7 @@ local unpack = unpack or table.unpack   -- the client has unpack; table.unpack c
 
 -- Layout: one place for the widths so the columns always fit inside the window.
 B.COLS = { 150, 50, 260, 70, 70 }   -- name, level, zone, group, xp/h
-B.GAP, B.MARGIN, B.WIDTH = 4, 24, 680   -- the margin keeps the text inside the page's drawn edge
+B.GAP, B.MARGIN, B.WIDTH = 4, 24, 900   -- the margin keeps the text inside the page's drawn edge
 B.JCOLS = { 100, 1, 395, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 364, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 320, 105, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
@@ -20,7 +20,7 @@ B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as
 B.KCOLS = { 150, 1, 339, 50, 60 }   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
 B.HCOLS = { 170, 1, 279, 80, 70 }   -- home: who or what, -, details, numbers, action (same total as B.COLS)
 B.ICOLS = { 150, 50, 160, 110, 130 }   -- inactive members: name, level, rank, away, joined (same total as B.COLS)   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
-B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 4, 8, 104, 50   -- dungeon cards (room for two-line names)
+B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 5, 8, 104, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
 B.TAB_KEYS = { "home", "mates", "lfg", "guild", "journal" }   -- the five main tabs
 B.GUILD_KEYS = { "feed", "goals", "wishes", "crafts", "class", "members", "bank", "recruit" }   -- the Guild tab's sub-sections
@@ -787,7 +787,14 @@ local function FillMates(list)
 end
 
 -- Column widths for the active tab (the row and header font strings are chained left to right).
+-- Each tab's column widths, stretched to the page: the same proportions however wide the book is.
 local function SetColumns(widths)
+	local sum = 0
+	for _, w in ipairs(widths) do sum = sum + w end
+	local k = (B.WIDTH - 2 * B.MARGIN - (#widths - 1) * B.GAP) / sum
+	local scaled = {}
+	for i, w in ipairs(widths) do scaled[i] = math.floor(w * k) end
+	widths = scaled
 	for i, w in ipairs(widths) do B.headText[i]:SetWidth(w) end
 	for _, r in ipairs(B.rows) do
 		r.name:SetWidth(widths[1] - (ROW_H - 4) - 4); r.level:SetWidth(widths[2]); r.zone:SetWidth(widths[3])

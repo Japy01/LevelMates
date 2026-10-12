@@ -24,7 +24,8 @@ end
 B.ShowTab("wishes")
 assert(B.tab == "wishes" and B.subs.wishes.lit and B.frame.selectedTab == 4, "a Guild sub-section, lit")
 assert(B.headText[1].text == L.COL_WHO and B.headText[3].text == L.COL_ITEM and B.headText[5].text == L.COL_SINCE, "headers")
-assert(B.rows[1].zone:GetWidth() == B.WCOLS[3], "wishes column widths")
+local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.WIDTH - 2 * B.MARGIN - (#cols - 1) * B.GAP) / sum) end
+assert(B.rows[1].zone:GetWidth() == scaled(B.WCOLS, 3), "wishes column widths, in proportion")
 local rows = visible()
 assert(#rows == 3, "mine and Mario's two: " .. #rows)
 assert(rows[1].name.text == "Tester" and rows[1].zone.text == ns.Skin.InkText(link(2589, "Linen")) and rows[1].xph.text ~= "", "mine first")

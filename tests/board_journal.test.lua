@@ -12,13 +12,14 @@ local function visible()
 	return out
 end
 
-assert(B.WIDTH == 680, "the board is 680 wide")
+assert(B.WIDTH == 900, "the board is 900 wide")
 assert(B.tabs.journal, "third tab")
 B.tabs.journal.scripts.OnClick(B.tabs.journal)
 assert(B.tab == "journal" and ns.char.boardTab == "journal", "journal tab, remembered")
 assert(B.tabs.journal.enabled == false and B.tabs.mates.enabled ~= false and B.tabs.lfg.enabled ~= false, "active tab")
 assert(B.headText[1].text == L.COL_WHEN and B.headText[3].text == L.COL_ENTRY and B.headText[5].text == L.COL_ZONE, "headers")
-assert(B.rows[1].zone:GetWidth() == B.JCOLS[3], "journal column widths")
+local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.WIDTH - 2 * B.MARGIN - (#cols - 1) * B.GAP) / sum) end
+assert(B.rows[1].zone:GetWidth() == scaled(B.JCOLS, 3), "journal column widths, in proportion")
 
 local rows = visible()
 assert(#rows == 20 and rows[1].zone.text == ns.Skin.InkText(J.Text(J.List("all", "")[1])), "newest first, one page of 20")
@@ -57,7 +58,7 @@ assert(not B.helpButton:IsShown() and not B.lfgButton:IsShown() and not B.nearCh
 for _, hr in ipairs(B.helpRows) do assert(not hr.text:IsShown() and not hr.button:IsShown(), "help rows hidden") end
 B.tabs.mates.scripts.OnClick(B.tabs.mates)
 assert(not B.journalClear:IsShown() and not B.journalFilterButton:IsShown() and not B.journalPrev:IsShown() and not B.journalPageText:IsShown(), "journal controls hidden elsewhere")
-assert(B.rows[1].zone:GetWidth() == B.COLS[3], "guildmates column widths back")
+assert(B.rows[1].zone:GetWidth() == scaled(B.COLS, 3), "guildmates column widths back")
 
 -- clear, with confirmation
 B.ShowTab("journal")

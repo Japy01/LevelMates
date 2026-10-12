@@ -3,7 +3,7 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local B, L = ns.Board, ns.L
 B.Toggle()
-assert(B.WIDTH == 680 and B.frame:GetWidth() == 680, "a wider window for nine tabs")
+assert(B.WIDTH == 900 and B.frame:GetWidth() == 900, "the book as a dashboard: 900 wide")
 local found
 for i, key in ipairs(B.GUILD_KEYS) do if key == "class" then found = i end end
 assert(found and B.GUILD_KEYS[found - 1] == "crafts" and B.subs.class, "Class: a Guild sub-section, after Professions")
