@@ -57,7 +57,7 @@ function GM.Refresh()
 	local canvas, mapId, i = WorldMapFrame:GetCanvas(), WorldMapFrame:GetMapID(), 0
 	if ns.db.settings.mapPins and WorldMapFrame:IsShown() and mapId then
 		local scale = 1 / canvasScale()
-		for _, e in ipairs(GM.Layout(mapId, canvas:GetWidth(), canvas:GetHeight(), GM.SIZE / scale)) do
+		for _, e in ipairs(GM.Layout(mapId, canvas:GetWidth(), canvas:GetHeight(), GM.SIZE * scale)) do   -- a pin's size in canvas units
 			i = i + 1
 			local p = pin(i)
 			p.mate, p.names, p.route = e.names[1], e.names, e
@@ -111,6 +111,7 @@ local function hook()
 	if hooked or not WorldMapFrame or not WorldMapFrame.OnMapChanged then return end
 	hooked = true
 	hooksecurefunc(WorldMapFrame, "OnMapChanged", function() ask(); GM.Refresh() end)   -- opening the map changes it too
+	if WorldMapFrame.OnCanvasScaleChanged then hooksecurefunc(WorldMapFrame, "OnCanvasScaleChanged", function() ns.Dirty("map") end) end   -- zoom: same size, new bundles
 	WorldMapFrame:HookScript("OnShow", function() ask(); GM.Refresh() end)
 end
 ns.OnRedraw("map", function() return WorldMapFrame and WorldMapFrame:IsShown() end, function() GM.Refresh() end)
@@ -127,6 +128,14 @@ ev:SetScript("OnEvent", function(_, _, name) if name == "Blizzard_WorldMap" then
 -- are left out; four or more within one pin's size become a bundle. { { x, y, names, mapId, mx, my } } in canvas
 -- pixels (mapId, mx, my: where the first of them is, for a route). Me: counted for bundles, never drawn.
 GM.STALE, GM.BUNDLE = 300, 4
+local continentOf = {}   -- map id -> continent id (world coordinates of different continents overlap)
+local function continent(mapId)
+	if continentOf[mapId] == nil then
+		local ok, c = pcall(C_Map.GetWorldPosFromMapPos, mapId, CreateVector2D(0.5, 0.5))
+		continentOf[mapId] = (ok and type(c) == "number") and c or false
+	end
+	return continentOf[mapId]
+end
 local function project(from, x, y, to)
 	if from == to then return x, y end
 	if not (C_Map.GetWorldPosFromMapPos and C_Map.GetMapPosFromWorldPos and CreateVector2D) then return nil end
@@ -139,6 +148,9 @@ local function project(from, x, y, to)
 	if not ok2 then return nil end
 	local pos = type(d) == "table" and d or (type(c) == "table" and c) or nil
 	if not pos then return nil end
+	if type(c) == "number" and c ~= to then return nil end   -- placed on some other map than the one viewed
+	local here = continent(to)
+	if type(cont) == "number" and here ~= false and here ~= cont then return nil end   -- another continent
 	local px, py
 	if pos.GetXY then px, py = pos:GetXY() else px, py = pos.x, pos.y end
 	if not px or not py or px < 0 or px > 1 or py < 0 or py > 1 then return nil end
@@ -180,9 +192,9 @@ function GM.Layout(mapId, w, h, pinPx)
 					used[j] = true
 					local q = points[j]
 					sx, sy = sx + q.x, sy + q.y
-					if not q.me then names[#names + 1] = q.name; first = first or q end
+					if not q.me then names[#names + 1] = q.name; if not first or q.name < first.name then first = q end end
 				end
-				table.sort(names)
+				table.sort(names)   -- the first name labels it, and its route goes to that one
 				if #names > 0 then out[#out + 1] = { x = sx / #near, y = sy / #near, names = names, mapId = first.mapId, mx = first.mx, my = first.my } end
 			else
 				used[i] = true

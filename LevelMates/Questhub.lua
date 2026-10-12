@@ -55,10 +55,15 @@ function QH.Post(questId)
 	if not q then return false end
 	if not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	local obj = ns.QuestProgress and ns.QuestProgress.Objectives and ns.QuestProgress.Objectives(questId)
-	local fields = { q = questId, t = ns.CutUtf8((tostring(q.title):gsub("[%c|]", "")), 40), l = q.level, g = q.group and 1 or 0 }
+	local title = strtrim((tostring(q.title or ""):gsub("[%c|]", "")))
+	if title == "" then title = "#" .. questId end   -- nothing printable: its number
+	local fields = { q = questId, t = ns.CutUtf8(title, 40), l = q.level, g = q.group and 1 or 0 }
 	local zone = q.header or GetRealZoneText()
 	if zone and zone ~= "" then fields.z = ns.CutUtf8((tostring(zone):gsub("[%c|]", "")), 30) end
 	if obj and #obj <= 40 then fields.ob = obj end
+	local probe = { id = "x", v = 1, e = 1 }
+	for k, v in pairs(fields) do probe[k] = v end
+	if not C.Validate("qh", probe) then ns.Say(L.QH_CANNOT); return false end   -- never a record that cannot travel
 	if not S.Put("qh", questId .. "." .. key(me()), fields) then return false end
 	ns.Say(L.QH_POSTED, fields.t)
 	return true
