@@ -297,3 +297,4 @@ L.ALTS_PROVEN = "same account"; L.ALTS_SAID = "as they say"; L.RACE_FIRST_TAG = 
 L.OPT_GEAR = "Share my gear"; L.OPT_GEAR_TT = "Your equipped items, their item level and enchants, and your race for the model: guildmates see them on your card."
 L.GEAR_LINE = "Item level %d (%d/17)"; L.GEAR_BUTTON = "Gear"; L.GEAR_ILVL = "Item level %d"
 L.CONFIRM_SURE = "Are you sure?"
+L.CONFIRM_RUN = "Cancel this run? Everyone who joined is told."; L.CONFIRM_QUEST = "Withdraw your post for this quest?"; L.CONFIRM_GOAL = "Delete this guild goal?"; L.CONFIRM_WISH = "Remove this wish?"; L.CONFIRM_OFFER = "Remove this offer from the market?"

@@ -66,6 +66,7 @@ assert(last("gr").i == 1012, "reserved from the menu")
 mineGift.button.scripts.OnClick(mineGift.button, "RightButton")
 assert(entries[#entries].text == L.GIFT_REMOVE, "remove my gift")
 entries[#entries].cb()
+StaticPopupDialogs.LEVELMATES_CONFIRM.OnAccept(STUB.lastDialog)   -- are you sure? yes
 assert(not GF.Has(1002), "removed")
 myWish.button.scripts.OnClick(myWish.button, "RightButton")
 assert(entries[1].text == L.WISH_REMOVE, "my wish: as before")

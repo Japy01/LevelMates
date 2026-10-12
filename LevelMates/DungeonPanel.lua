@@ -91,7 +91,17 @@ local function Build()
 		for k = 1, 3 do
 			local b = SmallButton(line, 62)
 			if k == 1 then b:SetPoint("RIGHT", line, "RIGHT", 0, 0) else b:SetPoint("RIGHT", line.buttons[k - 1], "LEFT", -2, 0) end
-			b:SetScript("OnClick", function(self) if self.action then self.action() end; DP.Refresh() end)
+			b:SetScript("OnClick", function(self)
+				if self.confirm and not (self.pending and GetTime() - self.pending <= 5) then   -- what removes something asks first
+					self.pending = GetTime(); self:SetText(L.CONFIRM_SURE)
+					local stamp = self.pending
+					C_Timer.After(5.05, function() if self.pending == stamp then self.pending = nil; self:SetText(self.label or "") end end)
+					return
+				end
+				self.pending = nil
+				if self.action then self.action() end
+				DP.Refresh()
+			end)
 			b:Hide()
 			line.buttons[k] = b
 		end
@@ -105,11 +115,17 @@ local function Build()
 	f:Hide()
 end
 
--- Up to three buttons on a line, right to left: { text, action, tooltip }.
+-- Up to three buttons on a line, right to left: { text, action, confirm }. A pending "Are you sure?" stays while the
+-- button keeps the same job; a different one resets it.
 local function setButtons(line, list)
 	for k, b in ipairs(line.buttons) do
 		local spec = list[k]
-		if spec then b:SetText(spec[1]); b.action = spec[2]; b:Show() else b.action = nil; b:Hide() end
+		if spec then
+			local same = b.label == spec[1] and b.entry == line.entry
+			b.label, b.action, b.confirm, b.entry = spec[1], spec[2], spec[3], line.entry
+			if not (same and b.pending) then b.pending = nil; b:SetText(spec[1]) end
+			b:Show()
+		else b.action, b.pending = nil, nil; b:Hide() end
 	end
 end
 
@@ -165,7 +181,7 @@ function DP.Refresh()
 					local s = ns.Meetups.Slots(m)
 					local names = {}
 					for _, role in ipairs({ "T", "H", "D" }) do for _, n in ipairs(s[role]) do names[#names + 1] = n end end
-					btns[1] = { L.DP_CANCEL, function() ns.Meetups.Cancel(m.id) end }
+					btns[1] = { L.DP_CANCEL, function() ns.Meetups.Cancel(m.id) end, true }
 					btns[2] = { L.DP_INVITE_ALL, function() ns.Board.InviteAll(names) end }
 				elseif ns.Meetups.MyRole(m.id) then
 					btns[1] = { L.DP_LEAVE, function() ns.Meetups.Leave(m.id) end }
@@ -180,7 +196,7 @@ function DP.Refresh()
 				local label = "   " .. Cap(L["ROLE_" .. e.role]) .. ": "
 				if e.name then
 					line.text:SetText(label .. e.name .. (e.confirmed and "" or (" " .. L.RUN_UNCONFIRMED))); line.text:SetTextColor(1, 1, 1)
-					if m.by == me() and e.name ~= me() then btns[1] = { L.DP_REMOVE, function() ns.Meetups.RemoveMember(m.id, e.name) end } end
+					if m.by == me() and e.name ~= me() then btns[1] = { L.DP_REMOVE, function() ns.Meetups.RemoveMember(m.id, e.name) end, true } end
 				else
 					line.text:SetText(label .. L.RUN_FREE); line.text:SetTextColor(0.55, 0.55, 0.55)
 					if m.by == me() then btns[1] = { L.DP_ADD, function() DP.AddMenu(m, e.role) end } end

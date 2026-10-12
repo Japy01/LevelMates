@@ -859,7 +859,7 @@ function B.OpenGoalMenu(id)
 	local g = ns.Goals.Get(id)
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
 		root:CreateTitle(ns.Goals.Text(g))
-		root:CreateButton(L.GOAL_DELETE, function() ns.Goals.Delete(id) end)
+		root:CreateButton(L.GOAL_DELETE, function() ns.Confirm(L.CONFIRM_GOAL, function() ns.Goals.Delete(id) end) end)
 	end)
 end
 
@@ -1008,7 +1008,7 @@ end
 function B.OpenWishMenu(id, kind, mine, name)
 	if kind == "give" then
 		if mine then
-			MenuUtil.CreateContextMenu(B.frame, function(_, root) root:CreateButton(L.GIFT_REMOVE, function() ns.Gifts.Remove(id) end) end)
+			MenuUtil.CreateContextMenu(B.frame, function(_, root) root:CreateButton(L.GIFT_REMOVE, function() ns.Confirm(L.CONFIRM_OFFER, function() ns.Gifts.Remove(id) end) end) end)
 		else
 			local row
 			for _, g in ipairs(ns.Gifts.List()) do if g.name == name and g.id == id then row = g end end
@@ -1020,7 +1020,7 @@ function B.OpenWishMenu(id, kind, mine, name)
 	end
 	if not mine or not ns.Wishlist.Has(id) then return end
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
-		root:CreateButton(L.WISH_REMOVE, function() ns.Wishlist.Remove(id) end)
+		root:CreateButton(L.WISH_REMOVE, function() ns.Confirm(L.CONFIRM_WISH, function() ns.Wishlist.Remove(id) end) end)
 	end)
 end
 
@@ -1392,7 +1392,7 @@ function B.OpenQuestMenu(p)
 		root:CreateTitle(p.t)
 		if p.by == ns.Me() then
 			root:CreateButton(L.DP_INVITE_ALL, function() B.InviteAll(p.joined) end)
-			root:CreateButton(L.QH_WITHDRAW, function() ns.Questhub.Withdraw(p.q); B.Refresh() end)
+			root:CreateButton(L.QH_WITHDRAW, function() ns.Confirm(L.CONFIRM_QUEST, function() ns.Questhub.Withdraw(p.q); B.Refresh() end) end)
 		else
 			if ns.Questhub.IJoined(p.id) then root:CreateButton(L.QH_NOT_ME, function() ns.Questhub.NotMe(p.id); B.Refresh() end)
 			else root:CreateButton(L.QH_ME_TOO, function() ns.Questhub.MeToo(p.id); B.Refresh() end) end
@@ -1512,7 +1512,7 @@ function B.OpenMeetMenu(m)
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
 		root:CreateTitle(ns.Dungeons.Name(m.d) .. " · " .. when)
 		if m.by == ns.Me() then
-			root:CreateButton(string.format(L.MEET_CANCEL, when), function() ns.Meetups.Cancel(m.id) end)
+			root:CreateButton(string.format(L.MEET_CANCEL, when), function() ns.Confirm(L.CONFIRM_RUN, function() ns.Meetups.Cancel(m.id) end) end)
 		elseif ns.Meetups.MyRole(m.id) then
 			root:CreateButton(string.format(L.MEET_LEAVE, when), function() ns.Meetups.Leave(m.id) end)
 		else
@@ -1550,7 +1550,7 @@ function B.OpenDungeonMenu(id)
 		for _, m in ipairs(ns.Meetups.List(id)) do
 			local when = ns.Meetups.When(m)
 			if m.by == ns.Me() then
-				root:CreateButton(string.format(L.MEET_CANCEL, when), function() ns.Meetups.Cancel(m.id) end)
+				root:CreateButton(string.format(L.MEET_CANCEL, when), function() ns.Confirm(L.CONFIRM_RUN, function() ns.Meetups.Cancel(m.id) end) end)
 			elseif ns.Meetups.MyRole(m.id) then
 				root:CreateButton(string.format(L.MEET_LEAVE, when), function() ns.Meetups.Leave(m.id) end)
 			else

@@ -72,7 +72,9 @@ assert(said(string.format(L.MEET_SOON, D.Name(6), M.When(M.List(6)[1]))) == 0, "
 card = nil
 for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 5 then card = c end end
 card.scripts.OnClick(card, "RightButton")
-assert(pick(string.format(L.MEET_CANCEL, M.When(M.List(5)[1]))) and last("x").t == "qd" and #M.List(5) == 0, "cancelled")
+assert(pick(string.format(L.MEET_CANCEL, M.When(M.List(5)[1]))), "cancel in the menu")
+StaticPopupDialogs.LEVELMATES_CONFIRM.OnAccept(STUB.lastDialog)   -- are you sure? yes
+assert(last("x").t == "qd" and #M.List(5) == 0, "cancelled")
 STUB.Receive("LVLM2", X("qd", "mario01"), "GUILD", "Ana-Testrealm")
 assert(#M.List(4) == 1, "nobody else can cancel it")
 STUB.Receive("LVLM2", X("qd", "mario01"), "GUILD", "Mario-Testrealm")

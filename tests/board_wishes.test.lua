@@ -47,6 +47,7 @@ assert(entries == nil, "no menu on someone else's wish")
 rows[1].button.scripts.OnClick(rows[1].button, "RightButton")
 assert(entries and entries[1].text == L.WISH_REMOVE, "remove on mine")
 entries[1].cb()
+StaticPopupDialogs.LEVELMATES_CONFIRM.OnAccept(STUB.lastDialog)   -- are you sure? yes
 STUB.Advance(0.6)   -- changes redraw the open page at most twice a second
 assert(not W.Has(2589) and #visible() == 2, "removed")
 

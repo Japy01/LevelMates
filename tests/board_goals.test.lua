@@ -46,6 +46,7 @@ end
 rows[1].button.scripts.OnClick(rows[1].button, "RightButton")
 assert(B.lastGoalMenu == "j1" and entries[1].text == L.GOAL_DELETE, "officer: delete in the menu")
 entries[1].cb()
+StaticPopupDialogs.LEVELMATES_CONFIRM.OnAccept(STUB.lastDialog)   -- are you sure? yes
 assert(not G.Get("j1") and (C.Decode(STUB.sent[#STUB.sent].msg)) == "gx" and #visible() == 1, "deleted, guild told, list refreshed")
 
 -- "New goal": officers only
