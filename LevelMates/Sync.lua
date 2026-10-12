@@ -191,13 +191,22 @@ local function batch(t, to)
 	local first = math.max(1, #list - (spec.relayMax or #list) + 1)
 	for i = first, #list do send(list[i], to) end
 end
+-- Two of us may claim in the same instant: the claimer waits 1.5 s and, if someone else claimed meanwhile, only the
+-- one whose name sorts first sends.
+local rivals = {}   -- [key] = the lowest other name that claimed it while mine was pending
 local function answer(t, to)
 	local key = to .. ":" .. t
 	if claimed[key] and GetTime() - claimed[key] < 30 then return end
 	claimed[key] = GetTime()
+	rivals[key] = nil
 	C.Send("hc", { to = to, t = t }, "urgent")
-	S.stats.answered = S.stats.answered + 1
-	batch(t, to)
+	C_Timer.After(1.5, function()
+		local rival = rivals[key]
+		rivals[key] = nil
+		if rival and rival < me() then return end
+		S.stats.answered = S.stats.answered + 1
+		batch(t, to)
+	end)
 end
 C.OnMessage("hi", function(f, name)
 	local theirs = {}
@@ -214,7 +223,11 @@ C.OnMessage("hi", function(f, name)
 end)
 local asked = {}
 C.OnMessage("hc", function(f, name)
-	claimed[f.to .. ":" .. f.t] = GetTime()
+	local key = f.to .. ":" .. f.t
+	if claimed[key] and GetTime() - claimed[key] < 2 then   -- I claimed it too, just now: the lower name sends
+		if not rivals[key] or name < rivals[key] then rivals[key] = name end
+	end
+	claimed[key] = GetTime()
 	if f.to ~= me() or asked[f.t] then return end
 	-- my answer is coming by whisper; if none of it arrived in 12 s, ask the claimer once more
 	local n0 = S.Digest(f.t)
