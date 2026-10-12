@@ -6,5 +6,8 @@ const r0 = spawnSync('node', ['tools/check-lua.mjs', 'LevelMates'], { stdio: 'in
 for (const t of fs.readdirSync('tests').filter(f => f.endsWith('.test.lua'))) {
   const r = spawnSync('node', ['tools/run-lua-test.mjs', 'LevelMates', 'tests/' + t], { stdio: 'inherit' }); if (r.status) fail++;
 }
+for (const t of fs.readdirSync('tests').filter(f => f.endsWith('.net.mjs'))) {
+  const r = spawnSync('node', ['tests/' + t], { stdio: 'inherit' }); if (r.status) fail++;
+}
 const r1 = spawnSync('node', ['tests/policy.test.mjs'], { stdio: 'inherit' }); if (r1.status) fail++;
 process.exit(fail ? 1 : 0);

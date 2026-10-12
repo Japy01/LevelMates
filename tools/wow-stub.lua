@@ -397,3 +397,17 @@ Settings.RegisterVerticalLayoutSubcategory = function(parent, name) local c = { 
 function Region:EnableMouse(v) self.mouseEnabled = v end
 function Region:SetClampedToScreen(v) self.clamped = v end
 function Region:GetRight() return nil end
+
+-- For the multi-client harness: hand over what this client sent since the last drain, one line per message,
+-- "prefix\tchatType\ttarget\tmsg" (messages never hold tabs or newlines: the wire forbids control characters
+-- except the unit separator).
+STUB.drained = 0
+function STUB.Drain()
+	local out = {}
+	for i = STUB.drained + 1, #STUB.sent do
+		local s = STUB.sent[i]
+		out[#out + 1] = table.concat({ s.prefix, s.chatType or "", tostring(s.target or ""), s.msg }, "\t")
+	end
+	STUB.drained = #STUB.sent
+	return table.concat(out, "\n")
+end
