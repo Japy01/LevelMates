@@ -259,3 +259,4 @@ L.ROUTE_SET = "Ruta marcada hacia %s: %s (%.0f, %.0f). Sigue el marcador en pant
 L.CARD_OLD_VERSION = "Usa un LevelMates antiguo (0.3): tiene que actualizar para veros."
 L.REPORT_QUEUE = "Cola"; L.REPORT_HELD = "retenidos"; L.REPORT_DROPPED = "descartados"; L.REPORT_RECORDS = "Registros"; L.REPORT_OLD = "Compañeros con versión antigua"
 L.STATUS_QUEUE = "cola: %d esperando, %d retenidos, %d descartados"; L.STATUS_MEMORY = "memoria: %.0f KB (%.0f KB tras recoger)"
+L.RUN_ROLE_FULL = "Ese rol ya está completo en esta partida."

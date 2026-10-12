@@ -223,12 +223,14 @@ C.OnMessage("hi", function(f, name)
 		local t, n, sum = part:match("^([%w_]+):(%d+):(%d+)$")
 		if t then theirs[t] = n .. ":" .. sum end
 	end
+	local differ = {}
 	for _, t in ipairs(S.Types("board")) do
 		local n, sum = S.Digest(t)
-		if n > 0 and theirs[t] ~= n .. ":" .. sum then
-			C_Timer.After(1 + math.random() * 5, function() answer(t, name) end)
-		end
+		if n > 0 and theirs[t] ~= n .. ":" .. sum then differ[#differ + 1] = t end
 	end
+	if #differ == 0 then return end
+	-- one wait for the whole hello, then the types in name order (a run's line-up never before the run)
+	C_Timer.After(1 + math.random() * 5, function() for _, t in ipairs(differ) do answer(t, name) end end)
 end)
 local asked = {}
 C.OnMessage("hc", function(f, name)
