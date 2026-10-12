@@ -908,6 +908,8 @@ local function FillCrafts(list)
 			if c.mine then r.xph:SetText("")
 			elseif m then r.xph:SetText(L.ONLINE); r.xph:SetTextColor(unpack(B.GROUP_COLORS.open))
 			else r.xph:SetText(string.format(L.FEED_AGO, ns.Journal.Duration(math.max(0, time() - c.t)))); r.xph:SetTextColor(0.7, 0.7, 0.7) end
+			local hint = ns.Professions.TrainHint(c.rank, c.max)   -- at the top of a rank: who to visit
+			if hint then local was = r.xph:GetText() or ""; r.xph:SetText((was ~= "" and (was .. " · ") or "") .. hint); r.xph:SetTextColor(1, 0.6, 0.2) end
 			r.button:Show()
 			RowBg(r, i, false)
 		else

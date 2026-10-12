@@ -222,3 +222,24 @@ function RC.Ask(name, item)
 	SendChatMessage(string.format(L.RC_ASK, RC.Link(item)), "WHISPER", nil, name)
 	return true
 end
+
+------------------------------------------------------------------ tooltips
+-- "Crafted by: Mario (Alchemy 225), Ana, Luis +2" on any item someone in the guild crafts (online first).
+if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
+	local broken = false
+	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)
+		if broken or not ns.db or (tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip) or type(data) ~= "table" or not data.id then return end
+		local ok, err = pcall(function()
+			local who = RC.WhoCrafts(data.id)
+			if #who == 0 then return end
+			local parts = {}
+			for i = 1, math.min(3, #who) do
+				local w = who[i]
+				parts[#parts + 1] = i == 1 and string.format("%s (%s %d)", w.name, ns.Professions.Name(w.line), w.r) or w.name
+			end
+			local text = table.concat(parts, ", ") .. (#who > 3 and (" +" .. (#who - 3)) or "")
+			tooltip:AddLine(string.format(L.RC_TOOLTIP, text), 0.6, 0.8, 1, true)
+		end)
+		if not ok then broken = true; ns.Log("recipe tooltip off: %s", tostring(err)) end   -- one error turns it off
+	end)
+end

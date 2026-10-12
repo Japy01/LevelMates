@@ -17,6 +17,13 @@ local function theirs()
 	return ns.db.professions[k]
 end
 
+-- At the top of a rank (75, 150, 225): the trainer to visit next. nil otherwise (and at 300, the last).
+local NEXT = { [75] = "TRAIN_JOURNEYMAN", [150] = "TRAIN_EXPERT", [225] = "TRAIN_ARTISAN" }
+function P.TrainHint(rank, max)
+	if not rank or not max or rank < max or not NEXT[max] then return nil end
+	return L[NEXT[max]]
+end
+
 function P.Name(id) return L["PROF_" .. id] or ("#" .. tostring(id)) end
 
 -- Each profession's icon: the apprentice spell's, as the game draws it; a fixed icon when the client has no such call.
