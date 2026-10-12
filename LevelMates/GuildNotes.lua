@@ -12,8 +12,9 @@ local function changed() ns.Fire("LM_GUILDNOTES_CHANGED") end
 local function noteText(v) return type(v) == "string" and #v <= 120 and not v:find("[%c|]") end
 S.Define("gn", { class = "board", life = GN.LIFE, writerOwns = true,
 	fields = { f = C.V.text(48), n = noteText }, required = { "f" },
-	idOwner = function(id) return id:match("^%x+$") ~= nil end,
-	accept = function(f, owner) return owner == f.f or R.IsOfficer(owner) end,   -- my own, or an officer
+	-- the id is the key of whom the note is about; only they or an officer may write (or remove) it
+	idOwner = function(id, owner) return id == ns.NameKey(owner) or R.IsOfficer(owner) end,
+	accept = function(f, owner) return f.id == ns.NameKey(f.f) and (owner == f.f or R.IsOfficer(owner)) end,
 	may = function(rec, who) return who == (rec.d and rec.d.f) or R.IsOfficer(who) or (who == me() and GN.CanWrite(rec.d and rec.d.f)) end,
 	onChange = changed })
 S.Define("gmo", { class = "board", life = GN.LIFE, writerOwns = true,

@@ -34,7 +34,7 @@ function GB.Decode(p)
 	return tabs
 end
 
-local function wire(v) return type(v) == "string" and #v <= 8000 and not v:find("[%c|]") end
+local function wire(v) return type(v) == "string" and #v <= 14000 and not v:find("[%c|]") end   -- eight full tabs; under the blob limit
 S.Define("gbk", { class = "board", life = GB.LIFE, writerOwns = true,
 	fields = { t = C.V.int(0, 4000000000), m = C.V.int(0, 9000000000000), p = wire }, required = { "t", "p" },
 	may = function() return true end,   -- whoever opened the bank last tells what is in it
@@ -88,6 +88,10 @@ local function readTabs()
 			tabs[#tabs + 1] = { name = cleanName(name), items = items }
 		end
 	end
+	-- tabs I cannot see (lower rank) stay as the last snapshot had them: never wiped for everyone
+	local have = {}
+	for _, tab in ipairs(tabs) do have[tab.name] = true end
+	for _, tab in ipairs(last and last.tabs or {}) do if not have[tab.name] then tabs[#tabs + 1] = tab end end
 	read = { tabs = tabs, m = GetGuildBankMoney and GetGuildBankMoney() or 0 }
 end
 local function open()

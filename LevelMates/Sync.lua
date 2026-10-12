@@ -105,6 +105,7 @@ function S.Receive(t, f, sender, catchup)
 	if not spec then return end
 	local owner = f.o or sender
 	if owner ~= sender and spec.class == "personal" then return end   -- personal state only from its owner
+	if owner ~= sender and spec.writerOwns and not catchup then return end   -- someone else's word, live: only its writer says it
 	if owner == me() then return end
 	if not trusted(owner) or not trusted(sender) then return end
 	if f.v > now() + S.FUTURE or f.e < now() then return end

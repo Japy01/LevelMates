@@ -57,7 +57,7 @@ function F.List(search, deathsOnly)
 	local s, out, cutoff, q = store(), {}, F.Now() - F.DAYS * 1440, (search or ""):lower()
 	for i = #s, 1, -1 do if s[i].t < cutoff then table.remove(s, i) end end
 	for _, e in ipairs(s) do
-		if (not deathsOnly or e.k == "dth") and (e.k == "gol" or e.sim or e.who == me() or R.IsGuildmate(e.who))
+		if (not deathsOnly or e.k == "dth") and (e.k == "gol" or e.k == "leave" or e.k == "join" or e.sim or e.who == me() or R.IsGuildmate(e.who))
 			and (q == "" or (F.Who(e) .. " " .. F.Text(e)):lower():find(q, 1, true)) then out[#out + 1] = e end
 	end
 	return out

@@ -23,7 +23,7 @@ local function read()
 	for _, id in ipairs(C_Club.GetClubMembers(club) or {}) do
 		local info = C_Club.GetMemberInfo(club, id)
 		if info and info.name then
-			out[info.name] = { level = info.level or 0, rank = info.guildRankOrder or 0, class = info.classID or info.classFileName }
+			out[ns.ShortName(info.name)] = { level = info.level or 0, rank = info.guildRankOrder or 0, class = info.classID or info.classFileName }
 			n = n + 1
 		end
 	end
@@ -64,15 +64,18 @@ local function race(name, level, class, live)
 end
 
 local pendingShrink
+local seenThisSession = false   -- what changed while I was away is not "live"
 function GH.Scan()
 	local now, rows = read()
 	if not now then return end
 	local total = GetNumGuildMembers and GetNumGuildMembers() or rows
+	local partial = (total or 0) > rows
 	local s = store()
-	local live = s.snap ~= nil
+	if not s.snap and partial then return end   -- never a baseline from a list still loading
+	local live = s.snap ~= nil and seenThisSession
+	seenThisSession = true
 	for name, m in pairs(now) do race(name, m.level, m.class, live) end
 	if not s.snap then s.snap = now; s.since = time(); return end   -- the first look: a baseline, no events
-	local partial = (total or 0) > rows
 	local gone = {}
 	if not partial then for name in pairs(s.snap) do if not now[name] then gone[#gone + 1] = name end end end
 	local before = 0
@@ -88,6 +91,7 @@ function GH.Scan()
 		if not old then add("join", name)
 		elseif m.rank < old.rank then add("rankup", name, m.rank)
 		elseif m.rank > old.rank then add("rankdown", name, m.rank) end
+		if old and m.level > (old.level or 0) and m.level >= 10 and live then add("level", name, m.level) end
 	end
 	table.sort(gone)
 	for _, name in ipairs(gone) do add("leave", name); s.race[name] = nil end

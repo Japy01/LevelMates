@@ -16,7 +16,7 @@ local function roster()
 	for _, id in ipairs(C_Club.GetClubMembers(club) or {}) do
 		local info = C_Club.GetMemberInfo(club, id)
 		if info and info.name then
-			cache[#cache + 1] = { name = info.name, level = info.level or 0, rank = info.guildRankOrder or 0, role = info.role,
+			cache[#cache + 1] = { name = ns.ShortName(info.name), level = info.level or 0, rank = info.guildRankOrder or 0, role = info.role,
 				online = info.presence ~= OFFLINE, zone = info.zone, days = info.lastOnlineYear and ((info.lastOnlineYear or 0) * 365 + (info.lastOnlineMonth or 0) * 30 + (info.lastOnlineDay or 0)) }
 		end
 	end

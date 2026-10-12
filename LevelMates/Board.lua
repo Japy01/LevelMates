@@ -1819,7 +1819,7 @@ function B.Refresh()
 	end
 	if recruit and B.recruitView == "inactive" then B.heading:SetText(L.HEAD_INACTIVE); B.subtitle:SetText(L.SUB_INACTIVE) end
 	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
-	B.subtitle:SetShown(B.MainOf(B.tab) ~= "guild")   -- the sub-section buttons sit there
+	B.subtitle:SetShown((B.MainOf(B.tab) ~= "guild") or B.tab == "bank")   -- the bank says whose look it shows   -- the sub-section buttons sit there
 	B.divider:SetShown(B.MainOf(B.tab) ~= "guild")
 	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
