@@ -96,3 +96,97 @@ end
 local ev = CreateFrame("Frame")
 for _, e in ipairs({ "TRADE_SKILL_SHOW", "TRADE_SKILL_LIST_UPDATE", "TRADE_SKILL_DATA_SOURCE_CHANGED" }) do ev:RegisterEvent(e) end
 ev:SetScript("OnEvent", later)
+
+------------------------------------------------------------------ sharing
+-- One `rc` per profession: p (its line), r/m (rank/max), i (items) and s (spells), encoded as above; long lists go in
+-- chunks. Through the personal-state helper: pending while it cannot go, again to newcomers, nothing when sharing is off.
+local function idlist(v) return type(v) == "string" and #v <= 1800 and v:match("^[0-9a-z%-]*$") ~= nil end
+C.SCHEMA.rc = { p = C.V.int(1, 2000), r = C.V.int(0, 450), m = C.V.int(0, 450), i = idlist, s = idlist }
+C.REQUIRED.rc = { "p" }
+local function build()
+	local out = {}
+	for p, e in pairs(RC.Mine()) do
+		local i, s = RC.Encode(e.items), RC.Encode(e.spells)
+		out[#out + 1] = { p = p, r = e.r, m = e.m, i = i ~= "" and i or nil, s = s ~= "" and s or nil }
+	end
+	table.sort(out, function(a, b) return a.p < b.p end)
+	return #out > 0 and out or nil
+end
+local share = ns.Sync.Personal("rc", build, { save = "recipesPending",
+	worth = function() return next(RC.Mine()) ~= nil end,
+	enabled = function() return ns.db.settings.shareProfessions end })
+-- A real change goes out 8 s later (one message for a burst of changes).
+local due
+ns.On("LM_RECIPES_CHANGED", function()
+	due = GetTime() + 8
+	C_Timer.After(8.05, function() if due and GetTime() >= due then due = nil; share.Mark() end end)
+end)
+
+------------------------------------------------------------------ theirs
+RC.FORGET = 60 * 86400
+local function theirs()
+	ns.db.recipes = ns.db.recipes or {}
+	local g = GetGuildInfo("player") or "?"
+	ns.db.recipes[g] = ns.db.recipes[g] or {}
+	return ns.db.recipes[g]
+end
+local index   -- item id -> { { name, line } }, rebuilt when something changed
+local function changed() index = nil; ns.Fire("LM_PROFESSIONS_CHANGED") end
+ns.On("LM_RECIPES_CHANGED", function() index = nil end)
+
+-- A rank the character's level cannot have yet (another's window read by mistake, a broken client): ignored.
+local function plausible(name, rank)
+	local m = R.mates[name]
+	local level = m and m.level
+	if not level then return true end
+	local need = rank > 225 and 35 or rank > 150 and 20 or rank > 75 and 10 or 0
+	return level >= need
+end
+C.OnMessage("rc", function(f, name)
+	if not plausible(name, f.r or 0) then return end
+	local items, spells = RC.Decode(f.i or ""), RC.Decode(f.s or "")
+	if not items or not spells then return end
+	local t = theirs()
+	t[name] = t[name] or {}
+	t[name][f.p] = { r = f.r or 0, m = f.m or 0, items = items, spells = spells, t = GetServerTime() }
+	changed()
+end)
+
+-- Someone's professions with their recipes (mine for me); forgotten 60 days after the last news.
+function RC.Of(name)
+	if name == ns.Me() then return RC.Mine() end
+	local e = theirs()[name]
+	if not e then return {} end
+	for p, x in pairs(e) do if GetServerTime() - (x.t or 0) > RC.FORGET then e[p] = nil; index = nil end end
+	if not next(e) then theirs()[name] = nil end
+	return e
+end
+local function build_index()
+	index = {}
+	local function add(name, p, list) for _, id in ipairs(list or {}) do index[id] = index[id] or {}; table.insert(index[id], { name, p }) end end
+	for p, e in pairs(RC.Mine()) do add(ns.Me(), p, e.items) end
+	for name in pairs(theirs()) do for p, e in pairs(RC.Of(name)) do add(name, p, e.items) end end
+end
+-- Who crafts an item: { name, line, r, m, t, online }, online first, then the highest rank.
+function RC.WhoCrafts(itemId)
+	if not index then build_index() end
+	local out = {}
+	for _, e in ipairs(index[itemId] or {}) do
+		local x = RC.Of(e[1])[e[2]]
+		if x then out[#out + 1] = { name = e[1], line = e[2], r = x.r, m = x.m, t = x.t, online = e[1] == ns.Me() or R.mates[e[1]] ~= nil } end
+	end
+	table.sort(out, function(a, b)
+		if a.online ~= b.online then return a.online end
+		if a.r ~= b.r then return a.r > b.r end
+		return a.name < b.name
+	end)
+	return out
+end
+-- Every item someone in the guild crafts (for the search by name).
+function RC.Known()
+	if not index then build_index() end
+	local out = {}
+	for id in pairs(index) do out[#out + 1] = id end
+	table.sort(out)
+	return out
+end
