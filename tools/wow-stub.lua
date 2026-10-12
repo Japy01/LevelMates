@@ -93,6 +93,7 @@ function Region:GetChildren() return (table.unpack or unpack)(self.children or {
 function Region:GetObjectType() return self.kind or "Frame" end
 function Region:RegisterEvent(e) self.registered[e] = true end
 function Region:UnregisterEvent(e) self.registered[e] = nil end
+function Region:UnregisterAllEvents() self.registered = {} end
 function Region:SetScript(name, fn) self.scripts[name] = fn end
 function Region:GetScript(name) return self.scripts[name] end
 function Region:HookScript(name, fn) local old = self.scripts[name]; self.scripts[name] = function(...) if old then old(...) end fn(...) end end

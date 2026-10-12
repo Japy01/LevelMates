@@ -208,8 +208,11 @@ end
 
 ------------------------------------------------------------------ transport
 local handlers = {}
-C.stats = { sent = 0, received = 0, bad = 0, queued = 0, lockdownSkips = 0, retries = 0 }
-local queue = {}            -- { text, kind, prio }
+C.stats = { sent = 0, received = 0, bad = 0, queued = 0, lockdownSkips = 0, retries = 0, dropped = 0, held = 0 }
+local queue = {}            -- { text, kind, lane = "urgent"|"normal", target, heldAt }
+C.MAX_QUEUE, C.HOLD_URGENT, C.HOLD_NORMAL = 300, 600, 3600
+-- Kinds that go ahead of everything else: help and groups are about now.
+C.URGENT = { help = true, helpok = true, helpgo = true, lfg = true, lfgx = true, lfj = true, lfjx = true }
 local allowance, lastTick = 10, 0   -- per-prefix: 10 burst, +1/s
 local active = "none"
 local channelId
@@ -241,7 +244,8 @@ local function ensureChannel()
 	return channelId
 end
 
-local function rawSend(text)
+local function rawSend(text, target)
+	if target then return C_ChatInfo.SendAddonMessage(C.PREFIX, text, "WHISPER", target) end
 	if active == "channel" then
 		local id = channelId or ensureChannel()
 		if not id then return 7 end
@@ -250,7 +254,10 @@ local function rawSend(text)
 	return C_ChatInfo.SendAddonMessage(C.PREFIX, text, "GUILD")
 end
 
--- Inside an instance only help requests go out (spec 4.3): the group channels are the game's business there.
+-- Inside an instance only help requests go out (spec 4.3). What was sent with { hold = true } waits there until I
+-- leave (urgent things 10 minutes, the rest an hour), and its onSent says when it really went (the record layer
+-- keeps its own pending mark until then, so a /reload inside loses nothing). Everything else is refused or dropped
+-- inside, as before: those senders keep a pending mark with the character and resend after the next heartbeat.
 local INSTANCE_OK = { help = true, helpok = true }
 local function inInstance() return IsInInstance and IsInInstance() == true end
 
@@ -259,47 +266,102 @@ local function pump()
 	allowance = math.min(10, allowance + (now - lastTick))
 	lastTick = now
 	if #queue == 0 then return end
-	if inInstance() then   -- entering an instance: whatever waited for a heartbeat is stale, drop it
-		for i = #queue, 1, -1 do
-			local kind = queue[i].kind
-			if not INSTANCE_OK[kind] then table.remove(queue, i); ns.Fire("LM_COMM_DROPPED", kind) end   -- whole-state senders re-mark pending
+	-- held too long (inside an instance, or under a lockdown): gone; whole-state senders re-mark pending
+	for i = #queue, 1, -1 do
+		local item = queue[i]
+		if item.heldAt and now - item.heldAt > (item.lane == "urgent" and C.HOLD_URGENT or C.HOLD_NORMAL) then
+			table.remove(queue, i); C.stats.dropped = C.stats.dropped + 1; ns.Fire("LM_COMM_DROPPED", item.kind)
 		end
-		C.stats.queued = #queue
-		if #queue == 0 then return end
+	end
+	local inside = inInstance()
+	if inside then   -- entering an instance: what cannot wait is dropped (its sender re-marks it pending)
+		for j = #queue, 1, -1 do
+			local item = queue[j]
+			if not INSTANCE_OK[item.kind] and not item.hold then
+				table.remove(queue, j); C.stats.dropped = C.stats.dropped + 1; ns.Fire("LM_COMM_DROPPED", item.kind)
+			end
+		end
 	end
 	-- No pre-check of the restriction flags: on Forever they read true outside combat while sends still work
 	-- (spike). SendAddonMessage returns 11 under a real lockdown and the loop below keeps the queue.
-	while #queue > 0 and allowance >= 1 do
-		local item = table.remove(queue, 1)
-		local r = rawSend(item.text)
+	local i = 1
+	while i <= #queue and allowance >= 1 do
+		local item = queue[i]
+		if inside and not INSTANCE_OK[item.kind] then
+			item.heldAt = item.heldAt or now
+			i = i + 1
+		else
+		table.remove(queue, i)
+		local r = rawSend(item.text, item.target)
 		if r == 0 then
 			C.stats.sent = C.stats.sent + 1; allowance = allowance - 1
+			if item.onSent then item.onSent() end
 		elseif r == 11 then   -- lockdown: keep everything, try again later
-			table.insert(queue, 1, item); C.stats.lockdownSkips = C.stats.lockdownSkips + 1; break
+			item.heldAt = item.heldAt or now
+			table.insert(queue, i, item); C.stats.lockdownSkips = C.stats.lockdownSkips + 1; break
 		elseif r == 3 or r == 8 or r == 7 then   -- throttled, or the hidden channel is not joined yet: retry on a later pump
-			table.insert(queue, 1, item); C.stats.retries = C.stats.retries + 1; break
-		elseif ns.db.settings.transport == "auto" and active == "guild" then
+			table.insert(queue, i, item); C.stats.retries = C.stats.retries + 1; break
+		elseif not item.target and ns.db.settings.transport == "auto" and active == "guild" then
 			ns.Log("GUILD send failed (%s); switching to hidden channel", tostring(r))
-			active = "channel"; ensureChannel(); table.insert(queue, 1, item); ns.Fire("LM_COMM_READY", active); break
+			active = "channel"; ensureChannel(); table.insert(queue, i, item); ns.Fire("LM_COMM_READY", active); break
 		else
-			C.stats.bad = C.stats.bad + 1   -- invalid prefix/message/type: nothing a retry would fix
+			C.stats.bad = C.stats.bad + 1   -- invalid prefix/message/type, or the whisper target is gone: nothing a retry fixes
 		end
+		end
+	end
+	local held = 0
+	for _, item in ipairs(queue) do if item.heldAt then held = held + 1 end end
+	C.stats.queued, C.stats.held = #queue, held
+end
+C.Pump = pump
+
+local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true, xp = true, al = true, sl = true, pt = true, ac = true }
+-- Into the queue: urgent after the last urgent item, normal at the end; over the cap the oldest normal item goes.
+local function enqueue(item)
+	if item.lane == "urgent" then
+		local at = 1
+		for i = 1, #queue do if queue[i].lane == "urgent" then at = i + 1 end end
+		table.insert(queue, at, item)
+	else
+		queue[#queue + 1] = item
+	end
+	while #queue > C.MAX_QUEUE do
+		local drop = #queue
+		for i = 1, #queue do if queue[i].lane ~= "urgent" then drop = i; break end end
+		local gone = table.remove(queue, drop)
+		C.stats.dropped = C.stats.dropped + 1
+		ns.Fire("LM_COMM_DROPPED", gone.kind)
 	end
 	C.stats.queued = #queue
 end
-
-local LATEST_ONLY = { wl = true, gp = true, pf = true, gv = true, tb = true, xp = true, al = true, sl = true, pt = true, ac = true }
-function C.Send(kind, fields, prio)
-	if active == "none" or not IsInGuild() then return false end
-	if inInstance() and not INSTANCE_OK[kind] then return false end
+local function laneOf(kind, prio)
+	if prio == "now" or prio == "urgent" or (prio == nil and C.URGENT[kind]) then return "urgent" end
+	return "normal"
+end
+-- A whisper to a guildmate (the catch-up answers): the bare name, no realm; spaces in the name stay.
+function C.Whisper(kind, fields, target, prio, opts)
+	if active == "none" or not IsInGuild() or not target then return false end
+	if inInstance() and not (opts and opts.hold) then return false end
 	local text, why = C.Encode(kind, fields)
 	if not text then ns.Log("encode %s failed: %s", kind, tostring(why)); return false end
-	local item = { text = text, kind = kind, prio = prio or "normal" }
+	local bare = ns.ShortName(target):match("^([^%-]+)") or target
+	enqueue({ text = text, kind = kind, lane = laneOf(kind, prio), target = bare, hold = opts and opts.hold, onSent = opts and opts.onSent })
+	pump()
+	return true
+end
+-- opts: { hold = true } to wait inside an instance instead of being refused; onSent = fn when it really went.
+function C.Send(kind, fields, prio, opts)
+	if active == "none" or not IsInGuild() then return false end
+	if inInstance() and not INSTANCE_OK[kind] and not (opts and opts.hold) then return false end
+	local text, why = C.Encode(kind, fields)
+	if not text then ns.Log("encode %s failed: %s", kind, tostring(why)); return false end
+	local item = { text = text, kind = kind, lane = laneOf(kind, prio), hold = opts and opts.hold, onSent = opts and opts.onSent }
 	if kind == "hb" then   -- only the newest heartbeat waits, in the queued one's place: what followed it stays after it
 		local at
 		for i = 1, #queue do if queue[i].kind == "hb" then at = at or i end end
 		if at then
 			for i = #queue, at + 1, -1 do if queue[i].kind == "hb" then table.remove(queue, i) end end
+			item.heldAt = queue[at].heldAt
 			queue[at] = item
 			C.stats.queued = #queue
 			pump()
@@ -307,10 +369,9 @@ function C.Send(kind, fields, prio)
 		end
 	end
 	if LATEST_ONLY[kind] then   -- each one carries the whole state: an older copy still waiting would overwrite it
-		for i = #queue, 1, -1 do if queue[i].kind == kind then table.remove(queue, i) end end
+		for i = #queue, 1, -1 do if queue[i].kind == kind and not queue[i].target then table.remove(queue, i) end end
 	end
-	if item.prio == "now" then table.insert(queue, 1, item) else queue[#queue + 1] = item end
-	C.stats.queued = #queue
+	enqueue(item)
 	pump()
 	return true
 end
@@ -347,11 +408,12 @@ local function onAddonMessage(prefix, text, channel, sender)
 	end
 	if prefix ~= C.PREFIX then return end
 	if issecretvalue and (issecretvalue(text) or issecretvalue(sender)) then return end
-	if channel ~= "GUILD" and channel ~= "CHANNEL" then return end
+	if channel ~= "GUILD" and channel ~= "CHANNEL" and channel ~= "WHISPER" then return end
 	if channel == "CHANNEL" and active ~= "channel" then return end
 	local name = ns.ShortName(sender)
 	if isMe(sender, name) then return end
-	if channel == "CHANNEL" and ns.Roster and ns.Roster.IsGuildmate and not ns.Roster.IsGuildmate(name) then C.stats.bad = C.stats.bad + 1; return end
+	-- GUILD reaches members only; the hidden channel and whispers are open to anyone: guildmates only there
+	if channel ~= "GUILD" and ns.Roster and ns.Roster.IsGuildmate and not ns.Roster.IsGuildmate(name) then C.stats.bad = C.stats.bad + 1; return end
 	local kind, fields = C.Decode(text)
 	if not kind then C.stats.bad = C.stats.bad + 1; return end
 	C.stats.received = C.stats.received + 1
@@ -371,12 +433,15 @@ function C.Start()
 	if active == "channel" then ensureChannel() end
 	if not frame then
 		frame = CreateFrame("Frame")
-		frame:SetScript("OnEvent", function(_, _, ...) onAddonMessage(...) end)
+		frame:SetScript("OnEvent", function(_, event, ...)
+			if event == "CHAT_MSG_ADDON" then onAddonMessage(...)
+			else C_Timer.After(2, pump) end   -- out of an instance or a fight: what waited goes now
+		end)
 	end
 	frame:RegisterEvent("CHAT_MSG_ADDON")
+	frame:RegisterEvent("ZONE_CHANGED_NEW_AREA"); frame:RegisterEvent("PLAYER_REGEN_ENABLED"); frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	lastTick = GetTime()
-	if ticker then ticker:Cancel() end   -- Start is idempotent: one pump ticker at a time
-	ticker = C_Timer.NewTicker(0.2, pump)
+	ns.Every("comm", 0.2, pump)   -- on the addon's one ticker; an empty queue returns at once
 	ns.Fire("LM_COMM_READY", active)
 end
 -- Send now, bypassing the queue: only for goodbyes (logout, sharing off) when no later pump will run.
@@ -391,8 +456,8 @@ end
 
 function C.Stop()
 	if active ~= "none" then ns.Fire("LM_COMM_STOPPING") end   -- last chance to withdraw things while we can still send
-	if ticker then ticker:Cancel(); ticker = nil end
-	if frame then frame:UnregisterEvent("CHAT_MSG_ADDON") end
+	ns.Cancel("comm")
+	if frame then frame:UnregisterAllEvents() end
 	queue = {}; active = "none"; channelId = nil
 	ns.Fire("LM_COMM_STOPPED")
 end
