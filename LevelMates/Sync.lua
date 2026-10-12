@@ -252,7 +252,6 @@ end)
 function S.Personal(kind, build, opts)
 	opts = opts or {}
 	local P = {}
-	local resending = false
 	local function setPending(v)
 		P.pending = v
 		if opts.save and ns.char then ns.char[opts.save] = v or nil end
@@ -275,10 +274,6 @@ function S.Personal(kind, build, opts)
 	ns.On("LM_HB_SENT", function() if isPending() then go() end end)
 	ns.On("LM_COMM_DROPPED", function(k) if k == kind then setPending(true) end end)
 	ns.On("LM_ANNOUNCED", function() if isPending() or worth() then go() end end)
-	ns.On("LM_HELLO_ANSWERED", function()
-		if resending or not worth() then return end
-		resending = true
-		C_Timer.After(math.random() * 5, function() resending = false; go() end)
-	end)
+	ns.On("LM_HELLO_ANSWERED", function() if worth() then go() end end)   -- the roster already jitters and coalesces hellos
 	return P
 end
