@@ -6,11 +6,11 @@ local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STU
 
 -- 2: a sender gets one question a minute here too
 STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000001", x = "uno" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000002", x = "dos" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", STUB.Rec{ id = "q0000001", x = "uno", c = select(2, UnitClass("player")) }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", STUB.Rec{ id = "q0000002", x = "dos", c = select(2, UnitClass("player")) }), "GUILD", "Mario-Testrealm")
 assert(#A.List() == 1, "the second within a minute is dropped")
 STUB.Advance(61)
-STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000003", x = "tres" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", STUB.Rec{ id = "q0000003", x = "tres", c = select(2, UnitClass("player")) }), "GUILD", "Mario-Testrealm")
 assert(#A.List() == 2, "a minute later it counts")
 
 -- 1: hovering a question shows it whole, without an error

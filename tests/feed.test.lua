@@ -53,13 +53,13 @@ for _, e in ipairs(F.List()) do if e.k == "gol" then gol = e end end
 assert(gol and F.Who(gol) == L.FEED_GUILD and F.Text(gol) == string.format(L.FEED_GOL, ns.Goals.Text({ ty = "lvl", a = 20 })), "guild goal reached")
 assert(#F.List("mario") >= 1 and #F.List("zzz") == 0, "search")
 
--- a newcomer gets my last 24 hours, at most five
+-- a newcomer gets the wall of the last two days (mine and what I hold of others), at most 40 entries
 n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(10)
 local mine = count("fe", n)
 local resent = 0   -- achievements may post to the wall at the same moment: only the re-sent entries count here
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "fe" and f.k ~= "ach" then resent = resent + 1 end end
-assert(resent >= 1 and resent <= F.RESEND, "re-sent to a newcomer: " .. resent)
+assert(resent >= 1 and resent <= 40, "handed to a newcomer: " .. resent)
 
 -- sharing off: on my wall, not sent
 ns.db.settings.shareFeed = false

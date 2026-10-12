@@ -145,7 +145,6 @@ C.SCHEMA = {
 	mc   = { n = text(16), x = macroBody },
 	mcx  = { n = text(16) },
 	xp   = { p = int(0, 100), l = int(1, 100) },
-	ask  = { id = word(8), x = text(120) },
 	al   = { n = text(120) },
 	sl   = { p = saleList },
 	pt   = { t = int(0, 100000000), w = int(0, 100000), l = int(0, 100000), d = int(0, 100000), h = int(0, 100000), q = int(0, 100000) },
@@ -153,7 +152,7 @@ C.SCHEMA = {
 	bye  = {},
 	hi   = { s = function(v) return type(v) == "string" and #v <= 200 and not v:find("[%c|]") end },
 }
-C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qj = { "id", "r" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, ask = { "id", "x" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, hi = { "s" } }
+C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qj = { "id", "r" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, hi = { "s" } }
 
 local REQUIRED = C.REQUIRED
 -- the field checks, for the record layer's types

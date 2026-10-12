@@ -1,10 +1,11 @@
--- Ask.lua: "Ask your class": a question goes to the guild (`ask`); guildmates of my class (as their roster knows my
--- class) get a notice with an [Answer] link that opens a whisper. The Class tab lists the last day's questions.
--- Spec 2026-10-10-levelmates-guild-tanda-design.
+-- Ask.lua: "Ask your class": a question goes to the guild as a sync record `ask` with my class (kept and handed over
+-- by everyone for a day, so a late login of my class still sees it); guildmates of my class get a notice with an
+-- [Answer] link that opens a whisper. The Class tab lists the last day's questions.
+-- Specs 2026-10-10-levelmates-guild-tanda-design and 2026-10-12-levelmates-sync-v2-design.
 local _, ns = ...
 local A = {}
 ns.Ask = A
-local L, C, R = ns.L, ns.Comm, ns.Roster
+local L, C, R, S = ns.L, ns.Comm, ns.Roster, ns.Sync
 A.HOURS, A.GAP, A.MAX = 24, 60, 120
 
 local function me() return ns.Me() end
@@ -25,30 +26,36 @@ function A.Ask(text)
 	if text == "" then return false end
 	if GetTime() - lastAsk < A.GAP then ns.Say(L.ASK_WAIT); return false end
 	text = ns.CutUtf8(text, A.MAX)
+	if not C.IsReady() then ns.Say(L.ASK_FAILED); return false end
 	local id = newId()
-	if not C.Send("ask", { id = id, x = text }) then ns.Say(L.ASK_FAILED); return false end
+	S.Put("ask", id, { x = text, c = myClass() })
 	lastAsk = GetTime()
 	store()[id] = { by = me(), x = text, t = time(), mine = true }
 	ns.Fire("LM_QUESTIONS_CHANGED")
 	return true
 end
 
-local heardAt = {}   -- name -> when their last question was taken: one a minute from each, whatever they send
-C.OnMessage("ask", function(f, name)
-	local m = R.mates[name]
-	if not (m and m.class == myClass()) then return end   -- only my class, as my roster knows theirs
-	local s = store()
-	if s[f.id] then return end
-	if GetTime() - (heardAt[name] or -math.huge) < A.GAP then return end
-	heardAt[name] = GetTime()
-	s[f.id] = { by = name, x = f.x, t = time() }
-	ns.Fire("LM_QUESTIONS_CHANGED")
-	if ns.db.settings.askNotices then
-		local text = string.format(L.ASK_NOTICE, name, f.x)
-		ns.Say("%s %s", text, A.Link(name))
-		ns.Screen(text)
-	end
-end)
+local heardAt = {}   -- name -> when their last live question was taken: one a minute from each, whatever they send
+S.Define("ask", { class = "board", life = A.HOURS * 3600, fields = { x = C.V.text(A.MAX), c = C.V.word(16) }, required = { "x", "c" },
+	onChange = function(rec, old, how)
+		if rec.dead or how == "mine" or how == "expired" or old then return end
+		local name, f = rec.o, rec.d
+		local m = R.mates[name]
+		if f.c ~= myClass() or (m and m.class and m.class ~= f.c) then return end   -- only my class (the roster's word wins)
+		local s = store()
+		if s[rec.id] then return end
+		if how == "live" then
+			if GetTime() - (heardAt[name] or -math.huge) < A.GAP then return end
+			heardAt[name] = GetTime()
+		end
+		s[rec.id] = { by = name, x = f.x, t = math.min(time(), rec.v) }
+		ns.Fire("LM_QUESTIONS_CHANGED")
+		if how == "live" and ns.db.settings.askNotices then   -- a question handed over at login is listed, not announced
+			local text = string.format(L.ASK_NOTICE, name, f.x)
+			ns.Say("%s %s", text, A.Link(name))
+			ns.Screen(text)
+		end
+	end })
 
 -- The last day's questions, newest first.
 function A.List(search)

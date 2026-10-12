@@ -4,7 +4,7 @@ STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, A, B, L = ns.Comm, ns.Ask, ns.Board, ns.L
 local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STUB.sent[i].msg); if k == kind then return f end end end
 assert(ns.db.settings.askNotices == true, "on by default")
-assert(C.Validate("ask", { id = "ab12cd34", x = "¿Qué talentos para tanquear?" }) and not C.Validate("ask", { id = "ab12cd34" }), "ask format")
+assert(C.Validate("ask", STUB.Rec{ id = "ab12cd34", x = "¿Qué talentos para tanquear?", c = "WARRIOR" }) and not C.Validate("ask", STUB.Rec{ id = "ab12cd34" }), "ask format")
 
 -- asking
 assert(A.Ask("¿Armas o Furia para subir?"), "asked")
@@ -19,13 +19,13 @@ assert(#A.List() == 1 and A.List()[1].mine, "mine is listed too")
 STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")
 STUB.Receive("LVLM2", C.Encode("hb", { l = 22, z = 1421, c = "MAGE" }), "GUILD", "Ana-Testrealm")
 STUB.printed = {}
-STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000001", x = "¿Dónde aprendo Golpe heroico?" }), "GUILD", "Mario-Testrealm")
-STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000002", x = "¿Oveja o nova?" }), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000003", x = "hola" }), "GUILD", "Nadie-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", STUB.Rec{ id = "q0000001", x = "¿Dónde aprendo Golpe heroico?", c = select(2, UnitClass("player")) }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", STUB.Rec{ id = "q0000002", x = "¿Oveja o nova?", c = select(2, UnitClass("player")) }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", STUB.Rec{ id = "q0000003", x = "hola", c = select(2, UnitClass("player")) }), "GUILD", "Nadie-Testrealm")
 assert(#A.List() == 2, "Mario's and mine")
 local line = STUB.printed[#STUB.printed]
 assert(line:find("Mario", 1, true) and line:find("Golpe heroico", 1, true) and line:find("|Haddon:LevelMates:ask:Mario|h", 1, true), "a notice with [Answer]: " .. tostring(line))
-STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000001", x = "¿Dónde aprendo Golpe heroico?" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", STUB.Rec{ id = "q0000001", x = "¿Dónde aprendo Golpe heroico?", c = select(2, UnitClass("player")) }), "GUILD", "Mario-Testrealm")
 assert(#A.List() == 2, "the same question once")
 STUB.ClickLink("addon:LevelMates:ask:Mario")
 assert(STUB.lastTell == "Mario", "[Answer] opens a whisper")
@@ -34,7 +34,7 @@ assert(STUB.lastTell == "Mario", "[Answer] opens a whisper")
 ns.db.settings.askNotices = false
 STUB.printed = {}
 STUB.Advance(61)   -- one question a minute from each sender
-STUB.Receive("LVLM2", C.Encode("ask", { id = "q0000004", x = "¿Escudo?" }), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("ask", STUB.Rec{ id = "q0000004", x = "¿Escudo?", c = select(2, UnitClass("player")) }), "GUILD", "Mario-Testrealm")
 assert(#STUB.printed == 0 and #A.List() == 3, "silent but listed")
 ns.db.questions[GetGuildInfo("player")]["q0000004"].t = time() - 25 * 3600
 assert(#A.List() == 2, "gone after a day")
