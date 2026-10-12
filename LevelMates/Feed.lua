@@ -110,7 +110,7 @@ C.OnMessage("fe", function(f, name)
 end)
 
 -- A newcomer gets what I lived in the last 24 hours (the newest five).
-ns.On("LM_PING_ANSWERED", function()
+ns.On("LM_HELLO_ANSWERED", function()
 	if not ns.db.settings.shareFeed then return end
 	local n, cutoff = 0, F.Now() - 1440
 	for _, e in ipairs(store()) do

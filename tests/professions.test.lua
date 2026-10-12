@@ -37,7 +37,7 @@ STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }; R.
 
 -- newcomers get mine
 local n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
 local got = false
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "pf" and f.p == "171:120,182:95" then got = true end end
 assert(got, "a newcomer gets mine")

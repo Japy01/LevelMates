@@ -46,5 +46,5 @@ assert(J.Count() == 0, "cleared")
 -- the journal never sends anything
 for i = sent0 + 1, #STUB.sent do
 	local k = ns.Comm.Decode(STUB.sent[i].msg)
-	assert(k == "hb" or k == "q" or k == "ping" or k == "pt" or k == "ac" or k == "fe", "only the roster's own messages went out, got " .. tostring(k))
+	assert(k == "hb" or k == "q" or k == "hi" or k == "pt" or k == "ac" or k == "fe", "only the roster's own messages went out, got " .. tostring(k))
 end

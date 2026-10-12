@@ -71,7 +71,7 @@ ns.On("LM_HB_SENT", function() if ns.char.achPending then sendList() end end)
 function AC.SetSharing() sendList("now") end
 -- a few seconds after the login burst (heartbeat, ping, professions...): no hurry for these
 ns.On("LM_ANNOUNCED", function() C_Timer.After(10, function() if ns.db.settings.shareAchievements and #myIds() > 0 then sendList() end end) end)
-ns.On("LM_PING_ANSWERED", function() if ns.db.settings.shareAchievements and #myIds() > 0 then sendList() end end)
+ns.On("LM_HELLO_ANSWERED", function() if ns.db.settings.shareAchievements and #myIds() > 0 then sendList() end end)
 
 local quiet = true   -- the first count (from the journal already there) earns silently
 local function award(id)

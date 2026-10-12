@@ -7,7 +7,7 @@ STUB.Advance(1)
 local kinds = {}
 for _, s in ipairs(STUB.sent) do kinds[#kinds + 1] = select(1, C.Decode(s.msg)) end
 table.sort(kinds)
-assert(table.concat(kinds, ",") == "hb,ping", "ping and hb after /reload: " .. table.concat(kinds, ","))
+assert(table.concat(kinds, ",") == "hb,hi", "hb and hello after /reload: " .. table.concat(kinds, ","))
 -- the periodic ticker runs: mates expire on their own
 STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421 }), "GUILD", "Mario-Testrealm")
 assert(#R.List() == 1, "mate stored")

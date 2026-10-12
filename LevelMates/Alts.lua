@@ -42,7 +42,7 @@ end
 
 function AL.SetSharing() C.Send("al", fields(), "now") end
 ns.On("LM_ANNOUNCED", function() local f = fields(); if f.n then C.Send("al", f) end end)
-ns.On("LM_PING_ANSWERED", function() local f = fields(); if f.n then C.Send("al", f) end end)
+ns.On("LM_HELLO_ANSWERED", function() local f = fields(); if f.n then C.Send("al", f) end end)
 
 local function store()
 	ns.db.alts = ns.db.alts or {}

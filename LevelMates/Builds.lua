@@ -110,7 +110,7 @@ events:SetScript("OnEvent", function(_, event, arg)
 	soon()
 end)
 ns.On("LM_ANNOUNCED", function() announced = true; if fields().p then send() else lastSent = key({}) end end)   -- nothing to share: nothing sent
-ns.On("LM_PING_ANSWERED", function() if fields().p then send() end end)
+ns.On("LM_HELLO_ANSWERED", function() if fields().p then send() end end)
 ns.On("LM_HB_SENT", function() if ns.char.buildPending then send() end end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "tb" then ns.char.buildPending = true end end)
 

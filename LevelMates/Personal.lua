@@ -96,7 +96,7 @@ ev:RegisterEvent("PLAYER_LEVEL_UP")
 ev:SetScript("OnEvent", function(_, _, level) check(level) end)
 ns.On("LM_WORLD", function() check() end)
 
-ns.On("LM_PING_ANSWERED", function() if P.Mine() then resend() end end)
+ns.On("LM_HELLO_ANSWERED", function() if P.Mine() then resend() end end)
 ns.On("LM_ANNOUNCED", function() if P.Mine() then resend() end end)
 ns.On("LM_HB_SENT", function() if ns.char.goalPending then send() end end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "gp" then ns.char.goalPending = true end end)

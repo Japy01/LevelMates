@@ -15,7 +15,7 @@ assert(R.IsOfficer("Jefa"), "the list arrives a moment later and is used at once
 
 local function kindsAfterPing(who)
 	local n, out = #STUB.sent, {}
-	STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", who .. "-Testrealm")
+	STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", who .. "-Testrealm")
 	STUB.Advance(6)
 	for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); out[#out + 1] = { k = k, f = f } end
 	return out

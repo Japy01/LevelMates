@@ -76,7 +76,7 @@ for _, nm in ipairs({ "Mario", "Ana", "Luis" }) do STUB.Receive("LVLM2", C.Encod
 STUB.Receive("LVLM2", C.Encode("qd", { id = "luis0001", d = 3, at = now + 300 }), "GUILD", "Luis-Testrealm")
 assert(M.Join("luis0001", "D"))
 local n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
 local qd, qj = 0, 0
 for i = n + 1, #STUB.sent do local k, ff = C.Decode(STUB.sent[i].msg); if k == "qd" then qd = qd + 1 elseif k == "qj" and ff.id == "luis0001" then qj = qj + 1 end end
 assert(qd == 1 and qj == 1, "re-sent: my meetup and my join")

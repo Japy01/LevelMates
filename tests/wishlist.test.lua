@@ -90,7 +90,7 @@ assert(changed == 1, "refresh when it arrives")
 -- newcomers get my list
 assert(W.Add(link(7777)))
 local n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
 local got = false
 for i = n + 1, #STUB.sent do local kk, ff = C.Decode(STUB.sent[i].msg); if kk == "wl" and tostring(ff.ids) == "7777" then got = true end end
 assert(got, "a newcomer gets my list")

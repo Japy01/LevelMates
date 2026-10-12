@@ -91,7 +91,7 @@ ns.On("LM_SKILLS_CHANGED", function()
 	if ids(p) ~= ids(lastSent) then send() else dirty = true end
 end)
 ns.On("LM_ANNOUNCED", function() announced = true; if encode() ~= "" then resend() end end)
-ns.On("LM_PING_ANSWERED", function() if encode() ~= "" then resend() end end)
+ns.On("LM_HELLO_ANSWERED", function() if encode() ~= "" then resend() end end)
 ns.On("LM_HB_SENT", function()
 	if ns.char.profPending or (dirty and GetTime() - (sentAt or -math.huge) >= 60) then dirty = false; send() end
 end)

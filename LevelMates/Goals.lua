@@ -182,7 +182,7 @@ C.OnMessage("hb", function(f, name)
 end)
 
 -- A newcomer: officers re-send every goal they hold and every delete they know of, others only the goals they created.
-ns.On("LM_PING_ANSWERED", function()
+ns.On("LM_HELLO_ANSWERED", function()
 	local officer = R.IAmOfficer()
 	for _, g in ipairs(shared()) do
 		if officer or g.by == me() then C.Send("go", fields(g)) end
@@ -240,7 +240,7 @@ ns.On("LM_HB_SENT", function()
 end)
 
 -- A newcomer also gets my counter parts and the dungeons I completed.
-ns.On("LM_PING_ANSWERED", function()
+ns.On("LM_HELLO_ANSWERED", function()
 	for _, g in ipairs(shared()) do
 		if g.ty == "cnt" then
 			local n = G.MyContribution(g)

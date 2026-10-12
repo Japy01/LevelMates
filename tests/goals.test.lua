@@ -48,7 +48,7 @@ assert(G.CanDelete(mineId) and G.Delete(mineId) and not G.Get(mineId) and lastKi
 -- a newcomer gets the goals from officers, not from plain members
 local function gosAfterPing(who)
 	local n = #STUB.sent
-	STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", who .. "-Testrealm")
+	STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", who .. "-Testrealm")
 	STUB.Advance(6)
 	local c = 0
 	for i = n + 1, #STUB.sent do if (C.Decode(STUB.sent[i].msg)) == "go" then c = c + 1 end end

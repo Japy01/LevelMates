@@ -59,7 +59,7 @@ assert(not P.Marked("Ana"), "p=0 clears")
 
 -- a newcomer gets my mark right after my heartbeat
 local n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Nuevo-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Nuevo-Testrealm")
 STUB.Advance(6)
 local order = {}
 for i = n + 1, #STUB.sent do local kk = C.Decode(STUB.sent[i].msg); if kk == "hb" or kk == "pal" then order[#order + 1] = kk end end

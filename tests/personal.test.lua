@@ -39,7 +39,7 @@ assert(#P.List() == 1, "others' goals expire too")
 
 -- newcomers get mine
 local n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Ana-Testrealm"); STUB.Advance(6)
 local got = false
 for i = n + 1, #STUB.sent do local kk, ff = C.Decode(STUB.sent[i].msg); if kk == "gp" and ff.l == 40 then got = true end end
 assert(got, "a newcomer gets my goal")

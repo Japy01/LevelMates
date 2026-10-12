@@ -201,11 +201,11 @@ C.OnMessage("gro", function(f, name)
 	if new and f.by == me() then ns.Notice(L.GIFT_CONFIRMED, name, link(f.i)) end
 	ns.Fire("LM_WISHES_CHANGED")
 end)
-ns.On("LM_PING_ANSWERED", function()
+ns.On("LM_HELLO_ANSWERED", function()
 	for _, g in ipairs(mine()) do if g.reservedBy then C.Send("gro", { i = g.id, by = g.reservedBy }) end end
 end)
 
-ns.On("LM_PING_ANSWERED", function() if #mine() > 0 then resend() end end)
+ns.On("LM_HELLO_ANSWERED", function() if #mine() > 0 then resend() end end)
 ns.On("LM_ANNOUNCED", function() if #mine() > 0 then resend() end end)
 ns.On("LM_HB_SENT", function() if ns.char.giftPending then send() end end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "gv" or kind == "sl" then ns.char.giftPending = true end end)

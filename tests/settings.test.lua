@@ -23,7 +23,7 @@ STUB.Advance(1)
 local kinds = {}
 for i = n + 1, #STUB.sent do kinds[#kinds + 1] = select(1, C.Decode(STUB.sent[i].msg)) end
 table.sort(kinds)
-assert(table.concat(kinds, ",") == "hb,ping", "re-announced after share on: " .. table.concat(kinds, ","))
+assert(table.concat(kinds, ",") == "hb,hi", "re-announced after share on: " .. table.concat(kinds, ","))
 
 -- three pages: general, share, notices
 assert(#ns.Settings.pages == 3 and ns.Settings.pages[2].name == ns.L.OPT_PAGE_SHARE and ns.Settings.pages[3].name == ns.L.OPT_PAGE_NOTICES, "three pages")

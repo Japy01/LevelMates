@@ -55,7 +55,7 @@ assert(#F.List("mario") >= 1 and #F.List("zzz") == 0, "search")
 
 -- a newcomer gets my last 24 hours, at most five
 n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(6)
 local mine = count("fe", n)
 local resent = 0   -- achievements may post to the wall at the same moment: only the re-sent entries count here
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "fe" and f.k ~= "ach" then resent = resent + 1 end end

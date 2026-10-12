@@ -67,7 +67,7 @@ local function announceMine()
 	if P.IsOn() and lastPalAt ~= GetTime() then sendPal(1) end   -- skip if a heartbeat already carried it this instant
 end
 ns.On("LM_ANNOUNCED", announceMine)
-ns.On("LM_PING_ANSWERED", announceMine)
+ns.On("LM_HELLO_ANSWERED", announceMine)
 -- After any heartbeat: refresh my mark now and then (people who expired me while I was in an instance get it back),
 -- and retry a state the guild may have missed.
 ns.On("LM_HB_SENT", function()

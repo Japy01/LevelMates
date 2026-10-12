@@ -58,7 +58,7 @@ assert(B.subtitle.text == string.format(L.FEED_CEMETERY_SUB, 2), "the week's dea
 B.feedDeaths, B.search = false, ""
 ns.db.settings.shareDeaths = false
 local before = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm"); STUB.Advance(12)
 for i = before + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); assert(not (k == "fe" and f.k == "dth"), "no deaths re-sent once off") end
 
 -- calendar: a meetup that already started is not offered

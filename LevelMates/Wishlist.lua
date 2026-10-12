@@ -138,7 +138,7 @@ ns.On("LM_MY_LOOT", function(link)
 	end
 end)
 
-ns.On("LM_PING_ANSWERED", function() if #mine() > 0 then resend() end end)
+ns.On("LM_HELLO_ANSWERED", function() if #mine() > 0 then resend() end end)
 ns.On("LM_ANNOUNCED", function() if #mine() > 0 then resend() end end)
 ns.On("LM_HB_SENT", function() if ns.char.wishPending then send() end end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "wl" then ns.char.wishPending = true end end)

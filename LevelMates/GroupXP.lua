@@ -153,7 +153,7 @@ ev:SetScript("OnEvent", function(_, event, unit)
 	end
 	GX.Refresh()
 end)
-ns.On("LM_PING_ANSWERED", function() if anyMate() then GX.Send(true) end end)
+ns.On("LM_HELLO_ANSWERED", function() if anyMate() then GX.Send(true) end end)
 ns.On("LM_ROSTER_CHANGED", function() GX.Settle(); GX.Refresh() end)   -- guildmates back on the board after a dungeon
 ns.On("LM_RESTED_CHANGED", function() ns.Dirty("groupxp") end)   -- every mob kill: at most twice a second
 ns.OnRedraw("groupxp", function() return true end, function() GX.Refresh() end)

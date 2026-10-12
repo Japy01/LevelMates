@@ -31,7 +31,7 @@ STUB.Advance(31)
 assert(G.Post(2, "T", "hola"))
 STUB.Advance(125)
 local n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Ana-Testrealm")
 STUB.Advance(6)
 local resent
 for i = n + 1, #STUB.sent do
@@ -40,8 +40,8 @@ for i = n + 1, #STUB.sent do
 end
 assert(resent and resent.id == G.mine.id and resent.m <= 18 and resent.m >= 17, "re-sent with the minutes left: " .. tostring(resent and resent.m))
 n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Ana-Testrealm")
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Mario-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Ana-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Mario-Testrealm")
 STUB.Advance(6)
 local count = 0
 for i = n + 1, #STUB.sent do if (C.Decode(STUB.sent[i].msg)) == "lfg" then count = count + 1 end end

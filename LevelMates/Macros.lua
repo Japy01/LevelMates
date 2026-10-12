@@ -174,7 +174,7 @@ local function resendAll()
 	end
 end
 ns.On("LM_ANNOUNCED", function() if #shared() > 0 then resendAll() end end)
-ns.On("LM_PING_ANSWERED", function() if #shared() > 0 then resendAll() end end)
+ns.On("LM_HELLO_ANSWERED", function() if #shared() > 0 then resendAll() end end)
 ns.On("LM_HB_SENT", function() if ns.char.macroPending then resendAll() end end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "mc" or kind == "mcx" then ns.char.macroPending = true end end)
 

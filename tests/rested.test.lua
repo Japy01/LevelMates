@@ -57,7 +57,7 @@ assert(#s == 1 and s[1] == 100, "a big change goes out with a heartbeat: " .. ta
 
 -- a newcomer gets it right after my heartbeat
 n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Nuevo-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Nuevo-Testrealm")
 STUB.Advance(6)
 local order = {}
 for i = n + 1, #STUB.sent do local k = C.Decode(STUB.sent[i].msg); if k == "hb" or k == "rx" then order[#order + 1] = k end end

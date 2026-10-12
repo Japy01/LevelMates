@@ -63,7 +63,7 @@ assert(not G.ads.mario001, "gone with the ad")
 STUB.Receive("LVLM2", C.Encode("lfg", { d = 4, r = "T", id = "ana00001", m = 20 }), "GUILD", "Ana-Testrealm")
 assert(G.Join("ana00001", "D"))
 local n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Eva-Testrealm"); STUB.Advance(6)
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Eva-Testrealm"); STUB.Advance(6)
 local again = false
 for i = n + 1, #STUB.sent do local k, f = C.Decode(STUB.sent[i].msg); if k == "lfj" and f.id == "ana00001" then again = true end end
 assert(again, "re-sent to a newcomer")

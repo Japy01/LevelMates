@@ -121,7 +121,7 @@ end
 C_Timer.NewTicker(30, checkMeetups)
 
 ns.On("LM_ANNOUNCED", function() announced = true; if (fields().t or 0) > 0 then send() end end)   -- nothing yet: nothing sent
-ns.On("LM_PING_ANSWERED", function() if (fields().t or 0) > 0 then send() end end)
+ns.On("LM_HELLO_ANSWERED", function() if (fields().t or 0) > 0 then send() end end)
 ns.On("LM_HB_SENT", function() if ns.char.pointsPending then send() end end)   -- a refused send (dungeon) goes with the next heartbeat
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "pt" then ns.char.pointsPending = true end end)
 

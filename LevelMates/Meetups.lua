@@ -131,7 +131,7 @@ C.OnMessage("qjx", function(f, name)
 end)
 
 -- A newcomer gets my meetups and my joins.
-ns.On("LM_PING_ANSWERED", function()
+ns.On("LM_HELLO_ANSWERED", function()
 	for _, m in ipairs(M.List()) do
 		if m.by == me() and not m.sim then C.Send("qd", { id = m.id, d = m.d, at = m.at, n = m.n }) end
 	end

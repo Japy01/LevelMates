@@ -11,7 +11,7 @@ local function ad(from, f) STUB.Receive("LVLM2", C.Encode("lfg", f), "GUILD", fr
 assert(G.Post(2, "T"))
 for round = 1, 8 do
 	local n = #STUB.sent
-	STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Nuevo" .. round .. "-Testrealm")
+	STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Nuevo" .. round .. "-Testrealm")
 	STUB.Advance(6)
 	local order = {}
 	for i = n + 1, #STUB.sent do local k = C.Decode(STUB.sent[i].msg); if k == "hb" or k == "lfg" then order[#order + 1] = k end end

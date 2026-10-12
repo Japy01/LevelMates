@@ -165,6 +165,65 @@ function S.Types(class)
 end
 function S.Spec(t) return types[t] end
 
+------------------------------------------------------------------ catch-up
+-- At login I say hello with a digest of every board type. Whoever holds something different waits 1-6 s; the first
+-- to finish claims the answer on GUILD (hc) and whispers me that type's records and tombstones, oldest first; the
+-- others hear the claim and stay quiet. If nothing of a claimed type reached me, I ask the claimer once (hw).
+S.stats = { answered = 0 }
+C.SCHEMA.hc = { to = C.V.text(48), t = C.V.word(12) }; C.REQUIRED.hc = { "to", "t" }
+C.SCHEMA.hw = { t = C.V.word(12) }; C.REQUIRED.hw = { "t" }
+local function digestString()
+	local parts = {}
+	for _, t in ipairs(S.Types("board")) do local n, sum = S.Digest(t); parts[#parts + 1] = t .. ":" .. n .. ":" .. sum end
+	local s = table.concat(parts, ",")
+	return #s <= 200 and s or ""
+end
+function S.Hello() return C.Send("hi", { s = digestString() }, "urgent") end
+
+local claimed = {}   -- [requester .. ":" .. type] = when someone claimed answering it
+local function batch(t, to)
+	local spec = types[t]
+	local list = {}
+	for _, r in pairs(store(t)) do
+		if r.e >= now() and not (r.d and r.d.sim) and (not spec.relayKeep or r.dead or spec.relayKeep(r)) then list[#list + 1] = r end
+	end
+	table.sort(list, function(a, b) if a.v ~= b.v then return a.v < b.v end; return a.id < b.id end)
+	local first = math.max(1, #list - (spec.relayMax or #list) + 1)
+	for i = first, #list do send(list[i], to) end
+end
+local function answer(t, to)
+	local key = to .. ":" .. t
+	if claimed[key] and GetTime() - claimed[key] < 30 then return end
+	claimed[key] = GetTime()
+	C.Send("hc", { to = to, t = t }, "urgent")
+	S.stats.answered = S.stats.answered + 1
+	batch(t, to)
+end
+C.OnMessage("hi", function(f, name)
+	local theirs = {}
+	for part in f.s:gmatch("[^,]+") do
+		local t, n, sum = part:match("^([%w_]+):(%d+):(%d+)$")
+		if t then theirs[t] = n .. ":" .. sum end
+	end
+	for _, t in ipairs(S.Types("board")) do
+		local n, sum = S.Digest(t)
+		if n > 0 and theirs[t] ~= n .. ":" .. sum then
+			C_Timer.After(1 + math.random() * 5, function() answer(t, name) end)
+		end
+	end
+end)
+local asked = {}
+C.OnMessage("hc", function(f, name)
+	claimed[f.to .. ":" .. f.t] = GetTime()
+	if f.to ~= me() or asked[f.t] then return end
+	-- my answer is coming by whisper; if none of it arrived in 12 s, ask the claimer once more
+	local n0 = S.Digest(f.t)
+	C_Timer.After(12, function()
+		if S.Digest(f.t) == n0 and not asked[f.t] then asked[f.t] = true; C.Whisper("hw", { t = f.t }, name, "urgent") end
+	end)
+end)
+C.OnMessage("hw", function(f, name) if types[f.t] and types[f.t].class == "board" then batch(f.t, name) end end)
+
 -- Expired records and tombstones go once a minute (never while a list is being read).
 ns.Every("sync-prune", 60, function()
 	for t, spec in pairs(types) do

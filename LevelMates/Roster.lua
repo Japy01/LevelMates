@@ -159,17 +159,17 @@ end)
 R.legacy = {}
 ns.On("LM_LEGACY_SEEN", function(name) R.legacy[name] = GetTime() end)
 C.OnMessage("bye", function(_, name) if R.mates[name] then R.mates[name] = nil; ns.Fire("LM_ROSTER_CHANGED") end end)
--- A newcomer's ping gets my heartbeat and my quest list (so matching works both ways), jittered 0-5 s and
--- coalesced: a login storm of pings produces one answer.
+-- A newcomer's hello gets my heartbeat and my quest list (so matching works both ways), jittered 0-5 s and
+-- coalesced: a login storm of hellos produces one answer. (The record layer answers the same hello on its own.)
 local pingPending = false
-C.OnMessage("ping", function()
+C.OnMessage("hi", function()
 	if pingPending then return end
 	pingPending = true
 	C_Timer.After(math.random() * PING_JITTER, function()
 		pingPending = false
 		lastQuestsSig = nil
 		R.SendHeartbeat(true); R.SendQuests()
-		ns.Fire("LM_PING_ANSWERED")   -- others (the group finder) answer after the heartbeat, so the newcomer knows us first
+		ns.Fire("LM_HELLO_ANSWERED")   -- others (the group finder) answer after the heartbeat, so the newcomer knows us first
 	end)
 end)
 C.OnMessage("q", function(f, name)
@@ -209,11 +209,12 @@ local inWorld, ticker = false, nil
 local function announce()
 	if not C.IsReady() then return end
 	lastSent, lastHb, lastQuestsSig = nil, -math.huge, nil
-	C.Send("ping", {}, "now")
-	R.SendHeartbeat(true)
+	R.SendHeartbeat(true)   -- first, so they know me before they answer my hello
+	ns.Sync.Hello()
 	R.SendQuests()
 	ns.Fire("LM_ANNOUNCED")   -- modules re-announce their own state (partner flag) after the roster's
 end
+R.Announce = announce
 ns.On("LM_WORLD", function(isInitial, isReloading)
 	if not (isInitial or isReloading) then return end
 	inWorld = true

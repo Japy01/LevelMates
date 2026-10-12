@@ -60,7 +60,7 @@ assert(#STUB.printed == printed + 1, "a reached goal is not announced again")
 -- a newcomer gets my contributions and my completed dungeon
 n = #STUB.sent
 STUB.iAmOfficer = false
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Nuevo-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Nuevo-Testrealm")
 STUB.Advance(6)
 local kinds = {}
 for i = n + 1, #STUB.sent do kinds[#kinds + 1] = (C.Decode(STUB.sent[i].msg)) end

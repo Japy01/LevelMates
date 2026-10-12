@@ -119,9 +119,9 @@ C.OnMessage("lfgx", function(f, name)
 	if ad and ad.name == name then G.ads[f.id] = nil; ns.Fire("LM_LFG_CHANGED") end   -- only the author withdraws it
 end)
 
--- A newcomer's ping: the roster answers with my heartbeat (jittered, coalesced) and then fires LM_PING_ANSWERED;
+-- A newcomer's ping: the roster answers with my heartbeat (jittered, coalesced) and then fires LM_HELLO_ANSWERED;
 -- my ad goes out right after it, so the newcomer already knows me when the ad arrives. Whole minutes left, rounded down.
-ns.On("LM_PING_ANSWERED", function()
+ns.On("LM_HELLO_ANSWERED", function()
 	if not G.mine then return end
 	local left = math.floor((G.mine.endsAt - GetTime()) / 60)
 	if left < 1 then return end
@@ -226,7 +226,7 @@ C.OnMessage("lfjx", function(f, name)
 end)
 
 -- A newcomer (or a poster back from a /reload) gets my joins again, while their ads live.
-ns.On("LM_PING_ANSWERED", function()
+ns.On("LM_HELLO_ANSWERED", function()
 	for id, role in pairs(G.myJoins) do
 		if G.ads[id] then C.Send("lfj", { id = id, r = role }) end
 	end

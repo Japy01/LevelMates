@@ -96,7 +96,7 @@ C.OnMessage("rc", function(f, name)
 end)
 
 -- Officers share the templates and a recent post with newcomers.
-ns.On("LM_PING_ANSWERED", function()
+ns.On("LM_HELLO_ANSWERED", function()
 	if not R.IAmOfficer() then return end
 	local s = store()
 	s.versions = s.versions or {}

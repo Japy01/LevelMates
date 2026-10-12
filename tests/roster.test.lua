@@ -4,10 +4,10 @@ ns.db.settings.shareFeed = false   -- the wall (fe) has its own test
 local R, C = ns.Roster, ns.Comm
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false)
 STUB.Advance(1)
--- login sends ping + hb
+-- login sends hb, then the hello
 local kinds = {}
 for _, s in ipairs(STUB.sent) do kinds[#kinds + 1] = select(1, C.Decode(s.msg)) end
-assert(table.concat(kinds, ",") == "ping,hb" or table.concat(kinds, ",") == "hb,ping", "ping and hb at login: " .. table.concat(kinds, ","))
+assert(table.concat(kinds, ",") == "hb,hi", "hb then hello at login: " .. table.concat(kinds, ","))
 -- unchanged state: no hb for 30 s ticks
 local n = #STUB.sent
 STUB.Advance(31); STUB.Advance(31)
@@ -27,7 +27,7 @@ assert(R.mates.Mario and R.mates.Mario.level == 30 and R.mates.Mario.inGroup and
 assert(#R.List() == 2, "two mates")
 -- ping from a newcomer → we answer with hb within 0-5 s
 n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm")
 STUB.Advance(6)
 local hbs = 0
 for i = n + 1, #STUB.sent do if C.Decode(STUB.sent[i].msg) == "hb" then hbs = hbs + 1 end end
@@ -54,7 +54,7 @@ STUB.Receive("LVLM2", C.Encode("q", { i = "1/1", ids = "1098,959" }), "GUILD", "
 assert(R.mates.Ana.quests[1098] and R.mates.Ana.quests[959], "mate quests stored")
 -- a newcomer's ping gets my quest list too, not only a heartbeat (otherwise matching is one-way)
 n = #STUB.sent
-STUB.Receive("LVLM2", C.Encode("ping", {}), "GUILD", "Luis-Testrealm")
+STUB.Receive("LVLM2", C.Encode("hi", { s = "" }), "GUILD", "Luis-Testrealm")
 STUB.Advance(6)
 local answered = {}
 for i = n + 1, #STUB.sent do local k = select(1, C.Decode(STUB.sent[i].msg)); if k ~= "pt" and k ~= "ac" then answered[#answered + 1] = k end end   -- guild points go too; not the roster's business

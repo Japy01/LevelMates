@@ -86,7 +86,7 @@ ns.On("LM_HB_SENT", function()
 	sendMine(gap > EXPIRE_GAP)   -- after a long silence (instance, loading screen) others expired me: send again
 end)
 ns.On("LM_ANNOUNCED", function() sendMine(true) end)
-ns.On("LM_PING_ANSWERED", function() sendMine(true) end)
+ns.On("LM_HELLO_ANSWERED", function() sendMine(true) end)
 ns.On("LM_ROSTER_CHANGED", function()   -- bye and expiry take the value along
 	for name in pairs(theirs) do if not R.mates[name] then theirs[name] = nil end end
 end)

@@ -47,7 +47,7 @@ assert(k1 == "hb" and f1.l == 23 and k2 == "pal", "hb kept its place ahead of pa
 -- Forever's restriction flag can read true while sends still work (spike): only the send result decides
 STUB.reportsRestricted = true
 local r0 = #STUB.sent
-C.Send("ping", {})
+C.Send("hi", { s = "" })
 STUB.Advance(1)
 assert(#STUB.sent == r0 + 1, "sent although the restriction flag reads true")
 STUB.reportsRestricted = false
@@ -55,7 +55,7 @@ STUB.reportsRestricted = false
 STUB.inInstance = true
 local i0 = #STUB.sent
 assert(C.Send("hb", { l = 22, z = 1421 }) == false, "hb refused in an instance")
-assert(C.Send("ping", {}) == false and C.Send("q", { i = "1/1", ids = "1" }) == false, "ping and q refused in an instance")
+assert(C.Send("hi", { s = "" }) == false and C.Send("q", { i = "1/1", ids = "1" }) == false, "hi and q refused in an instance")
 assert(C.Send("lfg", { d = 2, r = "T", id = "in02", m = 20 }) == false and C.Send("lfgx", { id = "in02" }) == false, "group finder messages refused in an instance")
 assert(C.Send("pal", { p = 1 }) == false, "partner flag refused in an instance")
 assert(C.Send("help", { t = "x", z = 1, x = 1, y = 1, id = "in01" }) == true, "help allowed in an instance")
@@ -77,12 +77,12 @@ STUB.inInstance = false
 -- a throttled send (result 3) is retried on the same transport, not dropped and not a reason to switch
 STUB.throttleNext = 1
 local b = #STUB.sent
-C.Send("ping", {})
+C.Send("hi", { s = "" })
 STUB.Advance(2)
 assert(#STUB.sent == b + 1 and STUB.sent[#STUB.sent].chatType == "GUILD" and C.ActiveTransport() == "guild", "throttled send retried on GUILD")
 -- throttle: 30 sends at once go out at most 10 then 1/s
 local before = #STUB.sent
-for i = 1, 30 do C.Send("ping", {}, "normal") end
+for i = 1, 30 do C.Send("hi", { s = "" }, "normal") end
 STUB.Advance(0.2)
 assert(#STUB.sent - before <= 10, "burst limited to 10")
 STUB.Advance(30)
