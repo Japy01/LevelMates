@@ -22,6 +22,8 @@ function HM.Rows()
 	local level, into, need = PT.Level(PT.GuildTotal())
 	local ch = PT.Challenge()
 	out[#out + 1] = { header = "guild" }
+	local motd, by = ns.GuildNotes.Motd()
+	if motd then out[#out + 1] = { kind = "motd", text = motd, by = by } end   -- the officers' message first
 	out[#out + 1] = { kind = "level", level = level, into = into, need = need }
 	out[#out + 1] = { kind = "challenge", text = ch.text, have = ch.have, goal = ch.goal, done = ch.done }
 	-- now

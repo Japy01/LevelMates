@@ -43,6 +43,7 @@ Questhub.lua
 GuildNotes.lua
 GuildHistory.lua
 GuildBank.lua
+Members.lua
 LfgDialog.lua
 MeetDialog.lua
 Partner.lua
