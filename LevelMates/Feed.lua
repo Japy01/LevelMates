@@ -7,7 +7,7 @@ ns.Feed = F
 local L, C, R = ns.L, ns.Comm, ns.Roster
 F.MAX, F.DAYS, F.RESEND = 200, 7, 5
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 function F.Now() return math.floor(time() / 60) end   -- minutes since 1970
 local function store()
 	ns.db.feed = ns.db.feed or {}

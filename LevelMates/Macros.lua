@@ -98,7 +98,7 @@ function MA.Create(name, body)
 end
 
 ------------------------------------------------------------------ sharing
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function myClass() return select(2, UnitClass("player")) end
 local function shared() ns.char.sharedMacros = ns.char.sharedMacros or {}; return ns.char.sharedMacros end
 local function store()

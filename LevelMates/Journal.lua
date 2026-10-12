@@ -166,7 +166,7 @@ local function quality(link)
 end
 local function isMine(guid, sender)
 	if guid and guid ~= "" then return guid == UnitGUID("player") end
-	return sender ~= nil and sender ~= "" and ns.ShortName(sender) == UnitName("player")
+	return sender ~= nil and sender ~= "" and ns.ShortName(sender) == ns.Me()
 end
 
 -- Professions: the twelve profession skill IDs (locale-independent).

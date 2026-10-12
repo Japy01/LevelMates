@@ -9,7 +9,7 @@ P.IDS = { 171, 164, 333, 202, 182, 165, 186, 393, 197, 129, 185, 356 }
 local KNOWN = {}
 for _, id in ipairs(P.IDS) do KNOWN[id] = true end
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function theirs()
 	ns.db.professions = ns.db.professions or {}
 	local k = GetGuildInfo("player") or "?"

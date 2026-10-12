@@ -65,11 +65,21 @@ function ns.Notice(fmt, ...)
 	ns.Screen(text)
 end
 
-function ns.PlayerKey()
-	local name, realm = UnitName("player")
-	realm = realm and realm ~= "" and realm or GetRealmName()
-	return name .. "-" .. realm
+-- My name as the guild sees it. On Forever a character can be "Name Surname", and UnitName("player") then gives the
+-- surname where the realm would go: put them back together (a realm there, from other clients, is no surname).
+function ns.Me()
+	local name, second = UnitName("player")
+	if second and second ~= "" then
+		local function norm(s) return (tostring(s or ""):lower():gsub("[^%w]", "")) end
+		local realm = norm(GetRealmName())
+		if norm(second) ~= realm and not (GetNormalizedRealmName and norm(second) == norm(GetNormalizedRealmName())) then
+			return name .. " " .. second
+		end
+	end
+	return name
 end
+
+function ns.PlayerKey() return ns.Me() .. "-" .. GetRealmName() end
 
 -- "Mario-ClassicBetaPvP" -> "Mario" when the realm is mine. Ambiguate() left my own realm in place on Forever,
 -- so strip it here by comparing letters and digits only. One function for every place that compares names.

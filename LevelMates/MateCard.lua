@@ -34,7 +34,7 @@ end
 -- The card's text, one line per thing known about them.
 function MC.Lines(name)
 	local m, lines = R.mates[name], {}
-	if name == UnitName("player") and ns.Alts then   -- my own card: my characters in this guild
+	if name == ns.Me() and ns.Alts then   -- my own card: my characters in this guild
 		lines[#lines + 1] = L.CARD_MY_CHARS
 		local all = ns.Alts.MyAlts()
 		local here = ns.Alts.Chars()[ns.PlayerKey()]
@@ -128,7 +128,7 @@ end
 function MC.Refresh()
 	if not (MC.frame and MC.frame:IsShown() and MC.name) then return end
 	local name, m = MC.name, R.mates[MC.name]
-	local mine = name == UnitName("player")
+	local mine = name == ns.Me()
 	MC.whisper:SetShown(not mine); MC.invite:SetShown(not mine)
 	local fs = MC.frame.TitleContainer and MC.frame.TitleContainer.TitleText or MC.frame.TitleText
 	if fs then fs:SetText(name) end

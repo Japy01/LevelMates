@@ -7,8 +7,8 @@ ns.Alts = AL
 local L, C, R = ns.L, ns.Comm, ns.Roster
 
 function AL.Chars() ns.db.characters = ns.db.characters or {}; return ns.db.characters end   -- ns.db.chars is each character's own data
-local function me() return (UnitName("player")) end
-local function myRealm() local _, realm = UnitName("player"); return realm and realm ~= "" and realm or GetRealmName() end
+local function me() return ns.Me() end
+local function myRealm() return GetRealmName() end   -- UnitName's second value can be a surname on Forever
 
 -- This character, as it is now.
 function AL.Note()

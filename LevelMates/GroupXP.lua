@@ -41,7 +41,7 @@ end)
 -- Me first, then grouped guildmates with a recent value (highest level first).
 function GX.Rows()
 	local _, class = UnitClass("player")
-	local out = { { name = (UnitName("player")), level = UnitLevel("player"), pct = myPct(), rested = ns.Rested.Mine(), class = class, mine = true } }
+	local out = { { name = ns.Me(), level = UnitLevel("player"), pct = myPct(), rested = ns.Rested.Mine(), class = class, mine = true } }
 	local others, inside = {}, IsInInstance and IsInInstance() == true
 	for name, s in pairs(seen) do
 		if grouped(name) and (inside or GetTime() - s.at <= GX.FRESH) then   -- in a dungeon nothing can arrive: keep the last value

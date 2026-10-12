@@ -10,7 +10,7 @@ PT.VALUE = { l = 10, d = 15, q = 1, h = 5, g = 5, m = 10 }
 PT.CHALLENGES = { { cat = "d", base = 25 }, { cat = "l", base = 60 }, { cat = "h", base = 15 }, { cat = "q", base = 200 } }
 local MONDAY = 4 * 86400   -- 1970-01-01 was a Thursday: the first Monday is four days later
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 -- The realm's own clock (its Monday midnight), as the game shows it; the plain clock where the client has no such call.
 local function now()
 	if C_DateAndTime and C_DateAndTime.GetServerTimeLocal then return C_DateAndTime.GetServerTimeLocal() end

@@ -8,7 +8,7 @@ ns.Gifts = GF
 local L, C, R, W = ns.L, ns.Comm, ns.Roster, ns.Wishlist
 GF.MAX, GF.FORGET_DAYS = 10, 30
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function mine() ns.char.gifts = ns.char.gifts or {}; return ns.char.gifts end
 local function theirs()
 	ns.db.gifts = ns.db.gifts or {}

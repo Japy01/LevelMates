@@ -8,7 +8,7 @@ ns.Home = HM
 local L, R = ns.L, ns.Roster
 HM.NEAR, HM.MAX_MATES = 3, 5
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 
 local function section(out, key, items)
 	if #items == 0 then return end

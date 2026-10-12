@@ -7,7 +7,7 @@ ns.Ask = A
 local L, C, R = ns.L, ns.Comm, ns.Roster
 A.HOURS, A.GAP, A.MAX = 24, 60, 120
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function myClass() return select(2, UnitClass("player")) end
 local function newId() return string.format("%04x%04x", math.random(0, 65535), math.random(0, 65535)):sub(1, 8) end
 local function store()

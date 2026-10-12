@@ -8,7 +8,7 @@ ns.Recruit = RC
 local L, C, R = ns.L, ns.Comm, ns.Roster
 RC.GAP, RC.MAX_LEN = 600, 200
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 -- The server's clock (seconds): every officer counts the shared wait the same way, whatever their PC's clock says.
 local function now() return (GetServerTime and GetServerTime()) or time() end
 local function store()

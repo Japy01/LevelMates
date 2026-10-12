@@ -7,7 +7,7 @@ ns.Builds = BU
 local L, C, R = ns.L, ns.Comm, ns.Roster
 BU.FORGET_DAYS = 30
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function myClass() return select(2, UnitClass("player")) end
 local function store()
 	ns.db.builds = ns.db.builds or {}

@@ -39,7 +39,7 @@ function AC.Desc(id) local a = BY_ID[id]; return string.format(L["ACHD_" .. a.ca
 function AC.Icon(id) local a = BY_ID[id]; return a.icon == "banner" and ns.Skin.Banner() or a.icon end
 function AC.Link(id) return "|T" .. AC.Icon(id) .. ":14|t " .. AC.Name(id) end
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function stats() ns.char.stats = ns.char.stats or {}; return ns.char.stats end
 local function got() ns.char.ach = ns.char.ach or {}; return ns.char.ach end
 function AC.Has(id) return got()[id] ~= nil end

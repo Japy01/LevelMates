@@ -67,7 +67,7 @@ function CA.Hear(text, sender, channel)
 	if not (ns.db and ns.db.settings.readChatAds) or type(text) ~= "string" or type(sender) ~= "string" or sender == "" then return end
 	if hidden(channel) then return end
 	local name = ns.ShortName(sender)
-	if name == UnitName("player") then return end
+	if name == ns.Me() then return end
 	local id = CA.Parse(text)
 	if not id then return end   -- other lines (a sale, a chat) leave their ad alone until it expires
 	local shown = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1"):gsub("|", "")

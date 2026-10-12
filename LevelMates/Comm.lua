@@ -341,8 +341,7 @@ function C.Inject(text, sender) onAddonMessage(C.PREFIX, text, "GUILD", sender) 
 
 local frame
 function C.Start()
-	local myName, myRealm = UnitName("player")
-	myRealm = (myRealm and myRealm ~= "") and myRealm or GetRealmName()
+	local myName, myRealm = ns.Me(), GetRealmName()
 	meKeys = { [norm(myName)] = true, [norm(myName .. (myRealm or ""))] = true }
 	C_ChatInfo.RegisterAddonMessagePrefix(C.PREFIX)
 	active = pickTransport()

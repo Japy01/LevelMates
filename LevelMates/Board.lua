@@ -789,7 +789,7 @@ local function FillFeed(list)
 			r.icon:Hide()
 			r.name:SetText(ns.Feed.Who(e))
 			if e.k == "gol" then r.name:SetTextColor(1, 0.82, 0)
-			elseif e.who == UnitName("player") then r.name:SetTextColor(ClassColor(MyClass()))
+			elseif e.who == ns.Me() then r.name:SetTextColor(ClassColor(MyClass()))
 			else r.name:SetTextColor(ClassColor(m and m.class)) end
 			r.level:SetText("")
 			r.zone:SetText(ns.Feed.Text(e)); r.zone:SetTextColor(1, 1, 1)
@@ -892,7 +892,7 @@ end
 -- Dungeons tab: the ads for a dungeon (mine first), the visible cards, and filling them.
 function B.AdsFor(id)
 	local out, LFG = {}, ns.LFG
-	if LFG.mine and LFG.mine.d == id then out[1] = { name = (UnitName("player")), r = LFG.mine.r, n = LFG.mine.n, mine = true, joined = LFG.mine.joined, id = LFG.mine.id } end
+	if LFG.mine and LFG.mine.d == id then out[1] = { name = ns.Me(), r = LFG.mine.r, n = LFG.mine.n, mine = true, joined = LFG.mine.joined, id = LFG.mine.id } end
 	for _, adId in ipairs(LFG.List()) do
 		local a = LFG.ads[adId]
 		if a.d == id and not (LFG.mine and adId == LFG.mine.id) then out[#out + 1] = a end
@@ -1142,7 +1142,7 @@ local function FillCalendar(list)
 			r.zone:SetText(ns.Dungeons.Name(m.d) .. " · " .. m.by .. (m.n and (": " .. m.n) or "")); r.zone:SetTextColor(0.6, 0.8, 1)
 			r.group:SetText(tostring(n)); r.group:SetTextColor(1, 1, 1)
 			local role = ns.Meetups.MyRole(m.id)
-			r.xph:SetText(m.by == UnitName("player") and L.CAL_MINE or role and L["ROLE_" .. role] or ""); r.xph:SetTextColor(0.4, 1, 0.4)
+			r.xph:SetText(m.by == ns.Me() and L.CAL_MINE or role and L["ROLE_" .. role] or ""); r.xph:SetTextColor(0.4, 1, 0.4)
 			r.button:Show()
 			RowBg(r, i, false)
 		else
@@ -1156,7 +1156,7 @@ function B.OpenMeetMenu(m)
 	local when = ns.Meetups.When(m)
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
 		root:CreateTitle(ns.Dungeons.Name(m.d) .. " · " .. when)
-		if m.by == UnitName("player") then
+		if m.by == ns.Me() then
 			root:CreateButton(string.format(L.MEET_CANCEL, when), function() ns.Meetups.Cancel(m.id) end)
 		elseif ns.Meetups.MyRole(m.id) then
 			root:CreateButton(string.format(L.MEET_LEAVE, when), function() ns.Meetups.Leave(m.id) end)
@@ -1194,7 +1194,7 @@ function B.OpenDungeonMenu(id)
 		end
 		for _, m in ipairs(ns.Meetups.List(id)) do
 			local when = ns.Meetups.When(m)
-			if m.by == UnitName("player") then
+			if m.by == ns.Me() then
 				root:CreateButton(string.format(L.MEET_CANCEL, when), function() ns.Meetups.Cancel(m.id) end)
 			elseif ns.Meetups.MyRole(m.id) then
 				root:CreateButton(string.format(L.MEET_LEAVE, when), function() ns.Meetups.Leave(m.id) end)

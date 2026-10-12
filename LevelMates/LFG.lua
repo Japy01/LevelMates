@@ -181,7 +181,7 @@ ns.On("LM_LOADED", function()
 end)
 local function adById(id) if G.mine and G.mine.id == id then return G.mine end; return G.ads[id] end
 local function joinedCount(ad) local n = 0; for _ in pairs(ad.joined or {}) do n = n + 1 end; return n end
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 
 -- Called from a click (a card's menu).
 function G.Join(id, role)

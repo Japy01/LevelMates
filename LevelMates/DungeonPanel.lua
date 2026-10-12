@@ -8,7 +8,7 @@ local L, R = ns.L, ns.Roster
 local unpack = unpack or table.unpack
 DP.WIDTH, DP.LINES, DP.LINE_H = 320, 18, 24
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function Cap(s) return (s:gsub("^%l", string.upper)) end
 local function section(out, key, items)
 	if #items == 0 then return end

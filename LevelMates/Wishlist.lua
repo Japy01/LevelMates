@@ -6,7 +6,7 @@ ns.Wishlist = W
 local L, C, R = ns.L, ns.Comm, ns.Roster
 W.MAX, W.FORGET_DAYS = 10, 30
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function mine() ns.char.wishes = ns.char.wishes or {}; return ns.char.wishes end
 local function theirs()
 	ns.db.wishes = ns.db.wishes or {}

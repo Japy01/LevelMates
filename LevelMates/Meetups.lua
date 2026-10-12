@@ -8,7 +8,7 @@ local L, C, R, D = ns.L, ns.Comm, ns.Roster, ns.Dungeons
 M.MAX, M.PER_PERSON, M.KEEP, M.REMIND = 10, 2, 180, 15   -- at once, per creator, minutes kept after the hour, reminder
 local ROLES = { T = true, H = true, D = true }
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 function M.Now() return math.floor(time() / 60) end   -- minutes since 1970
 local function store()
 	ns.db.meetups = ns.db.meetups or {}

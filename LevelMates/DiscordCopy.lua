@@ -8,7 +8,7 @@ D.MAX = 2000   -- one Discord message
 local ROLE_EMOJI = { T = ":shield:", H = ":green_heart:", D = ":crossed_swords:" }
 local TAB_TITLE = { mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", home = "TAB_HOME", recruit = "HEAD_INACTIVE", feed = "TAB_FEED" }
 
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 -- "[Name]" from a game link; Discord shows the codes as they are.
 local function plain(link) return link and ("[" .. (link:match("|h%[(.-)%]|h") or link:match("%[(.-)%]") or "?") .. "]") end
 local function mapName(id) local info = id and C_Map.GetMapInfo(id); return info and info.name or "" end

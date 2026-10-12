@@ -7,7 +7,7 @@ local L, C, R, G = ns.L, ns.Comm, ns.Roster, ns.Goals
 local DAYS_MAX = 30
 
 local function today() return math.floor(time() / 86400) end
-local function me() return (UnitName("player")) end
+local function me() return ns.Me() end
 local function expired(g) return today() > g.e + G.KEEP_DAYS end
 local function theirs()
 	ns.db.personal = ns.db.personal or {}
