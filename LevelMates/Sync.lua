@@ -53,7 +53,9 @@ S.Send = send
 --         lane = "urgent"|"normal", may = function(rec, who) -> may who change it (default: its owner),
 --         max = live records kept, onChange = function(rec, old, how) how = "mine"|"live"|"catchup"|"expired",
 --         relayKeep = function(rec) -> hand it to newcomers, relayMax = n newest at most,
---         idOwner = function(id, owner) -> may this owner hold this id (ids made from a name) }
+--         idOwner = function(id, owner) -> may this owner hold this id (ids made from a name),
+--         accept = function(fields, owner) -> is this owner allowed to say this (checked on receive),
+--         writerOwns = true: the last writer becomes the owner (shared notes: whoever may edit) }
 function S.Define(t, spec)
 	spec.class = spec.class or "board"
 	spec.may = spec.may or function(rec, who) return rec.o == who end
@@ -107,6 +109,7 @@ function S.Receive(t, f, sender, catchup)
 	if not trusted(owner) or not trusted(sender) then return end
 	if f.v > now() + S.FUTURE or f.e < now() then return end
 	if spec.idOwner and not spec.idOwner(f.id, owner) then return end   -- an id made from someone else's name
+	if spec.accept and not spec.accept(f, owner) then return end
 	local s = store(t)
 	local old = s[f.id]
 	if old and old.o ~= owner and not spec.may(old, owner) then return end   -- an id belongs to its owner
@@ -118,7 +121,7 @@ function S.Receive(t, f, sender, catchup)
 		for _, r in pairs(s) do if not r.dead and r.e >= now() then n = n + 1 end end
 		if n >= spec.max then return end
 	end
-	local rec = { t = t, id = f.id, o = old and old.o or owner, v = f.v, e = math.min(f.e, now() + spec.life + S.FUTURE), d = d }   -- never longer than the type lives
+	local rec = { t = t, id = f.id, o = (spec.writerOwns and owner) or (old and old.o or owner), v = f.v, e = math.min(f.e, now() + spec.life + S.FUTURE), d = d }   -- never longer than the type lives
 	s[f.id] = rec
 	fire(spec, rec, old and not old.dead and old or nil, catchup and "catchup" or "live")
 end

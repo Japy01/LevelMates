@@ -40,6 +40,7 @@ ChatAds.lua
 Meetups.lua
 Discord.lua
 Questhub.lua
+GuildNotes.lua
 LfgDialog.lua
 MeetDialog.lua
 Partner.lua
