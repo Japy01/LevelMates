@@ -103,6 +103,28 @@ function RC.Scan()
 	end
 end
 
+-- Against the game's own list of my professions (the skill lines, Journal.lua): a profession I don't have, or kept at
+-- a rank well above my real one (skill never goes down: those recipes came from someone else's window), is dropped and
+-- the corrected list shared again; otherwise its rank is brought up to date. The margin leaves room for racial and
+-- item bonuses the window may count.
+RC.RANK_MARGIN = 25
+function RC.CheckMine()
+	local skills = ns.char.skills
+	if not (skills and next(skills)) then return end   -- not known yet: nothing to judge by
+	local mine, dropped = RC.Mine(), false
+	for p, e in pairs(mine) do
+		local s = skills[p]
+		if not s or (e.r or 0) > (s.rank or 0) + RC.RANK_MARGIN then
+			mine[p] = nil; dropped = true
+		elseif s.rank then
+			e.r = math.min(450, s.rank)
+			if s.max and s.max > 0 then e.m = math.min(450, s.max) end
+		end
+	end
+	if dropped then ns.Fire("LM_RECIPES_CHANGED") end
+end
+ns.On("LM_SKILLS_CHANGED", function() RC.CheckMine() end)
+
 -- The first list after switching professions is still the previous one: read once things have been quiet 1.5 s.
 local settleAt
 local function later()
@@ -162,13 +184,33 @@ local function plausible(name, rank)
 	return level >= need
 end
 C.OnMessage("rcp", function(f, name)
-	if not plausible(name, f.r or 0) then return end
+	if not plausible(name, f.r or 0) then   -- and what was kept for it can't be trusted either
+		local e = theirs()[name]
+		if e and e[f.p] then e[f.p] = nil; changed() end
+		return
+	end
 	local items, spells = RC.Decode(f.i or ""), RC.Decode(f.s or "")
 	if not items or not spells then return end
 	local t = theirs()
 	t[name] = t[name] or {}
 	t[name][f.p] = { r = f.r or 0, m = f.m or 0, items = items, spells = spells, t = GetServerTime() }
 	changed()
+end)
+
+-- Their own list of professions (pf, the whole list with ranks): recipes kept for a profession not on it, or at a rank
+-- well above the real one, go. A withdrawal (no list) is the sharing setting's business, not this.
+C.OnMessage("pf", function(f, name)
+	if f.p == nil then return end
+	local e = theirs()[name]
+	if not e then return end
+	local ranks = {}
+	for id, rank in tostring(f.p):gmatch("(%d+):(%d+)") do ranks[tonumber(id)] = tonumber(rank) end
+	local gone = false
+	for p, x in pairs(e) do
+		if not ranks[p] or (x.r or 0) > ranks[p] + RC.RANK_MARGIN then e[p] = nil; gone = true end
+	end
+	if not next(e) then theirs()[name] = nil end
+	if gone then changed() end
 end)
 
 -- Someone's professions with their recipes (mine for me); forgotten 60 days after the last news.
