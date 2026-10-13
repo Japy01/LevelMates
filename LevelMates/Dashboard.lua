@@ -111,7 +111,7 @@ end
 local function buildRuns(p)
 	p.cards = {}
 	for i = 1, DB.RUNS do
-		local c = ns.Widgets.RunCard(p)
+		local c = ns.Widgets.GroupCard(p)
 		c:SetPoint("TOPLEFT", PAD, -22 - (i - 1) * 68); c:SetPoint("RIGHT", -PAD, 0)
 		p.cards[i] = c
 	end
@@ -159,6 +159,7 @@ function DB.Build(parent)
 	DB.me = W.Panel(f, L.DB_ME); buildMe(DB.me)
 	DB.now = W.Panel(f, L.DB_NOW); DB.now:SetHint(L.DB_HINT_NOW); items(DB.now, DB.NOW, true)
 	DB.runs = W.Panel(f, L.DB_RUNS); DB.runs:SetHint(L.DB_HINT_RUNS); buildRuns(DB.runs)
+	DB.groups = DB.runs
 	DB.quests = W.Panel(f, L.DB_QUESTS); DB.quests:SetHint(L.DB_HINT_QUESTS); items(DB.quests, DB.QUESTS, false)
 	DB.where = W.Panel(f, L.DB_WHERE); DB.where:SetHint(L.DB_HINT_WHERE); buildWhere(DB.where)
 	DB.wall = W.Panel(f, L.DB_WALL); DB.wall:SetHint(L.DB_HINT_WALL); items(DB.wall, DB.WALL, false)
@@ -284,8 +285,7 @@ local function refreshNow()
 end
 
 local function refreshRuns()
-	local M, nowMin, list = ns.Meetups, ns.Meetups.Now(), {}
-	for _, m in ipairs(M.List()) do if m.at >= nowMin - 30 then list[#list + 1] = m end end
+	local list = ns.Groups.List()   -- Now first (mine included), then the next with a time
 	for i, c in ipairs(DB.runs.cards) do c:Set(list[i]) end
 	DB.runs:SetEmpty(#list == 0)
 	DB.runs:SetNote(#list > 0 and string.format(L.DB_NEXT, #list) or "")

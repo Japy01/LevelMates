@@ -45,6 +45,7 @@ Rares.lua
 LFG.lua
 ChatAds.lua
 Meetups.lua
+Groups.lua
 Discord.lua
 Questhub.lua
 GuildNotes.lua

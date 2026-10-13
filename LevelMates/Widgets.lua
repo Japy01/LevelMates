@@ -84,6 +84,7 @@ local CLASS_ICON = "Interface\\TargetingFrame\\UI-Classes-Circles"
 W.ROLE_ICON = "Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES"   -- the game's tank/healer/damage circles
 local ROLE_KEY = { T = "TANK", H = "HEALER", D = "DAMAGER" }
 local function roleIcon(tex, role, grey)
+	if not ROLE_KEY[role] then tex:Hide(); return end   -- "any": no role to show
 	tex:SetTexture(W.ROLE_ICON)
 	if GetTexCoordsForRoleSmallCircle then
 		local ok, l, r, t, b = pcall(GetTexCoordsForRoleSmallCircle, ROLE_KEY[role] or "DAMAGER")
@@ -92,6 +93,8 @@ local function roleIcon(tex, role, grey)
 	tex:SetDesaturated(grey and true or false); tex:SetAlpha(grey and 0.45 or 1)
 	tex:Show()
 end
+local function roleIconPublic(tex, role) roleIcon(tex, role, false) end
+W.RoleIcon = roleIconPublic
 function W.Slot(parent)
 	local s = CreateFrame("Button", nil, parent)
 	s:SetSize(64, 48)
@@ -235,6 +238,103 @@ function W.RunCard(parent, withButtons)
 				end } }
 			end
 			setButtons(self, specs, m.id)
+		end
+		self:Show()
+	end
+	c:Hide()
+	return c
+end
+
+-- A group as a card (project 9): "Ahora · Minas de la Muerte · Mario · note" or "mar 21:00 · …"; up to five places
+-- as slots, more as counters per role ("2/5" with a bar, or "12/40" without roles); and, withButtons, what I can do:
+-- Invite all and Withdraw/Cancel on mine, Leave on one I joined, Join otherwise (a menu of the free roles, or straight
+-- in as "any"). Withdraw and Cancel ask first; a redraw of the same group keeps the question. :Set(nil) hides it.
+W.GROUPCARD_H = 64
+local SLOT_ROLES = { "T", "H", "D", "A" }
+local function counterRow(parent, i)
+	local r = CreateFrame("Frame", nil, parent)
+	r:SetHeight(14); r:SetPoint("TOPLEFT", 0, -(i - 1) * 16); r:SetWidth(5 * 68 - 4)
+	r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(14, 14); r.icon:SetPoint("LEFT")
+	r.text = ink(r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	r.text:SetPoint("LEFT", r.icon, "RIGHT", 4, 0); r.text:SetWidth(110); r.text:SetJustifyH("LEFT")
+	r.barBg = r:CreateTexture(nil, "BORDER"); r.barBg:SetColorTexture(0.24, 0.14, 0.05, 0.45)
+	r.barBg:SetPoint("LEFT", r.text, "RIGHT", 4, 0); r.barBg:SetSize(200, 8)
+	r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetTexture("Interface/TargetingFrame/UI-StatusBar"); r.bar:SetVertexColor(0.80, 0.55, 0.12)
+	r.bar:SetPoint("LEFT", r.barBg, "LEFT", 0, 0); r.bar:SetHeight(6)
+	r:Hide()
+	return r
+end
+function W.GroupCard(parent, withButtons)
+	local c = CreateFrame("Button", nil, parent)
+	c:SetHeight(W.GROUPCARD_H)
+	c.text = ink(c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	c.text:SetPoint("TOPLEFT"); c.text:SetWidth(5 * 68 - 4); c.text:SetJustifyH("LEFT"); c.text:SetWordWrap(false)
+	c.slots = {}
+	for k = 1, 5 do
+		local s = W.Slot(c)
+		s:SetPoint("TOPLEFT", (k - 1) * 68, -16)
+		s:SetScript("OnClick", function() if c.group and ns.Board.OpenGroupMembers then ns.Board.OpenGroupMembers(c.group) end end)
+		c.slots[k] = s
+	end
+	c.counters = CreateFrame("Frame", nil, c)
+	c.counters:SetPoint("TOPLEFT", 0, -18); c.counters:SetSize(5 * 68 - 4, 48)
+	c.counters.rows = {}
+	for i = 1, 3 do c.counters.rows[i] = counterRow(c.counters, i) end
+	c.counters:Hide()
+	c.buttons = {}
+	if withButtons then for i = 1, 3 do c.buttons[i] = cardButton(c, i) end end
+	c:SetScript("OnClick", function(self) if self.group and ns.Board.OpenGroupMembers then ns.Board.OpenGroupMembers(self.group) end end)
+	function c:Set(g)
+		self.group = g
+		if not g then self:Hide(); return end
+		local GR = ns.Groups
+		local when = g.at and ns.Meetups.When(g) or L.WHEN_NOW
+		self.text:SetText(when .. "  ·  " .. g.name .. "  ·  " .. short(g.by) .. (g.note and g.note ~= "" and ("  ·  " .. g.note) or ""))
+		if g.size <= 5 then
+			self.counters:Hide()
+			local k = 0
+			for _, role in ipairs(SLOT_ROLES) do
+				for n = 1, g.caps[role] or 0 do
+					k = k + 1
+					local who = g.slots[role] and g.slots[role][n]
+					if self.slots[k] then self.slots[k]:Set(role, who and short(who), who and classOf(who)); self.slots[k]:Show() end
+				end
+			end
+			for i = k + 1, 5 do self.slots[i]:Hide() end
+		else
+			for _, s in ipairs(self.slots) do s:Hide() end
+			local i = 0
+			for _, role in ipairs(SLOT_ROLES) do
+				local cap = g.caps[role]
+				if cap then
+					i = i + 1
+					local row, have = self.counters.rows[i], #(g.slots[role] or {})
+					row.text:SetText(string.format("%s %d/%d", L["ROLE_PLURAL_" .. role] or L["ROLE_" .. role], have, cap))
+					roleIconPublic(row.icon, role)
+					row.bar:SetWidth(math.max(1, 200 * math.min(1, have / cap))); row:Show()
+				end
+			end
+			for j = i + 1, 3 do self.counters.rows[j]:Hide() end
+			self.counters:Show()
+		end
+		if withButtons then
+			local specs
+			if g.mine then
+				specs = { { L.RUN_INVITE_ALL, function() GR.InviteAll(g) end }, { g.src == "now" and L.GR_WITHDRAW or L.DP_CANCEL, function() GR.Cancel(g) end, true } }
+			elseif g.myRole then
+				specs = { { L.RUN_LEAVE, function() GR.Leave(g) end } }
+			elseif g.caps.A then
+				specs = { { L.RUN_JOIN, function() GR.Join(g, "A"); ns.Dirty("board") end } }
+			else
+				specs = { { L.RUN_JOIN, function(b)
+					MenuUtil.CreateContextMenu(b, function(_, root)
+						for _, role in ipairs({ "T", "H", "D" }) do
+							if g.caps[role] and #(g.slots[role] or {}) < g.caps[role] then root:CreateButton(L["ROLE_" .. role], function() GR.Join(g, role); ns.Dirty("board") end) end
+						end
+					end)
+				end } }
+			end
+			setButtons(self, specs, g.src .. g.id)
 		end
 		self:Show()
 	end

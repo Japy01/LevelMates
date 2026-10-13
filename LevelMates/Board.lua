@@ -1579,6 +1579,17 @@ local function FillBank(list)
 	end
 end
 
+-- Who goes in a group, by role (a card's click).
+function B.OpenGroupMembers(g)
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		root:CreateTitle(g.name .. " · " .. (g.at and ns.Meetups.When(g) or L.WHEN_NOW))
+		for _, role in ipairs({ "T", "H", "D", "A" }) do
+			for _, name in ipairs(g.slots[role] or {}) do root:CreateButton(name .. " (" .. L["ROLE_" .. role] .. ")", function() ns.MateCard.Show(name) end) end
+		end
+		for _, name in ipairs(g.slots.waiting or {}) do root:CreateButton(name .. " (" .. L.GR_WAITING .. ")", function() ns.MateCard.Show(name) end) end
+	end)
+end
+
 -- A meetup's click in the calendar: join with a role, leave, or cancel mine.
 function B.OpenMeetMenu(m)
 	local when = ns.Meetups.When(m)
