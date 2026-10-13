@@ -40,7 +40,7 @@ local function formLabels()
 	for role, chip in pairs(f.roles) do chip:SetChecked(role == f.role) end
 	local ok, why = ns.Discord.Available()
 	f.discord:SetEnabled(ok); if not ok then f.discord:SetChecked(false) end
-	f.discordWhy:SetText(ok and "" or L[why])
+	f.discordWhy:SetText(why and L[why] or "")   -- why not, or that the game would not say
 	f.publish:SetEnabled(f.dungeon ~= nil)
 end
 

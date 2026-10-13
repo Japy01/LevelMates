@@ -40,8 +40,8 @@ end
 local function DiscordState()
 	local ok, why = ns.Discord.Available()
 	Dlg.discord:SetEnabled(ok); if not ok then Dlg.discord:SetChecked(false) end
-	Dlg.discordWhy:SetText(ok and "" or L[why])
-	Dlg.copy:SetShown(not ok)
+	Dlg.discordWhy:SetText(why and L[why] or "")   -- why not, or that the game would not say
+	Dlg.copy:SetShown(not ok or why == "DISCORD_UNSURE")
 end
 
 local function Build()

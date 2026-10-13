@@ -315,3 +315,4 @@ L.OPT_LEVELBAR = "Level bar"; L.OPT_LEVELBAR_TT = "A small bar with your XP per 
 L.DING_TITLE = "Level %d!"; L.DING_TOOK = "It took %s"; L.DING_RATE = "%d XP per hour"; L.DING_RANK = "Number %d in the guild"
 L.OPT_DING = "Banner when you level up"; L.OPT_DING_TT = "A few seconds in the middle of the screen: the new level, how long it took, your XP per hour and your place in the guild. A click closes it."
 L.YOU = "you"; L.DB_MY_CARD = "My card"; L.DB_MY_GEAR = "My gear"
+L.DISCORD_UNSURE = "The game does not let addons check the Discord link: it is tried when you publish. If it does not arrive, use Copy for Discord."

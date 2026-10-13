@@ -11,7 +11,16 @@ C_Discord.IsGuildChannelLinked = function() return false end
 assert(select(2, DC.Available()) == "DISCORD_NO_GUILD", "guild not linked: why")
 C_Discord.IsGuildChannelLinked = function() return true end
 C_Discord.IsUserOAuthed = function() error("secret") end
-assert(not DC.Available(), "unknown counts as no")
+assert(DC.Available(), "an error is unknown, not no: allowed (the send itself tells)")
+-- Forever: the restricted checks answer nothing to an addon. Unknown is allowed; only an explicit false refuses
+C_Discord.IsGuildChannelLinked = function() end
+C_Discord.IsUserOAuthed = function() end
+local ok, why = DC.Available()
+assert(ok and why == "DISCORD_UNSURE", "no answer: allowed, with a note: " .. tostring(why))
+C_Discord.IsEnabled = function() return false end
+assert(not DC.Available(), "Discord off in the client: no")
+C_Discord.IsEnabled = function() return true end
+C_Discord.IsGuildChannelLinked = function() return true end
 C_Discord.IsUserOAuthed = function() return true end
 assert(DC.Available(), "available")
 -- Forever's restriction flag reads true outside combat: it must not stop us

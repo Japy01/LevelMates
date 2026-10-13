@@ -316,3 +316,4 @@ L.OPT_LEVELBAR = "Barra de nivel"; L.OPT_LEVELBAR_TT = "Una barrita con tu XP po
 L.DING_TITLE = "¡Nivel %d!"; L.DING_TOOK = "Te llevó %s"; L.DING_RATE = "%d de XP por hora"; L.DING_RANK = "Puesto %d de la hermandad"
 L.OPT_DING = "Cartel al subir de nivel"; L.OPT_DING_TT = "Unos segundos en el centro de la pantalla: el nuevo nivel, lo que tardaste, tu XP por hora y tu puesto en la hermandad. Un clic lo cierra."
 L.YOU = "tú"; L.DB_MY_CARD = "Mi ficha"; L.DB_MY_GEAR = "Mi equipo"
+L.DISCORD_UNSURE = "El juego no deja a los addons comprobar el enlace con Discord: se intenta al publicar. Si no llega, usa Copiar para Discord."
