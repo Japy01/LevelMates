@@ -11,7 +11,10 @@ local unpack = unpack or table.unpack   -- the client has unpack; table.unpack c
 -- Layout: one place for the widths so the columns always fit inside the window.
 B.COLS = { 150, 50, 260, 70, 70 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 24, 900   -- the margin keeps the text inside the page's drawn edge
-B.FOOT_H, B.FEEDBACK_W = 58, 720   -- under the dashboard: the page's curled edge, and above it the feedback line
+B.FOOT_H, B.FEEDBACK_W = 58, 720
+B.SEARCH_W, B.TAB_GAP, B.TABS_LEFT = 140, 6, 66   -- the top band: five section buttons of one width, then Discord and the search
+B.TAB_W = math.floor((B.WIDTH - B.TABS_LEFT - (30 + B.SEARCH_W + 12 + 80) - 10 - 4 * B.TAB_GAP) / 5)
+B.PAGE_ROWS, B.HEAD_ROOM = 20, 20   -- every tab one size: the full page, and room for the section headers' extra height   -- under the dashboard: the page's curled edge, and above it the feedback line
 B.JCOLS = { 100, 1, 395, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 364, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 320, 105, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
@@ -113,7 +116,7 @@ local function Build()
 	strip:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN - 4, -(B.TOP - 2)); strip:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -(B.MARGIN - 4), -(B.TOP + ROW_H - 4))
 	B.colStrip = strip
 	local search = CreateFrame("EditBox", nil, f, "SearchBoxTemplate")
-	search:SetSize(170, 20); search:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -30)   -- in the top band, as the spellbook's
+	search:SetSize(B.SEARCH_W, 20); search:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -30)   -- in the top band, as the spellbook's
 	if search.Instructions then search.Instructions:SetText(L.SEARCH_HINT) end
 	search:SetScript("OnTextChanged", function(self) B.search = self:GetText() or ""; B.Refresh() end)
 	-- "Discord": the current tab as text to paste in Discord (every tab).
@@ -384,10 +387,10 @@ local function Build()
 	B.tabs = {}
 	local tabList, prevTab = {}, nil
 	for i, key in ipairs(B.TAB_KEYS) do
-		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i, TAB_ICON[key] == "banner" and ns.Skin.Banner() or TAB_ICON[key], L[TAB_LABELS[key]])
+		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i, TAB_ICON[key] == "banner" and ns.Skin.Banner() or TAB_ICON[key], L[TAB_LABELS[key]], B.TAB_W)
 		b:SetID(i)
 		-- in the top band, right of the portrait, as the spellbook's
-		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 6, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", f.gameFrame and 66 or 16, -24) end
+		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", B.TAB_GAP, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", f.gameFrame and B.TABS_LEFT or 16, -24) end
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.tabs[key], tabList[i], prevTab = b, b, b
 	end
@@ -1901,11 +1904,10 @@ function B.Refresh()
 	B.divider:SetShown(B.MainOf(B.tab) ~= "guild")
 	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
-	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
+	local rows = ROWS   -- one size on every tab: the book does not jump when you change page
 	local runsView = lfg and B.lfgCalendar
-	if home or runsView then rows = ROWS end   -- the dashboard and the runs view need the full page
-	if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
-	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H)
+	if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then rows = math.max(ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
+	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H + B.HEAD_ROOM)
 	B.SetTitle(B.TitleString())
 	B.UpdatePills()   -- after the title: they start where its text ends
 	local rested = ns.Rested and ns.Rested.Mine()
@@ -1928,7 +1930,7 @@ function B.Refresh()
 		r.button:SetHeight(h); r.button:ClearAllPoints(); r.button:SetPoint("TOPLEFT", B.MARGIN, -B.TOP - ROW_H - y)
 		y, extra = y + h, extra + (h - ROW_H)
 	end
-	if extra > 0 then B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H + extra) end
+	if extra > B.HEAD_ROOM then B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H + extra) end   -- only a page of many headers grows
 	B.recruitPanel:SetShown(recruit and B.recruitView ~= "inactive")
 	if recruit and B.recruitView ~= "inactive" then RefreshRecruit() end
 	local emptyText = ""

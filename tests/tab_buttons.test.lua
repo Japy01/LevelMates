@@ -14,7 +14,7 @@ for _, key in ipairs(B.TAB_KEYS) do
 	total = total + b:GetWidth() + 6
 end
 -- they fit between the portrait and the Discord button
-assert(total <= B.WIDTH - 66 - (30 + 170 + 12 + 80) - 12, "the row fits: " .. total)
+assert(total - 6 <= B.WIDTH - 66 - (30 + B.SEARCH_W + 12 + 80) - 10, "the row fits before Discord: " .. total)
 -- the chosen one is lit, the others not
 assert(B.tabs.home.selected and not B.tabs.mates.selected, "Home lit")
 B.tabs.lfg.scripts.OnClick(B.tabs.lfg)
@@ -22,3 +22,14 @@ assert(B.tab == "lfg" and B.tabs.lfg.selected and not B.tabs.home.selected, "Gro
 
 -- the book draws above the action bars (a HIGH window, as the dungeon panel beside it)
 assert(B.frame:GetFrameStrata() == "HIGH", "the book above the action bars: " .. tostring(B.frame:GetFrameStrata()))
+
+-- every section the same: five buttons of one width, and the book one size on every tab
+local w = B.tabs.home:GetWidth()
+for _, key in ipairs(B.TAB_KEYS) do assert(B.tabs[key]:GetWidth() == w, key .. ": the same width") end
+local heights = {}
+for _, key in ipairs({ "home", "mates", "lfg", "feed", "goals", "journal", "crafts", "members" }) do
+	B.ShowTab(key)
+	heights[#heights + 1] = B.frame:GetHeight()
+end
+B.ShowTab("lfg"); B.lfgCalendar = true; B.Refresh(); heights[#heights + 1] = B.frame:GetHeight(); B.lfgCalendar = false
+for i = 2, #heights do assert(heights[i] == heights[1], "one size on every tab: " .. table.concat(heights, ",")) end

@@ -197,7 +197,7 @@ function SK.Button(parent, name) local b = CreateFrame("Button", name, parent, "
 -- A main tab: a square icon (as the spellbook's), its name in a tooltip, lit when selected.
 -- A section button in the top band: the section's icon and its name, on a dark plate with a thin gold edge; the chosen
 -- one lit (bright edge, white name, a soft glow). As wide as its name.
-function SK.Tab(parent, name, icon, label)
+function SK.Tab(parent, name, icon, label, width)
 	local b = CreateFrame("Button", name, parent, "BackdropTemplate")
 	b.skinTab, b.label = true, label
 	b:SetHeight(30)
@@ -205,14 +205,19 @@ function SK.Tab(parent, name, icon, label)
 		b:SetBackdrop({ bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", edgeSize = 12, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
 		b:SetBackdropColor(0.10, 0.07, 0.03, 0.9)
 	end
-	b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(22, 22); b.icon:SetPoint("LEFT", 5, 0)
+	b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(20, 20); b.icon:SetPoint("LEFT", 5, 0)
 	b.icon:SetTexture(icon); b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	b.text:SetPoint("LEFT", b.icon, "RIGHT", 6, 0); b.text:SetText(label or "")
+	b.text:SetPoint("LEFT", b.icon, "RIGHT", 5, 0); b.text:SetText(label or "")
 	b.text.lmKeep = true   -- on the dark band: never inked
-	local w = b.text.GetStringWidth and b.text:GetStringWidth() or 0
-	if not w or w <= 0 then w = #tostring(label or "") * 7 end
-	b:SetWidth(math.floor(5 + 22 + 6 + w + 12))
+	if width then   -- one width for all: the name fits the rest (cut if it ever could not)
+		b:SetWidth(width)
+		b.text:SetWidth(width - 5 - 20 - 5 - 6); b.text:SetJustifyH("LEFT"); b.text:SetWordWrap(false)
+	else
+		local w = b.text.GetStringWidth and b.text:GetStringWidth() or 0
+		if not w or w <= 0 then w = #tostring(label or "") * 7 end
+		b:SetWidth(math.floor(5 + 20 + 5 + w + 12))
+	end
 	b.glow = b:CreateTexture(nil, "BACKGROUND", nil, 1); b.glow:SetTexture("Interface/Buttons/CheckButtonHilight"); b.glow:SetBlendMode("ADD")
 	b.glow:SetPoint("TOPLEFT", 3, -3); b.glow:SetPoint("BOTTOMRIGHT", -3, 3); b.glow:SetAlpha(0.5); b.glow:Hide()
 	b:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square", "ADD")
