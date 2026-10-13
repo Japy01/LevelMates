@@ -59,3 +59,16 @@ B.ShowTab("mates")
 assert(not DB.frame:IsShown(), "Mates: the list, not the dashboard")
 B.ShowTab("home")
 assert(DB.frame:IsShown(), "back on Home")
+
+-- groups on Home: mine Now first (with Withdraw), then the next with a time; "Now" keeps help, gifts and the trainer
+local DBp = ns.Dashboard
+STUB.Receive("LVLM2", C.Encode("lfg", { d = 6, lr = "T", id = "mario777", m = 20 }), "GUILD", "Mario-Testrealm")
+STUB.Advance(31)
+assert(ns.LFG.Post{ d = 5, role = "T" }, "my Now group")
+ns.Dirty("board"); STUB.Advance(0.6)
+assert(DBp.groups.title.text == L.DB_GROUPS, "the panel is Groups: " .. tostring(DBp.groups.title.text))
+local first = DBp.groups.cards[1]
+local withdraw = false
+for _, b in ipairs(first.buttons) do if b:IsShown() and b.text == L.GR_WITHDRAW then withdraw = true end end
+assert(first:IsShown() and first.group.mine and withdraw, "mine first, with Withdraw")
+for _, it in ipairs(DBp.now.items) do assert(not (it:IsShown() and it.text.text:find("Mario: ", 1, true) and it.text.text:find(ns.Dungeons.Name(6), 1, true)), "no group ads in Now") end

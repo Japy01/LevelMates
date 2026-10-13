@@ -328,3 +328,4 @@ L.CAT_d = "Mazmorras"; L.CAT_r = "Bandas"; L.CAT_p = "JcJ"; L.GR_PLAYERS = "%d j
 L.HEAD_GROUPS = "Grupos"; L.SUB_GROUPS = "Ahora, hoy y más adelante; crea uno a la derecha."; L.GR_NOW = "Ahora"; L.GR_HINT_NOW = "Nadie busca grupo ahora mismo. Crea uno a la derecha con Ahora."
 L.GR_CHAT = "Anuncios del chat"; L.GR_HINT_CHAT = "No hay anuncios de grupo en Comercio ni General."; L.GR_FORM = "Crear grupo"; L.GR_PICK = "Elige…"; L.GR_NAME = "Nombre"; L.GR_SIZE = "Tamaño"
 L.DP_GROUPS = "Sus grupos"; L.DP_HINT_GROUPS = "Aún no hay grupos aquí. Crea uno abajo."; L.DP_MANAGE = "Mis partidas: plazas"; L.DP_CREATE = "Crear grupo aquí"
+L.DB_GROUPS = "Grupos"; L.DB_HINT_GROUPS = "Nadie busca grupo y no hay grupos planeados. Crea uno en la sección Grupos."

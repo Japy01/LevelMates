@@ -209,15 +209,18 @@ local function counterRow(parent, i)
 	r:Hide()
 	return r
 end
-function W.GroupCard(parent, withButtons)
+-- compact (Home): narrower places and one button, so it fits a middle column.
+function W.GroupCard(parent, withButtons, compact)
+	local step = compact and 54 or 68
 	local c = CreateFrame("Button", nil, parent)
 	c:SetHeight(W.GROUPCARD_H)
 	c.text = ink(c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
-	c.text:SetPoint("TOPLEFT"); c.text:SetWidth(5 * 68 - 4); c.text:SetJustifyH("LEFT"); c.text:SetWordWrap(false)
+	c.text:SetPoint("TOPLEFT"); c.text:SetWidth(5 * step - 4); c.text:SetJustifyH("LEFT"); c.text:SetWordWrap(false)
 	c.slots = {}
 	for k = 1, 5 do
 		local s = W.Slot(c)
-		s:SetPoint("TOPLEFT", (k - 1) * 68, -16)
+		s:SetPoint("TOPLEFT", (k - 1) * step, -16)
+		if compact then s:SetWidth(step - 2); s.name:SetWidth(step - 6) end
 		s:SetScript("OnClick", function() if c.group and ns.Board.OpenGroupMembers then ns.Board.OpenGroupMembers(c.group) end end)
 		c.slots[k] = s
 	end
@@ -227,7 +230,7 @@ function W.GroupCard(parent, withButtons)
 	for i = 1, 3 do c.counters.rows[i] = counterRow(c.counters, i) end
 	c.counters:Hide()
 	c.buttons = {}
-	if withButtons then for i = 1, 3 do c.buttons[i] = cardButton(c, i) end end
+	if withButtons then for i = 1, (compact and 1 or 3) do c.buttons[i] = cardButton(c, i); if compact then c.buttons[i]:SetWidth(76) end end end
 	c:SetScript("OnClick", function(self) if self.group and ns.Board.OpenGroupMembers then ns.Board.OpenGroupMembers(self.group) end end)
 	function c:Set(g)
 		self.group = g
@@ -279,6 +282,7 @@ function W.GroupCard(parent, withButtons)
 					end)
 				end } }
 			end
+			if compact and g.mine then specs = { specs[2] } end   -- one button: withdraw or cancel (Invite all is in the Groups view)
 			setButtons(self, specs, g.src .. g.id)
 		end
 		self:Show()

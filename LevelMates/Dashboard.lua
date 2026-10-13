@@ -111,7 +111,7 @@ end
 local function buildRuns(p)
 	p.cards = {}
 	for i = 1, DB.RUNS do
-		local c = ns.Widgets.GroupCard(p)
+		local c = ns.Widgets.GroupCard(p, true, true)
 		c:SetPoint("TOPLEFT", PAD, -22 - (i - 1) * 68); c:SetPoint("RIGHT", -PAD, 0)
 		p.cards[i] = c
 	end
@@ -158,7 +158,7 @@ function DB.Build(parent)
 	-- panels
 	DB.me = W.Panel(f, L.DB_ME); buildMe(DB.me)
 	DB.now = W.Panel(f, L.DB_NOW); DB.now:SetHint(L.DB_HINT_NOW); items(DB.now, DB.NOW, true)
-	DB.runs = W.Panel(f, L.DB_RUNS); DB.runs:SetHint(L.DB_HINT_RUNS); buildRuns(DB.runs)
+	DB.runs = W.Panel(f, L.DB_GROUPS); DB.runs:SetHint(L.DB_HINT_GROUPS); buildRuns(DB.runs)
 	DB.groups = DB.runs
 	DB.quests = W.Panel(f, L.DB_QUESTS); DB.quests:SetHint(L.DB_HINT_QUESTS); items(DB.quests, DB.QUESTS, false)
 	DB.where = W.Panel(f, L.DB_WHERE); DB.where:SetHint(L.DB_HINT_WHERE); buildWhere(DB.where)
@@ -257,12 +257,7 @@ local function refreshNow()
 		local zone = zoneName(h.mapId)
 		list[#list + 1] = { text = h.name .. ": " .. h.text .. (zone ~= "" and ("  ·  " .. zone) or ""), button = L.HOME_GO, fn = function() ns.Help.Coming(id) end }
 	end
-	for _, adId in ipairs(ns.LFG.List()) do
-		local a = ns.LFG.ads[adId]
-		if a and a.name ~= ns.Me() then
-			list[#list + 1] = { text = a.name .. ": " .. ns.Dungeons.Name(a.d) .. "  ·  " .. ns.LFG.RolesShort(a.r), button = L.HOME_JOIN, fn = function() ns.DungeonPanel.Open(a.d) end }
-		end
-	end
+	-- (groups looking for people are in the Groups panel below)
 	-- what is for me: an offer of something I wish for, spells waiting at the trainer
 	for _, g in ipairs(ns.Gifts.List()) do
 		if not g.mine and not g.reservedBy and ns.Wishlist.Has(g.id) then

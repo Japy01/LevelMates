@@ -327,3 +327,4 @@ L.CAT_d = "Dungeons"; L.CAT_r = "Raids"; L.CAT_p = "PvP"; L.GR_PLAYERS = "%d pla
 L.HEAD_GROUPS = "Groups"; L.SUB_GROUPS = "Now, today and later; make one on the right."; L.GR_NOW = "Now"; L.GR_HINT_NOW = "Nobody is looking for a group right now. Make one on the right with Now."
 L.GR_CHAT = "Group ads in chat"; L.GR_HINT_CHAT = "No group ads read from Trade or General."; L.GR_FORM = "Create a group"; L.GR_PICK = "Choose…"; L.GR_NAME = "Name"; L.GR_SIZE = "Size"
 L.DP_GROUPS = "Its groups"; L.DP_HINT_GROUPS = "No groups here yet. Create one below."; L.DP_MANAGE = "My runs: places"; L.DP_CREATE = "Create a group here"
+L.DB_GROUPS = "Groups"; L.DB_HINT_GROUPS = "Nobody is looking for a group, and no groups are planned. Make one in the Groups section."
