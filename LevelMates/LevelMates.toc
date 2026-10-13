@@ -68,6 +68,7 @@ Professions.lua
 Recipes.lua
 Gear.lua
 Builds.lua
+Talents.lua
 Macros.lua
 Ask.lua
 Feed.lua

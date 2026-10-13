@@ -9,15 +9,15 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, BU, CA, B, L = ns.Comm, ns.Builds, ns.ChatAds, ns.Board, ns.L
 
--- I1: the code is only mine: not while the talent window shows someone's linked build or another loadout
-local frameConfig, inspecting = 7, false
-PlayerSpellsFrame = { TalentsFrame = { GetLoadoutExportString = function() return "MINE" end, GetConfigID = function() return frameConfig end, IsInspecting = function() return inspecting end } }
-assert(BU.Mine().b == "MINE", "my active loadout")
-inspecting = true
-assert(BU.Mine().b == nil, "never a linked build I am looking at")
-inspecting, frameConfig = false, 8
-assert(BU.Mine().b == nil, "never a loadout that is not the active one")
-frameConfig = 7
+-- I1 (Ruling: replaced): the code is my active loadout's, from the talent API; the game's talent window is never
+-- asked (calling into it taints it, and the game then blocks changing talents)
+local asked = false
+PlayerSpellsFrame = { TalentsFrame = setmetatable({}, { __index = function() asked = true; return function() return "WINDOW" end end }) }
+C_Traits.GetTreeNodes = function() return { 5001 } end
+C_Traits.GetNodeInfo = function(cfg, id) return { ID = id, maxRanks = 1, type = 0, entryIDs = { id }, ranksPurchased = cfg == 7 and 1 or 0, activeRank = cfg == 7 and 1 or 0 } end
+local b = BU.Mine().b
+assert(b and b ~= "WINDOW" and ns.Talents.Decode(b, ns.Talents.ReadMine()).nodes[5001], "my active loadout")
+assert(not asked, "the talent window is never asked")
 
 -- I2: a build without level or spec is not stored; the class is what the roster knows
 STUB.Receive("LVLM2", C.Encode("hb", { l = 24, z = 1421, c = "WARRIOR" }), "GUILD", "Mario-Testrealm")

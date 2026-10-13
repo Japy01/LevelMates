@@ -26,18 +26,20 @@ assert(not C.Validate("tb", { c = "WARRIOR", s = 71, l = 20, p = "1001:9", b = "
 local m = BU.Mine()
 assert(m.c == "WARRIOR" and m.s == 71 and m.l == 20 and m.p == "1001:9,1002:0,1003:0" and m.b == nil, "points per branch, no code yet: " .. tostring(m.p))
 assert(last("tb") and last("tb").p == "1001:9,1002:0,1003:0", "sent with my announce")
--- once the talent window has been open, the game gives the build code
-PlayerSpellsFrame = { TalentsFrame = { GetLoadoutExportString = function() return "BkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+/" end } }
+-- Ruling: the code is made from the talent API (Talents.lua), never asked of the game's window (taint)
+C_Traits.GetTreeNodes = function() return { 5001, 5002 } end
+C_Traits.GetNodeInfo = function(_, id) return { ID = id, maxRanks = 3, type = 0, entryIDs = { id }, ranksPurchased = id == 5001 and 2 or 0, activeRank = id == 5001 and 2 or 0 } end
 spent[1001] = 10
 STUB.Fire("TRAIT_CONFIG_UPDATED", 7); STUB.Advance(6)
-assert(last("tb").p == "1001:10,1002:0,1003:0" and last("tb").b == "BkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+/", "a talent change goes out with the code")
+local myCode = ns.Talents.MyCode()
+assert(myCode and last("tb").p == "1001:10,1002:0,1003:0" and last("tb").b == myCode, "a talent change goes out with the code")
 local n = #STUB.sent
 STUB.Fire("TRAIT_CONFIG_UPDATED", 7); STUB.Advance(6)
 local tbs = 0
 for i = n + 1, #STUB.sent do if C.Decode(STUB.sent[i].msg) == "tb" then tbs = tbs + 1 end end
 assert(tbs == 0, "nothing new, no build sent")
 -- a client that cannot export: no code, never an error
-PlayerSpellsFrame = { TalentsFrame = { GetLoadoutExportString = function() error("treeInfo nil") end } }
+C_Traits.GetNodeInfo = function() error("treeInfo nil") end
 assert(BU.Mine().b == nil, "no code when the game cannot give one")
 
 -- guildmates: only my class is listed

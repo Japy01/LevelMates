@@ -56,18 +56,10 @@ local function points()
 	return table.concat(parts, ",")
 end
 
--- The build code: the game gives it once its talent window has been open this session; never an error.
+-- The build code: made from the talent API (Talents.lua), never by asking the game's talent window (that taints it).
 local function code()
-	local tf = PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame
-	if not (tf and tf.GetLoadoutExportString) then return nil end
-	-- the window exports what it shows: not mine while it shows a linked build or a loadout that is not the active one
-	local okI, inspecting = pcall(function() return tf.IsInspecting and tf:IsInspecting() end)
-	if not okI or inspecting then return nil end
-	local active = select(2, pcall(C_ClassTalents.GetActiveConfigID))
-	local okC, shown = pcall(function() return tf.GetConfigID and tf:GetConfigID() end)
-	if not okC or (shown and active and shown ~= active) then return nil end
-	local ok, s = pcall(tf.GetLoadoutExportString, tf)
-	if ok and type(s) == "string" and #s <= 150 and s:match("^[%w%+/=]+$") then return s end
+	local s = ns.Talents and ns.Talents.MyCode and ns.Talents.MyCode()
+	if type(s) == "string" and #s <= 150 and s:match("^[%w%+/=]+$") then return s end
 end
 
 function BU.Mine()
