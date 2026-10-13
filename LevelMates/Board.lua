@@ -774,13 +774,7 @@ local function SetHeaders()
 		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
 		return
 	end
-	if B.tab == "crafts" then
-		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_PROFESSION)
-		B.headText[4]:SetText(L.COL_RANK); B.headText[5]:SetText(L.COL_SEEN)
-		B.headText[3]:SetText(L.COL_PROGRESS)
-		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
-		return
-	end
+	if B.tab == "crafts" then for i = 1, 5 do B.headText[i]:SetText("") end; return end   -- the crafts view has its own headers
 	if B.tab == "wishes" then
 		B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ITEM)
 		B.headText[4]:SetText(L.COL_KIND); B.headText[5]:SetText(L.COL_SINCE)
@@ -2181,6 +2175,8 @@ for _, e in ipairs({ "LM_GUILDNOTES_CHANGED", "LM_HISTORY_CHANGED", "LM_BANK_CHA
 ns.On("LM_MY_GEAR_CHANGED", function() if B.tab == "home" then ns.Dirty("board") end end)
 local homeFrame = CreateFrame("Frame")
 for _, e in ipairs({ "PLAYER_XP_UPDATE", "UPDATE_EXHAUSTION", "TRAINER_SHOW", "PLAYER_LEVEL_UP", "GET_ITEM_INFO_RECEIVED" }) do homeFrame:RegisterEvent(e) end
-homeFrame:SetScript("OnEvent", function() if B.tab == "home" then ns.Dirty("board") end end)
+homeFrame:SetScript("OnEvent", function(_, event)
+	if B.tab == "home" or (B.tab == "crafts" and event == "GET_ITEM_INFO_RECEIVED") then ns.Dirty("board") end   -- crafts: item names that arrive late
+end)
 ns.Slash("clase", function() B.ShowTab("class") end)
 ns.Slash("class", function() B.ShowTab("class") end)

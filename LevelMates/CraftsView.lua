@@ -32,6 +32,7 @@ function CV.Professions()
 		table.insert(by[c.id].crafters, c)
 		local e = RC.Of(c.name)[c.id]
 		for _, item in ipairs(e and e.items or {}) do by[c.id].items[item] = true end
+		for _, spell in ipairs(e and e.spells or {}) do by[c.id].items["s" .. spell] = true end   -- enchants and the like: a spell, no item
 	end
 	for _, c in ipairs(RC.Crafters()) do   -- recipes arrived, ranks not (yet): still a crafter
 		if not by[c.id] then by[c.id] = { id = c.id, crafters = {}, items = {} }; order[#order + 1] = c.id end
@@ -40,6 +41,7 @@ function CV.Professions()
 		if not listed then table.insert(by[c.id].crafters, c) end
 		local e = RC.Of(c.name)[c.id]
 		for _, item in ipairs(e and e.items or {}) do by[c.id].items[item] = true end
+		for _, spell in ipairs(e and e.spells or {}) do by[c.id].items["s" .. spell] = true end
 	end
 	for _, p in pairs(by) do table.sort(p.crafters, function(x, y) if (x.rank or 0) ~= (y.rank or 0) then return (x.rank or 0) > (y.rank or 0) end; return x.name < y.name end) end
 	local out = {}
@@ -146,7 +148,11 @@ function CV.Layout()
 	CV.right:ClearAllPoints(); CV.right:SetPoint("TOPLEFT", lw + CV.GAP, 0); CV.right:SetSize(w - lw - CV.GAP, h)
 end
 
-function CV.Select(id) CV.prof, CV.crafter, CV.page = id, nil, 1; CV.Refresh() end
+function CV.Select(id)
+	CV.prof, CV.crafter, CV.page, CV.query = id, nil, 1, ""
+	if CV.search then CV.search:SetText("") end   -- a profession's click ends a search
+	CV.Refresh()
+end
 
 ------------------------------------------------------------------ fill
 local function ask(owner, name, item)
@@ -169,6 +175,7 @@ local function setRows(list, fill)
 	CV.pageText:SetText(pages > 1 and string.format("%d/%d", CV.page, pages) or "")
 end
 local function plainRow(r, showBar)
+	r.icon:SetTexCoord(0, 1, 0, 1)   -- a class circle may have cropped it before
 	r.barBg:SetShown(showBar); r.bar:SetShown(showBar); r.rank:SetShown(showBar); r.read:SetShown(showBar); r.who:SetShown(not showBar)
 end
 
@@ -192,8 +199,10 @@ function CV.Refresh()
 			it.bg:SetShown(p.id == CV.prof)
 			it:Show()
 		else it:Hide() end
-		if p and p.id == CV.prof then current = p end
 	end
+	for _, p in ipairs(profs) do if p.id == CV.prof then current = p end end
+	if not current and profs[1] then CV.prof, CV.crafter, current = profs[1].id, nil, profs[1] end   -- the chosen one is gone
+	for _, it in ipairs(CV.profs.items) do if it:IsShown() then it.bg:SetShown(it.prof == CV.prof) end end
 	CV.left:SetEmpty(#profs == 0); CV.left:SetHint(L.CRAFTS_EMPTY)
 	local q = strtrim(CV.query or "")
 	if q ~= "" and (#q >= 3 or tonumber(q) or q:find("item:", 1, true)) then
@@ -227,15 +236,25 @@ function CV.Refresh()
 		local items = {}
 		for _, item in ipairs(e and e.items or {}) do items[#items + 1] = item end
 		table.sort(items, function(a, b) return itemName(a) < itemName(b) end)
+		local spells = {}
+		for _, spell in ipairs(e and e.spells or {}) do spells[#spells + 1] = { spell = spell } end
+		for _, sp in ipairs(spells) do items[#items + 1] = sp end   -- enchants and the like, after the items
 		CV.icon:SetTexture(P.Icon(current.id)); CV.title:SetText(c.name); CV.title:SetTextColor(1, 0.82, 0)
 		CV.sub:SetText(string.format(L.CV_CRAFTER_SUB, P.Name(current.id), c.rank or 0, c.max or 0, e and ago(e.t) or L.CV_NOT_READ))
 		CV.big:SetText(tostring(#items)); CV.bigLabel:SetText(L.CV_RECIPES_LOWER); CV.colName:SetText(L.CV_ITEM)
 		setRows(items, function(r, item)
 			plainRow(r, false)
-			r.icon:SetTexture(itemIcon(item)); r.name:SetText(itemName(item)); r.name:SetTextColor(ns.Skin.Ink(itemColor(item))); r.who:SetText("")
+			r.who:SetText("")
+			if type(item) == "table" then   -- a spell recipe: its name and icon from the game
+				local info = C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(item.spell)
+				r.icon:SetTexture(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
+				r.name:SetText(info and info.name or ("#" .. item.spell)); r.name:SetTextColor(ns.Skin.Ink(1, 1, 1))
+				return
+			end
+			r.icon:SetTexture(itemIcon(item)); r.name:SetText(itemName(item)); r.name:SetTextColor(ns.Skin.Ink(itemColor(item)))
 			if c.name ~= ns.Me() then r.fn = function(self) ask(self, c.name, item) end end
 		end)
-		if #items == 0 then CV.right:SetHint(string.format(L.CV_NO_RECIPES, c.name)) end
+		if #items == 0 then CV.right:SetHint(string.format(e and L.CV_NONE_HERE or L.CV_NO_RECIPES, c.name)) end
 		CV.right:SetEmpty(#items == 0)
 		ns.Skin.InkPass()
 		return

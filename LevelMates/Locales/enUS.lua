@@ -333,3 +333,4 @@ L.CV_PROFESSIONS = "Professions"; L.CV_NAME = "Name"; L.CV_WHO = "Who"; L.CV_REC
 L.CV_SEARCH = "Item name, link or number"; L.CV_BACK = "Back"; L.CV_PROF_SUB = "%d crafters · %d recipes"; L.CV_CRAFTERS = "crafters"; L.CV_RECIPES_LOWER = "recipes"
 L.CV_CRAFTER_SUB = "%s %d/%d · read %s"; L.CV_NOT_READ = "not read yet"; L.CV_YOU = "you"; L.CV_ITEM = "Item"; L.CV_FOUND = "Who crafts it"; L.CV_FOUND_N = "%d items found"; L.CV_ITEMS = "items"; L.CV_OFFLINE = "offline"
 L.CV_NO_RECIPES = "%s has not opened this profession's window with LevelMates yet: their recipes show once they do."
+L.CV_NONE_HERE = "%s has no recipes to list in this profession (gathering ones have none)."

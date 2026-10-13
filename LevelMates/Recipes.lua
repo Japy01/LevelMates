@@ -151,7 +151,7 @@ end
 local index   -- item id -> { { name, line } }, rebuilt when something changed
 local building
 local function changed() index = nil; ns.Fire("LM_PROFESSIONS_CHANGED") end
-ns.On("LM_RECIPES_CHANGED", function() index = nil end)
+ns.On("LM_RECIPES_CHANGED", function() index = nil; ns.Dirty("board") end)
 
 -- A rank the character's level cannot have yet (another's window read by mistake, a broken client): ignored.
 local function plausible(name, rank)
@@ -213,7 +213,9 @@ function RC.Crafters()
 	local out, names = {}, {}
 	for name in pairs(theirs()) do names[#names + 1] = name end
 	for _, name in ipairs(names) do
-		for id, e in pairs(RC.Of(name)) do out[#out + 1] = { name = name, id = id, rank = e.r, max = e.m, t = e.t } end
+		if R.IsGuildmate(name) then   -- someone who left the guild is not a crafter here
+			for id, e in pairs(RC.Of(name)) do out[#out + 1] = { name = name, id = id, rank = e.r, max = e.m, t = e.t } end
+		end
 	end
 	return out
 end

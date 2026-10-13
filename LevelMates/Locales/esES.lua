@@ -334,3 +334,4 @@ L.CV_PROFESSIONS = "Profesiones"; L.CV_NAME = "Nombre"; L.CV_WHO = "Quién"; L.C
 L.CV_SEARCH = "Nombre, enlace o número del objeto"; L.CV_BACK = "Volver"; L.CV_PROF_SUB = "%d artesanos · %d recetas"; L.CV_CRAFTERS = "artesanos"; L.CV_RECIPES_LOWER = "recetas"
 L.CV_CRAFTER_SUB = "%s %d/%d · leído %s"; L.CV_NOT_READ = "sin leer aún"; L.CV_YOU = "tú"; L.CV_ITEM = "Objeto"; L.CV_FOUND = "Quién lo fabrica"; L.CV_FOUND_N = "%d objetos encontrados"; L.CV_ITEMS = "objetos"; L.CV_OFFLINE = "desconectado"
 L.CV_NO_RECIPES = "%s aún no ha abierto la ventana de esta profesión con LevelMates: sus recetas salen cuando lo haga."
+L.CV_NONE_HERE = "%s no tiene recetas que listar en esta profesión (las de recolección no tienen)."
