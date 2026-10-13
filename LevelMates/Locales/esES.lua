@@ -317,3 +317,6 @@ L.DING_TITLE = "¡Nivel %d!"; L.DING_TOOK = "Te llevó %s"; L.DING_RATE = "%d de
 L.OPT_DING = "Cartel al subir de nivel"; L.OPT_DING_TT = "Unos segundos en el centro de la pantalla: el nuevo nivel, lo que tardaste, tu XP por hora y tu puesto en la hermandad. Un clic lo cierra."
 L.YOU = "tú"; L.DB_MY_CARD = "Mi ficha"; L.DB_MY_GEAR = "Mi equipo"
 L.DISCORD_UNSURE = "El juego no deja a los addons comprobar el enlace con Discord: se intenta al publicar. Si no llega, usa Copiar para Discord."
+L.KIND_d = "Mazmorra"; L.KIND_r = "Banda"; L.KIND_p = "JcJ"; L.KIND_o = "Otro"
+L.ACT_MC = "Núcleo de Magma"; L.ACT_ONY = "Guarida de Onyxia"; L.ACT_ZG = "Zul'Gurub"; L.ACT_BWL = "Guarida Alanegra"; L.ACT_AQ20 = "Ruinas de Ahn'Qiraj"; L.ACT_AQ40 = "Templo de Ahn'Qiraj"; L.ACT_NAXX = "Naxxramas"; L.ACT_RAID_FREE = "Banda (con nombre)"
+L.ACT_WSG = "Garganta Grito de Guerra"; L.ACT_AB = "Cuenca de Arathi"; L.ACT_AV = "Valle de Alterac"; L.ACT_WPVP = "JcJ de mundo"; L.ACT_OTHER = "Otro"

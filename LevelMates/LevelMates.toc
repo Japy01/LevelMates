@@ -19,6 +19,7 @@ Skin.lua
 Widgets.lua
 Tray.lua
 Dungeons.lua
+Activities.lua
 Comm.lua
 Roster.lua
 Sync.lua

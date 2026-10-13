@@ -316,3 +316,6 @@ L.DING_TITLE = "Level %d!"; L.DING_TOOK = "It took %s"; L.DING_RATE = "%d XP per
 L.OPT_DING = "Banner when you level up"; L.OPT_DING_TT = "A few seconds in the middle of the screen: the new level, how long it took, your XP per hour and your place in the guild. A click closes it."
 L.YOU = "you"; L.DB_MY_CARD = "My card"; L.DB_MY_GEAR = "My gear"
 L.DISCORD_UNSURE = "The game does not let addons check the Discord link: it is tried when you publish. If it does not arrive, use Copy for Discord."
+L.KIND_d = "Dungeon"; L.KIND_r = "Raid"; L.KIND_p = "PvP"; L.KIND_o = "Other"
+L.ACT_MC = "Molten Core"; L.ACT_ONY = "Onyxia's Lair"; L.ACT_ZG = "Zul'Gurub"; L.ACT_BWL = "Blackwing Lair"; L.ACT_AQ20 = "Ruins of Ahn'Qiraj"; L.ACT_AQ40 = "Temple of Ahn'Qiraj"; L.ACT_NAXX = "Naxxramas"; L.ACT_RAID_FREE = "Raid (named)"
+L.ACT_WSG = "Warsong Gulch"; L.ACT_AB = "Arathi Basin"; L.ACT_AV = "Alterac Valley"; L.ACT_WPVP = "World PvP"; L.ACT_OTHER = "Other"
