@@ -386,7 +386,7 @@ local function Build()
 		local b = ns.Skin.Tab(f, "LevelMatesBoardTab" .. i, TAB_ICON[key] == "banner" and ns.Skin.Banner() or TAB_ICON[key], L[TAB_LABELS[key]])
 		b:SetID(i)
 		-- in the top band, right of the portrait, as the spellbook's
-		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 10, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", f.gameFrame and 66 or 16, -24) end
+		if prevTab then b:SetPoint("LEFT", prevTab, "RIGHT", 6, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", f.gameFrame and 66 or 16, -24) end
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.tabs[key], tabList[i], prevTab = b, b, b
 	end

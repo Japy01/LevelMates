@@ -195,14 +195,27 @@ end
 function SK.Button(parent, name) local b = CreateFrame("Button", name, parent, "UIPanelButtonTemplate"); b.lmKeep = true; return b end
 
 -- A main tab: a square icon (as the spellbook's), its name in a tooltip, lit when selected.
+-- A section button in the top band: the section's icon and its name, on a dark plate with a thin gold edge; the chosen
+-- one lit (bright edge, white name, a soft glow). As wide as its name.
 function SK.Tab(parent, name, icon, label)
-	local b = CreateFrame("Button", name, parent)
+	local b = CreateFrame("Button", name, parent, "BackdropTemplate")
 	b.skinTab, b.label = true, label
-	b:SetSize(36, 36)
-	b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); b.icon:SetTexture(icon); b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-	b.frame = b:CreateTexture(nil, "OVERLAY"); b.frame:SetAtlas("spellbook-Tab-Frame-C60"); b.frame:SetPoint("TOPLEFT", -6, 6); b.frame:SetPoint("BOTTOMRIGHT", 6, -6)
-	b.glow = b:CreateTexture(nil, "OVERLAY", nil, 1); b.glow:SetTexture("Interface\\Buttons\\CheckButtonHilight"); b.glow:SetBlendMode("ADD"); b.glow:SetAllPoints(); b.glow:Hide()
-	b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+	b:SetHeight(30)
+	if b.SetBackdrop then
+		b:SetBackdrop({ bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", edgeSize = 12, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
+		b:SetBackdropColor(0.10, 0.07, 0.03, 0.9)
+	end
+	b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(22, 22); b.icon:SetPoint("LEFT", 5, 0)
+	b.icon:SetTexture(icon); b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	b.text:SetPoint("LEFT", b.icon, "RIGHT", 6, 0); b.text:SetText(label or "")
+	b.text.lmKeep = true   -- on the dark band: never inked
+	local w = b.text.GetStringWidth and b.text:GetStringWidth() or 0
+	if not w or w <= 0 then w = #tostring(label or "") * 7 end
+	b:SetWidth(math.floor(5 + 22 + 6 + w + 12))
+	b.glow = b:CreateTexture(nil, "BACKGROUND", nil, 1); b.glow:SetTexture("Interface/Buttons/CheckButtonHilight"); b.glow:SetBlendMode("ADD")
+	b.glow:SetPoint("TOPLEFT", 3, -3); b.glow:SetPoint("BOTTOMRIGHT", -3, 3); b.glow:SetAlpha(0.5); b.glow:Hide()
+	b:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square", "ADD")
 	b:SetScript("OnEnter", function(self)
 		if not GameTooltip then return end
 		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM"); GameTooltip:AddLine(self.label, 1, 1, 1); GameTooltip:Show()
@@ -211,9 +224,13 @@ function SK.Tab(parent, name, icon, label)
 	return b
 end
 function SK.SelectTab(b, selected)
+	b.selected = selected and true or false
 	b.glow:SetShown(selected)
-	b.icon:SetDesaturated(false)   -- always in colour; the others a little dimmer
-	local v = selected and 1 or 0.72
+	if b.SetBackdropBorderColor then
+		if selected then b:SetBackdropBorderColor(1, 0.82, 0, 1) else b:SetBackdropBorderColor(0.55, 0.42, 0.2, 0.9) end
+	end
+	if selected then b.text:SetTextColor(1, 1, 1) else b.text:SetTextColor(1, 0.82, 0) end
+	local v = selected and 1 or 0.8
 	b.icon:SetVertexColor(v, v, v)
 	b:SetEnabled(not selected)
 end
