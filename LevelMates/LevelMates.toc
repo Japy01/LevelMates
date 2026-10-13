@@ -31,6 +31,7 @@ Board.lua
 Dashboard.lua
 RunsView.lua
 LevelBar.lua
+Ding.lua
 GuildMap.lua
 Recruit.lua
 Inactive.lua

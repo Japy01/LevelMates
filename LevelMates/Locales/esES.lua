@@ -313,3 +313,5 @@ L.TRAY_TITLE = "Avisos"; L.TRAY_GO = "Ir"; L.TRAY_EMPTY = "No hay avisos de las 
 L.OPT_STRIP = "Tira bajo el minimapa"; L.OPT_STRIP_TT = "El último aviso 10 segundos bajo el minimapa (después del combate, no durante). Un clic abre los avisos."
 L.LEVELBAR_LINE = "Nv %d · %d%% (+%d%% desc.) · %s XP/h · subir en %s · %s en el nivel · %d muertes"; L.LEVELBAR_LOCK = "Bloquear"; L.LEVELBAR_UNLOCK = "Desbloquear"; L.LEVELBAR_HIDE = "Ocultar"
 L.OPT_LEVELBAR = "Barra de nivel"; L.OPT_LEVELBAR_TT = "Una barrita con tu XP por hora, el tiempo para subir, el tiempo en el nivel y las muertes (también /lm barra). Clic derecho para bloquearla u ocultarla."
+L.DING_TITLE = "¡Nivel %d!"; L.DING_TOOK = "Te llevó %s"; L.DING_RATE = "%d de XP por hora"; L.DING_RANK = "Puesto %d de la hermandad"
+L.OPT_DING = "Cartel al subir de nivel"; L.OPT_DING_TT = "Unos segundos en el centro de la pantalla: el nuevo nivel, lo que tardaste, tu XP por hora y tu puesto en la hermandad. Un clic lo cierra."
