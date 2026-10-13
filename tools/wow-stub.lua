@@ -61,6 +61,7 @@ function Region:GetText() return self.text end
 function Region:SetTextColor(r, g, b) self.color = { r, g, b } end
 function Region:SetAllPoints() end
 function Region:SetEnabled(v) self.enabled = v and true or false end
+function Region:IsEnabled() return self.enabled ~= false end
 function Region:SetAutoFocus() end
 function Region:SetMaxLetters() end
 function Region:SetTexCoord(l, r, t, b) self.texcoord = { l, r, t, b } end

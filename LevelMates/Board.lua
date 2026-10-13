@@ -185,6 +185,10 @@ local function Build()
 	local dash = ns.Dashboard.Build(f)
 	dash:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); dash:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + 30)
 	B.dashboard = dash
+	-- Groups → Runs: the cards and the form, over the rows' place too.
+	local runs = ns.RunsView.Build(f)
+	runs:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); runs:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + 30)
+	B.runsView = runs
 
 	-- "Looking for a partner" (guildmates tab), in the header under the search box.
 	local pal = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
@@ -1794,7 +1798,7 @@ local function RefreshTabs()
 	B.palCheck:SetChecked(ns.Partner and ns.Partner.IsOn() or false)
 	B.lfgButton:SetShown(lfg and not B.lfgQuests)   -- the Quests view uses that corner
 	B.lfgCalendarButton:SetShown(lfg)
-	B.lfgCalendarButton:SetText(B.lfgCalendar and L.BTN_CARDS or L.BTN_CALENDAR)
+	B.lfgCalendarButton:SetText(B.lfgCalendar and L.BTN_CARDS or L.BTN_RUNS)
 	B.togetherButton:SetShown(lfg)
 	B.togetherButton:SetText(B.lfgTogether and L.BTN_CARDS or L.BTN_TOGETHER)
 	B.memberViewButton:SetShown(B.tab == "members"); B.memberViewButton:SetText(L["MEMBERS_VIEW_" .. B.membersView:upper()])
@@ -1862,6 +1866,7 @@ function B.Refresh()
 		list, pages = Page(all)
 	else
 		if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then list = GridVisible()
+		elseif lfg and B.lfgCalendar then list = {}   -- the runs view draws it
 		else list, pages = Page(lfg and (B.lfgTogether and TogetherVisible() or B.lfgQuests and QuestsVisible() or CalendarVisible()) or Visible()) end
 	end
 	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or home and B.HCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
@@ -1869,7 +1874,7 @@ function B.Refresh()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
 	B.subtitle:SetText(journal and ns.Journal.PaceText() or feed and B.feedDeaths and string.format(L.FEED_CEMETERY_SUB, B.feedDeathCount or 0) or L["SUB_" .. hk])
-	if lfg and B.lfgCalendar then B.heading:SetText(L.HEAD_CALENDAR); B.subtitle:SetText(L.SUB_CALENDAR) end
+	if lfg and B.lfgCalendar then B.heading:SetText(L.HEAD_RUNS); B.subtitle:SetText(L.SUB_RUNS) end
 	if lfg and B.lfgTogether then B.heading:SetText(L.HEAD_TOGETHER); B.subtitle:SetText(L.SUB_TOGETHER) end
 	if lfg and B.lfgQuests then B.heading:SetText(L.HEAD_QUESTS); B.subtitle:SetText(L.SUB_QUESTS) end
 	if B.tab == "bank" then   -- whose look at the bank, and when
@@ -1883,7 +1888,8 @@ function B.Refresh()
 	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
-	if home then rows = ROWS end   -- the dashboard needs the full page
+	local runsView = lfg and B.lfgCalendar
+	if home or runsView then rows = ROWS end   -- the dashboard and the runs view need the full page
 	if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
 	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
@@ -1924,10 +1930,12 @@ function B.Refresh()
 		else emptyText = L.EMPTY end
 	end
 	if recruit then emptyText = B.recruitView == "inactive" and #list == 0 and L.INACTIVE_EMPTY or "" end   -- the panel fills this tab
-	if home then emptyText = "" end
-	B.colStrip:SetShown(not home)
+	if home or runsView then emptyText = "" end
+	B.colStrip:SetShown(not (home or runsView))
 	B.dashboard:SetShown(home)
+	B.runsView:SetShown(runsView and true or false)
 	if home then ns.Dashboard.Refresh() end
+	if runsView then ns.RunsView.Refresh() end
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
 	ns.Skin.InkPass()   -- what this page wrote, in ink

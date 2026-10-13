@@ -28,6 +28,7 @@ Cheers.lua
 Settings.lua
 Board.lua
 Dashboard.lua
+RunsView.lua
 GuildMap.lua
 Recruit.lua
 Inactive.lua

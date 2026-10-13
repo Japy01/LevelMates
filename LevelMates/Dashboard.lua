@@ -104,20 +104,8 @@ end
 local function buildRuns(p)
 	p.cards = {}
 	for i = 1, DB.RUNS do
-		local c = CreateFrame("Button", nil, p)
-		c:SetHeight(64)
+		local c = ns.Widgets.RunCard(p)
 		c:SetPoint("TOPLEFT", PAD, -22 - (i - 1) * 68); c:SetPoint("RIGHT", -PAD, 0)
-		c.text = ink(c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
-		c.text:SetPoint("TOPLEFT"); c.text:SetPoint("RIGHT"); c.text:SetJustifyH("LEFT"); c.text:SetWordWrap(false)
-		c.slots = {}
-		for k = 1, 5 do
-			local s = ns.Widgets.Slot(c)
-			s:SetPoint("TOPLEFT", (k - 1) * 68, -16)
-			s:SetScript("OnClick", function() if c.meet then ns.Board.OpenMeetMenu(c.meet) end end)
-			c.slots[k] = s
-		end
-		c:SetScript("OnClick", function(self) if self.meet then ns.Board.OpenMeetMenu(self.meet) end end)
-		c:Hide()
 		p.cards[i] = c
 	end
 end
@@ -287,26 +275,10 @@ local function refreshNow()
 	DB.now:SetHint(alone and L.HOME_ALONE or L.DB_HINT_NOW)   -- alone: how to bring the guild in, the button under it
 end
 
-local SLOT_ORDER = { { "T", 1 }, { "H", 1 }, { "D", 1 }, { "D", 2 }, { "D", 3 } }
 local function refreshRuns()
 	local M, nowMin, list = ns.Meetups, ns.Meetups.Now(), {}
 	for _, m in ipairs(M.List()) do if m.at >= nowMin - 30 then list[#list + 1] = m end end
-	for i, c in ipairs(DB.runs.cards) do
-		local m = list[i]
-		c.meet = m
-		if m then
-			c.text:SetText(M.When(m) .. "  ·  " .. ns.Dungeons.Name(m.d) .. "  ·  " .. (ns.ShortName and ns.ShortName(m.by) or m.by))
-			local slots = M.Slots(m)
-			for k, s in ipairs(c.slots) do
-				local role, n = SLOT_ORDER[k][1], SLOT_ORDER[k][2]
-				local who = slots[role][n]
-				s:Set(role, who and (ns.ShortName and ns.ShortName(who) or who), who and classOf(who))
-			end
-			c:Show()
-		else
-			c:Hide()
-		end
-	end
+	for i, c in ipairs(DB.runs.cards) do c:Set(list[i]) end
 	DB.runs:SetEmpty(#list == 0)
 	DB.runs:SetNote(#list > 0 and string.format(L.DB_NEXT, #list) or "")
 end

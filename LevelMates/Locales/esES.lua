@@ -305,3 +305,7 @@ L.DB_HINT_NOW = "Nadie pide ayuda ni grupo ahora mismo. Pide ayuda o anuncia un 
 L.DB_HINT_QUESTS = "Nadie busca ayuda con una misión. Alt+clic en una misión de tu registro para anunciarla."; L.DB_HINT_WHERE = "No hay nadie más conectado con LevelMates."; L.DB_HINT_WALL = "Aún no hay nada en el muro esta semana."
 L.DB_INVITE = "Copiar una invitación"; L.DB_STAT_LEVEL = "nivel de hermandad"; L.DB_STAT_ONLINE = "conectados"; L.DB_STAT_ILVL = "mi nivel de objeto"
 L.DB_LEVEL_CLASS = "Nivel %d %s"; L.DB_XP = "XP %d%%  ·  descansada %d%%"; L.DB_GEAR = "Equipo"; L.DB_WEEK = "Esta semana: %d puntos"; L.DB_NEXT = "%d próximas"; L.DB_SOMEWHERE = "En algún sitio"
+L.BTN_RUNS = "Partidas"; L.HEAD_RUNS = "Partidas"; L.SUB_RUNS = "Hoy y mañana en tarjetas, el resto de la semana debajo; crea una a la derecha."
+L.RUNS_SOON = "Hoy y mañana"; L.RUNS_LATER = "Más adelante esta semana"; L.RUNS_FORM = "Crear partida"; L.RUNS_PICK_DUNGEON = "Elige mazmorra"; L.RUNS_PUBLISH = "Publicar"; L.RUNS_MORE = "+%d más"
+L.RUNS_HINT_SOON = "No hay partidas hoy ni mañana. Crea una a la derecha."; L.RUNS_HINT_LATER = "Nada más planeado esta semana."
+L.RUN_JOIN = "Unirme"; L.RUN_LEAVE = "Salir"; L.RUN_INVITE_ALL = "Invitar a todos"

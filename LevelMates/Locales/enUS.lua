@@ -304,3 +304,7 @@ L.DB_HINT_NOW = "Nobody needs help or a group right now. Ask for help or post a 
 L.DB_HINT_QUESTS = "Nobody looks for help with a quest. Alt+click a quest in your log to post it."; L.DB_HINT_WHERE = "Nobody else is online with LevelMates."; L.DB_HINT_WALL = "Nothing on the wall this week yet."
 L.DB_INVITE = "Copy an invite"; L.DB_STAT_LEVEL = "guild level"; L.DB_STAT_ONLINE = "online"; L.DB_STAT_ILVL = "my item level"
 L.DB_LEVEL_CLASS = "Level %d %s"; L.DB_XP = "XP %d%%  ·  rested %d%%"; L.DB_GEAR = "Gear"; L.DB_WEEK = "This week: %d points"; L.DB_NEXT = "%d next"; L.DB_SOMEWHERE = "Somewhere"
+L.BTN_RUNS = "Runs"; L.HEAD_RUNS = "Runs"; L.SUB_RUNS = "Today and tomorrow as cards, the rest of the week below; set one up on the right."
+L.RUNS_SOON = "Today and tomorrow"; L.RUNS_LATER = "Later this week"; L.RUNS_FORM = "Create a run"; L.RUNS_PICK_DUNGEON = "Choose a dungeon"; L.RUNS_PUBLISH = "Publish"; L.RUNS_MORE = "+%d more"
+L.RUNS_HINT_SOON = "No runs today or tomorrow. Set one up on the right."; L.RUNS_HINT_LATER = "Nothing planned later this week."
+L.RUN_JOIN = "Join"; L.RUN_LEAVE = "Leave"; L.RUN_INVITE_ALL = "Invite all"

@@ -8,27 +8,31 @@ M.AddSample("Ana", 4, 24 * 60, {})
 M.AddSample("Luis", 6, 9 * 24 * 60, {})   -- more than a week away
 
 B.Toggle(); B.ShowTab("lfg")
-assert(B.lfgCalendarButton and B.lfgCalendarButton:IsShown() and B.lfgCalendarButton.text == L.BTN_CALENDAR, "a Calendar button on the Dungeons tab")
+assert(B.lfgCalendarButton and B.lfgCalendarButton:IsShown() and B.lfgCalendarButton.text == L.BTN_RUNS, "a Runs button on the Dungeons tab")
 B.lfgCalendarButton.scripts.OnClick(B.lfgCalendarButton)
 for _, c in ipairs(B.cards) do assert(not c:IsShown(), "no cards in the calendar") end
-local rows = {}
-for _, r in ipairs(B.rows) do if r.button:IsShown() then rows[#rows + 1] = r end end
-assert(#rows == 4, "two days, a meetup each, the far one left out: " .. #rows)
-assert(rows[1].button.meetHeader and rows[2].button.meet and rows[2].zone.text:find(ns.Dungeons.Name(5), 1, true) and rows[2].zone.text:find("Mario", 1, true), "a day, then its meetup")
-assert(rows[2].group.text == "2", "who goes: Mario and Ana")
-assert(B.heading.text == L.HEAD_CALENDAR and B.lfgCalendarButton.text == L.BTN_CARDS, "the calendar heading; the button goes back")
+local RV = ns.RunsView
+local shown = {}
+for _, c in ipairs(RV.cards) do if c:IsShown() then shown[#shown + 1] = c end end
+assert(#shown == 2, "today and tomorrow, the far one left out: " .. #shown)
+local card = shown[1]
+assert(card.meet.by == "Mario" and card.text.text:find(ns.Dungeons.Name(5), 1, true), "Mario's run first")
+assert(ns.Meetups.Count(card.meet) == 2, "who goes: Mario and Ana")
+assert(B.heading.text == L.HEAD_RUNS and B.lfgCalendarButton.text == L.BTN_CARDS, "the runs heading; the button goes back")
+local rows = { nil, { button = card } }
 
 -- a click: join with a role, leave, cancel mine
 local made = {}
 MenuUtil.CreateContextMenu = function(owner, fn) made = {}; local root = { CreateTitle = function() end, CreateButton = function(_, text, f) made[#made + 1] = { text = text, fn = f } end }; fn(owner, root) end
-rows[2].button.scripts.OnClick(rows[2].button, "LeftButton")
+
+card.scripts.OnClick(card, "LeftButton")
 local when = M.When(rows[2].button.meet)
 local join
 for _, m in ipairs(made) do if m.text == string.format(L.MEET_JOIN, when, L.ROLE_T) then join = m end end
 assert(join, "join as tank")
 join.fn()
 assert(M.MyRole(rows[2].button.meet.id) == "T", "joined")
-rows[2].button.scripts.OnClick(rows[2].button, "LeftButton")
+card.scripts.OnClick(card, "LeftButton")
 assert(made[1].text == string.format(L.MEET_LEAVE, when), "now: leave")
 
 -- back to the cards
@@ -38,4 +42,4 @@ for _, c in ipairs(B.cards) do if c:IsShown() then cards = cards + 1 end end
 assert(cards == 14, "the cards again")
 M.RemoveSamples()
 B.lfgCalendarButton.scripts.OnClick(B.lfgCalendarButton)
-assert(B.frame.empty.text == L.CAL_EMPTY, "nothing planned")
+assert(RV.soon.hint:IsShown() and RV.later.hint:IsShown(), "nothing planned: the hints")
