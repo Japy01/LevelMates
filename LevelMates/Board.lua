@@ -161,6 +161,21 @@ local function Build()
 	fb:Hide()
 	B.feedback = fb
 
+	-- Pills right of the title: mates online (click: Mates), Discord linked, how many still run 0.3.
+	local W = ns.Widgets
+	local titleFs = f.TitleContainer and f.TitleContainer.TitleText or f.TitleText
+	B.pills = { online = W.Pill(f), discord = W.Pill(f), legacy = W.Pill(f) }
+	local order = { B.pills.online, B.pills.discord, B.pills.legacy }
+	for i, p in ipairs(order) do
+		p:SetFrameLevel((f:GetFrameLevel() or 1) + 10)
+		if i == 1 then
+			if titleFs then p:SetPoint("LEFT", titleFs, "RIGHT", 12, 0) else p:SetPoint("TOP", f, "TOP", 140, -6) end
+		else p:SetPoint("LEFT", order[i - 1], "RIGHT", 6, 0) end
+		p:Hide()
+	end
+	B.pills.online:SetScript("OnClick", function() B.ShowTab("mates") end)
+	B.pills.discord:Set(L.PILL_DISCORD)
+
 	-- "Looking for a partner" (guildmates tab), in the header under the search box.
 	local pal = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
 	pal:SetSize(20, 20); pal:SetPoint("TOPRIGHT", -(B.MARGIN + 130), -(insetTop + 30))   -- ends above the divider
@@ -606,6 +621,18 @@ function B.TitleString()
 	local guild = GetGuildInfo and GetGuildInfo("player")
 	local base = (guild and guild ~= "") and (L.BOARD_TITLE .. " - " .. guild) or L.BOARD_TITLE
 	return string.format("%s (%d)", base, #R.List())
+end
+
+-- The pills follow what they count; each hides when it has nothing to say.
+function B.UpdatePills()
+	local p = B.pills
+	if not p then return end
+	p.online:Set(string.format(L.PILL_ONLINE, #R.List())); p.online:Show()
+	p.discord:SetShown(ns.Discord and ns.Discord.Available() and true or false)
+	local old = 0
+	for _ in pairs(R.legacy or {}) do old = old + 1 end
+	if old > 0 then p.legacy:Set(string.format(L.PILL_OLD, old)) end
+	p.legacy:SetShown(old > 0)
 end
 
 function B.SetTitle(text)
@@ -1784,6 +1811,7 @@ end
 
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
+	B.UpdatePills()
 	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "feed"; ns.char.boardTab = "feed"; ns.char.guildSub = "feed" end   -- members: the wall, never stuck
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
 	local class, home = B.tab == "class", B.tab == "home"

@@ -298,3 +298,4 @@ L.OPT_GEAR = "Share my gear"; L.OPT_GEAR_TT = "Your equipped items, their item l
 L.GEAR_LINE = "Item level %d (%d/17)"; L.GEAR_BUTTON = "Gear"; L.GEAR_ILVL = "Item level %d"
 L.CONFIRM_SURE = "Are you sure?"
 L.CONFIRM_RUN = "Cancel this run? Everyone who joined is told."; L.CONFIRM_QUEST = "Withdraw your post for this quest?"; L.CONFIRM_GOAL = "Delete this guild goal?"; L.CONFIRM_WISH = "Remove this wish?"; L.CONFIRM_OFFER = "Remove this offer from the market?"
+L.PILL_ONLINE = "|TInterface\\FriendsFrame\\StatusIcon-Online:12|t %d online"; L.PILL_DISCORD = "Discord linked"; L.PILL_OLD = "On 0.3: %d"

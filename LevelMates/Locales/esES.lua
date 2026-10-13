@@ -299,3 +299,4 @@ L.OPT_GEAR = "Compartir mi equipo"; L.OPT_GEAR_TT = "Los objetos que llevas, su 
 L.GEAR_LINE = "Nivel de objeto %d (%d/17)"; L.GEAR_BUTTON = "Equipo"; L.GEAR_ILVL = "Nivel de objeto %d"
 L.CONFIRM_SURE = "¿Seguro?"
 L.CONFIRM_RUN = "¿Cancelar esta partida? Se avisa a quien se apuntó."; L.CONFIRM_QUEST = "¿Retirar tu anuncio de esta misión?"; L.CONFIRM_GOAL = "¿Borrar esta meta de la hermandad?"; L.CONFIRM_WISH = "¿Quitar este deseo?"; L.CONFIRM_OFFER = "¿Quitar esta oferta del mercadillo?"
+L.PILL_ONLINE = "|TInterface\\FriendsFrame\\StatusIcon-Online:12|t %d conectados"; L.PILL_DISCORD = "Discord enlazado"; L.PILL_OLD = "Con la 0.3: %d"
