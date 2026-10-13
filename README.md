@@ -6,7 +6,7 @@ Everyone who wants to appear needs the addon. English and Spanish: the game's la
 
 ## What it does
 
-The board opens on **Home**: the guild level and this week's challenge, what is happening now (help, groups, meetups), what is for you (guildmates near your level, gifts you wish for, spells at your trainer) and the week's top three. Five tabs: Home, Guildmates, Dungeons, Guild (Wall, Goals, Market, Professions, Class, Recruit) and Journal, in the look of the game's spellbook.
+The board opens on **Home**, a dashboard: the guild level, who is online, your item level and this week's challenge; the message of the day; your character (XP, gear, role, points); what is happening now (help, groups, gifts you wish for, spells at your trainer); the next runs with their slots; quest posts; who is where; and today on the wall. Pills by the title show who is online, a linked Discord and old versions; what a click did shows at the foot of the book, and removing things asks "Are you sure?" first. Five tabs: Home, Guildmates, Dungeons, Guild (Wall, Goals, Market, Professions, Class, Recruit) and Journal, in the look of the game's spellbook.
 
 ### Guild progress
 - What you do adds points: levels, dungeons with guildmates, quests, helps, gifts and meetups. Everyone's points make the **guild level**; a **weekly challenge** rotates ("25 dungeons in a group"), and the **top three** of the week in levels, dungeons and helps are shown, never who is last.
@@ -97,7 +97,7 @@ Todos los que quieran salir necesitan el addon. En español e inglés: el idioma
 
 ## Qué hace
 
-El tablón se abre en **Inicio**: el nivel de la hermandad y el reto de la semana, lo que pasa ahora (ayudas, grupos, quedadas), lo que es para ti (hermanos cerca de tu nivel, regalos que deseas, hechizos en tu entrenador) y los tres mejores de la semana. Cinco pestañas: Inicio, Hermanos, Mazmorras, Hermandad (Muro, Metas, Mercadillo, Oficios, Clase, Reclutar) y Diario, con el aspecto del libro de hechizos del juego.
+El tablón se abre en **Inicio**, un panel: el nivel de la hermandad, los conectados, tu nivel de objeto y el reto de la semana; el mensaje del día; tu personaje (XP, equipo, rol, puntos); lo que pasa ahora (ayudas, grupos, regalos que deseas, hechizos en tu entrenador); las próximas partidas con sus plazas; las misiones anunciadas; quién está dónde; y lo de hoy en el muro. Junto al título, píldoras con los conectados, Discord enlazado y versiones antiguas; lo que hace un clic sale al pie del libro, y quitar cosas pregunta "¿Seguro?" antes. Cinco pestañas: Inicio, Hermanos, Mazmorras, Hermandad (Muro, Metas, Mercadillo, Oficios, Clase, Reclutar) y Diario, con el aspecto del libro de hechizos del juego.
 
 ### Progreso de la hermandad
 - Lo que haces suma puntos: niveles, mazmorras con hermanos, misiones, ayudas, regalos y quedadas. Los puntos de todos hacen el **nivel de la hermandad**; un **reto semanal** va rotando ("25 mazmorras en grupo") y salen los **tres mejores** de la semana en niveles, mazmorras y ayudas, nunca quién va último.
