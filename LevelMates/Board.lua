@@ -1214,6 +1214,18 @@ local function FillAch(list)
 		local r, a = B.rows[i], list[i]
 		r.button.mate, r.button.adId, r.button.entry, r.button.ach = nil, nil, nil, a
 		if a then
+			if a.w then   -- a guild first: who got there first (all who share the second), and when
+				local GF = ns.GuildFirsts
+				local first = GF.First(a.w)
+				r.icon:SetTexture(GF.Icon(a.w)); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:SetDesaturated(first == nil); r.icon:Show()
+				r.name:SetText(GF.Name(a.w)); r.name:SetTextColor(unpack(first and { 1, 0.82, 0 } or { 0.7, 0.7, 0.7 }))
+				r.level:SetText("")
+				r.zone:SetText(first and table.concat(first.names, ", ") or L.GF_NOBODY); r.zone:SetTextColor(1, 1, 1)
+				r.group:SetText(""); r.group:SetTextColor(1, 1, 1)
+				r.xph:SetText(first and date("%d/%m/%y", first.a) or ""); r.xph:SetTextColor(0.4, 1, 0.4)
+				r.button:Show()
+				RowBg(r, i, false)
+			else
 			local has = AC.Has(a.id)
 			r.icon:SetTexture(AC.Icon(a.id)); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:SetDesaturated(not has); r.icon:Show()
 			r.name:SetText(AC.Name(a.id)); r.name:SetTextColor(unpack(has and { 1, 0.82, 0 } or { 0.7, 0.7, 0.7 }))
@@ -1224,6 +1236,7 @@ local function FillAch(list)
 			r.xph:SetText(has and date("%d/%m/%y", AC.When(a.id)) or ""); r.xph:SetTextColor(0.4, 1, 0.4)
 			r.button:Show()
 			RowBg(r, i, false)
+			end
 		else
 			ClearRow(r)
 		end
@@ -1898,7 +1911,10 @@ function B.Refresh()
 	if home then
 		list = {}   -- the dashboard draws Home
 	elseif journal and B.journalView == "ach" then
-		list, pages = Page(ns.Achievements.LIST)
+		local all = {}
+		for _, a in ipairs(ns.Achievements.LIST) do all[#all + 1] = a end
+		for _, f in ipairs(ns.GuildFirsts.LIST) do all[#all + 1] = f end   -- then the guild's firsts
+		list, pages = Page(all)
 	elseif journal then
 		list = Page(ns.Journal.List(B.journalFilter or "all", B.search))
 		B.journalFilterButton:SetText(ns.Journal.FilterName(B.journalFilter or "all"))

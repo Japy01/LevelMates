@@ -75,6 +75,7 @@ Feed.lua
 Points.lua
 Home.lua
 Achievements.lua
+GuildFirsts.lua
 TalentView.lua
 MateCard.lua
 GearWindow.lua

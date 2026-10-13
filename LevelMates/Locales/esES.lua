@@ -347,3 +347,4 @@ L.GEAR_AWAY = "Fuera de alcance. Ponlo de objetivo o en tu grupo para ver su mod
 L.GIFT_BOUND = "Ese objeto está ligado (o es de misión): no se puede regalar ni vender."
 L.CV_TRADABLE = "Solo comerciables"; L.CV_WHO_ELSE = "¿Quién más lo fabrica?"; L.CV_OTHER = "Otros"; L.CV_SPELLS = "Encantamientos y otros"
 L.GEAR_INSPECTING = "Inspeccionando…"; L.GEAR_SRC_SYNC = "compartido"; L.GEAR_SRC_INSPECT = "inspeccionado"
+L.GF_LEVEL = "Primero de la hermandad en nivel %d"; L.GF_PROF = "Primero de la hermandad con 300 en %s"; L.GF_TOLD = "¡%s: %s!"; L.GF_NOBODY = "Aún nadie"
