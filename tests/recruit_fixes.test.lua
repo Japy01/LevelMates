@@ -3,7 +3,10 @@ local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, RC, R, L = ns.Comm, ns.Board, ns.Recruit, ns.Roster, ns.L
 local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STUB.sent[i].msg); if k == kind then return f end end end
-local function said(text) for i = #STUB.printed, 1, -1 do if STUB.printed[i]:find(text, 1, true) then return true end end; return false end
+local function said(text)
+	local fb = ns.Board and ns.Board.feedback   -- with the book open, it shows at its foot
+	if fb and fb:IsShown() and fb.text.text and fb.text.text:find(text, 1, true) then return true end
+	for i = #STUB.printed, 1, -1 do if STUB.printed[i]:find(text, 1, true) then return true end end; return false end
 STUB.guildMembers = { Tester = true, Jefa = true }
 STUB.guildRoles = { Jefa = 2 }
 R.InvalidateGuildRoster()

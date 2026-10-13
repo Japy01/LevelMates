@@ -150,6 +150,17 @@ local function Build()
 	B.nearLabel = nearLabel
 	B.nearCheck = near
 
+	-- The feedback line: what a click did, at the foot of the book; 6 s, then it fades; a click dismisses it.
+	local fb = CreateFrame("Button", nil, f)
+	fb:SetSize(520, 22); fb:SetPoint("BOTTOM", 0, 2); fb:SetFrameLevel((f:GetFrameLevel() or 1) + 20)
+	fb.bg = fb:CreateTexture(nil, "BACKGROUND"); fb.bg:SetAllPoints(); fb.bg:SetColorTexture(unpack(ns.Skin.C.section))
+	fb.text = fb:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	fb.text:SetPoint("LEFT", 8, 0); fb.text:SetPoint("RIGHT", -8, 0); fb.text:SetWordWrap(false)
+	ns.Skin.InkFont(fb.text)
+	fb:SetScript("OnClick", function(self) self.stamp = (self.stamp or 0) + 1; self:Hide() end)
+	fb:Hide()
+	B.feedback = fb
+
 	-- "Looking for a partner" (guildmates tab), in the header under the search box.
 	local pal = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
 	pal:SetSize(20, 20); pal:SetPoint("TOPRIGHT", -(B.MARGIN + 130), -(insetTop + 30))   -- ends above the divider
@@ -1903,6 +1914,23 @@ function B.ShowTab(key)
 	ns.char.boardTab = B.tab
 	B.frame:Show()
 	B.Refresh()
+end
+
+-- Show a line at the book's foot: the newest replaces the last; 6 s, then a 1.5 s fade.
+B.FEEDBACK_HOLD, B.FEEDBACK_FADE = 6, 1.5
+function B.Feedback(text)
+	local fb = B.feedback
+	if not fb then return end
+	fb.stamp = (fb.stamp or 0) + 1
+	local stamp = fb.stamp
+	fb.text:SetText(text); fb:SetAlpha(1); fb:Show()
+	local steps = 10
+	for i = 1, steps do
+		C_Timer.After(B.FEEDBACK_HOLD + B.FEEDBACK_FADE * i / steps, function()
+			if fb.stamp ~= stamp then return end
+			if i == steps then fb:Hide() else fb:SetAlpha(1 - i / steps) end
+		end)
+	end
 end
 
 function B.Toggle()

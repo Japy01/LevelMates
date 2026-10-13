@@ -50,7 +50,13 @@ end
 function ns.Log(fmt, ...)
 	if ns.db and ns.db.settings.debug then print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
 end
-function ns.Say(fmt, ...) print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
+-- What a click did: at the foot of the book while it is open, else in chat (and lines with a link: chat, to be clicked).
+function ns.Say(fmt, ...)
+	local text = string.format(fmt, ...)
+	local B = ns.Board
+	if B and B.frame and B.frame:IsShown() and B.Feedback and not text:find("|H", 1, true) then B.Feedback(text); return end
+	print("|cff7ec8ffLevelMates|r " .. text)
+end
 
 -- Important notices: the chat line, and the same text in the middle of the screen when the option is on
 -- (links shown as their plain "[name]").
@@ -61,7 +67,7 @@ function ns.Screen(text)
 end
 function ns.Notice(fmt, ...)
 	local text = string.format(fmt, ...)
-	ns.Say("%s", text)
+	print("|cff7ec8ffLevelMates|r " .. text)   -- notices always reach chat, book open or not
 	ns.Screen(text)
 end
 

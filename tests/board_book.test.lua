@@ -34,8 +34,12 @@ assert(text:find(string.format(L.HOME_LEVEL, 1), 1, true), "guild level in the c
 -- inviting says so at once (the server may take a moment)
 C_PartyInfo = { InviteUnit = function() end }
 STUB.printed = {}
+-- with the book open, what a click did goes to its foot: count it with chat
+local told = {}
+do local fb = ns.Board.Feedback; ns.Board.Feedback = function(t) told[#told + 1] = t; fb(t) end end
+local function lastSaid() return told[#told] or STUB.printed[#STUB.printed] end
 B.Invite("Gigasamba Caramba")
-assert(STUB.printed[#STUB.printed]:find(string.format(L.INVITE_SENT, "Gigasamba Caramba"), 1, true), "told at once")
+assert(lastSaid():find(string.format(L.INVITE_SENT, "Gigasamba Caramba"), 1, true), "told at once")
 
 -- every Home row has its icon
 B.ShowTab("home")

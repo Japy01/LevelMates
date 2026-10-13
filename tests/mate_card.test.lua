@@ -50,11 +50,16 @@ C_Map.CanSetUserWaypointOnMap = function(id) return id ~= 999 end
 C_Map.SetUserWaypoint = function(p) pinned = p end
 UiMapPoint = { CreateFromCoordinates = function(id, x, y) return { id = id, x = x, y = y } end }
 C_SuperTrack = { SetSuperTrackedUserWaypoint = function(v) followed = v end }
-local n = #STUB.printed
+-- with the book open, what a click did goes to its foot: count it with chat
+local told = {}
+do local fb = ns.Board.Feedback; ns.Board.Feedback = function(t) told[#told + 1] = t; fb(t) end end
+local function lastSaid() return told[#told] or STUB.printed[#STUB.printed] end
+local function said() return #STUB.printed + #told end
+local n = said()
 assert(ns.Help.WaypointTo(1429, 40, 60, "Mario") and pinned.id == 1429 and followed, "pinned and followed")
-assert(STUB.printed[#STUB.printed]:find("Mario", 1, true) and #STUB.printed == n + 1, "said where")
-assert(not ns.Help.WaypointTo(999, 40, 60, "Mario") and STUB.printed[#STUB.printed]:find("999", 1, true), "why not")
-followed = nil; n = #STUB.printed
+assert(lastSaid():find("Mario", 1, true) and said() == n + 1, "said where")
+assert(not ns.Help.WaypointTo(999, 40, 60, "Mario") and lastSaid():find("999", 1, true), "why not")
+followed = nil; n = said()
 ns.Help.WaypointTo(1429, 40, 60)
-assert(not followed and #STUB.printed == n, "an automatic pin: quiet")
+assert(not followed and said() == n, "an automatic pin: quiet")
 C_SuperTrack, UiMapPoint, C_Map.CanSetUserWaypointOnMap, C_Map.SetUserWaypoint = nil, nil, nil, nil
