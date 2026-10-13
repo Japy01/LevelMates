@@ -2,6 +2,7 @@
 
 ## 0.4.0
 
+- **A tag for a Discord bot** (Options > Share, off by default): Discord lines start with [LM1 ...] so a bot can keep a sign-up board; format in docs/discord-tag.md. Now groups announced in Discord post their joins, leaves and withdrawal too.
 - **Groups, one idea for everything**: a group is what (a dungeon, a raid, a battleground, world PvP or anything you name), when (**Now** or a day and hour), its size and places per role. Looking for people now and planning for later look the same, with the same cards: five places as slots, bigger groups as counters per role.
 - **The Groups section** (was Dungeons): Now, today and tomorrow, later this week and the chat's group ads, beside the **Create a group** form; and the **Catalogue** of dungeons, raids and PvP.
 - **Raids and PvP**: Molten Core, Onyxia, Zul'Gurub, Blackwing Lair, Ahn'Qiraj, Naxxramas or a raid with your own name (10, 20 or 40, with the places per role the leader sets); Warsong Gulch, Arathi Basin, Alterac Valley and world PvP; or "Other" with any name.
