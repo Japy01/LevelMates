@@ -2,6 +2,11 @@
 
 ## 0.4.0
 
+- **Groups, one idea for everything**: a group is what (a dungeon, a raid, a battleground, world PvP or anything you name), when (**Now** or a day and hour), its size and places per role. Looking for people now and planning for later look the same, with the same cards: five places as slots, bigger groups as counters per role.
+- **The Groups section** (was Dungeons): Now, today and tomorrow, later this week and the chat's group ads, beside the **Create a group** form; and the **Catalogue** of dungeons, raids and PvP.
+- **Raids and PvP**: Molten Core, Onyxia, Zul'Gurub, Blackwing Lair, Ahn'Qiraj, Naxxramas or a raid with your own name (10, 20 or 40, with the places per role the leader sets); Warsong Gulch, Arathi Basin, Alterac Valley and world PvP; or "Other" with any name.
+- **An activity's panel**, rebuilt: its groups as cards, my run's places to manage, guildmates of its level, chat ads, and "Create a group here".
+- **Home** shows the groups: Now first, yours included, then the next ones.
 - **The book as a dashboard**: a wider book (900); **Home** shows four numbers (guild level, online, your item level, the weekly challenge), the message of the day, your character (XP with rested, gear in miniature, role, points of the week), what is happening now, the next two runs with their five slots, quest posts, who is where and today on the wall. Each box says what to do when empty.
 - **Pills** by the title: guildmates online (a click opens Guildmates), Discord linked, how many still run 0.3.
 - **"Are you sure?"** before cancelling a run, withdrawing a quest post, deleting a goal, removing a wish or an offer, or taking someone out of your run.
