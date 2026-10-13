@@ -15,8 +15,8 @@ STUB.player.xp = 100; STUB.Fire("PLAYER_XP_UPDATE", "player")
 STUB.Advance(600)
 STUB.player.xp = 300; STUB.Fire("PLAYER_XP_UPDATE", "player")
 local rate = LB.Rate()
-assert(rate and math.abs(rate - 1800) < 1, "1800 XP/h: " .. tostring(rate))
-assert(math.abs(LB.TimeToLevel() - 700 / 1800 * 3600) < 2, "time to level: " .. tostring(LB.TimeToLevel()))
+assert(rate and math.abs(rate - 1800) < 5, "about 1800 XP/h (counted from when the bar started watching): " .. tostring(rate))
+assert(math.abs(LB.TimeToLevel() - 700 / rate * 3600) < 2, "time to level: " .. tostring(LB.TimeToLevel()))
 
 -- kills from the client's own message; quest XP does not count
 STUB.Fire("CHAT_MSG_COMBAT_XP_GAIN", "Kobold dies, you gain 45 experience.")

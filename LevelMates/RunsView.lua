@@ -36,7 +36,7 @@ local function formLabels()
 	f.dungeonButton:SetText(f.dungeon and ns.Dungeons.Name(f.dungeon) or L.RUNS_PICK_DUNGEON)
 	f.hourButton:SetText(string.format("%02d h", f.hour))
 	f.minuteButton:SetText(string.format(":%02d", f.minute))
-	for i, chip in ipairs(f.days) do chip:SetChecked(i - 1 == f.dayOffset) end
+	for i, chip in ipairs(f.days) do chip:SetText(ns.MeetDialog.DayName(i - 1)); chip:SetChecked(i - 1 == f.dayOffset) end   -- names follow the clock past midnight
 	for role, chip in pairs(f.roles) do chip:SetChecked(role == f.role) end
 	local ok, why = ns.Discord.Available()
 	f.discord:SetEnabled(ok); if not ok then f.discord:SetChecked(false) end
@@ -174,7 +174,9 @@ function RV.Refresh()
 	end
 	for i, c in ipairs(RV.cards) do c:Set(soon[i]) end
 	RV.soon:SetEmpty(#soon == 0)
+	for i = #soon, RV.CARDS + 1, -1 do table.insert(later, 1, soon[i]) end   -- more than the cards: first in the list below, still reachable
 	RV.soon:SetNote(#soon > RV.CARDS and string.format(L.RUNS_MORE, #soon - RV.CARDS) or "")
+	RV.later:SetNote(#later > RV.LATER and string.format(L.RUNS_MORE, #later - RV.LATER) or "")
 	for i, it in ipairs(RV.later.items) do
 		local m = later[i]
 		it.meet = m

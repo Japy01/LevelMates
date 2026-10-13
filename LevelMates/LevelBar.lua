@@ -6,14 +6,16 @@ local LB = {}
 ns.LevelBar = LB
 local L = ns.L
 LB.WINDOW = 900
-local samples, lastXP, lastMax = {}, nil, nil
+local samples, lastXP, lastMax, watchSince = {}, nil, nil, nil
 
--- "%s dies, you gain %d experience." → "^(.+) dies, you gain (%d+) experience%.$" (whatever the client's language)
+-- "%s dies, you gain %d experience." → "^(.+) dies, you gain (%d+) experience%." (whatever the client's language).
+-- Anchored at the start only: a rested or group bonus adds text after it. Numbered arguments ("%1$s") become plain.
 local function patternOf(fmt)
 	if type(fmt) ~= "string" then return nil end
-	local p = fmt:gsub("([%(%)%.%[%]%*%+%-%?%^%$])", "%%%1")
+	local p = fmt:gsub("%%(%d+)%$", "%%")
+	p = p:gsub("([%(%)%.%[%]%*%+%-%?%^%$])", "%%%1")
 	p = p:gsub("%%s", "(.+)"):gsub("%%d", "(%%d+)")
-	return "^" .. p .. "$"
+	return "^" .. p
 end
 
 local function start()
@@ -34,7 +36,9 @@ function LB.Rate()
 	if #samples == 0 then return nil end
 	local sum = 0
 	for _, s in ipairs(samples) do sum = sum + s[2] end
-	return sum * 3600 / math.max(60, GetTime() - samples[1][1])
+	local now = GetTime()
+	local from = math.max(watchSince or samples[1][1], now - LB.WINDOW)   -- since the bar started watching: the first kill's XP took time too
+	return sum * 3600 / math.max(60, now - from)
 end
 function LB.TimeToLevel()
 	local rate = LB.Rate()
@@ -134,7 +138,7 @@ ev:RegisterEvent("PLAYER_ENTERING_WORLD"); ev:RegisterEvent("PLAYER_XP_UPDATE");
 ev:SetScript("OnEvent", function(_, event, arg)
 	if not ns.char then return end
 	if event == "PLAYER_ENTERING_WORLD" then
-		if lastXP == nil then lastXP, lastMax = UnitXP("player"), UnitXPMax("player") end
+		if lastXP == nil then lastXP, lastMax, watchSince = UnitXP("player"), UnitXPMax("player"), GetTime() end
 		start()
 		if ns.db.settings.levelBar and not (LB.frame and LB.frame:IsShown()) then LB.Toggle(true) end
 	elseif event == "PLAYER_XP_UPDATE" then
@@ -145,7 +149,8 @@ ev:SetScript("OnEvent", function(_, event, arg)
 		ns.char.levelStart = { level = arg or (UnitLevel("player") + 1), t = time(), kills = 0 }
 	elseif event == "CHAT_MSG_COMBAT_XP_GAIN" then
 		LB.KILL = LB.KILL or patternOf(COMBATLOG_XPGAIN_FIRSTPERSON)
-		if LB.KILL and tostring(arg):match(LB.KILL) then local s = start(); s.kills = (s.kills or 0) + 1 end
+		local ok, hit = pcall(string.match, tostring(arg), LB.KILL or "^$")
+		if LB.KILL and ok and hit then local s = start(); s.kills = (s.kills or 0) + 1 end
 	end
 end)
 ns.Slash("barra", function() LB.Toggle() end); ns.Slash("bar", function() LB.Toggle() end)
