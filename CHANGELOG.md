@@ -5,6 +5,9 @@
 - **The book as a dashboard**: a wider book (900); **Home** shows four numbers (guild level, online, your item level, the weekly challenge), the message of the day, your character (XP with rested, gear in miniature, role, points of the week), what is happening now, the next two runs with their five slots, quest posts, who is where and today on the wall. Each box says what to do when empty.
 - **Pills** by the title: guildmates online (a click opens Guildmates), Discord linked, how many still run 0.3.
 - **"Are you sure?"** before cancelling a run, withdrawing a quest post, deleting a goal, removing a wish or an offer, or taking someone out of your run.
+- **Runs** (Groups): today's and tomorrow's runs as cards with their slots and buttons, the rest of the week below, and a **Create a run** form beside them.
+- **Notices tray**: the last notices with Go to their tab; the minimap button counts the unread (Shift+click opens them); a strip under the minimap shows the newest for 10 seconds, after combat.
+- **Level bar** (off by default, `/lm barra`): XP per hour, time to level, time in the level, kills. **Banner** when you level up.
 - What a click did shows **at the foot of the book** while it is open (6 seconds, a click closes it); notices and links still go to chat.
 - **Armory**: your gear is shared (with its switch); a guildmate's card shows their item level, counted right, and a Gear window with their paper doll and model; cards show builds of every class.
 - **Members** (Guild tab): the whole guild with shared notes, the history of joins, departures and promotions, the alts of each member and the race to 60; the officers' own message of the day at the top of Home.

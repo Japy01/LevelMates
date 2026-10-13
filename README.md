@@ -24,7 +24,7 @@ The board opens on **Home**, a dashboard: the guild level, who is online, your i
 - **Guildmate card**: click a name to see everything about them in one place (alts, build, professions, wishes and giveaways, goal, wall, meetups), with Whisper, Invite, Waypoint and View build. In a group it lists your quests they lack, with a Share button. It shows their **item level** (counted right, over 17 slots) and their build whatever their class, and **Gear** opens their paper doll with the model dressed in it.
 
 ### Dungeons
-- **Dungeons tab**: a card with artwork for each of the 14 dungeons, highlighted when it fits your level, with how many are looking for a group. Click a card to join a group ("Join Mario as healer"), whisper, invite, look for a group there, or set up a **meetup** ("Saturday 21:00", with a reminder 15 minutes before). Cards also count group ads read from Trade, General and other public channels ("2 looking · 3 in chat"), which you can whisper from the card. **Calendar** lists the next 7 days of meetups.
+- **Dungeons tab**: a card with artwork for each of the 14 dungeons, highlighted when it fits your level, with how many are looking for a group. Click a card to join a group ("Join Mario as healer"), whisper, invite, look for a group there, or set up a **meetup** ("Saturday 21:00", with a reminder 15 minutes before). Cards also count group ads read from Trade, General and other public channels ("2 looking · 3 in chat"), which you can whisper from the card. **Runs** shows today's and tomorrow's runs as cards with their five slots and buttons (Join a free role, Leave, Invite all, Cancel), the rest of the week below, and a **Create a run** form beside them.
 - **Runs**: a meetup has five slots (1 tank, 1 healer, 3 damage). The leader holds one and keeps the official line-up: a late join for a full role waits, the leader can add someone by hand or take them out, and **Invite all** invites everyone in it. The card shows "21:00 · 3/5".
 - **My role**: tank, healer or damage, shared with the guild (on the Groups tab and in Options); without one, your class decides (shown with ?).
 - **Together**: groups you could make right now from who is online, their levels and roles; one click makes it a run or invites everyone.
@@ -49,6 +49,8 @@ The board opens on **Home**, a dashboard: the guild level, who is online, your i
 - **Ask for help** with an elite: guildmates get a notice and a waypoint, and an "On my way" button. A **panic key** (Key Bindings → LevelMates, or `/lm panico`) asks at once.
 - **Rare sightings**: a rare you see is announced to guildmates in that zone, with a [Waypoint] link. Every route (from a card, the right-click menu or a sighting) is followed on screen and said in chat.
 - **Notices** for what matters, also in the middle of the screen; a [Congratulate] link when a guildmate levels up; a notice when a guildmate runs a newer LevelMates. **Quiet mode** (Options > Notices) keeps only help requests, groups and goals.
+- **Notices tray**: the last notices (two hours, 30 at most), each with Go to its tab; the minimap button counts the unread and Shift+click opens them (`/lm avisos`). A strip under the minimap shows the newest for 10 seconds (after combat, not during; quiet mode turns it off).
+- **Level bar** (off by default, `/lm bar` or Options): XP with rested, XP per hour, time to level, time in the level and kills. **Level-up banner**: the new level, how long it took, your XP per hour and your place in the guild.
 - **Copy for Discord**: the "Discord" button puts the current tab into a box as ready-to-paste Discord text. Nothing is sent anywhere.
 
 ### Officers
@@ -79,7 +81,7 @@ Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install
 
 ## Commands
 
-`/lm` (board), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm alts`, `/lm muro`, `/lm reclutar` (open a tab), `/lm help <text>` (ask for help), `/lm cancel`, `/lm panico`, `/lm options`, `/lm debug`.
+`/lm` (board), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm alts`, `/lm muro`, `/lm reclutar` (open a tab), `/lm help <text>` (ask for help), `/lm cancel`, `/lm panico`, `/lm avisos` (notices), `/lm bar` (level bar), `/lm options`, `/lm debug`.
 
 To try it alone (fake guildmates, local only, nothing is sent): `/lm sim`, and `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`, `clase`, `xp`, `muertes`, `puntos`; `/lm sim off` clears them.
 
@@ -115,7 +117,7 @@ El tablón se abre en **Inicio**, un panel: el nivel de la hermandad, los conect
 - **Ficha de hermano**: clic en un nombre para ver todo lo suyo en un sitio (alts, build, oficios, deseos y regalos, meta, muro, quedadas), con Susurrar, Invitar, Punto de ruta y Ver build. En grupo lista tus misiones que le faltan, con un botón Compartir. Muestra su **nivel de objeto** (bien contado, sobre 17 huecos) y su build sea de la clase que sea, y **Equipo** abre su muñeco con el modelo vestido.
 
 ### Mazmorras
-- **Pestaña Mazmorras**: una tarjeta con imagen para cada una de las 14 mazmorras, resaltada si es de tu nivel, con cuántos buscan grupo. Clic en una tarjeta para apuntarte a un grupo ("Me apunto con Mario como sanador"), susurrar, invitar, buscar grupo ahí o crear una **quedada** ("sábado 21:00", con recordatorio 15 minutos antes). Las tarjetas cuentan también los anuncios de grupo de Comercio, General y otros canales públicos ("2 buscan · 3 en el chat"), y puedes susurrarles desde la tarjeta. **Calendario** lista las quedadas de los próximos 7 días.
+- **Pestaña Mazmorras**: una tarjeta con imagen para cada una de las 14 mazmorras, resaltada si es de tu nivel, con cuántos buscan grupo. Clic en una tarjeta para apuntarte a un grupo ("Me apunto con Mario como sanador"), susurrar, invitar, buscar grupo ahí o crear una **quedada** ("sábado 21:00", con recordatorio 15 minutos antes). Las tarjetas cuentan también los anuncios de grupo de Comercio, General y otros canales públicos ("2 buscan · 3 en el chat"), y puedes susurrarles desde la tarjeta. **Partidas** muestra las de hoy y mañana en tarjetas con sus cinco plazas y botones (Unirme a un rol libre, Salir, Invitar a todos, Cancelar), el resto de la semana debajo, y al lado el formulario **Crear partida**.
 - **Partidas**: una quedada tiene cinco plazas (1 tanque, 1 sanador, 3 daño). El líder ocupa una y lleva la lista oficial: quien llega tarde a un rol lleno queda en espera, el líder puede añadir a alguien a mano o quitarlo, e **Invitar a todos** invita a los de la partida. La tarjeta muestra "21:00 · 3/5".
 - **Mi rol**: tanque, sanador o daño, compartido con la hermandad (en la pestaña Grupos y en Opciones); sin elegirlo, decide tu clase (con ?).
 - **Juntos**: grupos que podríais hacer ahora con quien está conectado, por nivel y rol; un clic lo convierte en partida o invita a todos.
@@ -140,6 +142,8 @@ El tablón se abre en **Inicio**, un panel: el nivel de la hermandad, los conect
 - **Pedir ayuda** con un élite: los hermanos reciben un aviso y un punto de ruta, y un botón "Voy". Un **botón de pánico** (Atajos de teclado → LevelMates, o `/lm panico`) la pide al momento.
 - **Avistamiento de raros**: un raro que ves se avisa a los hermanos de esa zona, con un enlace [Ruta].
 - **Avisos** de lo importante, también en el centro de la pantalla; un enlace [Felicitar] cuando un hermano sube de nivel; aviso cuando un hermano tiene una versión más nueva de LevelMates.
+- **Bandeja de avisos**: los últimos avisos (dos horas, 30 como mucho), cada uno con Ir a su pestaña; el botón del minimapa cuenta los no leídos y Mayús+clic los abre (`/lm avisos`). Una tira bajo el minimapa enseña el último 10 segundos (después del combate, no durante; el modo tranquilo la apaga).
+- **Barra de nivel** (apagada al principio, `/lm barra` u Opciones): XP con descanso, XP por hora, tiempo para subir, tiempo en el nivel y muertes. **Cartel al subir de nivel**: el nivel nuevo, lo que tardaste, tu XP por hora y tu puesto en la hermandad.
 - **Copiar para Discord**: el botón "Discord" pone la pestaña actual en un cuadro como texto listo para pegar en Discord. No se envía nada a ningún sitio.
 
 ### Oficiales
@@ -170,7 +174,7 @@ Copia la carpeta `LevelMates` en `Interface/AddOns` de tu instalación de WoW Fo
 
 ## Comandos
 
-`/lm` (tablón), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm alts`, `/lm muro`, `/lm reclutar` (abren una pestaña), `/lm ayuda <texto>` (pedir ayuda), `/lm cancelar`, `/lm panico`, `/lm opciones`, `/lm debug`.
+`/lm` (tablón), `/lm lfg`, `/lm diario`, `/lm metas`, `/lm deseos`, `/lm oficios`, `/lm clase`, `/lm alts`, `/lm muro`, `/lm reclutar` (abren una pestaña), `/lm ayuda <texto>` (pedir ayuda), `/lm cancelar`, `/lm panico`, `/lm avisos`, `/lm barra` (barra de nivel), `/lm opciones`, `/lm debug`.
 
 Para probarlo solo (hermanos falsos, solo en local, no se envía nada): `/lm sim`, y `/lm sim help`, `lfg`, `pal`, `rested`, `diario`, `metas`, `deseos`, `oficios`, `nivel`, `muro`, `mercadillo`, `quedada`, `raro`, `clase`, `xp`, `muertes`, `puntos`; `/lm sim off` los quita.
 
