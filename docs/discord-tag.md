@@ -28,6 +28,7 @@ The tag is `[LM1` followed by `key=value` pairs separated by spaces, and closes 
 | `n` | The name the leader gave, for activities 190, 290 and 300. Turn `_` back into spaces. |
 | `by` | The leader's character name. |
 | `lr` | The leader's role. |
+| `lc`, `wc` | The class of the leader and of `who`, as the game's class tokens (`MAGE`, `PRIEST`, `WARRIOR`…), when the sender knows it. |
 | `who`, `wr` | The character the event is about, and their role (for `join`, `leave`, `add`, `remove`). |
 | `s` | The places **after** this event, per role, as `have/cap` (missing on `cancel`): `T1/5,H1/10,D0/25`, or `A12/40` for groups without roles. |
 

@@ -66,6 +66,13 @@ end
 -- The bot tag (Options > Discord bot): "[LM1 key=value ...]" first, so a cut line keeps it; values without spaces
 -- ("_"), "]", "=", "[" or "|". Format: docs/discord-tag.md.
 local function val(v) return (tostring(v or ""):gsub("%s", "_"):gsub("[%]%[=|]", "")) end
+-- A character's class token (MAGE, PRIEST…), for the bot's icons: mine from the game, a guildmate's from their heartbeat.
+local function classOf(name)
+	if not name then return nil end
+	if name == ns.Me() then return select(2, UnitClass("player")) end
+	local m = ns.Roster.mates[name]
+	return m and m.class or nil
+end
 function DC.Tag(kind, m, who, role)
 	local A = ns.Activities
 	local a = A.Get(m.d)
@@ -74,7 +81,14 @@ function DC.Tag(kind, m, who, role)
 	if a and a.free and m.t and m.t ~= "" then parts[#parts + 1] = "n=" .. val(ns.CutUtf8(m.t, 40)) end
 	parts[#parts + 1] = "by=" .. val(m.by)
 	if m.role then parts[#parts + 1] = "lr=" .. m.role end
-	if who then parts[#parts + 1] = "who=" .. val(who); if role then parts[#parts + 1] = "wr=" .. role end end
+	local lc = classOf(m.by)
+	if lc then parts[#parts + 1] = "lc=" .. lc end
+	if who then
+		parts[#parts + 1] = "who=" .. val(who)
+		if role then parts[#parts + 1] = "wr=" .. role end
+		local wc = classOf(who)
+		if wc then parts[#parts + 1] = "wc=" .. wc end
+	end
 	if kind ~= "cancel" then
 		local s, caps = slotsAfter(m, kind, who, role)
 		local counts = {}

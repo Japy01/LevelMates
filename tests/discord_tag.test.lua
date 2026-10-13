@@ -61,3 +61,13 @@ for i = #STUB.sent, 1, -1 do local kk, ff = C.Decode(STUB.sent[i].msg); if kk ==
 assert(sentLfg.dc == 2, "the ad says it is in Discord, with the tag (my switch is on)")
 ns.LFG.Cancel()
 assert(fields(posted[#posted]).ev == "cancel", "withdrawn: cancel in Discord")
+
+-- the class of the leader and of whoever joins travels, for the bot's icons (the game's class tokens)
+STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1412, c = "PRIEST" }), "GUILD", "Ana-Testrealm")
+ns.db.settings.discordTag = true
+local cl = fields(DC.Line("join", { id = "cl000001", d = 5, at = 29333333, by = "Mario", role = "T", size = 5, caps = A.Caps(5), joined = {} }, "Ana", "H"))
+assert(cl.lc == "MAGE" and cl.wc == "PRIEST", "leader and joiner classes: " .. tostring(cl.lc) .. "/" .. tostring(cl.wc))
+local mine = fields(DC.Line("new", { id = "cl000002", d = 5, at = 29333333, by = ns.Me(), role = "T", size = 5, caps = A.Caps(5), joined = {} }))
+assert(mine.lc == select(2, UnitClass("player")), "my own class")
+local unknown = fields(DC.Line("join", { id = "cl000003", d = 5, at = 29333333, by = "Nadie", role = "T", size = 5, caps = A.Caps(5), joined = {} }, "Otro", "D"))
+assert(unknown.lc == nil and unknown.wc == nil, "unknown: left out")
