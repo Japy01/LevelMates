@@ -19,3 +19,6 @@ assert(total <= B.WIDTH - 66 - (30 + 170 + 12 + 80) - 12, "the row fits: " .. to
 assert(B.tabs.home.selected and not B.tabs.mates.selected, "Home lit")
 B.tabs.lfg.scripts.OnClick(B.tabs.lfg)
 assert(B.tab == "lfg" and B.tabs.lfg.selected and not B.tabs.home.selected, "Groups lit")
+
+-- the book draws above the action bars (a HIGH window, as the dungeon panel beside it)
+assert(B.frame:GetFrameStrata() == "HIGH", "the book above the action bars: " .. tostring(B.frame:GetFrameStrata()))

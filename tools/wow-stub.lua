@@ -74,7 +74,8 @@ function Region:SetScale(s) self.scale = s end
 function Region:GetScale() return self.scale or 1 end
 function Region:GetID() return self.id or 0 end
 function Region:SetID(id) self.id = id end
-function Region:SetFrameStrata() end
+function Region:SetFrameStrata(s) self.strata = s end
+function Region:GetFrameStrata() return self.strata or "MEDIUM" end
 function Region:SetFrameLevel(v) self.frameLevel = v end
 function Region:SetMovable() end
 function Region:EnableMouse() end

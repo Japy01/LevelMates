@@ -86,6 +86,7 @@ local function Build()
 	B.TOP, B.BOTTOM = insetTop + 60, insetBottom
 	B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10
 	f:SetSize(B.WIDTH, B.CHROME + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows
+	f:SetFrameStrata("HIGH"); if f.SetToplevel then f:SetToplevel(true) end   -- above the action bars, as the game's own panels
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving)
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); local p, _, rp, x, y = self:GetPoint(); ns.char.board = { p, rp, x, y } end)
