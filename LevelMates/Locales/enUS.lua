@@ -299,3 +299,8 @@ L.GEAR_LINE = "Item level %d (%d/17)"; L.GEAR_BUTTON = "Gear"; L.GEAR_ILVL = "It
 L.CONFIRM_SURE = "Are you sure?"
 L.CONFIRM_RUN = "Cancel this run? Everyone who joined is told."; L.CONFIRM_QUEST = "Withdraw your post for this quest?"; L.CONFIRM_GOAL = "Delete this guild goal?"; L.CONFIRM_WISH = "Remove this wish?"; L.CONFIRM_OFFER = "Remove this offer from the market?"
 L.PILL_ONLINE = "|TInterface\\FriendsFrame\\StatusIcon-Online:12|t %d online"; L.PILL_DISCORD = "Discord linked"; L.PILL_OLD = "On 0.3: %d"
+L.DB_ME = "My character"; L.DB_NOW = "Now"; L.DB_RUNS = "Next runs"; L.DB_QUESTS = "Quests"; L.DB_WHERE = "Who is where"; L.DB_WALL = "Today in the guild"
+L.DB_HINT_NOW = "Nobody needs help or a group right now. Ask for help or post a group from Guildmates and Groups."; L.DB_HINT_RUNS = "No runs planned. In Groups, pick a dungeon and set a time."
+L.DB_HINT_QUESTS = "Nobody looks for help with a quest. Alt+click a quest in your log to post it."; L.DB_HINT_WHERE = "Nobody else is online with LevelMates."; L.DB_HINT_WALL = "Nothing on the wall this week yet."
+L.DB_INVITE = "Copy an invite"; L.DB_STAT_LEVEL = "guild level"; L.DB_STAT_ONLINE = "online"; L.DB_STAT_ILVL = "my item level"
+L.DB_LEVEL_CLASS = "Level %d %s"; L.DB_XP = "XP %d%%  ·  rested %d%%"; L.DB_GEAR = "Gear"; L.DB_WEEK = "This week: %d points"; L.DB_NEXT = "%d next"; L.DB_SOMEWHERE = "Somewhere"

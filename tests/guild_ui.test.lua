@@ -23,9 +23,7 @@ assert(#B.GUILD_KEYS == 8 and B.subs.members and B.subs.bank, "members and bank 
 for _, k in ipairs(B.GUILD_KEYS) do assert(B.subs[k]:GetWidth() <= 76, "narrow: " .. k) end
 -- Home: the message of the day first
 B.ShowTab("home")
-local motd = false
-for i = 1, 3 do local r = B.rows[i]; if r.button.homeEntry and r.button.homeEntry.kind == "motd" and r.zone.text:find("Raid el viernes", 1, true) then motd = true end end
-assert(motd, "the MOTD at the top of Home")
+assert(ns.Dashboard.motd:IsShown() and ns.Dashboard.motd.text.text:find("Raid el viernes", 1, true), "the MOTD strip on Home")
 -- Members: the list, every member, with notes
 B.ShowTab("members")
 local mario

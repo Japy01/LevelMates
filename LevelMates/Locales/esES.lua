@@ -300,3 +300,8 @@ L.GEAR_LINE = "Nivel de objeto %d (%d/17)"; L.GEAR_BUTTON = "Equipo"; L.GEAR_ILV
 L.CONFIRM_SURE = "¿Seguro?"
 L.CONFIRM_RUN = "¿Cancelar esta partida? Se avisa a quien se apuntó."; L.CONFIRM_QUEST = "¿Retirar tu anuncio de esta misión?"; L.CONFIRM_GOAL = "¿Borrar esta meta de la hermandad?"; L.CONFIRM_WISH = "¿Quitar este deseo?"; L.CONFIRM_OFFER = "¿Quitar esta oferta del mercadillo?"
 L.PILL_ONLINE = "|TInterface\\FriendsFrame\\StatusIcon-Online:12|t %d conectados"; L.PILL_DISCORD = "Discord enlazado"; L.PILL_OLD = "Con la 0.3: %d"
+L.DB_ME = "Mi personaje"; L.DB_NOW = "Ahora"; L.DB_RUNS = "Próximas partidas"; L.DB_QUESTS = "Misiones"; L.DB_WHERE = "Quién está dónde"; L.DB_WALL = "Hoy en la hermandad"
+L.DB_HINT_NOW = "Nadie pide ayuda ni grupo ahora mismo. Pide ayuda o anuncia un grupo desde Compañeros y Grupos."; L.DB_HINT_RUNS = "No hay partidas. En Grupos, elige una mazmorra y pon una hora."
+L.DB_HINT_QUESTS = "Nadie busca ayuda con una misión. Alt+clic en una misión de tu registro para anunciarla."; L.DB_HINT_WHERE = "No hay nadie más conectado con LevelMates."; L.DB_HINT_WALL = "Aún no hay nada en el muro esta semana."
+L.DB_INVITE = "Copiar una invitación"; L.DB_STAT_LEVEL = "nivel de hermandad"; L.DB_STAT_ONLINE = "conectados"; L.DB_STAT_ILVL = "mi nivel de objeto"
+L.DB_LEVEL_CLASS = "Nivel %d %s"; L.DB_XP = "XP %d%%  ·  descansada %d%%"; L.DB_GEAR = "Equipo"; L.DB_WEEK = "Esta semana: %d puntos"; L.DB_NEXT = "%d próximas"; L.DB_SOMEWHERE = "En algún sitio"

@@ -176,6 +176,11 @@ local function Build()
 	B.pills.online:SetScript("OnClick", function() B.ShowTab("mates") end)
 	B.pills.discord:Set(L.PILL_DISCORD)
 
+	-- Home: the dashboard, over the rows' place.
+	local dash = ns.Dashboard.Build(f)
+	dash:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); dash:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + 30)
+	B.dashboard = dash
+
 	-- "Looking for a partner" (guildmates tab), in the header under the search box.
 	local pal = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
 	pal:SetSize(20, 20); pal:SetPoint("TOPRIGHT", -(B.MARGIN + 130), -(insetTop + 30))   -- ends above the divider
@@ -1817,7 +1822,7 @@ function B.Refresh()
 	local class, home = B.tab == "class", B.tab == "home"
 	local list, pages
 	if home then
-		list, pages = Page(ns.Home.Rows())
+		list = {}   -- the dashboard draws Home
 	elseif journal and B.journalView == "ach" then
 		list, pages = Page(ns.Achievements.LIST)
 	elseif journal then
@@ -1870,6 +1875,7 @@ function B.Refresh()
 	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
 	local rows = math.max(MIN_ROWS, math.min(ROWS, #list))
+	if home then rows = ROWS end   -- the dashboard needs the full page
 	if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
 	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
@@ -1909,6 +1915,10 @@ function B.Refresh()
 		else emptyText = L.EMPTY end
 	end
 	if recruit then emptyText = B.recruitView == "inactive" and #list == 0 and L.INACTIVE_EMPTY or "" end   -- the panel fills this tab
+	if home then emptyText = "" end
+	B.colStrip:SetShown(not home)
+	B.dashboard:SetShown(home)
+	if home then ns.Dashboard.Refresh() end
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
 	ns.Skin.InkPass()   -- what this page wrote, in ink
