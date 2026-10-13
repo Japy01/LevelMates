@@ -21,12 +21,12 @@ local slots, leader = 0, nil
 for _, line in ipairs(DP.lines) do
 	local e = line.entry
 	if e and e.kind == "slot" then slots = slots + 1 end
-	if e and e.kind == "meet" and e.meet.by == ns.Me() then leader = line end
 end
+for _, c in ipairs(DP.groups.cards) do if c:IsShown() and c.group.mine then leader = c end end   -- my run is a card now
 assert(slots == 5, "five slot lines: " .. slots)
 local texts = {}
 for _, b in ipairs(leader.buttons) do if b:IsShown() then texts[#texts + 1] = b.text end end
-assert(table.concat(texts, ","):find(L.DP_INVITE_ALL, 1, true), "invite all for the leader: " .. table.concat(texts, ","))
+assert(table.concat(texts, ","):find(L.RUN_INVITE_ALL, 1, true), "invite all for the leader: " .. table.concat(texts, ","))
 -- the Groups tab: my role, Together
 B.Toggle(); B.ShowTab("lfg")
 assert(B.togetherButton:IsShown(), "Together on the Groups tab (my role is chosen in the form now)")

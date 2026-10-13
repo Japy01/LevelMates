@@ -9,10 +9,11 @@ STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421, c = "MAGE" }), "GUILD",
 assert(M.Create(5, M.Now() + 60, "", "T", false))
 DP.Open(5)
 local function button(text) for _, line in ipairs(DP.lines) do for _, b in ipairs(line.buttons) do if b:IsShown() and b.text == text then return b end end end end
-local cancel = button(L.DP_CANCEL)
+local function cardButton(text) for _, c in ipairs(ns.DungeonPanel.groups.cards) do if c:IsShown() then for _, b in ipairs(c.buttons) do if b:IsShown() and b.text == text then return b end end end end end   -- the groups are cards now
+local cancel = cardButton(L.DP_CANCEL)
 cancel.scripts.OnClick(cancel)
 DP.Refresh()   -- a heartbeat, an ad, anything
-cancel = button(L.CONFIRM_SURE)
+cancel = cardButton(L.CONFIRM_SURE)
 assert(cancel, "still asking after a redraw")
 cancel.scripts.OnClick(cancel)
 assert(#M.List(5) == 0, "the second click cancels, redraw or not")

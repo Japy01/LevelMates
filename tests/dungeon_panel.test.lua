@@ -13,7 +13,7 @@ STUB.Receive("LVLM2", C.Encode("lfg", { d = 5, r = "H", id = "lfg00001", m = 20,
 STUB.Fire("CHAT_MSG_CHANNEL", "LFM DM need tank", "Pepe-Testrealm", "", "2. Trade", "", "", 0, 2, "Trade")
 ns.Meetups.AddSample("Ana", 5, 90, { Mario = "D" })
 local rows = DP.Rows(5)
-assert(kinds(rows) == "#groups,ad,contact,#chat,chat,#meet,meet,slot,slot,slot,slot,slot,#mates,mate,mate", "sections (a run with its five slots): " .. kinds(rows))
+assert(kinds(rows) == "#mates,mate,mate,#chat,chat", "lines: mates of its level, chat ads (the groups are cards): " .. kinds(rows))
 local mates = {}
 for _, r in ipairs(rows) do if r.kind == "mate" then mates[#mates + 1] = r.name end end
 table.sort(mates)
@@ -35,15 +35,16 @@ assert(shownMenu == 5, "right-click: the quick menu")
 
 -- its buttons do the actions (from the click)
 local function rowOf(kind) for _, r in ipairs(DP.lines) do if r:IsShown() and r.entry and r.entry.kind == kind then return r end end end
-local ad = rowOf("ad")
-assert(ad and ad.buttons[1]:IsShown(), "join buttons on Mario's group")
-ad.buttons[1].scripts.OnClick(ad.buttons[1])   -- join as tank
+local function cardOf(by) for _, c in ipairs(DP.groups.cards) do if c:IsShown() and c.group.by == by then return c end end end
+local made
+MenuUtil.CreateContextMenu = function(owner, fn) made = {}; local root = { CreateTitle = function() end, CreateButton = function(_, text, f) made[#made + 1] = { text = text, fn = f } end }; fn(owner, root) end
+local ad = cardOf("Mario")
+assert(ad and cardOf("Ana"), "Mario's group and Ana's run as cards")
+ad.buttons[1].scripts.OnClick(ad.buttons[1])   -- Join: the free roles
+for _, m in ipairs(made) do if m.text == L.ROLE_T then m.fn() end end
 assert(ns.LFG.myJoins["lfg00001"] == "T", "joined as tank")
 DP.Refresh()
-ad = rowOf("ad")
-local leave
-for _, b in ipairs(ad.buttons) do if b:IsShown() and b.text == L.DP_LEAVE then leave = b end end
-assert(leave, "now: leave")
+assert(cardOf("Mario").buttons[1].text == L.RUN_LEAVE, "now: leave")
 local chat = rowOf("chat")
 chat.buttons[1].scripts.OnClick(chat.buttons[1])
 assert(STUB.lastTell == "Pepe-Testrealm", "whisper the chat poster")
@@ -52,14 +53,14 @@ local invited
 C_PartyInfo = { InviteUnit = function(n) invited = n end }
 mate.buttons[1].scripts.OnClick(mate.buttons[1])
 assert(invited == mate.entry.name, "invite a guildmate of this level")
--- the footer: look for a group here, set up a meetup here
-local here
-ns.On("LM_LFG_HERE", function(id) here = id end)
-DP.lfgButton.scripts.OnClick(DP.lfgButton)
-assert(here == 5, "look for a group here")
+-- the footer: create a group here (the Groups view's form, prefilled)
+DP.create.scripts.OnClick(DP.create)
+assert(ns.GroupsView.form.d == 5, "create a group here")
+B.ShowTab("lfg"); DP.Open(5)
 -- it follows changes and closes with the board
 STUB.Receive("LVLM2", C.Encode("lfgx", { id = "lfg00001" }), "GUILD", "Mario-Testrealm")
-assert(not kinds(DP.Rows(5)):find("ad", 1, true), "the withdrawn ad is gone")
+DP.Refresh()
+assert(not cardOf("Mario"), "the withdrawn ad is gone")
 B.frame:Hide(); B.frame.scripts.OnHide = B.frame.scripts.OnHide
 DP.Close()
 assert(not DP.frame:IsShown(), "closes")

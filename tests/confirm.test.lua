@@ -17,7 +17,8 @@ local id = M.List(5)[1].id
 M.AddMember(id, "Mario", "D")
 DP.Open(5)
 local function button(text) for _, line in ipairs(DP.lines) do for _, b in ipairs(line.buttons) do if b:IsShown() and b.text == text then return b end end end end
-local cancel = button(L.DP_CANCEL)
+local function cardButton(text) for _, c in ipairs(ns.DungeonPanel.groups.cards) do if c:IsShown() then for _, b in ipairs(c.buttons) do if b:IsShown() and b.text == text then return b end end end end end   -- the groups are cards now
+local cancel = cardButton(L.DP_CANCEL)
 cancel.scripts.OnClick(cancel)
 assert(#M.List(5) == 1 and cancel.text == L.CONFIRM_SURE, "first click asks")
 cancel.scripts.OnClick(cancel)

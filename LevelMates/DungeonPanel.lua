@@ -1,12 +1,16 @@
--- DungeonPanel.lua: a dungeon's own panel next to the book, opened by a click on its card: the guild's groups (who
--- joined, with what role), group ads read from chat, meetups, guildmates of its levels online, and the buttons to join,
--- leave, whisper, invite, look for a group or set up a meetup there. Every action runs from its button's click.
+-- DungeonPanel.lua: an activity's own panel next to the book (a dungeon, a raid, a battleground), opened from its card.
+-- At the top its picture and name; then its groups as cards (Now and with a time, the same cards as the Groups view);
+-- then lines: my runs' places to manage (add or take out, who waits, Discord lines waiting for a click), guildmates of
+-- its levels online, and group ads read from chat. "Create a group here" goes to the Groups view's form, prefilled.
+-- Every action runs from its button's click. Spec 2026-10-13-levelmates-groups-design.
 local _, ns = ...
 local DP = {}
 ns.DungeonPanel = DP
 local L, R = ns.L, ns.Roster
 local unpack = unpack or table.unpack
-DP.WIDTH, DP.LINES, DP.LINE_H = 320, 24, 24
+DP.WIDTH, DP.LINES, DP.LINE_H, DP.CARDS = 470, 12, 24, 3
+local TOP_GROUPS = 98
+local function cardsH() return 22 + DP.CARDS * (ns.Widgets.GROUPCARD_H + 4) + 4 end
 
 local function me() return ns.Me() end
 local function Cap(s) return (s:gsub("^%l", string.upper)) end
@@ -16,50 +20,38 @@ local function section(out, key, items)
 	for _, it in ipairs(items) do out[#out + 1] = it end
 end
 
--- The panel's lines for a dungeon.
+-- The panel's lines for an activity (the groups themselves are the cards above).
 function DP.Rows(id)
-	local out, d = {}, ns.Dungeons.Get(id)
-	local groups = {}
-	for _, a in ipairs(ns.Board.AdsFor(id)) do
-		groups[#groups + 1] = { kind = "ad", ad = a }
-		if a.mine then   -- who joined mine: to invite them
-			local who = {}
-			for name, role in pairs(a.joined or {}) do who[#who + 1] = { kind = "joiner", name = name, role = role } end
-			table.sort(who, function(x, y) return x.name < y.name end)
-			for _, w in ipairs(who) do groups[#groups + 1] = w end
-		else
-			groups[#groups + 1] = { kind = "contact", ad = a }   -- whisper or invite its leader
+	local out, a = {}, ns.Activities.Get(id)
+	local manage = {}
+	if ns.LFG.mine and ns.LFG.mine.d == id then   -- who joined my Now group: to invite them one by one
+		local who = {}
+		for name, role in pairs(ns.LFG.mine.joined or {}) do who[#who + 1] = { kind = "joiner", name = name, role = role } end
+		table.sort(who, function(x, y) return x.name < y.name end)
+		for _, w in ipairs(who) do manage[#manage + 1] = w end
+	end
+	for _, m in ipairs(ns.Meetups.List(id)) do   -- my runs of five: each place, to add or take out; who waits
+		if m.by == me() and m.size <= 5 then
+			local s = ns.Meetups.Slots(m)
+			for _, role in ipairs({ "T", "H", "D", "A" }) do
+				for k = 1, m.caps[role] or 0 do manage[#manage + 1] = { kind = "slot", meet = m, role = role, name = s[role][k], confirmed = s.confirmed } end
+			end
+			for _, name in ipairs(s.waiting) do manage[#manage + 1] = { kind = "waiting", meet = m, name = name } end
 		end
 	end
-	section(out, "groups", groups)
-	local chat = {}
-	for _, a in ipairs(ns.ChatAds.For(id)) do chat[#chat + 1] = { kind = "chat", ad = a } end
-	section(out, "chat", chat)
-	local meets = {}
-	for _, m in ipairs(ns.Meetups.List(id)) do   -- each run, then its five slots and who waits
-		meets[#meets + 1] = { kind = "meet", meet = m }
-		local s = ns.Meetups.Slots(m)
-		for _, role in ipairs({ "T", "H", "D" }) do
-			for k = 1, ns.Meetups.CAP[role] do meets[#meets + 1] = { kind = "slot", meet = m, role = role, name = s[role][k], confirmed = s.confirmed } end
-		end
-		for _, name in ipairs(s.waiting) do meets[#meets + 1] = { kind = "waiting", meet = m, name = name } end
-	end
-	for _, h in ipairs(ns.Discord.HeldFor(id)) do meets[#meets + 1] = { kind = "held", id = h.id, line = h.line } end   -- Discord lines waiting for a click
-	section(out, "meet", meets)
+	for _, h in ipairs(ns.Discord.HeldFor(id)) do manage[#manage + 1] = { kind = "held", id = h.id, line = h.line } end   -- Discord lines waiting for a click
+	section(out, "manage", manage)
 	local mates = {}
 	for _, name in ipairs(R.List()) do
 		local m = R.mates[name]
-		if d and m.level and m.level >= d.min - 2 and m.level <= d.max + 2 then mates[#mates + 1] = { kind = "mate", name = name } end
+		local fits = a and a.kind == "d" and m.level and m.level >= a.min - 2 and m.level <= a.max + 2
+		if fits then mates[#mates + 1] = { kind = "mate", name = name } end
 	end
 	section(out, "mates", mates)
+	local chat = {}
+	for _, ad in ipairs(ns.ChatAds.For(id)) do chat[#chat + 1] = { kind = "chat", ad = ad } end
+	section(out, "chat", chat)
 	return out
-end
-
-local function joinedText(joined)
-	local who = {}
-	for name, role in pairs(joined or {}) do who[#who + 1] = name .. " (" .. L["ROLE_" .. role] .. ")" end
-	table.sort(who)
-	return #who > 0 and table.concat(who, ", ") or ""
 end
 
 ------------------------------------------------------------------ the window
@@ -72,19 +64,31 @@ end
 local function Build()
 	local f = ns.Skin.Window("LevelMatesDungeonPanel", UIParent)
 	DP.frame = f
-	f:SetSize(DP.WIDTH, 98 + DP.LINES * DP.LINE_H + 44)   -- every line above the footer buttons
+	f:SetSize(DP.WIDTH, TOP_GROUPS + cardsH() + 6 + DP.LINES * DP.LINE_H + 44)
 	f:SetFrameStrata("HIGH"); f:EnableMouse(true); f:SetClampedToScreen(true)   -- clicks stay on the panel, which stays on screen
 	tinsert(UISpecialFrames, "LevelMatesDungeonPanel")
 	f.title = f.TitleText or f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	-- the dungeon's picture across the top
+	-- the picture across the top
 	f.art = f:CreateTexture(nil, "ARTWORK")
 	f.art:SetPoint("TOPLEFT", 10, -28); f.art:SetPoint("TOPRIGHT", -10, -28); f.art:SetHeight(64)
 	f.levels = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	f.levels:SetPoint("BOTTOMLEFT", f.art, "BOTTOMLEFT", 6, 4)
+	-- its groups, as cards
+	DP.groups = ns.Widgets.Panel(f, L.DP_GROUPS)
+	DP.groups:SetPoint("TOPLEFT", 10, -TOP_GROUPS); DP.groups:SetSize(DP.WIDTH - 20, cardsH())
+	DP.groups:SetHint(L.DP_HINT_GROUPS)
+	DP.groups.cards = {}
+	for i = 1, DP.CARDS do
+		local c = ns.Widgets.GroupCard(DP.groups, true)
+		c:SetPoint("TOPLEFT", 6, -22 - (i - 1) * (ns.Widgets.GROUPCARD_H + 4)); c:SetPoint("RIGHT", -6, 0)
+		DP.groups.cards[i] = c
+	end
+	-- the lines below
+	local top = TOP_GROUPS + cardsH() + 6
 	DP.lines = {}
 	for i = 1, DP.LINES do
 		local line = CreateFrame("Frame", nil, f)
-		line:SetSize(DP.WIDTH - 20, DP.LINE_H); line:SetPoint("TOPLEFT", 10, -(98 + (i - 1) * DP.LINE_H))
+		line:SetSize(DP.WIDTH - 20, DP.LINE_H); line:SetPoint("TOPLEFT", 10, -(top + (i - 1) * DP.LINE_H))
 		line.text = line:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 		line.text:SetPoint("LEFT", 2, 0); line.text:SetJustifyH("LEFT"); line.text:SetWordWrap(false)
 		line.buttons = {}
@@ -108,10 +112,8 @@ local function Build()
 		line:Hide()
 		DP.lines[i] = line
 	end
-	DP.lfgButton = SmallButton(f, 140); DP.lfgButton:SetPoint("BOTTOMLEFT", 12, 10); DP.lfgButton:SetText(L.LFG_HERE)
-	DP.lfgButton:SetScript("OnClick", function() ns.Fire("LM_LFG_HERE", DP.id) end)
-	DP.meetButton = SmallButton(f, 140); DP.meetButton:SetPoint("BOTTOMRIGHT", -12, 10); DP.meetButton:SetText(L.MEET_HERE)
-	DP.meetButton:SetScript("OnClick", function() ns.Fire("LM_MEET_HERE", DP.id) end)
+	DP.create = SmallButton(f, 180); DP.create:SetPoint("BOTTOM", 0, 10); DP.create:SetText(L.DP_CREATE)
+	DP.create:SetScript("OnClick", function() if DP.id then ns.GroupsView.Prefill(DP.id) end end)
 	f:Hide()
 end
 
@@ -135,16 +137,24 @@ local function setButtons(line, list)
 	end
 end
 
-local HEAD_COLOR = { groups = { 0.4, 1, 0.4 }, chat = { 0.8, 0.8, 0.8 }, meet = { 0.6, 0.8, 1 }, mates = { 1, 0.82, 0 } }
+local HEAD_COLOR = { manage = { 0.6, 0.8, 1 }, mates = { 1, 0.82, 0 }, chat = { 0.8, 0.8, 0.8 } }
 function DP.Refresh()
 	if not (DP.frame and DP.frame:IsShown() and DP.id) then return end
-	local id, d = DP.id, ns.Dungeons.Get(DP.id)
-	DP.frame.title:SetText(ns.Dungeons.Name(id))
-	local tex, coords = ns.Dungeons.Art(id)
+	local A = ns.Activities
+	local id, a = DP.id, A.Get(DP.id)
+	DP.frame.title:SetText(A.Name(id))
+	local tex, coords = a and a.art, a and a.coords
 	if tex then DP.frame.art:SetTexture(tex); DP.frame.art:SetTexCoord(unpack(coords)); DP.frame.art:Show() else DP.frame.art:Hide() end
-	DP.frame.levels:SetText(string.format(L.CARD_LEVELS, d.min, d.max) .. (ns.Dungeons.Fits(id, UnitLevel("player")) and ("  ·  " .. L.DP_YOUR_LEVEL) or ""))
+	if a and a.kind == "d" then
+		DP.frame.levels:SetText(string.format(L.CARD_LEVELS, a.min, a.max) .. (ns.Dungeons.Fits(id, UnitLevel("player")) and ("  ·  " .. L.DP_YOUR_LEVEL) or ""))
+	else DP.frame.levels:SetText("") end
+	-- the cards
+	local groups = ns.Groups.List(id)
+	for i, c in ipairs(DP.groups.cards) do c:Set(groups[i]) end
+	DP.groups:SetEmpty(#groups == 0)
+	DP.groups:SetNote(#groups > DP.CARDS and string.format(L.RUNS_MORE, #groups - DP.CARDS) or "")
+	-- the lines
 	local rows = DP.Rows(id)
-	if #rows == 0 then rows = { { kind = "empty" } } end
 	for i, line in ipairs(DP.lines) do
 		local e = rows[i]
 		line.entry = e
@@ -154,58 +164,21 @@ function DP.Refresh()
 			local btns = {}
 			if e.header then
 				line.text:SetText(L["DP_" .. e.header:upper()] .. "  •  " .. e.count); line.text:SetTextColor(unpack(HEAD_COLOR[e.header]))
-			elseif e.kind == "empty" then
-				line.text:SetText(L.DP_EMPTY); line.text:SetTextColor(0.7, 0.7, 0.7)
-			elseif e.kind == "ad" then
-				local a = e.ad
-				local joined = joinedText(a.joined)
-				line.text:SetText(a.name .. " · " .. ns.LFG.RolesShort(a.r) .. (joined ~= "" and (" · " .. joined) or "")); line.text:SetTextColor(1, 1, 1)
-				if a.mine then
-					btns[1] = { L.DP_WITHDRAW, function() ns.LFG.Cancel() end }
-				elseif ns.LFG.myJoins[a.id] then
-					btns[1] = { L.DP_LEAVE, function() ns.LFG.Leave(a.id) end }
-					btns[2] = { L.DP_WHISPER, function() ns.Board.Whisper(a.name) end }
-				else
-					btns[1] = { Cap(L.ROLE_T), function() ns.LFG.Join(a.id, "T") end }
-					btns[2] = { Cap(L.ROLE_H), function() ns.LFG.Join(a.id, "H") end }
-					btns[3] = { Cap(L.ROLE_D), function() ns.LFG.Join(a.id, "D") end }
-				end
 			elseif e.kind == "joiner" then
 				line.text:SetText("   " .. e.name .. " (" .. L["ROLE_" .. e.role] .. ")"); line.text:SetTextColor(0.4, 1, 0.4)
 				btns[1] = { L.DP_INVITE, function() ns.Board.Invite(e.name) end }
-			elseif e.kind == "contact" then
-				line.text:SetText(""); line.text:SetTextColor(1, 1, 1)
-				btns[1] = { L.DP_INVITE, function() ns.Board.Invite(e.ad.name) end }
-				btns[2] = { L.DP_WHISPER, function() ns.Board.Whisper(e.ad.name) end }
 			elseif e.kind == "chat" then
 				line.text:SetText(e.ad.name .. ": " .. e.ad.text); line.text:SetTextColor(0.85, 0.85, 0.85)
 				btns[1] = { L.DP_WHISPER, function() ns.Board.Whisper(e.ad.full) end }
-			elseif e.kind == "meet" then
-				local m = e.meet
-				line.text:SetText(ns.Meetups.When(m) .. " · " .. m.by .. " · " .. ns.Meetups.Count(m) .. "/5" .. (m.n and (" · " .. m.n) or "")); line.text:SetTextColor(0.6, 0.8, 1)
-				if m.by == me() then
-					local s = ns.Meetups.Slots(m)
-					local names = {}
-					for _, role in ipairs({ "T", "H", "D" }) do for _, n in ipairs(s[role]) do names[#names + 1] = n end end
-					btns[1] = { L.DP_CANCEL, function() ns.Meetups.Cancel(m.id) end, true }
-					btns[2] = { L.DP_INVITE_ALL, function() ns.Board.InviteAll(names) end }
-				elseif ns.Meetups.MyRole(m.id) then
-					btns[1] = { L.DP_LEAVE, function() ns.Meetups.Leave(m.id) end }
-				else
-					local k = 0
-					for _, role in ipairs({ "T", "H", "D" }) do   -- only the roles with a free slot
-						if ns.Meetups.Free(m, role) then k = k + 1; btns[k] = { Cap(L["ROLE_" .. role]), function() ns.Meetups.Join(m.id, role) end } end
-					end
-				end
 			elseif e.kind == "slot" then
 				local m = e.meet
 				local label = "   " .. Cap(L["ROLE_" .. e.role]) .. ": "
 				if e.name then
 					line.text:SetText(label .. e.name .. (e.confirmed and "" or (" " .. L.RUN_UNCONFIRMED))); line.text:SetTextColor(1, 1, 1)
-					if m.by == me() and e.name ~= me() then btns[1] = { L.DP_REMOVE, function() ns.Meetups.RemoveMember(m.id, e.name) end, true } end
+					if e.name ~= me() then btns[1] = { L.DP_REMOVE, function() ns.Meetups.RemoveMember(m.id, e.name) end, true } end
 				else
 					line.text:SetText(label .. L.RUN_FREE); line.text:SetTextColor(0.55, 0.55, 0.55)
-					if m.by == me() then btns[1] = { L.DP_ADD, function() DP.AddMenu(m, e.role) end } end
+					btns[1] = { L.DP_ADD, function() DP.AddMenu(m, e.role) end }
 				end
 			elseif e.kind == "held" then
 				line.text:SetText("   " .. L.DP_DISCORD_WAITING); line.text:SetTextColor(0.55, 0.6, 1)
@@ -245,7 +218,7 @@ end
 function DP.AddMenu(m, role)
 	local s = ns.Meetups.Slots(m)
 	local inRun = {}
-	for _, r in ipairs({ "T", "H", "D" }) do for _, n in ipairs(s[r]) do inRun[n] = true end end
+	for _, r in ipairs({ "T", "H", "D", "A" }) do for _, n in ipairs(s[r] or {}) do inRun[n] = true end end
 	MenuUtil.CreateContextMenu(DP.frame, function(_, root)
 		root:CreateTitle(string.format(L.RUN_ADD_AS, L["ROLE_" .. role]))
 		for _, name in ipairs(R.List()) do

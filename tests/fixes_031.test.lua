@@ -35,10 +35,10 @@ assert(DP.frame.point[1] == "TOPRIGHT" and DP.frame.point[3] == "TOPLEFT", "no r
 -- 6: my own group lists who joined with Invite; others' groups have Whisper and Invite
 STUB.Receive("LVLM2", C.Encode("hb", { l = 21, z = 1412 }), "GUILD", "Mario-Testrealm")
 STUB.Receive("LVLM2", C.Encode("lfg", { d = 5, r = "H", id = "lfg00001", m = 20 }), "GUILD", "Mario-Testrealm")
-local rows = DP.Rows(5)
-local contact
-for _, r in ipairs(rows) do if r.kind == "contact" then contact = r end end
-assert(contact and contact.ad.name == "Mario", "Whisper and Invite for Mario's group")
+DP.Refresh()
+local marioCard
+for _, c in ipairs(DP.groups.cards) do if c:IsShown() and c.group.by == "Mario" then marioCard = c end end
+assert(marioCard and marioCard.buttons[1].text == L.RUN_JOIN, "Mario's group as a card, with Join (its members a click away)")
 ns.LFG.Post(5, "T")
 STUB.Receive("LVLM2", C.Encode("hb", { l = 40, z = 1412 }), "GUILD", "Ana-Testrealm")
 STUB.Receive("LVLM2", C.Encode("lfj", { id = ns.LFG.mine.id, r = "H" }), "GUILD", "Ana-Testrealm")
