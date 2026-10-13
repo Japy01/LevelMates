@@ -345,3 +345,4 @@ L.TREE_WARRIOR_1 = "Armas"; L.TREE_WARRIOR_2 = "Furia"; L.TREE_WARRIOR_3 = "Prot
 L.TV_TOTAL = "Puntos: %d"
 L.GEAR_AWAY = "Fuera de alcance. Ponlo de objetivo o en tu grupo para ver su modelo."
 L.GIFT_BOUND = "Ese objeto está ligado (o es de misión): no se puede regalar ni vender."
+L.CV_TRADABLE = "Solo comerciables"; L.CV_WHO_ELSE = "¿Quién más lo fabrica?"; L.CV_OTHER = "Otros"; L.CV_SPELLS = "Encantamientos y otros"

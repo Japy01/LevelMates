@@ -40,3 +40,13 @@ STUB.Receive("LVLM2", C.Encode("rcp", { p = 171, r = 60, m = 75, i = RC.Encode({
 assert(RC.Of("Ana")[171], "hers, plausible")
 STUB.Receive("LVLM2", C.Encode("rcp", { p = 171, r = 250, m = 300, i = RC.Encode({ 858, 9999 }) }), "GUILD", "Ana-Testrealm")
 assert(RC.Of("Ana")[171] == nil, "an impossible rank: what we had for it goes too")
+
+-- a window whose rank is not mine (someone else's, though the game's checks said nothing): not read
+ns.char.skills = { [171] = { rank = 125, max = 150 } }
+local before = RC.Mine()[171] and #RC.Mine()[171].items
+STUB.trade = { line = 171, rank = 225, max = 300, recipes = { { id = 1, item = 858 }, { id = 2, item = 13444 } } }
+STUB.Fire("TRADE_SKILL_SHOW"); STUB.Advance(3)
+assert(#RC.Mine()[171].items == before, "not my rank: not read")
+STUB.trade.rank = 126
+STUB.Fire("TRADE_SKILL_LIST_UPDATE"); STUB.Advance(3)
+assert(#RC.Mine()[171].items == 2, "my rank (give or take a bonus): read")

@@ -39,7 +39,9 @@ local names = {}
 for _, r in ipairs(CV.rows) do if r:IsShown() then names[#names + 1] = r.name.text end end
 assert(table.concat(names, ","):find("Embossed Leather Vest", 1, true) and table.concat(names, ","):find("Light Armor Kit", 1, true), "both recipes: " .. table.concat(names, ","))
 -- a recipe: ask Mario for it (a whisper, from the click)
-CV.rows[1].scripts.OnClick(CV.rows[1])
+local recipeRow   -- Ruling: the first row is now a kind's heading; the first recipe follows
+for _, r in ipairs(CV.rows) do if r:IsShown() and not r.header and not recipeRow then recipeRow = r end end
+recipeRow.scripts.OnClick(recipeRow)
 local ask
 for _, e in ipairs(entries) do if e.text:find("Mario", 1, true) then ask = e end end
 assert(ask, "ask Mario")

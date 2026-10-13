@@ -123,6 +123,14 @@ function CV.Build(parent)
 	CV.back = ns.Skin.Button(CV.right); CV.back:SetSize(80, 20); CV.back:SetPoint("TOPRIGHT", -PAD, -70); CV.back:SetText(L.CV_BACK)
 	CV.back:SetScript("OnClick", function() CV.crafter = nil; CV.page = 1; CV.Refresh() end)
 	CV.back:Hide()
+	-- a crafter's recipes: only what can change hands (remembered)
+	CV.tradable = CreateFrame("CheckButton", nil, CV.right, "UICheckButtonTemplate")
+	CV.tradable:SetSize(22, 22); CV.tradable:SetPoint("RIGHT", CV.back, "LEFT", -130, 0)
+	CV.tradable:SetChecked(ns.db.settings.craftsTradable == true)
+	CV.tradable:SetScript("OnClick", function(self) ns.db.settings.craftsTradable = self:GetChecked() and true or false; CV.page = 1; CV.Refresh() end)
+	CV.tradableLabel = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	CV.tradableLabel:SetPoint("LEFT", CV.tradable, "RIGHT", 2, 0); CV.tradableLabel:SetText(L.CV_TRADABLE)
+	CV.tradable:Hide(); CV.tradableLabel:Hide()
 	CV.colName = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); CV.colName:SetPoint("TOPLEFT", PAD + 22, -92)
 	CV.rows = {}
 	for i = 1, CV.ROWS do CV.rows[i] = mainRow(CV.right, i) end
@@ -157,11 +165,48 @@ function CV.Select(id)
 end
 
 ------------------------------------------------------------------ fill
+-- A recipe's menu: ask its crafter for it (not me), or see who else crafts it.
 local function ask(owner, name, item)
 	MenuUtil.CreateContextMenu(owner, function(_, root)
 		root:CreateTitle(itemName(item))
-		root:CreateButton(string.format(L.RC_ASK_MENU, name), function() ns.Recipes.Ask(name, item) end)
+		if name ~= ns.Me() then root:CreateButton(string.format(L.RC_ASK_MENU, name), function() ns.Recipes.Ask(name, item) end) end
+		root:CreateButton(L.CV_WHO_ELSE, function()
+			CV.query, CV.page = "item:" .. item, 1
+			if CV.search then CV.search:SetText(CV.query) end
+			CV.Refresh()
+		end)
 	end)
+end
+
+-- A crafter's recipes in order: by kind (the slot it is worn on, else the kind of item), then the level it asks, then
+-- name; a heading before each kind. Only tradable: what binds on pickup and quest items are left out.
+local NOT_TRADED = { [1] = true, [4] = true }
+local function recipeRows(e, onlyTradable)
+	local list = {}
+	for _, item in ipairs(e and e.items or {}) do
+		local name, _, _, _, level, kind, _, _, slot, _, _, _, _, bind = ns.ItemInfo(item)
+		if not (onlyTradable and NOT_TRADED[bind]) then
+			local cat = slot and slot ~= "" and (_G[slot] or slot) or (kind and kind ~= "" and kind) or nil
+			list[#list + 1] = { item = item, cat = cat or L.CV_OTHER, known = cat ~= nil, level = level or 0, name = name or ("#" .. item) }
+		end
+	end
+	table.sort(list, function(a, b)
+		if a.known ~= b.known then return a.known end   -- not loaded yet: at the end
+		if a.cat ~= b.cat then return a.cat < b.cat end
+		if a.level ~= b.level then return a.level < b.level end
+		return a.name < b.name
+	end)
+	local out, last, count = {}, nil, 0
+	for _, x in ipairs(list) do
+		if x.cat ~= last then out[#out + 1] = { header = x.cat }; last = x.cat end
+		out[#out + 1] = x.item; count = count + 1
+	end
+	local spells = e and e.spells or {}
+	if #spells > 0 then
+		out[#out + 1] = { header = L.CV_SPELLS }
+		for _, spell in ipairs(spells) do out[#out + 1] = { spell = spell }; count = count + 1 end
+	end
+	return out, count
 end
 local function setRows(list, fill)
 	local pages = math.max(1, math.ceil(#list / CV.ROWS))
@@ -177,6 +222,7 @@ local function setRows(list, fill)
 	CV.pageText:SetText(pages > 1 and string.format("%d/%d", CV.page, pages) or "")
 end
 local function plainRow(r, showBar)
+	r.header = nil; r.icon:Show()
 	r.icon:SetTexCoord(0, 1, 0, 1)   -- a class circle may have cropped it before
 	r.barBg:SetShown(showBar); r.bar:SetShown(showBar); r.rank:SetShown(showBar); r.read:SetShown(showBar); r.who:SetShown(not showBar)
 end
@@ -184,7 +230,9 @@ end
 function CV.Refresh()
 	if not CV.frame or not CV.frame:IsShown() then return end
 	CV.Layout()
+	CV.redraws = (CV.redraws or 0) + 1
 	local P, RC = ns.Professions, ns.Recipes
+	CV.tradable:Hide(); CV.tradableLabel:Hide()
 	local profs = CV.Professions()
 	local people, recipes = {}, 0
 	for _, p in ipairs(profs) do recipes = recipes + p.recipes; for _, c in ipairs(p.crafters) do people[c.name] = true end end
@@ -235,18 +283,19 @@ function CV.Refresh()
 		CV.back:Show()
 		local c = CV.crafter
 		local e = RC.Of(c.name)[current.id]
-		local items = {}
-		for _, item in ipairs(e and e.items or {}) do items[#items + 1] = item end
-		table.sort(items, function(a, b) return itemName(a) < itemName(b) end)
-		local spells = {}
-		for _, spell in ipairs(e and e.spells or {}) do spells[#spells + 1] = { spell = spell } end
-		for _, sp in ipairs(spells) do items[#items + 1] = sp end   -- enchants and the like, after the items
+		CV.tradable:Show(); CV.tradableLabel:Show()
+		local items, count = recipeRows(e, CV.tradable:GetChecked())
 		CV.icon:SetTexture(P.Icon(current.id)); CV.title:SetText(c.name); CV.title:SetTextColor(1, 0.82, 0)
 		CV.sub:SetText(string.format(L.CV_CRAFTER_SUB, P.Name(current.id), c.rank or 0, c.max or 0, e and string.format(L.CV_READ, ago(e.t)) or L.CV_NOT_READ))
-		CV.big:SetText(tostring(#items)); CV.bigLabel:SetText(L.CV_RECIPES_LOWER); CV.colName:SetText(L.CV_ITEM)
+		CV.big:SetText(tostring(count)); CV.bigLabel:SetText(L.CV_RECIPES_LOWER); CV.colName:SetText(L.CV_ITEM)
 		setRows(items, function(r, item)
 			plainRow(r, false)
 			r.who:SetText("")
+			if type(item) == "table" and item.header then   -- a kind's heading
+				r.header = true; r.icon:Hide()
+				r.name:SetText(item.header); r.name:SetTextColor(ns.Skin.Ink(1, 0.82, 0))
+				return
+			end
 			if type(item) == "table" then   -- a spell recipe: its name and icon from the game
 				local info = C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(item.spell)
 				r.icon:SetTexture(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
@@ -254,7 +303,7 @@ function CV.Refresh()
 				return
 			end
 			r.icon:SetTexture(itemIcon(item)); r.name:SetText(itemName(item)); r.name:SetTextColor(ns.Skin.Ink(itemColor(item)))
-			if c.name ~= ns.Me() then r.fn = function(self) ask(self, c.name, item) end end
+			r.fn = function(self) ask(self, c.name, item) end
 		end)
 		if #items == 0 then CV.right:SetHint(string.format(e and L.CV_NONE_HERE or L.CV_NO_RECIPES, c.name)) end
 		CV.right:SetEmpty(#items == 0)

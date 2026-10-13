@@ -344,3 +344,4 @@ L.TREE_WARRIOR_1 = "Arms"; L.TREE_WARRIOR_2 = "Fury"; L.TREE_WARRIOR_3 = "Protec
 L.TV_TOTAL = "Points: %d"
 L.GEAR_AWAY = "Out of sight. Target them or group with them to see their model."
 L.GIFT_BOUND = "That item is bound (or a quest item): it cannot be given or sold."
+L.CV_TRADABLE = "Tradable only"; L.CV_WHO_ELSE = "Who else crafts it?"; L.CV_OTHER = "Other"; L.CV_SPELLS = "Enchants and others"

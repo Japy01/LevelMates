@@ -82,6 +82,7 @@ function RC.Scan()
 	if not id then return end
 	local skills = ns.char.skills
 	if skills and next(skills) and not skills[id] then return end   -- not one of my professions (as my skills know them)
+	if skills and skills[id] and skills[id].rank and math.abs(rank - skills[id].rank) > RC.RANK_MARGIN then return end   -- not my rank: not my window
 	RC.scans = RC.scans + 1
 	local items, spells = {}, {}
 	for _, rid in ipairs(C_TradeSkillUI.GetAllRecipeIDs() or {}) do

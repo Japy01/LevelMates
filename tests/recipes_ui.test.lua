@@ -36,5 +36,5 @@ CV.search:SetText(""); CV.search.scripts.OnTextChanged(CV.search)
 CV.Select(171)
 CV.rows[1].scripts.OnClick(CV.rows[1], "LeftButton")
 local recipes = 0
-for _, r in ipairs(CV.rows) do if r:IsShown() then recipes = recipes + 1 end end
+for _, r in ipairs(CV.rows) do if r:IsShown() and not r.header then recipes = recipes + 1 end end   -- headings are not recipes
 assert(recipes == 2 and CV.mode == "recipes", "his recipes")
