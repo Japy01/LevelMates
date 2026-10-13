@@ -228,7 +228,7 @@ local function refreshMe()
 		local s = g and g.slots and g.slots[sq.slot]
 		sq.filled, sq.itemId = s ~= nil, s and s.id
 		if s then
-			local _, _, quality = GetItemInfo(s.id)
+			local _, _, quality = ns.ItemInfo(s.id)
 			local c = quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[quality]
 			if c then sq.tex:SetColorTexture(c.r, c.g, c.b, 0.9) else sq.tex:SetColorTexture(0.9, 0.9, 0.9, 0.9) end
 		else

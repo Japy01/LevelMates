@@ -50,6 +50,12 @@ end
 function ns.Log(fmt, ...)
 	if ns.db and ns.db.settings.debug then print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
 end
+-- An item's info: name, link, quality, ... On Forever only C_Item.GetItemInfo exists (the old global is gone).
+function ns.ItemInfo(item)
+	local fn = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+	if not fn or item == nil then return nil end
+	return fn(item)
+end
 -- What happened on its own (a guildmate, the game): always in chat, where it stays.
 function ns.Chat(fmt, ...) print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
 -- What a click did: at the foot of the book while it is open, else in chat (and lines with a link: chat, to be clicked).

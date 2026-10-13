@@ -66,8 +66,8 @@ function GW.Open(name)
 		local s = g.slots[slot]
 		b.itemId, b.enchant, b.il = s and s.id, s and s.en, s and s.il
 		if s then
-			b.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(s.id)) or GetItemIcon(s.id))
-			local _, _, quality = GetItemInfo(s.id)
+			b.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(s.id)) or (GetItemIcon and GetItemIcon(s.id)))
+			local _, _, quality = ns.ItemInfo(s.id)
 			local c = quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[quality]
 			if c then b.border:SetVertexColor(c.r, c.g, c.b); b.border:Show() else b.border:Hide() end
 		else

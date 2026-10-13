@@ -38,7 +38,7 @@ end
 
 local function itemLevel(link)
 	local il = C_Item and C_Item.GetDetailedItemLevelInfo and C_Item.GetDetailedItemLevelInfo(link)
-	if not il and GetItemInfo then il = select(4, GetItemInfo(link)) end
+	if not il then il = select(4, ns.ItemInfo(link)) end
 	return tonumber(il) or 0
 end
 function GE.Mine() return ns.char.gear end

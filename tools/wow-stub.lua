@@ -331,7 +331,9 @@ TooltipDataProcessor = { AddTooltipPostCall = function(kind, fn) STUB.tooltipPos
 function STUB.TooltipPost(kind, tooltip, data) for _, p in ipairs(STUB.tooltipPost) do if p.kind == kind then p.fn(tooltip, data) end end end
 ItemRefTooltip = {}
 STUB.items, STUB.itemLoads = {}, {}
-function GetItemInfo(x)
+-- the client has only C_Item.GetItemInfo (the old global GetItemInfo is gone on Forever)
+C_Item = C_Item or {}
+function C_Item.GetItemInfo(x)
 	local id = tonumber(x) or tonumber(tostring(x):match("item:(%d+)") or "")
 	local link = id and STUB.items[id]
 	if link then return link:match("%[(.-)%]"), link end

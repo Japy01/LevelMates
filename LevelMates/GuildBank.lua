@@ -56,7 +56,7 @@ function GB.Rows(search)
 	if not s then return out end
 	for _, tab in ipairs(s.tabs) do
 		for id, n in pairs(tab.items) do
-			local name = GetItemInfo(id)
+			local name = ns.ItemInfo(id)
 			if q == "" or tostring(id) == q or (name and name:lower():find(q, 1, true)) then out[#out + 1] = { id = id, n = n, tab = tab.name } end
 		end
 	end

@@ -230,12 +230,12 @@ function RC.Find(text)
 	if #q < 3 then return {} end
 	local out = {}
 	for _, item in ipairs(RC.Known()) do
-		local name = GetItemInfo(item)
+		local name = ns.ItemInfo(item)
 		if name and name:lower():find(q, 1, true) then out[#out + 1] = item; if #out >= 10 then break end end
 	end
 	return out
 end
-function RC.Link(item) local _, link = GetItemInfo(item); return link or ("item:" .. item) end
+function RC.Link(item) local _, link = ns.ItemInfo(item); return link or ("item:" .. item) end
 
 -- policy: click paths only (RC.Ask is called from the Crafts tab's menu): "Could you make me [item]?", once a minute
 -- per person and item.
