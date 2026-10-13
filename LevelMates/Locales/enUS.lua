@@ -310,3 +310,5 @@ L.RUNS_HINT_SOON = "No runs today or tomorrow. Set one up on the right."; L.RUNS
 L.RUN_JOIN = "Join"; L.RUN_LEAVE = "Leave"; L.RUN_INVITE_ALL = "Invite all"
 L.TRAY_TITLE = "Notices"; L.TRAY_GO = "Go"; L.TRAY_EMPTY = "No notices in the last two hours."; L.TRAY_CLEAR = "Clear"; L.MINIMAP_SHIFT = "Shift+click: notices"
 L.OPT_STRIP = "Strip under the minimap"; L.OPT_STRIP_TT = "The newest notice for 10 seconds under the minimap (after combat, not during). A click opens the notices."
+L.LEVELBAR_LINE = "Lv %d · %d%% (+%d%% rested) · %s XP/h · to level %s · %s in the level · %d kills"; L.LEVELBAR_LOCK = "Lock"; L.LEVELBAR_UNLOCK = "Unlock"; L.LEVELBAR_HIDE = "Hide"
+L.OPT_LEVELBAR = "Level bar"; L.OPT_LEVELBAR_TT = "A small bar with your XP per hour, time to level, time in the level and kills (also /lm bar). Right-click it to lock or hide it."

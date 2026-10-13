@@ -311,3 +311,5 @@ L.RUNS_HINT_SOON = "No hay partidas hoy ni mañana. Crea una a la derecha."; L.R
 L.RUN_JOIN = "Unirme"; L.RUN_LEAVE = "Salir"; L.RUN_INVITE_ALL = "Invitar a todos"
 L.TRAY_TITLE = "Avisos"; L.TRAY_GO = "Ir"; L.TRAY_EMPTY = "No hay avisos de las últimas dos horas."; L.TRAY_CLEAR = "Vaciar"; L.MINIMAP_SHIFT = "Mayús+clic: avisos"
 L.OPT_STRIP = "Tira bajo el minimapa"; L.OPT_STRIP_TT = "El último aviso 10 segundos bajo el minimapa (después del combate, no durante). Un clic abre los avisos."
+L.LEVELBAR_LINE = "Nv %d · %d%% (+%d%% desc.) · %s XP/h · subir en %s · %s en el nivel · %d muertes"; L.LEVELBAR_LOCK = "Bloquear"; L.LEVELBAR_UNLOCK = "Desbloquear"; L.LEVELBAR_HIDE = "Ocultar"
+L.OPT_LEVELBAR = "Barra de nivel"; L.OPT_LEVELBAR_TT = "Una barrita con tu XP por hora, el tiempo para subir, el tiempo en el nivel y las muertes (también /lm barra). Clic derecho para bloquearla u ocultarla."
