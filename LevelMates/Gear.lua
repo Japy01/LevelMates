@@ -9,23 +9,38 @@ GE.SETTLE = 1
 GE.reads = 0
 local IGNORED = { [4] = true, [19] = true }   -- shirt and tabard: never part of the average
 
--- "slot:id:ilvl:enchant,…"
+-- "slot:id:ilvl:enchant[:suffix],…". The suffix (an item's random "of the Bear") goes shifted by SUFFIX_SHIFT, as
+-- digits only: older versions check the text is digits, colons and commas, and still read the first four numbers.
+GE.SUFFIX_SHIFT = 50000
 function GE.Encode(slots)
 	local parts = {}
 	for slot = 1, 19 do
 		local s = slots[slot]
-		if s then parts[#parts + 1] = slot .. ":" .. s.id .. ":" .. (s.il or 0) .. ":" .. (s.en or 0) end
+		if s then
+			local part = slot .. ":" .. s.id .. ":" .. (s.il or 0) .. ":" .. (s.en or 0)
+			if s.sf and s.sf ~= 0 and math.abs(s.sf) < GE.SUFFIX_SHIFT then part = part .. ":" .. (s.sf + GE.SUFFIX_SHIFT) end
+			parts[#parts + 1] = part
+		end
 	end
 	return table.concat(parts, ",")
 end
 function GE.Decode(g)
 	if type(g) ~= "string" then return nil end
 	local out = {}
-	for slot, id, il, en in g:gmatch("(%d+):(%d+):(%d+):(%d+)") do
+	for part in g:gmatch("[^,]+") do
+		local slot, id, il, en, sf = part:match("^(%d+):(%d+):(%d+):(%d+):?(%d*)$")
 		slot = tonumber(slot)
-		if slot >= 1 and slot <= 19 then out[slot] = { id = tonumber(id), il = tonumber(il), en = tonumber(en) } end
+		if slot and slot >= 1 and slot <= 19 then
+			out[slot] = { id = tonumber(id), il = tonumber(il), en = tonumber(en), sf = sf ~= "" and tonumber(sf) - GE.SUFFIX_SHIFT or nil }
+		end
 	end
 	return out
+end
+-- The item as the game names it, with its enchant and suffix: "item:id:enchant:0:0:0:0:suffix".
+function GE.ItemString(s)
+	if not s then return nil end
+	if s.sf and s.sf ~= 0 then return "item:" .. s.id .. ":" .. (s.en or 0) .. ":0:0:0:0:" .. s.sf end
+	return "item:" .. s.id .. ":" .. (s.en or 0)
 end
 -- Over the filled slots that count (all but shirt and tabard), skipping items whose level is not known yet.
 function GE.Average(slots)
@@ -46,8 +61,8 @@ function GE.Read()
 	local slots = {}
 	for slot = 1, 19 do
 		local link = GetInventoryItemLink("player", slot)
-		local id, en = tostring(link or ""):match("item:(%d+):(%d*)")
-		if id then slots[slot] = { id = tonumber(id), il = itemLevel(link), en = tonumber(en) or 0 } end
+		local id, en, sf = tostring(link or ""):match("item:(%d+):(%d*):?%-?%d*:?%-?%d*:?%-?%d*:?%-?%d*:?(%-?%d*)")
+		if id then slots[slot] = { id = tonumber(id), il = itemLevel(link), en = tonumber(en) or 0, sf = tonumber(sf) ~= 0 and tonumber(sf) or nil } end
 	end
 	GE.reads = GE.reads + 1
 	local avg, filled = GE.Average(slots)

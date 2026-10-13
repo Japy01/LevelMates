@@ -21,7 +21,7 @@ local function slotButton(f, slot)
 	b:SetScript("OnEnter", function(self)
 		if not (GameTooltip and self.itemId) then return end
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		GameTooltip:SetHyperlink("item:" .. self.itemId .. ":" .. (self.enchant or 0))
+		GameTooltip:SetHyperlink(ns.Gear.ItemString({ id = self.itemId, en = self.enchant, sf = self.suffix }))
 		if self.il and self.il > 0 then GameTooltip:AddLine(string.format(L.GEAR_ILVL, self.il), 1, 0.82, 0) end
 		GameTooltip:Show()
 	end)
@@ -45,10 +45,27 @@ local function Build()
 	local model = CreateFrame("DressUpModel", nil, f)
 	model:SetPoint("TOPLEFT", 16 + SIZE + 8, -52); model:SetPoint("BOTTOMRIGHT", -(16 + SIZE + 8), 16 + SIZE + 8)
 	GW.model = model
+	-- out of sight where the game cannot dress a model by race (Forever): their class crest and a note instead
+	local away = CreateFrame("Frame", nil, f)
+	away:SetAllPoints(model)
+	away.crest = away:CreateTexture(nil, "ARTWORK"); away.crest:SetSize(72, 72); away.crest:SetPoint("CENTER", 0, 24)
+	away.text = away:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	away.text:SetPoint("TOP", away.crest, "BOTTOM", 0, -10); away.text:SetWidth(130); away.text:SetJustifyH("CENTER")
+	away.text:SetText(L.GEAR_AWAY)
+	away:Hide()
+	GW.away = away
 	f:Hide()
 end
 
 -- The unit the game can show for this name, if any (me, in my group, or my target).
+local function crest(tex, class)
+	local atlas = class and "classicon-" .. class:lower()
+	if atlas and ns.Skin.HasAtlas(atlas) then tex:SetAtlas(atlas); return end
+	local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class or ""]
+	if coords then tex:SetTexture("Interface/TargetingFrame/UI-Classes-Circles"); tex:SetTexCoord(unpack(coords))
+	else tex:SetTexture(134400) end
+end
+
 local function unitFor(name)
 	if name == ns.Me() then return "player" end
 	if UnitName and UnitName("target") == name then return "target" end
@@ -64,7 +81,7 @@ function GW.Open(name)
 	f.info:SetText(string.format(L.GEAR_LINE, g.avg or 0, g.filled or 0))
 	for slot, b in pairs(GW.slots) do
 		local s = g.slots[slot]
-		b.itemId, b.enchant, b.il = s and s.id, s and s.en, s and s.il
+		b.itemId, b.enchant, b.il, b.suffix = s and s.id, s and s.en, s and s.il, s and s.sf
 		if s then
 			b.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(s.id)) or (GetItemIcon and GetItemIcon(s.id)))
 			local _, _, quality = ns.ItemInfo(s.id)
@@ -78,7 +95,13 @@ function GW.Open(name)
 	local m = GW.model
 	if m.ClearModel then m:ClearModel() end
 	local unit = unitFor(name)
+	GW.away:Hide()
 	if unit then m:SetUnit(unit); m:Show()
+	elseif not m.SetCustomRace then   -- Forever: no model by race (measured); never my own body in their clothes
+		m:Hide()
+		local mate = ns.Roster.mates[name]
+		crest(GW.away.crest, mate and mate.class)
+		GW.away:Show()
 	elseif g.r and (g.x == 2 or g.x == 3) then
 		local ok = pcall(function()
 			m:SetUnit("player")   -- a player model first: SetCustomRace changes a loaded model

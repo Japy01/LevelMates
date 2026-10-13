@@ -119,7 +119,7 @@ local function buildMe(p)
 		sq.slot = GEAR_SLOTS[i]
 		sq:SetScript("OnEnter", function(self)
 			if not (GameTooltip and self.itemId) then return end
-			GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink("item:" .. self.itemId); GameTooltip:Show()
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetHyperlink(self.itemString or ("item:" .. self.itemId)); GameTooltip:Show()
 		end)
 		sq:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 		sq:SetScript("OnClick", function() if ns.GearWindow then ns.GearWindow.Open(ns.Me()) end end)
@@ -274,7 +274,7 @@ local function refreshMe()
 	p.gearLabel:SetText(g and g.avg and g.avg > 0 and string.format(L.GEAR_ILVL, g.avg) or L.DB_GEAR)
 	for _, sq in ipairs(p.gear) do
 		local s = g and g.slots and g.slots[sq.slot]
-		sq.filled, sq.itemId = s ~= nil, s and s.id
+		sq.filled, sq.itemId, sq.itemString = s ~= nil, s and s.id, s and ns.Gear.ItemString(s)
 		if s then
 			sq.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(s.id)) or ("Interface\\Icons\\INV_Misc_QuestionMark"))
 			sq.icon:SetDesaturated(false); sq.icon:SetAlpha(1)

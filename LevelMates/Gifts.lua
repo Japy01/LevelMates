@@ -78,10 +78,37 @@ end
 local told = {}
 local function tell(key, fmt, ...) if told[key] then return end; told[key] = true; ns.NoticeAt("wishes", fmt, ...) end
 
+-- True when the item surely cannot be traded: it binds when picked up or is a quest item, or every copy of it in my
+-- bags is already bound. Two sources for "bound" (the slot's own flag, the item's location), and bound wins: one of
+-- them can say "don't know" for a bound item. Not in my bags (the bank?): it may well be tradable.
+local NEVER_TRADED = { [1] = true, [4] = true }   -- bind types: on pickup, quest
+function GF.Bound(id)
+	local bindType = select(14, ns.ItemInfo(id))
+	if NEVER_TRADED[bindType] then return true end
+	if not (C_Container and C_Container.GetContainerNumSlots and C_Container.GetContainerItemInfo) then return false end
+	local copies, free = 0, 0
+	for bag = 0, 4 do
+		for slot = 1, C_Container.GetContainerNumSlots(bag) or 0 do
+			local info = C_Container.GetContainerItemInfo(bag, slot)
+			if info and info.itemID == id then
+				copies = copies + 1
+				local bound = info.isBound == true
+				if not bound and ItemLocation and C_Item and C_Item.IsBound then
+					local ok, b = pcall(function() return C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot)) end)
+					bound = ok and b == true
+				end
+				if not bound then free = free + 1 end
+			end
+		end
+	end
+	return copies > 0 and free == 0
+end
+
 -- Called from a click (the dialog in gift mode).
 function GF.Add(text, price)
 	local id = W.ItemId(text)
 	if not id then ns.Say(L.WISH_NOT_ITEM); return false end
+	if GF.Bound(id) then ns.Say(L.GIFT_BOUND); return false end
 	if GF.Has(id) then ns.Say(L.GIFT_DUP); return false end
 	local list = mine()
 	if #list >= GF.MAX then ns.Say(L.GIFT_FULL, GF.MAX); return false end
