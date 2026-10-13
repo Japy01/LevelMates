@@ -9,7 +9,7 @@ local layout = {
 	class = "MAGE", tree = 77, spec = 1489, hash = string.rep("ab", 16),
 	groups = { { id = 11, order = 1, icon = 135932, name = "Arcano" }, { id = 12, order = 2, icon = 135810, name = "Fuego" }, { id = 13, order = 3, icon = 135846, name = "Escarcha" } },
 	nodes = {
-		{ id = 101, x = 1000, y = 1200, max = 1, type = 0, group = 11, spells = { 1001 } },
+		{ id = 101, x = 1000, y = 1200, max = 1, type = 0, group = 11, spells = { 1001 }, to = { 102 } },
 		{ id = 102, x = 1600, y = 1200, max = 5, type = 0, group = 11, spells = { 1002 } },
 		{ id = 103, x = 5000, y = 1200, max = 1, type = 2, group = 12, spells = { 1003, 1004 } },
 		{ id = 104, x = 9000, y = 1200, max = 1, type = 0, group = 13, spells = { 1005 } },
@@ -52,6 +52,7 @@ assert(type(text) == "string" and not text:find("|", 1, true), "text, no pipes")
 local back = TL.DecodeLayout(text)
 assert(back and back.tree == 77 and back.hash == layout.hash and #back.nodes == 5 and #back.groups == 3, "round trip")
 assert(back.nodes[3].type == 2 and back.nodes[3].spells[2] == 1004 and back.nodes[2].max == 5 and back.groups[2].name == "Fuego", "fields kept")
+assert(back.nodes[1].to[1] == 102 and #back.nodes[2].to == 0, "arrows kept")
 assert(TL.DecodeLayout("rubbish") == nil, "bad text: nil")
 
 -- a loadout read against the plan
@@ -78,7 +79,7 @@ C_Traits = {
 	GetConfigInfo = function() return { treeIDs = { 77 } } end,
 	GetTreeNodes = function() return { 101, 102 } end,
 	GetTreeHash = function() local t = {}; for i = 1, 16 do t[i] = 171 end; return t end,
-	GetNodeInfo = function(_, id) return { ID = id, posX = id * 10, posY = 50, maxRanks = id == 102 and 5 or 1, type = 0, groupIDs = { 11 }, entryIDs = { id + 1000 }, isVisible = true } end,
+	GetNodeInfo = function(_, id) return { ID = id, posX = id * 10, posY = 50, maxRanks = id == 102 and 5 or 1, type = 0, groupIDs = { 11 }, entryIDs = { id + 1000 }, isVisible = true, visibleEdges = id == 101 and { { targetNode = 102 } } or nil } end,
 	GetEntryInfo = function(_, entryID) return { definitionID = entryID + 1 } end,
 	GetDefinitionInfo = function(def) return { spellID = def * 2 } end,
 	GetGroupDisplayInfoByTreeID = function() return { { groupID = 11, orderIndex = 1, displayName = "Arcano", icon = 135932 } } end,
@@ -86,6 +87,7 @@ C_Traits = {
 local mine = TL.ReadMine()
 assert(mine and mine.tree == 77 and mine.hash == string.rep("ab", 16) and #mine.nodes == 2, "read from the game")
 assert(mine.nodes[2].max == 5 and mine.nodes[2].spells[1] == (102 + 1000 + 1) * 2 and mine.groups[1].name == "Arcano", "nodes, spells, branches")
+assert(mine.nodes[1].to[1] == 102, "arrows from the game")
 
 -- shared once a session; a guildmate's plan stored by class
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(40)

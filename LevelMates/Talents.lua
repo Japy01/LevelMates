@@ -33,7 +33,7 @@ local function reader(code)
 			if bits[pos] == nil then error("short") end
 			out = out + bits[pos] * 2 ^ k
 		end
-		return out
+		return math.floor(out)   -- a whole number (not 3.0)
 	end
 end
 
@@ -69,8 +69,22 @@ function TL.Decode(code, plan)
 	return res
 end
 
+-- The tree hash a code was made for (hex), or nil.
+function TL.HashOf(code)
+	local read = type(code) == "string" and reader(code)
+	if not read then return nil end
+	local ok, hex = pcall(function()
+		read(8); read(16)
+		local t = {}
+		for i = 1, 16 do t[i] = string.format("%02x", read(8)) end
+		return table.concat(t)
+	end)
+	return ok and hex or nil
+end
+
 ------------------------------------------------------------------ a plan as text
--- "1~tree~hash~groups~nodes": groups "id,order,icon,name" joined by ";", nodes "id,x,y,max,type,group,spell/spell"
+-- "1~tree~hash~groups~nodes": groups "id,order,icon,name" joined by ";", nodes "id,x,y,max,type,group,spell/spell,to/to"
+-- (to: the nodes its arrows lead to)
 local function clean(s) return (tostring(s or ""):gsub("[~;,|%c]", " ")) end
 function TL.EncodeLayout(plan)
 	local groups, nodes = {}, {}
@@ -78,7 +92,9 @@ function TL.EncodeLayout(plan)
 	for _, n in ipairs(plan.nodes or {}) do
 		local spells = {}
 		for _, s in ipairs(n.spells or {}) do spells[#spells + 1] = tostring(s) end
-		nodes[#nodes + 1] = table.concat({ n.id, n.x or 0, n.y or 0, n.max or 1, n.type or 0, n.group or 0, table.concat(spells, "/") }, ",")
+		local to = {}
+		for _, t in ipairs(n.to or {}) do to[#to + 1] = tostring(t) end
+		nodes[#nodes + 1] = table.concat({ n.id, n.x or 0, n.y or 0, n.max or 1, n.type or 0, n.group or 0, table.concat(spells, "/"), table.concat(to, "/") }, ",")
 	end
 	return table.concat({ "1", plan.tree or 0, plan.hash or "", table.concat(groups, ";"), table.concat(nodes, ";") }, "~")
 end
@@ -92,11 +108,12 @@ function TL.DecodeLayout(text)
 		if id then plan.groups[#plan.groups + 1] = { id = tonumber(id), order = tonumber(order), icon = tonumber(icon), name = name } end
 	end
 	for part in nodes:gmatch("[^;]+") do
-		local id, x, y, max, typ, group, spells = part:match("^(%d+),(%-?%d+),(%-?%d+),(%d+),(%d+),(%-?%d+),([%d/]*)$")
+		local id, x, y, max, typ, group, spells, to = part:match("^(%d+),(%-?%d+),(%-?%d+),(%d+),(%d+),(%-?%d+),([%d/]*),?([%d/]*)$")
 		if not id then return nil end
-		local list = {}
+		local list, targets = {}, {}
 		for s in spells:gmatch("%d+") do list[#list + 1] = tonumber(s) end
-		plan.nodes[#plan.nodes + 1] = { id = tonumber(id), x = tonumber(x), y = tonumber(y), max = tonumber(max), type = tonumber(typ), group = tonumber(group), spells = list }
+		for t in to:gmatch("%d+") do targets[#targets + 1] = tonumber(t) end
+		plan.nodes[#plan.nodes + 1] = { id = tonumber(id), x = tonumber(x), y = tonumber(y), max = tonumber(max), type = tonumber(typ), group = tonumber(group), spells = list, to = targets }
 	end
 	if #plan.nodes == 0 then return nil end
 	table.sort(plan.groups, function(a, b) return (a.order or 0) < (b.order or 0) end)
@@ -129,8 +146,10 @@ function TL.ReadMine()
 			local d = e and e.definitionID and call(C_Traits.GetDefinitionInfo, e.definitionID)
 			spells[#spells + 1] = d and d.spellID or 0
 		end
+		local to = {}
+		for _, e in ipairs(n.visibleEdges or {}) do if e.targetNode then to[#to + 1] = e.targetNode end end
 		plan.nodes[#plan.nodes + 1] = { id = id, x = math.floor(n.posX or 0), y = math.floor(n.posY or 0), max = n.maxRanks or 1,
-			type = n.type or 0, group = n.groupIDs and n.groupIDs[1] or 0, spells = spells }
+			type = n.type or 0, group = n.groupIDs and n.groupIDs[1] or 0, spells = spells, to = to }
 	end
 	return plan
 end

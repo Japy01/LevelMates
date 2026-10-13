@@ -45,7 +45,11 @@ local ref
 SetItemRef = function(link) ref = link end
 mario.button.scripts.OnClick(mario.button, "LeftButton")
 pick(L.CLASS_VIEW_BUILD).fn()
-assert((STUB.printed[#STUB.printed] or ""):find("|Htalentbuild:71:24:CODEmario|h", 1, true), "View build")
+-- Ruling: View build opens our talent viewer; the game's link is one click away in it
+assert(ns.TalentView.frame:IsShown() and ns.TalentView.entry.name == "Mario", "view build: our viewer")
+ns.TalentView.gameButton.scripts.OnClick(ns.TalentView.gameButton)
+assert((STUB.printed[#STUB.printed] or ""):find("|Htalentbuild:71:24:CODEmario|h", 1, true), "and the game's link from it")
+ns.TalentView.frame:Hide()
 assert(pick(string.format(L.LFG_WHISPER, "Mario")), "whisper")
 tank.button.scripts.OnClick(tank.button, "LeftButton")
 pick(L.CLASS_CREATE_MACRO).fn()

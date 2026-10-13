@@ -1774,7 +1774,7 @@ function B.OpenClassMenu(c)
 		elseif c.kind == "build" then
 			local e = c.e
 			root:CreateTitle(e.name)
-			if e.b then root:CreateButton(L.CLASS_VIEW_BUILD, function() ns.Builds.Open(e) end) end
+			if e.b then root:CreateButton(L.CLASS_VIEW_BUILD, function() ns.TalentView.Open(e) end) end
 			if not e.mine then root:CreateButton(string.format(L.LFG_WHISPER, e.name), function() B.Whisper(e.name) end) end
 		else
 			local m = c.m

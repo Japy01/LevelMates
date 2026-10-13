@@ -117,7 +117,7 @@ local function Build()
 		local m = R.mates[MC.name]
 		if m and m.x and m.y and m.mapId then ns.Help.WaypointTo(m.mapId, m.x, m.y, MC.name) end
 	end)
-	MC.build = Btn(L.CLASS_VIEW_BUILD, 276, function() ns.Builds.Open(ns.Builds.Of(MC.name)) end)
+	MC.build = Btn(L.CLASS_VIEW_BUILD, 276, function() ns.TalentView.Open(ns.Builds.Of(MC.name)) end)
 	-- their gear (top right): the paper doll and the model
 	MC.gear = ns.Skin.Button(f)
 	MC.gear:SetSize(80, 20); MC.gear:SetPoint("TOPRIGHT", -14, -30); MC.gear:SetText(L.GEAR_BUTTON)
