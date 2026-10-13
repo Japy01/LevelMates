@@ -36,8 +36,8 @@ local function Build()
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
 	tinsert(UISpecialFrames, "LevelMatesGearWindow")
-	f.info = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	f.info:SetPoint("TOP", 0, -30)
+	f.info = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	f.info:SetPoint("TOP", 0, -25)   -- two short lines, over the slots
 	GW.slots = {}
 	for i, slot in ipairs(LEFT) do local b = slotButton(f, slot); b:SetPoint("TOPLEFT", 16, -52 - (i - 1) * (SIZE + 4)); GW.slots[slot] = b end
 	for i, slot in ipairs(RIGHT) do local b = slotButton(f, slot); b:SetPoint("TOPRIGHT", -16, -52 - (i - 1) * (SIZE + 4)); GW.slots[slot] = b end
@@ -72,13 +72,26 @@ local function unitFor(name)
 	for i = 1, 4 do if UnitName and UnitName("party" .. i) == name then return "party" .. i end end
 end
 
-function GW.Open(name)
-	local g = ns.Gear.Of(name)
-	if not g then return end
+-- Under the item level: how old the data is and where it came from; in a warning colour after a few days.
+GW.OLD_DAYS = 3
+local SOURCE = { sync = "GEAR_SRC_SYNC", inspect = "GEAR_SRC_INSPECT" }
+function GW.InfoLine(g)
+	local line = string.format(L.GEAR_LINE, g.avg or 0, g.filled or 0)
+	if g.src == "self" or not g.t then return line end
+	local age = string.format(L.FEED_AGO, ns.Journal.Duration(math.max(0, time() - g.t)))
+	local note = age .. " · " .. (L[SOURCE[g.src] or "GEAR_SRC_SYNC"])
+	if time() - g.t > GW.OLD_DAYS * 86400 then note = "|cffd9a441" .. note .. "|r" end
+	return line .. "\n" .. note
+end
+
+local function draw(name)
+	local known = ns.Gear.Of(name)
+	local g = known or { slots = {} }
 	if not GW.frame then Build() end
 	local f = GW.frame
+	GW.name = name
 	if f.TitleText then f.TitleText:SetText(name) end
-	f.info:SetText(string.format(L.GEAR_LINE, g.avg or 0, g.filled or 0))
+	f.info:SetText(known and GW.InfoLine(known) or L.GEAR_INSPECTING)
 	for slot, b in pairs(GW.slots) do
 		local s = g.slots[slot]
 		b.itemId, b.enchant, b.il, b.suffix = s and s.id, s and s.en, s and s.il, s and s.sf
@@ -116,3 +129,14 @@ function GW.Open(name)
 	f:Show()
 	ns.Skin.InkWindow(f)
 end
+
+-- Open someone's gear: what we know, and an inspect when the game lets me (my target, my group), LevelMates or not.
+function GW.Open(name)
+	local unit = ns.Gear.InspectUnit(name)
+	local asked = unit and ns.Gear.Inspect(unit, name)
+	if not ns.Gear.Of(name) and not asked then return end
+	draw(name)
+end
+ns.On("LM_GEAR_CHANGED", function(name)
+	if GW.frame and GW.frame:IsShown() and name == GW.name then draw(name) end
+end)

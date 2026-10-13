@@ -148,7 +148,7 @@ function MC.Refresh()
 	local b = ns.Builds.Of(name)
 	MC.build:SetShown(b and b.b and true or false)
 	local gear = ns.Gear.Of(name)
-	MC.gear:SetShown(gear ~= nil and (gear.filled or 0) > 0)
+	MC.gear:SetShown((gear ~= nil and (gear.filled or 0) > 0) or ns.Gear.InspectUnit(name) ~= nil)   -- or I can inspect them now
 	MC.frame.body:SetWidth(MC.gear:IsShown() and 260 or 348)   -- the Gear button sits at the top right: the text keeps clear of it
 	local missing = MC.MissingQuests(name) or {}
 	for i, qb in ipairs(MC.questButtons) do

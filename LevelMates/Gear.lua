@@ -57,18 +57,23 @@ local function itemLevel(link)
 	return tonumber(il) or 0
 end
 function GE.Mine() return ns.char.gear end
-function GE.Read()
+-- A unit's worn items: id, item level, enchant and suffix from each slot's link.
+local function slotsOf(unit)
 	local slots = {}
 	for slot = 1, 19 do
-		local link = GetInventoryItemLink("player", slot)
+		local link = GetInventoryItemLink(unit, slot)
 		local id, en, sf = tostring(link or ""):match("item:(%d+):(%d*):?%-?%d*:?%-?%d*:?%-?%d*:?%-?%d*:?(%-?%d*)")
 		if id then slots[slot] = { id = tonumber(id), il = itemLevel(link), en = tonumber(en) or 0, sf = tonumber(sf) ~= 0 and tonumber(sf) or nil } end
 	end
+	return slots
+end
+function GE.Read()
+	local slots = slotsOf("player")
 	GE.reads = GE.reads + 1
 	local avg, filled = GE.Average(slots)
 	local _, _, race = UnitRace("player")
 	local old = ns.char.gear
-	ns.char.gear = { slots = slots, avg = avg, filled = filled, r = race, x = UnitSex("player"), t = time() }
+	ns.char.gear = { slots = slots, avg = avg, filled = filled, r = race, x = UnitSex("player"), t = time(), src = "self" }
 	if not old or GE.Encode(old.slots) ~= GE.Encode(slots) then ns.Fire("LM_MY_GEAR_CHANGED"); ns.Fire("LM_GEAR_CHANGED") end
 end
 
@@ -95,13 +100,54 @@ C.OnMessage("eq", function(f, name)
 	local slots = GE.Decode(f.g)
 	if not slots then return end
 	local avg, filled = GE.Average(slots)
-	theirs()[name] = { slots = slots, avg = avg, filled = filled, r = f.r, x = f.x, t = time() }
+	theirs()[name] = { slots = slots, avg = avg, filled = filled, r = f.r, x = f.x, t = time(), src = "sync" }
 	ns.Fire("LM_GEAR_CHANGED", name)
 end)
 function GE.Of(name)
 	if name == ns.Me() then return GE.Mine() end
 	return theirs()[name]
 end
+
+-- Inspect: the gear of someone the game lets me inspect (my target, my group), LevelMates or not. One request at a
+-- time, answered within 8 s; only the answer to my own request counts (another addon or the game's own inspect window
+-- may be asking too, and theirs is left alone), and only if that unit is still the same person.
+GE.INSPECT_WAIT = 8
+local pending
+function GE.InspectUnit(name)
+	if not (CanInspect and NotifyInspect) or name == ns.Me() then return nil end
+	local units = { "target" }
+	for i = 1, 4 do units[#units + 1] = "party" .. i end
+	for _, u in ipairs(units) do
+		if UnitName(u) == name then
+			local ok, can = pcall(CanInspect, u)
+			if ok and can then return u end
+		end
+	end
+end
+local function same(a, b) local ok, eq = pcall(function() return a ~= nil and a == b end); return ok and eq end   -- GUIDs can be hidden values
+function GE.Inspect(unit, name)
+	if pending and GetTime() - pending.at < GE.INSPECT_WAIT then return false end
+	if not (unit and CanInspect and NotifyInspect) then return false end
+	local ok, can = pcall(CanInspect, unit)
+	if not (ok and can) then return false end
+	pending = { unit = unit, name = name, guid = UnitGUID(unit), at = GetTime() }
+	NotifyInspect(unit)
+	return true
+end
+local insp = CreateFrame("Frame")
+insp:RegisterEvent("INSPECT_READY")
+insp:SetScript("OnEvent", function(_, _, guid)
+	if not pending or not same(guid, pending.guid) then return end
+	local p = pending
+	pending = nil
+	if not same(UnitGUID(p.unit), p.guid) or UnitName(p.unit) ~= p.name then return end   -- someone else by now
+	local slots = slotsOf(p.unit)
+	if not next(slots) then return end
+	local avg, filled = GE.Average(slots)
+	local old = theirs()[p.name]
+	theirs()[p.name] = { slots = slots, avg = avg, filled = filled, r = old and old.r, x = old and old.x, t = time(), src = "inspect" }
+	ns.Fire("LM_GEAR_CHANGED", p.name)
+end)
 
 -- When: the gear changed (quiet for a second), at login, after an item's data arrives; never in combat.
 local due, waitingCombat
