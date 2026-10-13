@@ -207,6 +207,16 @@ function RC.WhoCrafts(itemId)
 	end)
 	return out
 end
+-- Everyone whose recipes I hold, per profession: { name, id, rank, max, t } (for the Crafts view, when their
+-- profession ranks have not arrived).
+function RC.Crafters()
+	local out, names = {}, {}
+	for name in pairs(theirs()) do names[#names + 1] = name end
+	for _, name in ipairs(names) do
+		for id, e in pairs(RC.Of(name)) do out[#out + 1] = { name = name, id = id, rank = e.r, max = e.m, t = e.t } end
+	end
+	return out
+end
 -- Every item someone in the guild crafts (for the search by name).
 function RC.Known()
 	if not index then build_index() end

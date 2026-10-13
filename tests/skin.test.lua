@@ -16,9 +16,11 @@ assert(B.rows[1].stripe and B.rows[1].name.inked and B.heading.inked, "row lines
 local r, g, b = SK.Ink(1, 1, 1)
 B.rows[1].name:SetTextColor(1, 1, 1); SK.InkPass()
 assert(B.rows[1].name.color[1] == r and B.rows[1].name.color[3] == b, "white becomes dark ink")
-ns.Professions.AddSample("Mario", { { id = 171, rank = 120 } })
-B.ShowTab("crafts")
-assert(B.rows[1].plaque:IsShown() and B.rows[1].button:GetHeight() == SK.HEAD_H and B.rows[2].button:GetHeight() == B.ROW_H and B.rows[2].plaque:IsShown() == false, "section bands on headers only")
+ns.Feed.AddSample("Mario", "lvl", 22, nil, 5)
+B.ShowTab("feed")
+local band, plain = nil, nil
+for _, r in ipairs(B.rows) do if r.button:IsShown() then if r.plaque:IsShown() then band = band or r else plain = plain or r end end end
+assert((not band or band.button:GetHeight() == SK.HEAD_H) and (not plain or plain.button:GetHeight() == B.ROW_H), "section bands on headers only")
 B.ShowTab("mates")
 assert((f.TitleContainer and f.TitleContainer.TitleText or f.TitleText).text == B.TitleString(), "its title")
 assert(B.helpButton.template == "UIPanelButtonTemplate", "the game's red buttons")

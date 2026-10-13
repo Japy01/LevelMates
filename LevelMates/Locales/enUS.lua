@@ -329,3 +329,7 @@ L.GR_CHAT = "Group ads in chat"; L.GR_HINT_CHAT = "No group ads read from Trade 
 L.DP_GROUPS = "Its groups"; L.DP_HINT_GROUPS = "No groups here yet. Create one below."; L.DP_MANAGE = "My runs: places"; L.DP_CREATE = "Create a group here"
 L.DB_GROUPS = "Groups"; L.DB_HINT_GROUPS = "Nobody is looking for a group, and no groups are planned. Make one in the Groups section."
 L.GR_HINT_LIST = "Nobody is looking for a group and nothing is planned this week. Make one on the right."; L.GR_COUNT = "%d groups"; L.GR_CHAT_N = "Group ads in chat: %d"
+L.CV_PROFESSIONS = "Professions"; L.CV_NAME = "Name"; L.CV_WHO = "Who"; L.CV_RECIPES = "Recipes"; L.CV_FOOTER = "%d characters, %d recipes known."
+L.CV_SEARCH = "Item name, link or number"; L.CV_BACK = "Back"; L.CV_PROF_SUB = "%d crafters · %d recipes"; L.CV_CRAFTERS = "crafters"; L.CV_RECIPES_LOWER = "recipes"
+L.CV_CRAFTER_SUB = "%s %d/%d · read %s"; L.CV_NOT_READ = "not read yet"; L.CV_YOU = "you"; L.CV_ITEM = "Item"; L.CV_FOUND = "Who crafts it"; L.CV_FOUND_N = "%d items found"; L.CV_ITEMS = "items"; L.CV_OFFLINE = "offline"
+L.CV_NO_RECIPES = "%s has not opened this profession's window with LevelMates yet: their recipes show once they do."

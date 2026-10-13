@@ -196,6 +196,10 @@ local function Build()
 	local runs = ns.GroupsView.Build(f)
 	runs:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); runs:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + B.FOOT_H)
 	B.runsView = runs
+	-- Crafts: professions on the left, the chosen one on the right.
+	local crafts = ns.CraftsView.Build(f)
+	crafts:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); crafts:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + B.FOOT_H)
+	B.craftsView = crafts
 
 	-- "Looking for a partner" (guildmates tab), in the header under the search box.
 	local pal = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
@@ -1918,7 +1922,7 @@ function B.Refresh()
 	elseif B.tab == "bank" then
 		list, pages = Page(BankVisible())
 	elseif crafts then
-		list, pages = Page(CraftsVisible())
+		list = {}   -- the crafts view draws it
 	elseif wishes then
 		local all = {}
 		for _, w in ipairs(ns.Wishlist.List()) do w.kind = "want"; all[#all + 1] = w end
@@ -1996,8 +2000,11 @@ function B.Refresh()
 		else emptyText = L.EMPTY end
 	end
 	if recruit then emptyText = B.recruitView == "inactive" and #list == 0 and L.INACTIVE_EMPTY or "" end   -- the panel fills this tab
-	if home or runsView then emptyText = "" end
-	B.colStrip:SetShown(not (home or runsView or catalogShown))
+	if home or runsView or crafts then emptyText = "" end
+	B.colStrip:SetShown(not (home or runsView or catalogShown or crafts))
+	B.craftsView:SetShown(crafts and true or false)
+	if B.searchBox then B.searchBox:SetShown(not crafts) end   -- the crafts view has its own search
+	if crafts then ns.CraftsView.Refresh() end
 	B.dashboard:SetShown(home)
 	B.runsView:SetShown(runsView and true or false)
 	if home then ns.Dashboard.Refresh() end

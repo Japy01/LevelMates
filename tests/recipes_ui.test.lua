@@ -18,23 +18,23 @@ assert(#RC.Find("lesser healing") == 1 and RC.Find("lesser healing")[1] == 858, 
 assert(RC.Find("858")[1] == 858 and RC.Find(STUB.items[858])[1] == 858, "by number and by link")
 assert(#RC.Find("healing") == 2, "a part of the name")
 B.Toggle(); B.ShowTab("crafts")
-B.search = "lesser healing"; B.Refresh()
-local header, crafter
-for _, r in ipairs(B.rows) do
-	if r.button:IsShown() and r.button.craftItem then header = r end
-	if r.button:IsShown() and r.button.crafter then crafter = r end
-end
-assert(header and crafter and crafter.button.crafter.name == "Mario", "a header for the item and Mario under it")
-crafter.button.scripts.OnClick(crafter.button, "LeftButton")
-local ask = find(L.RC_ASK_MENU:gsub("%%s.*", ""))
-assert(ask and find(L.RC_THEIR_RECIPES), "menu: ask and their recipes")
+local CV = ns.CraftsView
+CV.search:SetText("lesser healing"); CV.search.scripts.OnTextChanged(CV.search)
+local row = CV.rows[1]
+assert(row:IsShown() and row.name.text:find("Lesser Healing Potion", 1, true) and row.who.text:find("Mario", 1, true), "the item and Mario")
+row.scripts.OnClick(row, "LeftButton")
+local ask = find(string.format(L.RC_ASK_MENU, "Mario"))
+assert(ask, "menu: ask Mario")
 STUB.lastChat = nil
 ask.cb()
 assert(STUB.lastChat and STUB.lastChat.chatType == "WHISPER" and STUB.lastChat.target == "Mario" and STUB.lastChat.msg:find("item:858", 1, true), "a whisper with the link")
 STUB.lastChat = nil
 ask.cb()
 assert(STUB.lastChat == nil, "not again within a minute")
-find(L.RC_THEIR_RECIPES).cb()
+-- his recipes: the profession, then Mario
+CV.search:SetText(""); CV.search.scripts.OnTextChanged(CV.search)
+CV.Select(171)
+CV.rows[1].scripts.OnClick(CV.rows[1], "LeftButton")
 local recipes = 0
-for _, r in ipairs(B.rows) do if r.button:IsShown() and r.button.recipeItem then recipes = recipes + 1 end end
-assert(recipes == 2 and B.recipesOf == "Mario", "his recipes")
+for _, r in ipairs(CV.rows) do if r:IsShown() then recipes = recipes + 1 end end
+assert(recipes == 2 and CV.mode == "recipes", "his recipes")

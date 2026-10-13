@@ -22,6 +22,7 @@ assert(ns.Professions.TrainHint(75, 75) == L.TRAIN_JOURNEYMAN and ns.Professions
 assert(ns.Professions.TrainHint(300, 300) == nil and ns.Professions.TrainHint(74, 75) == nil, "none at 300 or below the cap")
 ns.Professions.AddSample("Mario", { { id = 171, rank = 75, max = 75 } })
 B.Toggle(); B.ShowTab("crafts")
-local shown = false
-for _, r in ipairs(B.rows) do if r.button:IsShown() and r.xph.text and r.xph.text:find(L.TRAIN_JOURNEYMAN, 1, true) then shown = true end end
-assert(shown, "the hint on the row")
+ns.CraftsView.Select(171)
+local mario
+for _, r in ipairs(ns.CraftsView.rows) do if r:IsShown() and r.name.text == "Mario" then mario = r end end
+assert(mario and mario.read.text:find(L.TRAIN_JOURNEYMAN, 1, true), "the hint on the row")

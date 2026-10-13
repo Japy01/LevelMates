@@ -31,6 +31,7 @@ Settings.lua
 Board.lua
 Dashboard.lua
 GroupsView.lua
+CraftsView.lua
 LevelBar.lua
 Ding.lua
 GuildMap.lua

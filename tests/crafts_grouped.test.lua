@@ -19,30 +19,16 @@ STUB.Receive("LVLM2", C.Encode("hb", { l = 20, z = 1421 }), "GUILD", "Ana-Testre
 STUB.Receive("LVLM2", C.Encode("pf", { p = "186:40" }), "GUILD", "Ana-Testrealm")
 R.mates.Ana = nil   -- Ana logged off
 
--- grouped by profession: a header with its icon, then who has it, highest first
+-- by profession: who has it, highest first, with the bar, the rank, online and the trainer hint
 B.ShowTab("crafts")
-local rows = {}
-for i = 1, #B.rows do if B.rows[i].button:IsShown() then rows[#rows + 1] = B.rows[i] end end
-local shape = {}
-for _, r in ipairs(rows) do shape[#shape + 1] = r.button.craftHeader and ("#" .. r.button.craftHeader) or (r.name.text:gsub("^%s+", "")) end
-assert(table.concat(shape, ",") == "#185,Tester,#129,Mario,Tester,#186,Ana,Tester", "groups: " .. table.concat(shape, ","))
-local head = rows[3]
-assert(head.icon:IsShown() and head.icon.texture and head.name.text == P.Name(129) .. " (2)", "header: icon, name, count")
-local mario, me1, ana = rows[4], rows[5], rows[7]
-assert(mario.group.text == "75/75" and mario.xph.text == L.ONLINE .. " · " .. L.TRAIN_JOURNEYMAN and mario.barFill:IsShown() and mario.barFill:GetWidth() == B.BAR_W, "full bar, online, time to train")
-assert(me1.group.text == "37/75" and me1.xph.text == "" and math.abs(me1.barFill:GetWidth() - B.BAR_W * 37 / 75) < 0.01, "my row: partial bar, no 'online'")
-assert(ana.group.text == "40" and ana.xph.text ~= "" and ana.xph.text ~= L.ONLINE, "no max known: just the rank; offline: when seen")
--- right click a header: nothing; a guildmate: the menu
-local opened = false
-MenuUtil.CreateContextMenu = function() opened = true end
-head.button.scripts.OnClick(head.button, "RightButton")
-assert(not opened, "no menu on a header")
--- search keeps the header of what it finds
-B.searchBox:SetText(P.Name(186):lower()); B.searchBox.scripts.OnTextChanged(B.searchBox)
-local n = 0
-for i = 1, #B.rows do if B.rows[i].button:IsShown() then n = n + 1 end end
-assert(n == 3, "the Mining group only: " .. n)
-B.searchBox:SetText(""); B.searchBox.scripts.OnTextChanged(B.searchBox)
--- bars only on this tab
-B.ShowTab("mates")
-for i = 1, #B.rows do assert(not B.rows[i].barFill:IsShown() and not B.rows[i].barBg:IsShown(), "no bars elsewhere") end
+local CV = ns.CraftsView
+local ids = {}
+for _, it in ipairs(CV.profs.items) do if it:IsShown() then ids[#ids + 1] = it.prof end end
+assert(#ids == 3, "three professions on the left")
+CV.Select(129)
+assert(CV.title.text == P.Name(129) and CV.sub.text:find("2", 1, true), "First Aid: two crafters")
+local mario, me1 = CV.rows[1], CV.rows[2]
+assert(mario.name.text == "Mario" and mario.rank.text == "75" and mario.read.text:find(L.ONLINE, 1, true) and mario.read.text:find(L.TRAIN_JOURNEYMAN, 1, true), "full rank, online, time to train: " .. mario.read.text)
+assert(me1.name.text == "Tester" and me1.rank.text == "37" and not me1.read.text:find(L.ONLINE, 1, true), "my row: no 'online'")
+CV.Select(186)
+assert(CV.rows[1].name.text == "Ana" and not CV.rows[1].read.text:find(L.ONLINE, 1, true), "Ana offline: when seen")

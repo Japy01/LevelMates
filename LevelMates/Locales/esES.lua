@@ -330,3 +330,7 @@ L.GR_CHAT = "Anuncios del chat"; L.GR_HINT_CHAT = "No hay anuncios de grupo en C
 L.DP_GROUPS = "Sus grupos"; L.DP_HINT_GROUPS = "Aún no hay grupos aquí. Crea uno abajo."; L.DP_MANAGE = "Mis partidas: plazas"; L.DP_CREATE = "Crear grupo aquí"
 L.DB_GROUPS = "Grupos"; L.DB_HINT_GROUPS = "Nadie busca grupo y no hay grupos planeados. Crea uno en la sección Grupos."
 L.GR_HINT_LIST = "Nadie busca grupo y no hay nada planeado esta semana. Crea uno a la derecha."; L.GR_COUNT = "%d grupos"; L.GR_CHAT_N = "Anuncios del chat: %d"
+L.CV_PROFESSIONS = "Profesiones"; L.CV_NAME = "Nombre"; L.CV_WHO = "Quién"; L.CV_RECIPES = "Recetas"; L.CV_FOOTER = "%d personajes, %d recetas conocidas."
+L.CV_SEARCH = "Nombre, enlace o número del objeto"; L.CV_BACK = "Volver"; L.CV_PROF_SUB = "%d artesanos · %d recetas"; L.CV_CRAFTERS = "artesanos"; L.CV_RECIPES_LOWER = "recetas"
+L.CV_CRAFTER_SUB = "%s %d/%d · leído %s"; L.CV_NOT_READ = "sin leer aún"; L.CV_YOU = "tú"; L.CV_ITEM = "Objeto"; L.CV_FOUND = "Quién lo fabrica"; L.CV_FOUND_N = "%d objetos encontrados"; L.CV_ITEMS = "objetos"; L.CV_OFFLINE = "desconectado"
+L.CV_NO_RECIPES = "%s aún no ha abierto la ventana de esta profesión con LevelMates: sus recetas salen cuando lo haga."

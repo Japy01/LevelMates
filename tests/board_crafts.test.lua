@@ -17,33 +17,26 @@ local function visible() local out = {}; for i = 1, #B.rows do if B.rows[i].butt
 
 B.ShowTab("crafts")
 assert(B.subs.crafts and B.frame.selectedTab == 4 and B.subs.crafts.lit, "a Guild sub-section, lit")
-assert(B.headText[1].text == L.COL_WHO and B.headText[3].text == L.COL_PROGRESS and B.headText[4].text == L.COL_RANK and B.headText[5].text == L.COL_SEEN, "headers")
-local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.LIST_W - (#cols - 1) * B.GAP) / sum) end
-assert(B.rows[1].zone:GetWidth() == scaled(B.CCOLS, 3), "column widths, in proportion")
-local function name(r) return (r.name.text:gsub("^%s+", "")) end
-local rows = visible()
-assert(#rows == 5 and rows[1].button.craftHeader == 171 and name(rows[2]) == "Mario" and rows[2].group.text == "200" and rows[2].xph.text == L.ONLINE, "alchemy: Mario first, online")
-assert(name(rows[3]) == "Tester" and rows[4].button.craftHeader == 164 and name(rows[5]) == "Mario", "then mine; then blacksmithing")
--- search by profession or name
-B.searchBox:SetText(P.Name(164):lower()); B.searchBox.scripts.OnTextChanged(B.searchBox)
-assert(#visible() == 2 and visible()[1].button.craftHeader == 164, "by profession")
-B.searchBox:SetText("tester"); B.searchBox.scripts.OnTextChanged(B.searchBox)
-assert(#visible() == 2 and name(visible()[2]) == "Tester", "by name, under its header")
-B.searchBox:SetText(""); B.searchBox.scripts.OnTextChanged(B.searchBox)
+local CV = ns.CraftsView
+assert(CV.frame:IsShown(), "the crafts view")
+local function profRow(id) for _, it in ipairs(CV.profs.items) do if it:IsShown() and it.prof == id then return it end end end
+assert(profRow(171) and profRow(164), "alchemy and blacksmithing on the left")
+CV.Select(171)
+assert(CV.rows[1].name.text == "Mario" and CV.rows[1].rank.text == "200" and CV.rows[1].read.text:find(L.ONLINE, 1, true), "alchemy: Mario first, online")
+assert(CV.rows[2].name.text == "Tester", "then mine")
 -- right click: whisper and invite a guildmate, nothing on mine
-rows = visible()
-rows[3].button.scripts.OnClick(rows[3].button, "RightButton")
+entries = nil
+CV.rows[2].scripts.OnClick(CV.rows[2], "RightButton")
 assert(entries == nil, "no menu on my own row")
-rows[2].button.scripts.OnClick(rows[2].button, "RightButton")
+CV.rows[1].scripts.OnClick(CV.rows[1], "RightButton")
 local function opt(t) for _, e in ipairs(entries) do if e.text == t then return e end end end
-assert(opt(L.RC_THEIR_RECIPES) and opt(L.MENU_WHISPER) and opt(L.MENU_INVITE), "their recipes, whisper and invite")
+assert(opt(L.MENU_WHISPER) and opt(L.MENU_INVITE), "whisper and invite")
 opt(L.MENU_WHISPER).cb()
 assert(STUB.lastTell == "Mario", "whispers")
 -- offline: when last seen, whisper only
 R.mates.Mario = nil; B.Refresh()
-rows = visible()
-assert(rows[2].xph.text ~= L.ONLINE and rows[2].xph.text ~= "", "last seen when offline")
-rows[2].button.scripts.OnClick(rows[2].button, "RightButton")
+assert(not CV.rows[1].read.text:find(L.ONLINE, 1, true) and CV.rows[1].read.text ~= "", "last seen when offline")
+CV.rows[1].scripts.OnClick(CV.rows[1], "RightButton")
 assert(opt(L.MENU_WHISPER) and not opt(L.MENU_INVITE), "offline: no invite")
 -- Discord: grouped by profession
 local t = ns.DiscordCopy.Text("crafts")
