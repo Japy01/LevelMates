@@ -38,7 +38,9 @@ local function Build()
 	b:SetHighlightTexture("Interface/Minimap/UI-Minimap-ZoomButton-Highlight", "ADD")
 
 	b:SetScript("OnClick", function(_, mouse)
-		if mouse == "RightButton" then ns.Settings.Open() else ns.Fire("LM_TOGGLE_BOARD") end
+		if mouse == "RightButton" then ns.Settings.Open()
+		elseif IsShiftKeyDown and IsShiftKeyDown() then ns.Tray.Open()   -- Shift+click: the tray of notices
+		else ns.Fire("LM_TOGGLE_BOARD") end
 	end)
 	b:SetScript("OnDragStart", function(self)
 		self:SetScript("OnUpdate", function()
@@ -54,17 +56,34 @@ local function Build()
 		if not GameTooltip then return end
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 		GameTooltip:AddLine(L.BOARD_TITLE)
-		GameTooltip:AddLine(L.MINIMAP_LEFT); GameTooltip:AddLine(L.MINIMAP_RIGHT); GameTooltip:AddLine(L.MINIMAP_DRAG)
+		GameTooltip:AddLine(L.MINIMAP_LEFT); GameTooltip:AddLine(L.MINIMAP_SHIFT); GameTooltip:AddLine(L.MINIMAP_RIGHT); GameTooltip:AddLine(L.MINIMAP_DRAG)
 		GameTooltip:Show()
 	end)
 	b:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 	M.button = b
+	-- the unread notices, on the button's corner
+	local badge = CreateFrame("Frame", nil, b)
+	badge:SetSize(16, 16); badge:SetPoint("TOPRIGHT", 2, 2); badge:SetFrameLevel(b:GetFrameLevel() + 2)
+	badge.bg = badge:CreateTexture(nil, "BACKGROUND"); badge.bg:SetAllPoints(); badge.bg:SetTexture("Interface/Minimap/UI-Minimap-Background"); badge.bg:SetVertexColor(0.6, 0.05, 0.05)
+	badge.text = badge:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	badge.text:SetPoint("CENTER", 0, 0)
+	badge:Hide()
+	M.badge = badge
 end
+
+function M.UpdateBadge()
+	if not M.badge then return end
+	local n = ns.Tray.Unread()
+	M.badge.text:SetText(tostring(n))
+	M.badge:SetShown(n > 0)
+end
+ns.On("LM_TRAY_CHANGED", function() M.UpdateBadge() end)
 
 ns.On("LM_LOADED", function()
 	if not Minimap then return end
 	Build()
 	M.Place(ns.db.settings.minimapAngle or 215)
 	M.Refresh()
+	M.UpdateBadge()
 end)
 ns.On("LM_MINIMAP_CHANGED", M.Refresh)

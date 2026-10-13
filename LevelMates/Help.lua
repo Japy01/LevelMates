@@ -82,7 +82,7 @@ C.OnMessage("help", function(f, name)
 	if not ns.db.settings.helpNotices then return end
 	H.active[f.id] = { name = name, text = f.t, mapId = f.z, x = f.x, y = f.y, at = GetTime() }
 	local info = C_Map.GetMapInfo and C_Map.GetMapInfo(f.z)
-	ns.Notice(L.HELP_NOTICE, name, f.t, info and info.name or tostring(f.z))
+	ns.NoticeAt("home", L.HELP_NOTICE, name, f.t, info and info.name or tostring(f.z))
 	if ns.db.settings.sound and PlaySound then PlaySound(SOUNDKIT and SOUNDKIT.RAID_WARNING or 8959) end
 	if f.z == C_Map.GetBestMapForUnit("player") then H.WaypointTo(f.z, f.x, f.y) end
 	ns.Fire("LM_HELP_CHANGED")

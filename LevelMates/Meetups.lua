@@ -24,7 +24,7 @@ S.Define("qd", { class = "board", life = LIFE, lane = "urgent", max = M.MAX + 10
 	required = { "d", "at" },
 	onChange = function(rec, old, how)
 		if how == "live" and not old and not rec.dead and ns.db.settings.lfgNotices and D.Get(rec.d.d) then
-			ns.Notice(L.MEET_NEW, rec.o, D.Name(rec.d.d), M.When({ at = rec.d.at }))
+			ns.NoticeAt("lfg", L.MEET_NEW, rec.o, D.Name(rec.d.d), M.When({ at = rec.d.at }))
 		end
 		changed()
 	end })
@@ -36,7 +36,7 @@ S.Define("qj", { class = "board", life = LIFE, lane = "urgent",
 		local mid = rec.id:match("^([^%.]+)%.")
 		local m = S.Get("qd", mid)
 		if how == "live" and not old and not rec.dead and m and m.o == me() then
-			ns.Notice(L.MEET_JOINED, rec.o, D.Name(m.d.d), M.When(m.d), L["ROLE_" .. rec.d.r])
+			ns.NoticeAt("lfg", L.MEET_JOINED, rec.o, D.Name(m.d.d), M.When(m.d), L["ROLE_" .. rec.d.r])
 		end
 		if m and m.o == me() and how ~= "expired" then place(mid) end
 		changed()
@@ -240,7 +240,7 @@ function M.Tick()
 		local left = m.at - M.Now()
 		if not reminded[m.id] and left >= 0 and left <= M.REMIND and (m.by == me() or M.MyRole(m.id)) then
 			reminded[m.id] = true
-			ns.Notice(L.MEET_SOON, D.Name(m.d), M.When(m))
+			ns.NoticeAt("lfg", L.MEET_SOON, D.Name(m.d), M.When(m))
 		end
 	end
 end

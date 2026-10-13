@@ -4,7 +4,7 @@ ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadat
 
 local DEFAULTS = {
 	share = true, sharePos = false, shareQuests = false, shareXp = false, shareRested = false,
-	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, restedNotices = true, goalNotices = true, wishNotices = true, screenNotices = true, levelNotices = true, shareProfessions = true, shareFeed = true, feedLoot = true, rareNotices = true, mapPins = true, mapNames = false, shareBank = true, shareGear = true, readChatAds = true, shareBuild = true, shareDeaths = true, trainerNotices = true, groupXp = true, askNotices = true, shareAlts = true, sharePoints = true, shareAchievements = true, ink = 4, sound = true, minimap = true,
+	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, restedNotices = true, goalNotices = true, wishNotices = true, screenNotices = true, levelNotices = true, shareProfessions = true, shareFeed = true, feedLoot = true, rareNotices = true, mapPins = true, mapNames = false, shareBank = true, shareGear = true, readChatAds = true, shareBuild = true, shareDeaths = true, trainerNotices = true, groupXp = true, askNotices = true, shareAlts = true, sharePoints = true, shareAchievements = true, ink = 4, sound = true, minimap = true, stripNotices = true, dingBanner = true, levelBar = false,
 	transport = "auto", debug = false, language = "auto",
 }
 
@@ -67,11 +67,14 @@ function ns.Screen(text)
 	local plain = text:gsub("|H.-|h(.-)|h", "%1"):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|cn[^:]-:", ""):gsub("|r", "")
 	UIErrorsFrame:AddMessage(plain, 1, 0.82, 0)
 end
-function ns.Notice(fmt, ...)
-	local text = string.format(fmt, ...)
+local function notice(where, text)
 	print("|cff7ec8ffLevelMates|r " .. text)   -- notices always reach chat, book open or not
 	ns.Screen(text)
+	if ns.Tray then ns.Tray.Add(text, where) end   -- and the tray keeps them
 end
+function ns.Notice(fmt, ...) notice(nil, string.format(fmt, ...)) end
+-- A notice that points to a tab of the book: the tray offers "Go" there.
+function ns.NoticeAt(where, fmt, ...) notice(where, string.format(fmt, ...)) end
 
 -- My name as the guild sees it. On Forever a character can be "Name Surname", and UnitName("player") then gives the
 -- surname where the realm would go: put them back together (a realm there, from other clients, is no surname).

@@ -38,8 +38,8 @@ local function mine(id) for _, q in ipairs(QH.MyQuests()) do if q.id == id then 
 local function notice(rec)
 	if not ns.db.settings.lfgNotices then return end
 	local d = rec.d
-	if mine(d.q) then ns.Notice(L.QH_NOTICE_HAVE, rec.o, d.t)
-	elseif d.g == 1 and d.l and math.abs(d.l - UnitLevel("player")) <= QH.RANGE then ns.Notice(L.QH_NOTICE_LEVEL, rec.o, d.t, d.l) end
+	if mine(d.q) then ns.NoticeAt("lfg", L.QH_NOTICE_HAVE, rec.o, d.t)
+	elseif d.g == 1 and d.l and math.abs(d.l - UnitLevel("player")) <= QH.RANGE then ns.NoticeAt("lfg", L.QH_NOTICE_LEVEL, rec.o, d.t, d.l) end
 end
 S.Define("qh", { class = "board", life = QH.LIFE, idOwner = suffixOwner,
 	fields = { q = C.V.int(1, 9999999), t = C.V.text(40), l = C.V.int(0, 100), z = C.V.text(30), ob = C.V.text(40), g = C.V.int(0, 1) },

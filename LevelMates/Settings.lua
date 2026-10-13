@@ -92,6 +92,7 @@ ns.On("LM_LOADED", function()
 		function() return S.IsQuiet() end, function(v) S.SetQuiet(v) end)
 	Settings.CreateCheckbox(notices, quiet, L.OPT_QUIET_TT)
 	Bool(notices, "screenNotices", L.OPT_SCREEN, L.OPT_SCREEN_TT)
+	Bool(notices, "stripNotices", L.OPT_STRIP, L.OPT_STRIP_TT)
 	Bool(notices, "helpNotices", L.OPT_HELP, L.OPT_HELP_TT)
 	Bool(notices, "lfgNotices", L.OPT_LFG, L.OPT_LFG_TT)
 	Bool(notices, "goalNotices", L.OPT_GOAL, L.OPT_GOAL_TT)
@@ -106,7 +107,7 @@ ns.On("LM_LOADED", function()
 	Settings.RegisterAddOnCategory(category)
 end)
 
-S.QUIET_KEYS = { "matchNotices", "palNotices", "restedNotices", "wishNotices", "levelNotices", "rareNotices", "askNotices", "trainerNotices", "screenNotices", "sound" }
+S.QUIET_KEYS = { "matchNotices", "palNotices", "restedNotices", "wishNotices", "levelNotices", "rareNotices", "askNotices", "trainerNotices", "screenNotices", "sound", "stripNotices", "dingBanner" }
 function S.IsQuiet() return ns.db.settings.quietSaved ~= nil end
 -- On: the lesser notices off, what they were kept to come back; off: as they were.
 function S.SetQuiet(on)

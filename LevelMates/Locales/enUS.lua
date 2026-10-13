@@ -308,3 +308,5 @@ L.BTN_RUNS = "Runs"; L.HEAD_RUNS = "Runs"; L.SUB_RUNS = "Today and tomorrow as c
 L.RUNS_SOON = "Today and tomorrow"; L.RUNS_LATER = "Later this week"; L.RUNS_FORM = "Create a run"; L.RUNS_PICK_DUNGEON = "Choose a dungeon"; L.RUNS_PUBLISH = "Publish"; L.RUNS_MORE = "+%d more"
 L.RUNS_HINT_SOON = "No runs today or tomorrow. Set one up on the right."; L.RUNS_HINT_LATER = "Nothing planned later this week."
 L.RUN_JOIN = "Join"; L.RUN_LEAVE = "Leave"; L.RUN_INVITE_ALL = "Invite all"
+L.TRAY_TITLE = "Notices"; L.TRAY_GO = "Go"; L.TRAY_EMPTY = "No notices in the last two hours."; L.TRAY_CLEAR = "Clear"; L.MINIMAP_SHIFT = "Shift+click: notices"
+L.OPT_STRIP = "Strip under the minimap"; L.OPT_STRIP_TT = "The newest notice for 10 seconds under the minimap (after combat, not during). A click opens the notices."

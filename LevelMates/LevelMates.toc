@@ -17,6 +17,7 @@ Core.lua
 Scheduler.lua
 Skin.lua
 Widgets.lua
+Tray.lua
 Dungeons.lua
 Comm.lua
 Roster.lua

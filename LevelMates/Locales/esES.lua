@@ -309,3 +309,5 @@ L.BTN_RUNS = "Partidas"; L.HEAD_RUNS = "Partidas"; L.SUB_RUNS = "Hoy y mañana e
 L.RUNS_SOON = "Hoy y mañana"; L.RUNS_LATER = "Más adelante esta semana"; L.RUNS_FORM = "Crear partida"; L.RUNS_PICK_DUNGEON = "Elige mazmorra"; L.RUNS_PUBLISH = "Publicar"; L.RUNS_MORE = "+%d más"
 L.RUNS_HINT_SOON = "No hay partidas hoy ni mañana. Crea una a la derecha."; L.RUNS_HINT_LATER = "Nada más planeado esta semana."
 L.RUN_JOIN = "Unirme"; L.RUN_LEAVE = "Salir"; L.RUN_INVITE_ALL = "Invitar a todos"
+L.TRAY_TITLE = "Avisos"; L.TRAY_GO = "Ir"; L.TRAY_EMPTY = "No hay avisos de las últimas dos horas."; L.TRAY_CLEAR = "Vaciar"; L.MINIMAP_SHIFT = "Mayús+clic: avisos"
+L.OPT_STRIP = "Tira bajo el minimapa"; L.OPT_STRIP_TT = "El último aviso 10 segundos bajo el minimapa (después del combate, no durante). Un clic abre los avisos."

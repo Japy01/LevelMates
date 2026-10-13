@@ -76,7 +76,7 @@ end
 
 -- Matches, told once per person and item each session.
 local told = {}
-local function tell(key, fmt, ...) if told[key] then return end; told[key] = true; ns.Notice(fmt, ...) end
+local function tell(key, fmt, ...) if told[key] then return end; told[key] = true; ns.NoticeAt("wishes", fmt, ...) end
 
 -- Called from a click (the dialog in gift mode).
 function GF.Add(text, price)
@@ -189,7 +189,7 @@ C.OnMessage("gr", function(f, name)
 		if not g or (g.reservedBy and g.reservedBy ~= name) then return end   -- first come
 		local first = g.reservedBy == nil
 		g.reservedBy = name
-		if first then ns.Notice(L.GIFT_RESERVED, name, link(f.i)); ns.Fire("LM_GIFT_GIVEN") end
+		if first then ns.NoticeAt("wishes", L.GIFT_RESERVED, name, link(f.i)); ns.Fire("LM_GIFT_GIVEN") end
 		C.Send("gro", { i = f.i, by = name }, "now")   -- everyone learns who got it from me
 		ns.Fire("LM_WISHES_CHANGED")
 	end
@@ -203,7 +203,7 @@ C.OnMessage("gro", function(f, name)
 	e.reserved = e.reserved or {}
 	local new = e.reserved[f.i] ~= f.by
 	e.reserved[f.i] = f.by
-	if new and f.by == me() then ns.Notice(L.GIFT_CONFIRMED, name, link(f.i)) end
+	if new and f.by == me() then ns.NoticeAt("wishes", L.GIFT_CONFIRMED, name, link(f.i)) end
 	ns.Fire("LM_WISHES_CHANGED")
 end)
 ns.On("LM_HELLO_ANSWERED", function()

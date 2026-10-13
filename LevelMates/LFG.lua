@@ -109,7 +109,7 @@ C.OnMessage("lfg", function(f, name)
 	G.ads[f.id] = { id = f.id, name = name, d = f.d, r = f.r, n = f.n, endsAt = endsAt, joined = known and known.joined or {} }   -- a re-send keeps its joins
 	if G.myJoins[f.id] then C.Send("lfj", { id = f.id, r = G.myJoins[f.id] }) end   -- a newcomer gets my join after the ad
 	if not known and ns.db.settings.lfgNotices and D.Fits(f.d, UnitLevel("player")) then
-		ns.Notice(L.LFG_NOTICE, name, D.Name(f.d), G.RolesText(f.r))
+		ns.NoticeAt("lfg", L.LFG_NOTICE, name, D.Name(f.d), G.RolesText(f.r))
 	end
 	ns.Fire("LM_LFG_CHANGED")
 end)
@@ -214,8 +214,8 @@ C.OnMessage("lfj", function(f, name)
 	local new = ad.joined[name] == nil
 	ad.joined[name] = f.r
 	if ad == G.mine then
-		if new then ns.Notice(L.LFJ_NOTICE, name, D.Name(ad.d), L["ROLE_" .. f.r]) end
-		if not ad.fullTold and joinedCount(ad) >= 4 then ad.fullTold = true; ns.Notice(L.LFJ_FULL, D.Name(ad.d)) end
+		if new then ns.NoticeAt("lfg", L.LFJ_NOTICE, name, D.Name(ad.d), L["ROLE_" .. f.r]) end
+		if not ad.fullTold and joinedCount(ad) >= 4 then ad.fullTold = true; ns.NoticeAt("lfg", L.LFJ_FULL, D.Name(ad.d)) end
 	end
 	ns.Fire("LM_LFG_CHANGED")
 end)
