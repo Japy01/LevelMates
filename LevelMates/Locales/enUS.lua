@@ -335,3 +335,4 @@ L.CV_CRAFTER_SUB = "%s %d/%d · read %s"; L.CV_NOT_READ = "not read yet"; L.CV_Y
 L.CV_NO_RECIPES = "%s has not opened this profession's window with LevelMates yet: their recipes show once they do."
 L.CV_NONE_HERE = "%s has no recipes to list in this profession (gathering ones have none)."
 L.CV_CRAFTER_SUB = "%s %d/%d · %s"; L.CV_READ = "read %s"
+L.OPT_DISCORD_TAG = "Tag for the guild's Discord bot"; L.OPT_DISCORD_TAG_TT = "Only if your guild runs the LevelMates bot: the lines you send to Discord start with a short tag [LM1 ...] that the bot reads to keep a sign-up board. Linking Discord: guild master or officer, Guild (J) > member list > Guild Control > Discord Settings."

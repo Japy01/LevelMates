@@ -48,7 +48,7 @@ local function wanted(ad)
 end
 local function fieldsOf(ad, minutes)
 	local a = A.Get(ad.d)
-	local f = { d = ad.d, id = ad.id, m = minutes, lr = ad.lr, n = ad.n, t = ad.t, r = wanted(ad) }
+	local f = { d = ad.d, id = ad.id, m = minutes, lr = ad.lr, n = ad.n, t = ad.t, r = wanted(ad), dc = ad.dc and 1 or nil }
 	if a and ad.size ~= a.size then f.x = ad.size end
 	if a and a.kind == "r" then
 		local default = A.Caps(ad.d, ad.size)
@@ -66,7 +66,7 @@ local function adFrom(f, name)
 	local caps = A.Caps(f.d, size, f.c)
 	local lr = f.lr
 	if not caps[lr or ""] then lr = caps.A and "A" or (ns.Roles.Of(name) or "D") end
-	return { id = f.id, name = name, d = f.d, t = t, size = size, caps = caps, lr = lr, r = f.r, n = f.n }
+	return { id = f.id, name = name, d = f.d, t = t, size = size, caps = caps, lr = lr, r = f.r, n = f.n, dc = f.dc == 1 or nil }   -- dc: in Discord, so joins and leaves go there too
 end
 
 -- Who is in: the leader, then the joins by when each joined (their own clock, sent with the join), name to break a
@@ -124,6 +124,7 @@ end
 
 function G.Cancel()
 	if not G.mine then return end
+	if G.mine.dc then ns.Discord.Run("cancel", G.View(G.mine)) end   -- from the Withdraw click
 	C.Send("lfgx", { id = G.mine.id }, "now")
 	G.mine = nil
 	ns.Fire("LM_LFG_CHANGED")
@@ -258,6 +259,7 @@ function G.Join(id, role)
 	ad.joined = ad.joined or {}
 	ad.joinedAt = ad.joinedAt or {}
 	ad.joinedAt[me()] = ad.joinedAt[me()] or w
+	if ad.dc then ns.Discord.Run("join", G.View(ad), me(), role) end   -- before I count, so the places are right
 	ad.joined[me()] = role
 	ns.Fire("LM_LFG_CHANGED")
 	return true
@@ -268,6 +270,7 @@ function G.Leave(id)
 	C.Send("lfjx", { id = id }, "now")
 	G.myJoins[id] = nil
 	local ad = G.ads[id]
+	if ad and ad.dc then ns.Discord.Run("leave", G.View(ad), me()) end
 	if ad and ad.joined then ad.joined[me()] = nil end
 	ns.Fire("LM_LFG_CHANGED")
 	return true

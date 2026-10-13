@@ -336,3 +336,4 @@ L.CV_CRAFTER_SUB = "%s %d/%d · leído %s"; L.CV_NOT_READ = "sin leer aún"; L.C
 L.CV_NO_RECIPES = "%s aún no ha abierto la ventana de esta profesión con LevelMates: sus recetas salen cuando lo haga."
 L.CV_NONE_HERE = "%s no tiene recetas que listar en esta profesión (las de recolección no tienen)."
 L.CV_CRAFTER_SUB = "%s %d/%d · %s"; L.CV_READ = "leído %s"
+L.OPT_DISCORD_TAG = "Marca para el bot de Discord de la hermandad"; L.OPT_DISCORD_TAG_TT = "Solo si tu hermandad usa el bot de LevelMates: las líneas que envías a Discord empiezan con una marca corta [LM1 ...] que el bot lee para llevar un tablón de inscripción. Enlazar Discord: líder u oficial, Hermandad (J) > lista de miembros > Control de hermandad > Ajustes de Discord."

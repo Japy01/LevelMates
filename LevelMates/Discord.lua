@@ -33,13 +33,18 @@ end
 
 -- What is still free: "faltan: sanador, 2 daño" or "completa". A join counts the joiner (the leader places them a
 -- moment later), a leave or a removal frees their slot.
-local function freeText(m, kind, who, role)
+-- Who is placed after this event (a join counts the joiner, a leave or removal frees the place), and the caps.
+local function slotsAfter(m, kind, who, role)
 	local caps = m.caps or ns.Activities.Caps(m.d, m.size)
 	local s = m.now and ns.LFG.Slots({ name = m.by, lr = m.role, caps = caps, joined = m.joined, joinedAt = m.joinedAt }) or ns.Meetups.Slots(m)
 	for r in pairs(caps) do s[r] = s[r] or {} end
 	local function drop(name) for r in pairs(caps) do for i = #s[r], 1, -1 do if s[r][i] == name then table.remove(s[r], i) end end end end
-	if kind == "join" and role and caps[role] and #s[role] < caps[role] then drop(who); table.insert(s[role], who)
+	if (kind == "join" or kind == "add") and role and caps[role] and #s[role] < caps[role] then drop(who); table.insert(s[role], who)
 	elseif kind == "leave" or kind == "remove" then drop(who) end
+	return s, caps
+end
+local function freeText(m, kind, who, role)
+	local s, caps = slotsAfter(m, kind, who, role)
 	local parts = {}
 	for _, r in ipairs({ "T", "H", "D", "A" }) do
 		local free = caps[r] and (caps[r] - #s[r]) or 0
@@ -49,6 +54,27 @@ local function freeText(m, kind, who, role)
 		end
 	end
 	return #parts > 0 and string.format(L.DC_FREE, table.concat(parts, ", ")) or L.DC_FULL
+end
+
+-- The bot tag (Options > Discord bot): "[LM1 key=value ...]" first, so a cut line keeps it; values without spaces
+-- ("_"), "]", "=", "[" or "|". Format: docs/discord-tag.md.
+local function val(v) return (tostring(v or ""):gsub("%s", "_"):gsub("[%]%[=|]", "")) end
+function DC.Tag(kind, m, who, role)
+	local A = ns.Activities
+	local a = A.Get(m.d)
+	local parts = { "LM1", "id=" .. val(m.id), "ev=" .. kind, "act=" .. tostring(m.d) }
+	if m.now or not m.at then parts[#parts + 1] = "src=now" else parts[#parts + 1] = "src=run"; parts[#parts + 1] = "at=" .. tostring(m.at) end
+	if a and a.free and m.t and m.t ~= "" then parts[#parts + 1] = "n=" .. val(ns.CutUtf8(m.t, 40)) end
+	parts[#parts + 1] = "by=" .. val(m.by)
+	if m.role then parts[#parts + 1] = "lr=" .. m.role end
+	if who then parts[#parts + 1] = "who=" .. val(who); if role then parts[#parts + 1] = "wr=" .. role end end
+	if kind ~= "cancel" then
+		local s, caps = slotsAfter(m, kind, who, role)
+		local counts = {}
+		for _, r in ipairs({ "T", "H", "D", "A" }) do if caps[r] then counts[#counts + 1] = r .. #s[r] .. "/" .. caps[r] end end
+		parts[#parts + 1] = "s=" .. table.concat(counts, ",")
+	end
+	return "[" .. table.concat(parts, " ") .. "]"
 end
 
 -- One line, at most 236 bytes, no "|", no links; the note is what gets shortened.
@@ -72,6 +98,10 @@ function DC.Line(kind, m, who, role)
 	if note then
 		local room = DC.MAX - #line - 5
 		if room > 3 then line = line .. ' · "' .. ns.CutUtf8(note, room) .. '"' end
+	end
+	if ns.db and ns.db.settings.discordTag then   -- the bot's tag first; the readable part is what gets cut
+		local tag = DC.Tag(kind, m, who, role)
+		line = tag .. " " .. ns.CutUtf8(line, math.max(0, DC.MAX - #tag - 1))
 	end
 	if #line > DC.MAX then line = ns.CutUtf8(line, DC.MAX) end
 	return line
