@@ -48,7 +48,7 @@ local function wanted(ad)
 end
 local function fieldsOf(ad, minutes)
 	local a = A.Get(ad.d)
-	local f = { d = ad.d, id = ad.id, m = minutes, lr = ad.lr, n = ad.n, t = ad.t, r = wanted(ad), dc = ad.dc and 1 or nil }
+	local f = { d = ad.d, id = ad.id, m = minutes, lr = ad.lr, n = ad.n, t = ad.t, r = wanted(ad), dc = ad.dc and (ad.dcTag and 2 or 1) or nil }
 	if a and ad.size ~= a.size then f.x = ad.size end
 	if a and a.kind == "r" then
 		local default = A.Caps(ad.d, ad.size)
@@ -66,7 +66,7 @@ local function adFrom(f, name)
 	local caps = A.Caps(f.d, size, f.c)
 	local lr = f.lr
 	if not caps[lr or ""] then lr = caps.A and "A" or (ns.Roles.Of(name) or "D") end
-	return { id = f.id, name = name, d = f.d, t = t, size = size, caps = caps, lr = lr, r = f.r, n = f.n, dc = f.dc == 1 or nil }   -- dc: in Discord, so joins and leaves go there too
+	return { id = f.id, name = name, d = f.d, t = t, size = size, caps = caps, lr = lr, r = f.r, n = f.n, dc = (f.dc == 1 or f.dc == 2) or nil, dcTag = f.dc == 2 or nil }   -- dc: in Discord (joins and leaves go there too); 2: with the bot's tag
 end
 
 -- Who is in: the leader, then the joins by when each joined (their own clock, sent with the join), name to break a
@@ -105,7 +105,7 @@ function G.Post(spec, roles, note)
 	local caps = A.Caps(spec.d, size, spec.c)
 	local role = caps[spec.role or ""] and spec.role or (caps.A and "A" or ns.Roles.Of(ns.Me()))
 	local ad = { id = newId(), name = ns.Me(), d = spec.d, t = t, size = size, caps = caps, lr = role,
-		n = note ~= "" and note or nil, joined = {}, joinedAt = {}, dc = spec.discord and true or nil }
+		n = note ~= "" and note or nil, joined = {}, joinedAt = {}, dc = spec.discord and true or nil, dcTag = spec.discord and ns.Discord.TagOn() or nil }
 	if not C.Send("lfg", fieldsOf(ad, 20), "now") then ns.Say(L.HELP_NEEDS_SHARE); ns.Fire("LM_LFG_CHANGED"); return false end   -- the old ad stays
 	if G.mine then C.Send("lfgx", { id = G.mine.id }, "now") end   -- the new ad replaces the old one everywhere
 	lastPost = now
@@ -119,7 +119,7 @@ end
 -- An ad in the shape the views and Discord share with runs: { id, d, t, by, role, caps, size, n, joined, now = true }.
 function G.View(ad)
 	return { id = ad.id, d = ad.d, t = ad.t, by = ad.name, role = ad.lr, caps = ad.caps, size = ad.size, n = ad.n,
-		joined = ad.joined or {}, joinedAt = ad.joinedAt, now = true, dc = ad.dc, endsAt = ad.endsAt, mine = ad == G.mine }
+		joined = ad.joined or {}, joinedAt = ad.joinedAt, now = true, dc = ad.dc, dcTag = ad.dcTag, endsAt = ad.endsAt, mine = ad == G.mine }
 end
 
 function G.Cancel()

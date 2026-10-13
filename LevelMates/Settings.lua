@@ -74,6 +74,12 @@ ns.On("LM_LOADED", function()
 	Bool(share, "sharePos", L.OPT_POS, L.OPT_POS_TT, function() ns.Roster.SendHeartbeat(true) end)
 	Bool(share, "shareBank", L.OPT_BANK, L.OPT_BANK_TT)
 	Bool(share, "discordTag", L.OPT_DISCORD_TAG, L.OPT_DISCORD_TAG_TT)
+	-- for the whole guild: only the guild master or an officer can change it; everyone sees what it is
+	local guildTag = Settings.RegisterProxySetting(share, "LevelMates_guildTag", Settings.VarType.Boolean, L.OPT_GUILD_TAG, false,
+		function() return ns.GuildNotes.GuildTag() end,
+		function(v) if v ~= ns.GuildNotes.GuildTag() then ns.GuildNotes.SetGuildTag(v) end end)
+	Settings.CreateCheckbox(share, guildTag, L.OPT_GUILD_TAG_TT)
+	Bool(share, "discordTagOff", L.OPT_TAG_OFF, L.OPT_TAG_OFF_TT)
 	Bool(share, "shareGear", L.OPT_GEAR, L.OPT_GEAR_TT)
 	Bool(share, "shareQuests", L.OPT_QUESTS, L.OPT_QUESTS_TT, function(v) if v then ns.Roster.SendQuests() else ns.Roster.WithdrawQuests() end end)
 	Bool(share, "shareXp", L.OPT_XPH, L.OPT_XPH_TT)

@@ -56,6 +56,13 @@ local function freeText(m, kind, who, role)
 	return #parts > 0 and string.format(L.DC_FREE, table.concat(parts, ", ")) or L.DC_FULL
 end
 
+-- The tag is on when I turned it on, or the guild did (guild master or officer) and I did not opt out.
+function DC.TagOn()
+	local st = ns.db and ns.db.settings
+	if not st then return false end
+	if st.discordTag then return true end
+	return ns.GuildNotes and ns.GuildNotes.GuildTag() and not st.discordTagOff or false
+end
 -- The bot tag (Options > Discord bot): "[LM1 key=value ...]" first, so a cut line keeps it; values without spaces
 -- ("_"), "]", "=", "[" or "|". Format: docs/discord-tag.md.
 local function val(v) return (tostring(v or ""):gsub("%s", "_"):gsub("[%]%[=|]", "")) end
@@ -99,7 +106,7 @@ function DC.Line(kind, m, who, role)
 		local room = DC.MAX - #line - 5
 		if room > 3 then line = line .. ' · "' .. ns.CutUtf8(note, room) .. '"' end
 	end
-	if ns.db and ns.db.settings.discordTag then   -- the bot's tag first; the readable part is what gets cut
+	if m.dcTag or DC.TagOn() then   -- the bot's tag first (the group's choice, else mine); the readable part is what gets cut
 		local tag = DC.Tag(kind, m, who, role)
 		line = tag .. " " .. ns.CutUtf8(line, math.max(0, DC.MAX - #tag - 1))
 	end

@@ -122,7 +122,7 @@ C.SCHEMA = {
 	help = { t = text(60), z = int(0, 100000), x = num(0, 100), y = num(0, 100), id = word(8) },
 	helpok = { id = word(8) },
 	helpgo = { id = word(8) },
-	lfg  = { d = int(1, 399), r = roles, n = text(40), id = word(8), m = int(1, 20), lr = oneOf("T", "H", "D", "A"), x = int(2, 40), c = caps, t = text(60), dc = int(0, 1) },
+	lfg  = { d = int(1, 399), r = roles, n = text(40), id = word(8), m = int(1, 20), lr = oneOf("T", "H", "D", "A"), x = int(2, 40), c = caps, t = text(60), dc = int(0, 2) },
 	lfgx = { id = word(8) },
 	pal  = { p = int(0, 1) },
 	rx   = { p = int(-1, 200) },

@@ -58,6 +58,6 @@ STUB.Advance(31)
 assert(ns.LFG.Post{ d = 5, role = "T", discord = true }, "mine, in Discord")
 local k, sentLfg
 for i = #STUB.sent, 1, -1 do local kk, ff = C.Decode(STUB.sent[i].msg); if kk == "lfg" then sentLfg = ff; break end end
-assert(sentLfg.dc == 1, "the ad says it is in Discord")
+assert(sentLfg.dc == 2, "the ad says it is in Discord, with the tag (my switch is on)")
 ns.LFG.Cancel()
 assert(fields(posted[#posted]).ev == "cancel", "withdrawn: cancel in Discord")

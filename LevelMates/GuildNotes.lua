@@ -26,6 +26,14 @@ S.Define("gmo", { class = "board", life = GN.LIFE, writerOwns = true,
 		changed()
 	end })
 
+-- The guild's own settings for LevelMates, set by the guild master or an officer (like the MOTD): dt = the Discord bot
+-- tag on for everyone (each player may still opt out in Options).
+S.Define("gst", { class = "board", life = GN.LIFE, writerOwns = true,
+	fields = { dt = function(v) return v == 0 or v == 1 or v == "0" or v == "1" end }, required = { "dt" },
+	accept = function(_, owner) return R.IsOfficer(owner) end,
+	may = function(_, who) return R.IsOfficer(who) or (who == me() and (R.IAmOfficer() or R.IsOfficer(me()))) end,
+	onChange = function() changed(); ns.Fire("LM_GUILD_SETTINGS_CHANGED") end })
+
 -- The game's own permission when it has the call; otherwise being an officer.
 function GN.CanWrite(name)
 	if name == me() then return true end
@@ -48,6 +56,15 @@ end
 function GN.Motd()
 	local r = S.Get("gmo", "motd")
 	if r and r.d.n ~= "" then return r.d.n, r.o, r.v end
+end
+function GN.GuildTag()
+	local r = S.Get("gst", "guild")
+	return r ~= nil and tonumber(r.d.dt) == 1
+end
+-- Called from a click (Options). Only the guild master or an officer.
+function GN.SetGuildTag(on)
+	if not (R.IAmOfficer() or R.IsOfficer(me())) then ns.Say(L.NOTE_NOT_ALLOWED); return false end
+	return S.Put("gst", "guild", { dt = on and 1 or 0 }) and true or false
 end
 function GN.SetMotd(text)
 	if not GN.CanMotd() then ns.Say(L.NOTE_NOT_ALLOWED); return false end

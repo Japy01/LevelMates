@@ -2,7 +2,7 @@
 
 **Who sends it:** LevelMates sends a line to the guild's linked Discord channel when a player creates a group with "Announce in Discord", joins one, leaves one, or cancels or withdraws it. Each line comes from that player's own Discord account (the game's link).
 
-**When the tag appears:** only if the player turned on **Options → Share → "Tag for the guild's Discord bot"**. The line then starts with a tag that a bot can read:
+**When the tag appears:** on a line about a group that was made with the tag, whatever the sender's own setting. A group is made with the tag when its leader has it on, either through their own **Options → Share → "Tag for the guild's Discord bot"** or because the guild master or an officer turned on **"Discord bot tag for the whole guild"** (a player may opt out of the guild's choice). Lines about groups made without the tag carry it only if the sender has it on. The line then starts with a tag that a bot can read:
 
 ```
 [LM1 id=a1b2c3d4 ev=join act=101 src=run at=29333333 by=Santo_Fiämbre lr=T who=Ana_Bel wr=H s=T1/5,H1/10,D0/25] [LevelMates] Ana Bel se apunta como sanador · …

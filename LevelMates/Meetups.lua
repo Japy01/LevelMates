@@ -20,7 +20,7 @@ local function joinId(id, name) return id .. "." .. key(name) end
 local function changed() ns.Fire("LM_MEETUPS_CHANGED") end
 
 S.Define("qd", { class = "board", life = LIFE, lane = "urgent", max = M.MAX + 10,
-	fields = { d = C.V.int(1, 399), at = C.V.int(0, 100000000), n = C.V.text(40), r = C.V.oneOf("T", "H", "D", "A"), dc = C.V.int(0, 1),
+	fields = { d = C.V.int(1, 399), at = C.V.int(0, 100000000), n = C.V.text(40), r = C.V.oneOf("T", "H", "D", "A"), dc = C.V.int(0, 2),
 		x = C.V.int(2, 40), c = C.V.caps, t = C.V.text(60) },
 	required = { "d", "at" },
 	onChange = function(rec, old, how)
@@ -55,7 +55,7 @@ local function view(rec)
 	local role = rec.d.r
 	if not caps[role or ""] then role = caps.A and "A" or ns.Roles.Of(rec.o) end
 	local m = { id = rec.id, d = rec.d.d, t = t ~= "" and t or nil, at = rec.d.at, n = rec.d.n, by = rec.o, joined = {}, sim = rec.d.sim,
-		role = role, size = size, caps = caps, dc = rec.d.dc == 1 }
+		role = role, size = size, caps = caps, dc = (rec.d.dc == 1 or rec.d.dc == 2), dcTag = rec.d.dc == 2 }   -- 2: with the bot's tag
 	local prefix = rec.id .. "."
 	for _, j in ipairs(S.List("qj", function(r) return r.id:sub(1, #prefix) == prefix end)) do m.joined[j.o] = j.d.r end
 	for name, role in pairs(rec.d.sj or {}) do m.joined[name] = role end   -- a sample's joiners
@@ -223,7 +223,7 @@ function M.Create(spec, at, note, role, discord)
 	local size = A.SizeOf(d, spec.x)
 	local caps = A.Caps(d, size, spec.c)
 	role = caps[role or ""] and role or (caps.A and "A" or ns.Roles.Of(me()))
-	local fields = { d = d, at = at, n = clean ~= "" and clean or nil, r = role, dc = discord and 1 or 0, t = t, _exp = (at + M.KEEP) * 60 }
+	local fields = { d = d, at = at, n = clean ~= "" and clean or nil, r = role, dc = discord and (ns.Discord.TagOn() and 2 or 1) or 0, t = t, _exp = (at + M.KEEP) * 60 }
 	if size ~= a.size then fields.x = size end
 	if a.kind == "r" and A.EncodeCaps(caps) ~= A.EncodeCaps(A.Caps(d, size)) then fields.c = A.EncodeCaps(caps) end
 	local id = newId()
