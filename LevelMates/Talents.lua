@@ -83,8 +83,8 @@ function TL.HashOf(code)
 end
 
 ------------------------------------------------------------------ a plan as text
--- "1~tree~hash~groups~nodes": groups "id,order,icon,name" joined by ";", nodes "id,x,y,max,type,group,spell/spell,to/to"
--- (to: the nodes its arrows lead to)
+-- "1~tree~hash~groups~nodes": groups "id,order,icon,name" joined by ";", nodes "id,x,y,max,type,group,spell/spell,to/to,h"
+-- (to: the nodes its arrows lead to; h: 1 when the game does not show it)
 local function clean(s) return (tostring(s or ""):gsub("[~;,|%c]", " ")) end
 function TL.EncodeLayout(plan)
 	local groups, nodes = {}, {}
@@ -94,7 +94,7 @@ function TL.EncodeLayout(plan)
 		for _, s in ipairs(n.spells or {}) do spells[#spells + 1] = tostring(s) end
 		local to = {}
 		for _, t in ipairs(n.to or {}) do to[#to + 1] = tostring(t) end
-		nodes[#nodes + 1] = table.concat({ n.id, n.x or 0, n.y or 0, n.max or 1, n.type or 0, n.group or 0, table.concat(spells, "/"), table.concat(to, "/") }, ",")
+		nodes[#nodes + 1] = table.concat({ n.id, n.x or 0, n.y or 0, n.max or 1, n.type or 0, n.group or 0, table.concat(spells, "/"), table.concat(to, "/"), n.hidden and "1" or "" }, ",")
 	end
 	return table.concat({ "1", plan.tree or 0, plan.hash or "", table.concat(groups, ";"), table.concat(nodes, ";") }, "~")
 end
@@ -108,16 +108,109 @@ function TL.DecodeLayout(text)
 		if id then plan.groups[#plan.groups + 1] = { id = tonumber(id), order = tonumber(order), icon = tonumber(icon), name = name } end
 	end
 	for part in nodes:gmatch("[^;]+") do
-		local id, x, y, max, typ, group, spells, to = part:match("^(%d+),(%-?%d+),(%-?%d+),(%d+),(%d+),(%-?%d+),([%d/]*),?([%d/]*)$")
+		local id, x, y, max, typ, group, spells, to, hidden = part:match("^(%d+),(%-?%d+),(%-?%d+),(%d+),(%d+),(%-?%d+),([%d/]*),?([%d/]*),?(%d?)$")
 		if not id then return nil end
 		local list, targets = {}, {}
 		for s in spells:gmatch("%d+") do list[#list + 1] = tonumber(s) end
 		for t in to:gmatch("%d+") do targets[#targets + 1] = tonumber(t) end
-		plan.nodes[#plan.nodes + 1] = { id = tonumber(id), x = tonumber(x), y = tonumber(y), max = tonumber(max), type = tonumber(typ), group = tonumber(group), spells = list, to = targets }
+		plan.nodes[#plan.nodes + 1] = { id = tonumber(id), x = tonumber(x), y = tonumber(y), max = tonumber(max), type = tonumber(typ), group = tonumber(group), spells = list, to = targets, hidden = hidden == "1" or nil }
 	end
 	if #plan.nodes == 0 then return nil end
 	table.sort(plan.groups, function(a, b) return (a.order or 0) < (b.order or 0) end)
 	return plan
+end
+
+------------------------------------------------------------------ the tree as the game shows it
+-- The step between positions: the smallest gap that is not a stray (at least half the typical one).
+local function step(gaps)
+	if #gaps == 0 then return 1 end
+	table.sort(gaps)
+	local typical = gaps[math.ceil(#gaps / 2)]
+	for _, g in ipairs(gaps) do if g > 0 and g >= typical / 2 then return g end end
+	return 1
+end
+local function gapsOf(values)
+	local seen, list, gaps = {}, {}, {}
+	for _, v in ipairs(values) do if not seen[v] then seen[v] = true; list[#list + 1] = v end end
+	table.sort(list)
+	for i = 2, #list do gaps[#gaps + 1] = list[i] - list[i - 1] end
+	return gaps
+end
+
+-- The shown nodes on a grid: { trees = { { group, cols } } in branch order, rows, cells = { [nodeID] = { tree, col, row } } }.
+-- Columns count within each branch; rows are level across branches, as in the game's window.
+function TL.Grid(plan)
+	local index, trees = {}, {}
+	for i, g in ipairs(plan.groups or {}) do index[g.id] = i; trees[i] = { group = g.id, cols = 1, left = math.huge } end
+	local shown, ys, xsBy = {}, {}, {}
+	for _, n in ipairs(plan.nodes or {}) do
+		local t = index[n.group]
+		if t and not n.hidden then
+			shown[#shown + 1] = n; ys[#ys + 1] = n.y
+			trees[t].left = math.min(trees[t].left, n.x)
+			xsBy[t] = xsBy[t] or {}; table.insert(xsBy[t], n.x)
+		end
+	end
+	if #shown == 0 then return nil end
+	local pooled = {}   -- the column step from the gaps inside each branch (between branches the gap is wider)
+	for _, xs in pairs(xsBy) do for _, g in ipairs(gapsOf(xs)) do pooled[#pooled + 1] = g end end
+	local stepX, stepY, top = step(pooled), step(gapsOf(ys)), math.huge
+	for _, y in ipairs(ys) do top = math.min(top, y) end
+	local grid = { trees = trees, rows = 1, cells = {} }
+	for _, n in ipairs(shown) do
+		local t = index[n.group]
+		local col = math.floor((n.x - trees[t].left) / stepX + 0.5) + 1
+		local row = math.floor((n.y - top) / stepY + 0.5) + 1
+		grid.cells[n.id] = { tree = t, col = col, row = row }
+		trees[t].cols = math.max(trees[t].cols, col)
+		grid.rows = math.max(grid.rows, row)
+	end
+	return grid
+end
+
+-- Each shown node's state: "max", "partial", "open" (could be taken now) or "locked" (its row asks 5 points a row in
+-- its branch, or a node whose arrow leads to it is not full). got: what TL.Decode gives.
+TL.POINTS_PER_ROW = 5
+function TL.States(plan, grid, got)
+	local states, byId, from = {}, {}, {}
+	for _, n in ipairs(plan.nodes) do
+		byId[n.id] = n
+		for _, t in ipairs(n.to or {}) do from[t] = from[t] or {}; table.insert(from[t], n) end
+	end
+	local function rankOf(n)
+		local p = got.nodes[n.id]
+		if not p then return 0 end
+		return p.granted and n.max or p.rank
+	end
+	for id, cell in pairs(grid.cells) do
+		local n = byId[id]
+		local rank = rankOf(n)
+		if rank >= n.max then states[id] = "max"
+		elseif rank > 0 then states[id] = "partial"
+		else
+			local group = grid.trees[cell.tree].group
+			local free = (got.points[group] or 0) >= TL.POINTS_PER_ROW * (cell.row - 1)
+			for _, src in ipairs(from[id] or {}) do if rankOf(src) < src.max then free = false end end
+			states[id] = free and "open" or "locked"
+		end
+	end
+	return states
+end
+
+-- A branch's name and icon: the game's, or (Forever names them "Tree 1") the classic ones of the class.
+local BRANCH_ICONS = {
+	WARRIOR = { 132355, 132347, 134952 }, PALADIN = { 135920, 135893, 135873 }, HUNTER = { 132164, 132222, 132215 },
+	ROGUE = { 132292, 132090, 132320 }, PRIEST = { 135940, 237542, 136207 }, SHAMAN = { 136048, 136051, 136052 },
+	MAGE = { 135932, 135810, 135846 }, WARLOCK = { 136145, 136172, 136186 }, DRUID = { 136096, 132276, 136041 },
+}
+function TL.BranchName(class, group, i)
+	local name = group and group.name
+	if name and name ~= "" and not name:match("^Tree %d+$") and not name:match("^#") then return name end
+	return ns.L["TREE_" .. tostring(class) .. "_" .. i] or name or ("#" .. i)
+end
+function TL.BranchIcon(class, group, i)
+	if group and group.icon and group.icon > 0 then return group.icon end
+	return BRANCH_ICONS[class] and BRANCH_ICONS[class][i] or 134400
 end
 
 ------------------------------------------------------------------ my plan, from the game
@@ -149,7 +242,7 @@ function TL.ReadMine()
 		local to = {}
 		for _, e in ipairs(n.visibleEdges or {}) do if e.targetNode then to[#to + 1] = e.targetNode end end
 		plan.nodes[#plan.nodes + 1] = { id = id, x = math.floor(n.posX or 0), y = math.floor(n.posY or 0), max = n.maxRanks or 1,
-			type = n.type or 0, group = n.groupIDs and n.groupIDs[1] or 0, spells = spells, to = to }
+			type = n.type or 0, group = n.groupIDs and n.groupIDs[1] or 0, spells = spells, to = to, hidden = n.isVisible == false or nil }
 	end
 	return plan
 end

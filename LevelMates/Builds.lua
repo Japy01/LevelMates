@@ -34,7 +34,10 @@ function BU.Groups()
 	local ok, groups = pcall(C_Traits.GetGroupDisplayInfoByTreeID, treeId)
 	local out = {}
 	for _, g in ipairs(ok and groups or {}) do
-		if g.groupID then out[#out + 1] = { id = g.groupID, name = g.displayName or ("#" .. g.groupID) } end
+		if g.groupID then   -- Forever names them "Tree 1": the classic names of my class instead
+			local name = ns.Talents and ns.Talents.BranchName(myClass(), { name = g.displayName }, #out + 1) or g.displayName
+			out[#out + 1] = { id = g.groupID, name = name or ("#" .. g.groupID) }
+		end
 	end
 	return out
 end

@@ -1,6 +1,7 @@
--- TalentView.lua: a guildmate's build drawn on their class tree, our own window: the three branches side by side as
--- the game lays them out (its node positions, scaled to fit), the game's own node art (yellow full, green partial,
--- gray not taken; choice nodes as such), arrows between nodes, each branch's points on top, the spell's tooltip.
+-- TalentView.lua: a guildmate's build drawn on their class tree, our own window, laid out as the game's: the branches
+-- side by side, each its own panel (the class's art, a round icon, its name and points), the talents on a grid in it
+-- (Talents.Grid), arrows between them. The game's own node art says each talent's state: yellow full, green partial,
+-- gray open (could be taken), dark locked (Talents.States); choice nodes as such. The spell's tooltip on each.
 -- The tree comes from Talents.lua (ours, or a guildmate's of that class); without it, the guild is asked and the
 -- game's own link stays on offer. Nothing here opens or touches the game's talent window.
 local _, ns = ...
@@ -8,63 +9,86 @@ local TV = {}
 ns.TalentView = TV
 local L, TL, SK = ns.L, ns.Talents, ns.Skin
 
-local W, H = 820, 600              -- the window
-local AREA_W, AREA_H = 760, 440    -- where the nodes go
-local AREA_TOP = -110              -- below the title and the branch heads
-local NODE = 34
+local NODE = 36                    -- a talent's icon
+local CELL_X, CELL_Y = 56, 52      -- the grid
+local HEAD = 64                    -- a branch's head
+local PAD_X = 22                   -- a branch's side margins
+local TOP, FOOT, SIDE = 30, 48, 12 -- the window around the branches
+local MIN_COLS = 4                 -- a narrow branch still gets a fair panel
 
-local function atlasOr(tex, atlas, r, g, b)
-	if SK.HasAtlas(atlas) then tex:SetAtlas(atlas) else tex:SetColorTexture(r, g, b, 0.9) end
+local function atlasOr(tex, atlas, r, g, b, a)
+	if SK.HasAtlas(atlas) then tex:SetAtlas(atlas) else tex:SetColorTexture(r, g, b, a or 0.9) end
+end
+local function classColor(class)
+	local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[class or ""]
+	if c then return c.r, c.g, c.b end
+	return 0.6, 0.6, 0.6
 end
 
 local function build()
 	local f = SK.Window("LevelMatesTalentView", UIParent)
-	f:SetSize(W, H); f:SetPoint("CENTER"); f:SetFrameStrata("HIGH"); if f.SetToplevel then f:SetToplevel(true) end
+	f:SetSize(760, 560); f:SetPoint("CENTER"); f:SetFrameStrata("HIGH"); if f.SetToplevel then f:SetToplevel(true) end
 	f:EnableMouse(true); f:SetMovable(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	if f.SetClampedToScreen then f:SetClampedToScreen(true) end
 	f:Hide()
 	if UISpecialFrames then table.insert(UISpecialFrames, "LevelMatesTalentView") end   -- Escape closes it
 	TV.frame = f
-	-- the class's own background art, under the nodes
-	TV.bg = f:CreateTexture(nil, "BACKGROUND", nil, 1)
-	TV.bg:SetPoint("TOPLEFT", 8, -26); TV.bg:SetPoint("BOTTOMRIGHT", -8, 8)
 	TV.title = f.TitleText
-	TV.area = CreateFrame("Frame", nil, f)
-	TV.area:SetSize(AREA_W, AREA_H); TV.area:SetPoint("TOP", 0, AREA_TOP)
-	TV.heads = {}
-	for i = 1, 3 do
-		local h = CreateFrame("Frame", nil, f)
-		h:SetSize(220, 44)
-		h.icon = h:CreateTexture(nil, "ARTWORK"); h.icon:SetSize(28, 28); h.icon:SetPoint("LEFT", 0, 0)
-		h.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-		h.name = h:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge"); h.name:SetPoint("TOPLEFT", h.icon, "TOPRIGHT", 6, 0)
-		h.points = h:CreateFontString(nil, "OVERLAY", "GameFontHighlight"); h.points:SetPoint("TOPLEFT", h.name, "BOTTOMLEFT", 0, -2)
-		h.name.lmKeep, h.points.lmKeep = true, true   -- light writing on the dark art
-		TV.heads[i] = h
-	end
+	TV.body = CreateFrame("Frame", nil, f)
+	TV.body:SetPoint("TOPLEFT", SIDE, -TOP)
+	TV.bodyBg = TV.body:CreateTexture(nil, "BACKGROUND"); TV.bodyBg:SetAllPoints(); TV.bodyBg:SetColorTexture(0.03, 0.03, 0.03, 1)
+	TV.lineLayer = CreateFrame("Frame", nil, TV.body)   -- arrows over the panels, under the talents
+	TV.lineLayer:SetAllPoints(TV.body)
+	TV.lineLayer:SetFrameLevel(TV.body:GetFrameLevel() + 3)
+	TV.total = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	TV.total:SetPoint("BOTTOMLEFT", 18, 20); TV.total.lmKeep = true
 	TV.note = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	TV.note:SetPoint("CENTER", 0, 10); TV.note:SetWidth(520); TV.note:SetJustifyH("CENTER"); TV.note:SetWordWrap(true)
+	TV.note:SetPoint("CENTER", TV.body, "CENTER", 0, 0); TV.note:SetWidth(460); TV.note:SetJustifyH("CENTER"); TV.note:SetWordWrap(true)
 	TV.note.lmKeep = true
 	TV.gameButton = SK.Button(f)
-	TV.gameButton:SetSize(220, 22); TV.gameButton:SetPoint("BOTTOM", 0, 16); TV.gameButton:SetText(L.TV_GAME)
+	TV.gameButton:SetSize(220, 22); TV.gameButton:SetPoint("BOTTOMRIGHT", -16, 14); TV.gameButton:SetText(L.TV_GAME)
 	TV.gameButton:SetScript("OnClick", function() if TV.entry then ns.Builds.Open(TV.entry) end end)   -- the game's link, in my chat, to click
-	TV.nodes, TV.lines = {}, {}
+	TV.heads, TV.nodes, TV.lines = {}, {}, {}
+end
+
+-- A branch's panel: the class's art darkened, a line under the head, a round icon, its name, its points.
+local function panel(i)
+	local h = TV.heads[i]
+	if h then return h end
+	h = CreateFrame("Frame", nil, TV.body)
+	h.art = h:CreateTexture(nil, "BACKGROUND", nil, 1); h.art:SetAllPoints()
+	h.shade = h:CreateTexture(nil, "BACKGROUND", nil, 2); h.shade:SetAllPoints(); h.shade:SetColorTexture(0, 0, 0, 0.45)
+	h.divider = h:CreateTexture(nil, "BORDER"); h.divider:SetWidth(1)
+	h.divider:SetPoint("TOPRIGHT"); h.divider:SetPoint("BOTTOMRIGHT"); h.divider:SetColorTexture(0.45, 0.36, 0.2, 0.8)
+	h.rule = h:CreateTexture(nil, "ARTWORK"); h.rule:SetHeight(1)
+	h.rule:SetPoint("TOPLEFT", 14, -HEAD + 8); h.rule:SetPoint("TOPRIGHT", -14, -HEAD + 8); h.rule:SetColorTexture(0.8, 0.64, 0.3, 0.45)
+	h.icon = h:CreateTexture(nil, "ARTWORK"); h.icon:SetSize(34, 34); h.icon:SetPoint("TOPLEFT", 16, -12)
+	if h.icon.SetMask then pcall(h.icon.SetMask, h.icon, "Interface\\CharacterFrame\\TempPortraitAlphaMask") end   -- round
+	h.ring = h:CreateTexture(nil, "OVERLAY"); h.ring:SetSize(56, 56); h.ring:SetPoint("TOPLEFT", h.icon, "TOPLEFT", -5, 5)
+	h.ring:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")   -- the game's round frame
+	h.name = h:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge"); h.name:SetPoint("LEFT", h.icon, "RIGHT", 12, 6)
+	h.points = h:CreateFontString(nil, "OVERLAY", "GameFontHighlight"); h.points:SetPoint("TOPLEFT", h.name, "BOTTOMLEFT", 0, -2)
+	h.name.lmKeep, h.points.lmKeep = true, true   -- light writing on the dark art
+	TV.heads[i] = h
+	return h
 end
 
 local function nodeButton(i)
 	local b = TV.nodes[i]
 	if b then return b end
-	b = CreateFrame("Button", nil, TV.area)
+	b = CreateFrame("Button", nil, TV.body)
 	b:SetSize(NODE, NODE)
-	b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetPoint("TOPLEFT", 4, -4); b.icon:SetPoint("BOTTOMRIGHT", -4, 4)
+	b:SetFrameLevel(TV.body:GetFrameLevel() + 5)
+	b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetPoint("TOPLEFT", 3, -3); b.icon:SetPoint("BOTTOMRIGHT", -3, 3)
 	b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-	b.ring = b:CreateTexture(nil, "OVERLAY"); b.ring:SetPoint("TOPLEFT", -6, 6); b.ring:SetPoint("BOTTOMRIGHT", 6, -6)
-	b.rank = b:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall"); b.rank:SetPoint("BOTTOMRIGHT", 6, -6)
+	b.ring = b:CreateTexture(nil, "OVERLAY"); b.ring:SetPoint("TOPLEFT", -7, 7); b.ring:SetPoint("BOTTOMRIGHT", 7, -7)
+	b.rank = b:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall"); b.rank:SetPoint("BOTTOMRIGHT", 5, -5)
 	b.rank.lmKeep = true
 	b:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		if self.spell and self.spell > 0 and GameTooltip.SetSpellByID then GameTooltip:SetSpellByID(self.spell) end
-		GameTooltip:AddLine(self.state, 1, 0.82, 0)
+		if self.spell and self.spell > 0 and GameTooltip.SetSpellByID then pcall(GameTooltip.SetSpellByID, GameTooltip, self.spell) end
+		GameTooltip:AddLine(self.stateText, 1, 0.82, 0)
 		GameTooltip:Show()
 	end)
 	b:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -80,107 +104,111 @@ local function clear()
 	for _, b in ipairs(TV.nodes) do b:Hide() end
 	for _, l in ipairs(TV.lines) do l:Hide() end
 	for _, h in ipairs(TV.heads) do h:Hide() end
+	TV.total:SetText("")
 end
 
 local function say(text)
 	clear()
+	TV.frame:SetSize(560, 300); TV.body:SetSize(560 - 2 * SIDE, 300 - TOP - FOOT)
 	TV.note:SetText(text); TV.note:Show()
 end
 
--- Draw the build on the plan. The game's coordinates (posX right, posY down) are scaled to fit the area as a whole,
--- so the branches keep their places side by side.
+-- each state: its art (square or choice), its fallback colour, how the icon looks
+local LOOK = {
+	max = { art = "yellow", r = 1, g = 0.82, b = 0, alpha = 1 },
+	partial = { art = "green", r = 0.3, g = 0.9, b = 0.35, alpha = 1 },
+	open = { art = "gray", r = 0.45, g = 0.44, b = 0.4, alpha = 0.75, faded = true },
+	locked = { art = "locked", r = 0.22, g = 0.21, b = 0.19, alpha = 0.4, faded = true },
+}
+
 local function draw(e, plan, got)
 	TV.note:Hide()
-	local known = {}
-	for _, g in ipairs(plan.groups) do known[g.id] = true end
-	local minX, maxX, minY, maxY = math.huge, -math.huge, math.huge, -math.huge
-	local nodes = {}
-	for _, n in ipairs(plan.nodes) do
-		if known[n.group] then
-			nodes[#nodes + 1] = n
-			minX, maxX = math.min(minX, n.x), math.max(maxX, n.x)
-			minY, maxY = math.min(minY, n.y), math.max(maxY, n.y)
-		end
+	clear()
+	local grid = TL.Grid(plan)
+	if not grid then return say(L.TV_BAD) end
+	local states = TL.States(plan, grid, got)
+	local cr, cg, cb = classColor(e.c)
+	local class = e.c and e.c:lower()
+	local art = class and "talent-background-" .. class
+	local treeH = HEAD + grid.rows * CELL_Y + 14
+	-- the panels, left to right; where each branch's first column starts
+	local x, origin = 0, {}
+	for i, t in ipairs(grid.trees) do
+		local cols = math.max(MIN_COLS, t.cols)
+		local w = cols * CELL_X + 2 * PAD_X
+		local h = panel(i)
+		h:ClearAllPoints(); h:SetPoint("TOPLEFT", TV.body, "TOPLEFT", x, 0); h:SetSize(w, treeH)
+		if art and SK.HasAtlas(art) then h.art:SetAtlas(art) else h.art:SetColorTexture(cr * 0.18, cg * 0.18, cb * 0.18, 1) end
+		local g = plan.groups[i]
+		h.icon:SetTexture(TL.BranchIcon(e.c, g, i))
+		h.name:SetText(TL.BranchName(e.c, g, i))
+		h.points:SetText(tostring(got.points[t.group] or 0))
+		h.divider:SetShown(i < #grid.trees)
+		h:Show()
+		origin[i] = x + PAD_X + (cols - t.cols) * CELL_X / 2 + (CELL_X - NODE) / 2   -- a narrow branch, centred
+		x = x + w
 	end
-	local spanX, spanY = math.max(1, maxX - minX), math.max(1, maxY - minY)
-	local scale = math.min((AREA_W - NODE) / spanX, (AREA_H - NODE) / spanY)
-	local offX = (AREA_W - spanX * scale) / 2   -- centred
-	local at = {}
-	for i, n in ipairs(nodes) do
-		local b = nodeButton(i)
-		local pick = got.nodes[n.id]
-		b.nodeId = n.id
-		b.px = offX + (n.x - minX) * scale
-		b.py = -(NODE / 2 + (n.y - minY) * scale)
-		b:ClearAllPoints(); b:SetPoint("CENTER", TV.area, "TOPLEFT", b.px, b.py)
-		local entry = pick and pick.entry or 1
-		b.spell = n.spells[entry] or n.spells[1]
-		b.icon:SetTexture(spellIcon(b.spell))
-		local shape = n.type == 2 and "choice" or "square"
-		local rank = pick and pick.rank or 0
-		if rank >= n.max then
-			atlasOr(b.ring, "talents-node-" .. shape .. "-yellow", 1, 0.82, 0)
-		elseif rank > 0 then
-			atlasOr(b.ring, "talents-node-" .. shape .. "-green", 0.2, 0.9, 0.2)
-		else
-			atlasOr(b.ring, "talents-node-" .. shape .. "-gray", 0.4, 0.4, 0.4)
-		end
-		b.icon:SetDesaturated(rank == 0); b.icon:SetAlpha(rank == 0 and 0.6 or 1)
-		b.rank:SetText(rank .. "/" .. n.max)
-		b.state = pick and pick.granted and L.TV_GRANTED or (rank == 0 and L.TV_NOT_TAKEN or string.format(L.TV_RANK, rank, n.max))
-		b:Show()
-		at[n.id] = b
+	TV.body:SetSize(x, treeH)
+	TV.frame:SetSize(x + 2 * SIDE, TOP + treeH + FOOT)
+	local function place(id)
+		local c = grid.cells[id]
+		return origin[c.tree] + (c.col - 1) * CELL_X + NODE / 2, -(HEAD + (c.row - 1) * CELL_Y + NODE / 2)
 	end
-	-- the arrows: a line from each node to the ones it leads to (where the client draws lines)
+	-- the arrows, centre to centre under the talents, lit when their source is full
 	local li = 0
-	if TV.area.CreateLine then
-		for _, n in ipairs(nodes) do
+	if TV.lineLayer.CreateLine then
+		for _, n in ipairs(plan.nodes) do
 			for _, t in ipairs(n.to or {}) do
-				local a, z = at[n.id], at[t]
-				if a and z then
+				if grid.cells[n.id] and grid.cells[t] then
 					li = li + 1
-					local l = TV.lines[li] or TV.area:CreateLine(nil, "BORDER")
+					local l = TV.lines[li] or TV.lineLayer:CreateLine(nil, "ARTWORK")
 					TV.lines[li] = l
-					l:SetThickness(3)
-					local lit = got.nodes[n.id] and got.nodes[t]
-					l:SetColorTexture(lit and 1 or 0.45, lit and 0.82 or 0.45, lit and 0 or 0.45, lit and 0.9 or 0.6)
-					l:SetStartPoint("TOPLEFT", TV.area, a.px, a.py); l:SetEndPoint("TOPLEFT", TV.area, z.px, z.py)
+					l:SetThickness(2)
+					local x1, y1 = place(n.id)
+					local x2, y2 = place(t)
+					l:SetStartPoint("TOPLEFT", TV.body, x1, y1); l:SetEndPoint("TOPLEFT", TV.body, x2, y2)
+					if states[n.id] == "max" then l:SetColorTexture(1, 0.82, 0, 0.95) else l:SetColorTexture(0.35, 0.33, 0.3, 0.8) end
 					l:Show()
 				end
 			end
 		end
 	end
-	-- each branch's head over its nodes: name, icon and points
-	for i, g in ipairs(plan.groups) do
-		local h = TV.heads[i]
-		if h then
-			local sum, count = 0, 0
-			for _, n in ipairs(nodes) do if n.group == g.id then sum = sum + (offX + (n.x - minX) * scale); count = count + 1 end end
-			local cx = count > 0 and sum / count or AREA_W * (i - 0.5) / 3
-			h:ClearAllPoints(); h:SetPoint("TOP", TV.area, "TOPLEFT", cx + 20, 60)
-			h.icon:SetTexture(g.icon and g.icon > 0 and g.icon or 134400)
-			h.name:SetText(g.name or "")
-			h.points:SetText(tostring(got.points[g.id] or 0))
-			h:Show()
+	-- the talents
+	local i, total = 0, 0
+	for _, n in ipairs(plan.nodes) do
+		if grid.cells[n.id] then
+			i = i + 1
+			local b = nodeButton(i)
+			local pick = got.nodes[n.id]
+			local state = states[n.id] or "locked"
+			local look = LOOK[state]
+			b.nodeId, b.state = n.id, state
+			b.px, b.py = place(n.id)
+			b:ClearAllPoints(); b:SetPoint("CENTER", TV.body, "TOPLEFT", b.px, b.py)
+			b.spell = n.spells[pick and pick.entry or 1] or n.spells[1]
+			b.icon:SetTexture(spellIcon(b.spell))
+			b.icon:SetDesaturated(look.faded and true or false); b.icon:SetAlpha(look.alpha)
+			atlasOr(b.ring, "talents-node-" .. (n.type == 2 and "choice" or "square") .. "-" .. look.art, look.r, look.g, look.b)
+			local rank = pick and (pick.granted and n.max or pick.rank) or 0
+			b.rank:SetText(rank .. "/" .. n.max)
+			b.stateText = pick and pick.granted and L.TV_GRANTED or (rank == 0 and L.TV_NOT_TAKEN or string.format(L.TV_RANK, rank, n.max))
+			if pick and not pick.granted then total = total + rank end
+			b:Show()
 		end
 	end
+	TV.total:SetText(string.format(L.TV_TOTAL, total))
 end
 
 local function refresh()
 	local e = TV.entry
 	if not (e and TV.frame and TV.frame:IsShown()) then return end
 	TV.title:SetText(string.format(L.TV_TITLE, e.name or "?", e.l or 0))
-	local class = e.c and e.c:lower()
-	if class and SK.HasAtlas("talent-background-" .. class) then TV.bg:SetAtlas("talent-background-" .. class) else TV.bg:SetColorTexture(0.05, 0.05, 0.07, 1) end
 	TV.gameButton:Show()
 	local plan = TL.LayoutOf(e.c)
 	if not plan then TL.Ask(e.c); return say(L.TV_WAITING) end
 	local got, why = TL.Decode(e.b, plan)
 	if not got then
-		if why == "tree" then
-			TL.Ask(e.c, TL.HashOf(e.b))
-			return say(L.TV_OTHER_TREE)
-		end
+		if why == "tree" then TL.Ask(e.c, TL.HashOf(e.b)); return say(L.TV_OTHER_TREE) end
 		return say(L.TV_BAD)
 	end
 	draw(e, plan, got)

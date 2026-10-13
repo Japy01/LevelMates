@@ -133,3 +133,39 @@ assert(ns.Builds.Mine().b == myCode, "the shared build carries it, no talent win
 state[101] = { ranksPurchased = 0, activeRank = 1 }
 local g = TL.Decode(TL.MyCode(), TL.ReadMine())
 assert(g.nodes[101].granted, "granted")
+
+-- hidden nodes (other specs' or not shown) kept in the plan (the code walks them) but marked
+local withHidden = { tree = 1, hash = string.rep("00", 16), groups = layout.groups, nodes = {
+	{ id = 1, x = 0, y = 0, max = 1, type = 0, group = 11, spells = { 1 }, hidden = true } } }
+assert(TL.DecodeLayout(TL.EncodeLayout(withHidden)).nodes[1].hidden == true, "hidden kept")
+assert(not TL.DecodeLayout(TL.EncodeLayout(layout)).nodes[1].hidden, "visible by default")
+
+-- the grid: each branch its columns, rows level across branches (the game's spacing measured from the positions)
+local gridPlan = { groups = layout.groups, nodes = {
+	{ id = 1, x = 1000, y = 1200, max = 1, group = 11, spells = {} }, { id = 2, x = 1600, y = 1200, max = 5, group = 11, spells = {} },
+	{ id = 3, x = 1000, y = 1800, max = 1, group = 11, spells = {}, }, { id = 4, x = 1000, y = 3000, max = 1, group = 11, spells = {} },
+	{ id = 5, x = 4000, y = 1200, max = 1, group = 12, spells = {} }, { id = 6, x = 7000, y = 1800, max = 1, group = 13, spells = {} },
+	{ id = 7, x = 7000, y = 2400, max = 1, group = 13, spells = {}, hidden = true },
+} }
+local grid = TL.Grid(gridPlan)
+assert(#grid.trees == 3 and grid.rows == 4, "three branches, four rows: " .. tostring(grid.rows))
+local c = grid.cells
+assert(c[1].tree == 1 and c[1].col == 1 and c[1].row == 1 and c[2].col == 2 and c[3].row == 2 and c[4].row == 4, "columns and rows")
+assert(c[5].tree == 2 and c[5].col == 1 and c[6].tree == 3 and c[6].row == 2 and c[7] == nil, "other branches; hidden left out")
+assert(grid.trees[1].cols == 2 and grid.trees[2].cols == 1, "columns per branch")
+
+-- states as in the game: full, partial, open (can be taken), locked (5 points a row in that branch, or its arrow's
+-- source not full)
+gridPlan.nodes[1].to = { 3 }
+local st = TL.States(gridPlan, grid, { nodes = { [2] = { rank = 2 } }, points = { [11] = 2 } })
+assert(st[2] == "partial" and st[1] == "open" and st[3] == "locked" and st[4] == "locked" and st[5] == "open", "states: " .. tostring(st[3]))
+st = TL.States(gridPlan, grid, { nodes = { [1] = { rank = 1 }, [2] = { rank = 5 } }, points = { [11] = 6 } })
+assert(st[1] == "max" and st[2] == "max" and st[3] == "open" and st[4] == "locked", "row 2 open with 5 points and its source full")
+-- a granted node counts as full, and its points are free
+st = TL.States(gridPlan, grid, { nodes = { [1] = { rank = 1, granted = true } }, points = {} })
+assert(st[1] == "max", "granted: full")
+
+-- branch names: the game's, or (Forever gives "Tree 1") the classic ones of the class
+assert(TL.BranchName("MAGE", { name = "Fuego" }, 2) == "Fuego", "the game's name")
+assert(TL.BranchName("MAGE", { name = "Tree 2" }, 2) == ns.L.TREE_MAGE_2 and TL.BranchName("MAGE", { name = "" }, 1) == ns.L.TREE_MAGE_1, "classic names")
+assert(TL.BranchIcon("MAGE", { icon = 0 }, 3) and TL.BranchIcon("MAGE", { icon = 135846 }, 3) == 135846, "icons")

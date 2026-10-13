@@ -52,6 +52,9 @@ local list = BU.List()
 assert(#list == 2 and list[1].mine and list[2].name == "Mario", "me first, then my class: " .. #list)
 assert(BU.PointsText(list[2]) == "Armas 0 / Furia 0 / Protección 15", "branch names from my own tree: " .. BU.PointsText(list[2]))
 assert(BU.PointsText({ p = "1001:3,9999:2" }) == "Armas 3 / 2", "an unknown branch: just its points")
+C_Traits.GetGroupDisplayInfoByTreeID = function() return { { groupID = 1001, displayName = "Tree 1" }, { groupID = 1002, displayName = "Tree 2" } } end
+assert(BU.PointsText({ p = "1001:3,1002:1" }) == L.TREE_WARRIOR_1 .. " 3 / " .. L.TREE_WARRIOR_2 .. " 1", "Forever names: the classic ones")
+C_Traits.GetGroupDisplayInfoByTreeID = function(tree) return { { groupID = 1001, displayName = "Armas" }, { groupID = 1002, displayName = "Furia" }, { groupID = 1003, displayName = "Protección" } } end
 assert(BU.Of("Mario").l == 24, "Of: Mario")
 STUB.Receive("LVLM2", C.Encode("tb", {}), "GUILD", "Mario-Testrealm")
 assert(#BU.List() == 1, "Mario withdrew")
