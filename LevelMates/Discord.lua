@@ -157,3 +157,25 @@ ev:SetScript("OnEvent", function(_, _, addon)
 	blockedAt = GetTime()
 	held[sending] = sendingLine
 end)
+
+-- /lm discordtest: for two minutes, what an addon receives from each Discord message: who, and the text (or that the
+-- game hides it from addons). To know whether the addon could read sign-ups made in Discord. Nothing is sent.
+DC.PROBE_SECONDS = 120
+local probeUntil = 0
+local probe = CreateFrame("Frame")
+probe:RegisterEvent("CHAT_MSG_GUILD_DISCORD")
+probe:SetScript("OnEvent", function(_, _, text, sender)
+	if GetTime() > probeUntil then return end
+	local ok, shown = pcall(function()
+		if issecretvalue and issecretvalue(text) then return nil end
+		local s = tostring(text)
+		if s:find("|K", 1, true) then return nil end   -- a protected placeholder
+		return s
+	end)
+	local who = (pcall(tostring, sender) and tostring(sender)) or "?"
+	if ok and shown then ns.Chat(L.DT_LINE, who, shown) else ns.Chat(L.DT_LINE, who, L.DT_PROTECTED) end
+end)
+ns.Slash("discordtest", function()
+	probeUntil = GetTime() + DC.PROBE_SECONDS
+	ns.Chat(L.DT_START, DC.PROBE_SECONDS)
+end)
