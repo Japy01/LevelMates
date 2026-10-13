@@ -55,12 +55,13 @@ function W.Stat(parent)
 	return s
 end
 
--- A pill: a short label on a soft band, as wide as its text.
-function W.Pill(parent)
+-- A pill: a short label on a soft band, as wide as its text. light: on a dark band (the title), light letters, no ink.
+function W.Pill(parent, light)
 	local p = CreateFrame("Button", nil, parent)
 	p:SetHeight(18)
 	p.bg = p:CreateTexture(nil, "BACKGROUND"); p.bg:SetAllPoints(); p.bg:SetColorTexture(unpack(SK.C.section))
-	p.text = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	p.text = p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	if not light then ink(p.text) else p.bg:SetColorTexture(1, 1, 1, 0.08) end
 	p.text:SetPoint("CENTER")
 	function p:Set(t)
 		self.text:SetText(t or "")
@@ -92,8 +93,8 @@ function W.Slot(parent)
 		if name then
 			self.empty = false
 			local coords = class and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class]
-			self.icon:SetTexture(CLASS_ICON); if coords then self.icon:SetTexCoord(unpack(coords)) end
-			self.icon:Show()
+			if coords then self.icon:SetTexture(CLASS_ICON); self.icon:SetTexCoord(unpack(coords)); self.icon:Show()
+			else self.icon:Hide() end   -- class not known (not online): no icon rather than a wrong one
 			self.name:SetText(name)
 			local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
 			if c then self.name:SetTextColor(c.r, c.g, c.b) else self.name:SetTextColor(1, 1, 1) end

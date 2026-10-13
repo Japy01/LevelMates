@@ -92,7 +92,7 @@ groupFrame:SetScript("OnEvent", function()
 		if UnitInParty(name) or UnitInRaid(name) then
 			ns.char.lookingPartner = false
 			sendPal(0, "now")
-			ns.Say(L.PAL_FOUND, name)
+			ns.Chat(L.PAL_FOUND, name)
 			ns.Fire("LM_PARTNER_CHANGED")
 			return
 		end

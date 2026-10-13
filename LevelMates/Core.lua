@@ -50,6 +50,8 @@ end
 function ns.Log(fmt, ...)
 	if ns.db and ns.db.settings.debug then print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
 end
+-- What happened on its own (a guildmate, the game): always in chat, where it stays.
+function ns.Chat(fmt, ...) print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
 -- What a click did: at the foot of the book while it is open, else in chat (and lines with a link: chat, to be clicked).
 function ns.Say(fmt, ...)
 	local text = string.format(fmt, ...)

@@ -152,7 +152,7 @@ ns.On("LM_BEFORE_BYE", withdrawNow)
 local groupFrame = CreateFrame("Frame")
 groupFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 groupFrame:SetScript("OnEvent", function()
-	if G.mine and GetNumGroupMembers() >= GROUP_FULL then ns.Say(L.LFG_FULL); G.Cancel() end
+	if G.mine and GetNumGroupMembers() >= GROUP_FULL then ns.Chat(L.LFG_FULL); G.Cancel() end
 end)
 
 ns.On("LM_COMM_STOPPED", function()   -- sharing off: you see nobody and have no ad

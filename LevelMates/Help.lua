@@ -93,7 +93,7 @@ C.OnMessage("helpgo", function(f, name)
 end)
 C.OnMessage("helpok", function(f, name)
 	local h = H.active[f.id]
-	if h and h.name == name then H.active[f.id] = nil; ns.Say(L.HELP_DONE, name); ns.Fire("LM_HELP_CHANGED") end   -- only the asker clears it
+	if h and h.name == name then H.active[f.id] = nil; ns.Chat(L.HELP_DONE, name); ns.Fire("LM_HELP_CHANGED") end   -- only the asker clears it
 end)
 
 -- "On my way": whispers the asker (spec §7). Runs only from the board button's click handler.
@@ -112,7 +112,7 @@ groupFrame:SetScript("OnEvent", function()
 	if not H.mine then return end
 	for name in pairs(H.mine.helpers) do
 		if UnitInParty(name) or UnitInRaid(name) then
-			ns.Say(L.HELP_GROUPED, name)
+			ns.Chat(L.HELP_GROUPED, name)
 			H.Cancel()
 			return
 		end

@@ -115,14 +115,20 @@ local function Build()
 	f:Hide()
 end
 
+-- What a line shows, as a key that survives redraws (the rows are new tables each time).
+local function entryKey(e)
+	if not e then return "" end
+	return table.concat({ e.kind or "", e.meet and e.meet.id or "", e.ad and tostring(e.ad.id or e.ad.name or "") or "", e.role or "", e.name or "", e.id or "" }, "|")
+end
 -- Up to three buttons on a line, right to left: { text, action, confirm }. A pending "Are you sure?" stays while the
--- button keeps the same job; a different one resets it.
+-- button keeps the same job on the same entry; a different one resets it.
 local function setButtons(line, list)
+	local key = entryKey(line.entry)
 	for k, b in ipairs(line.buttons) do
 		local spec = list[k]
 		if spec then
-			local same = b.label == spec[1] and b.entry == line.entry
-			b.label, b.action, b.confirm, b.entry = spec[1], spec[2], spec[3], line.entry
+			local same = b.label == spec[1] and b.entry == key
+			b.label, b.action, b.confirm, b.entry = spec[1], spec[2], spec[3], key
 			if not (same and b.pending) then b.pending = nil; b:SetText(spec[1]) end
 			b:Show()
 		else b.action, b.pending = nil, nil; b:Hide() end

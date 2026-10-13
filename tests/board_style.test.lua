@@ -40,7 +40,7 @@ do
 	for i, w in ipairs(B.COLS) do total = total + w + (i > 1 and B.GAP or 0) end
 	assert(total <= B.WIDTH - 10, "columns end at " .. total .. " but the window is " .. B.WIDTH .. " wide")
 	assert(B.frame:GetWidth() == B.WIDTH, "window uses the declared width")
-	assert(B.rows[1].button:GetWidth() == total - B.MARGIN, "row click area spans the columns: " .. tostring(B.rows[1].button:GetWidth()))
+	assert(B.rows[1].button:GetWidth() == B.WIDTH - 2 * B.MARGIN, "row click area spans the page: " .. tostring(B.rows[1].button:GetWidth()))
 end
 -- bottom controls stay inside the inset's bottom margin instead of overlapping its border
 assert(B.helpButton:GetHeight() + 4 <= B.BOTTOM, "help button fits under the inset: " .. B.helpButton:GetHeight() .. " vs " .. B.BOTTOM)

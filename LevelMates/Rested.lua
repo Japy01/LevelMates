@@ -63,7 +63,7 @@ function X.Check()
 	local p = X.Mine()
 	if p and p >= X.CAP and not notifiedMax and ns.db.settings.restedNotices then
 		notifiedMax = true
-		ns.Say(L.RESTED_MAX, X.CAP)
+		ns.Chat(L.RESTED_MAX, X.CAP)
 	end
 	ns.Fire("LM_RESTED_CHANGED")
 end

@@ -133,13 +133,13 @@ function S.Open() if S.category then Settings.OpenToCategory(S.category:GetID())
 ns.Slash("options", S.Open); ns.Slash("opciones", S.Open)
 ns.Slash("debug", function()
 	local c = ns.Comm.stats
-	ns.Say(L.STATUS, #ns.Roster.List(), ns.Comm.ActiveTransport(), c.sent, c.received, c.bad)
-	ns.Say(L.STATUS_QUEUE, c.queued, c.held or 0, c.dropped or 0)
+	ns.Chat(L.STATUS, #ns.Roster.List(), ns.Comm.ActiveTransport(), c.sent, c.received, c.bad)
+	ns.Chat(L.STATUS_QUEUE, c.queued, c.held or 0, c.dropped or 0)
 	-- memory counts what was allocated, not what is kept: before and after a collection tells churn from a leak
 	if UpdateAddOnMemoryUsage and GetAddOnMemoryUsage then
 		UpdateAddOnMemoryUsage(); local before = GetAddOnMemoryUsage("LevelMates")
 		pcall(collectgarbage, "collect")
 		UpdateAddOnMemoryUsage(); local after = GetAddOnMemoryUsage("LevelMates")
-		ns.Say(L.STATUS_MEMORY, before, after)
+		ns.Chat(L.STATUS_MEMORY, before, after)
 	end
 end)

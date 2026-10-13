@@ -32,7 +32,7 @@ function M.WhoNeeds(questID)
 end
 
 function M.Notice(fmt, ...)
-	ns.Say(fmt, ...)
+	ns.Chat(fmt, ...)
 	if ns.db.settings.sound and PlaySound then PlaySound(SOUNDKIT and SOUNDKIT.IG_QUEST_LOG_OPEN or 844) end
 end
 

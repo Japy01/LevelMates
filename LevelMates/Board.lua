@@ -38,7 +38,7 @@ local function Resolve(key) if key == "guild" then return ns.char.guildSub or "f
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
 B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
-local ROW_W = B.COLS[1] + B.COLS[2] + B.COLS[3] + B.COLS[4] + B.COLS[5] + 4 * B.GAP
+local ROW_W = B.WIDTH - 2 * B.MARGIN   -- the columns are scaled to fill it (SetColumns)
 
 -- Colour coding: group state and how close a mate is to my level.
 B.GROUP_COLORS = { open = { 0.35, 0.9, 0.35 }, full = { 0.95, 0.35, 0.35 }, solo = { 0.7, 0.7, 0.7 } }
@@ -150,26 +150,31 @@ local function Build()
 	B.nearLabel = nearLabel
 	B.nearCheck = near
 
-	-- The feedback line: what a click did, at the foot of the book; 6 s, then it fades; a click dismisses it.
-	local fb = CreateFrame("Button", nil, f)
-	fb:SetSize(520, 22); fb:SetPoint("BOTTOM", 0, 2); fb:SetFrameLevel((f:GetFrameLevel() or 1) + 20)
+	-- The feedback line: what a click did, at the foot of the page; 6 s, then it fades; its × closes it. Clicks go
+	-- through the line to whatever is under it (the pager, the help rows).
+	local fb = CreateFrame("Frame", nil, f)
+	fb:SetSize(520, 22); fb:SetPoint("BOTTOM", 0, B.BOTTOM + 4); fb:SetFrameLevel((f:GetFrameLevel() or 1) + 20)
+	fb:EnableMouse(false)
 	fb.bg = fb:CreateTexture(nil, "BACKGROUND"); fb.bg:SetAllPoints(); fb.bg:SetColorTexture(unpack(ns.Skin.C.section))
 	fb.text = fb:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	fb.text:SetPoint("LEFT", 8, 0); fb.text:SetPoint("RIGHT", -8, 0); fb.text:SetWordWrap(false)
+	fb.text:SetPoint("LEFT", 8, 0); fb.text:SetPoint("RIGHT", -24, 0); fb.text:SetWordWrap(false)
 	ns.Skin.InkFont(fb.text)
-	fb:SetScript("OnClick", function(self) self.stamp = (self.stamp or 0) + 1; self:Hide() end)
+	fb.close = CreateFrame("Button", nil, fb, "UIPanelCloseButton")
+	fb.close:SetSize(20, 20); fb.close:SetPoint("RIGHT", -2, 0)
+	fb.close:SetScript("OnClick", function() fb.stamp = (fb.stamp or 0) + 1; fb:Hide() end)
 	fb:Hide()
 	B.feedback = fb
 
 	-- Pills right of the title: mates online (click: Mates), Discord linked, how many still run 0.3.
 	local W = ns.Widgets
 	local titleFs = f.TitleContainer and f.TitleContainer.TitleText or f.TitleText
-	B.pills = { online = W.Pill(f), discord = W.Pill(f), legacy = W.Pill(f) }
+	B.titleFs = titleFs
+	B.pills = { online = W.Pill(f, true), discord = W.Pill(f, true), legacy = W.Pill(f, true) }
 	local order = { B.pills.online, B.pills.discord, B.pills.legacy }
 	for i, p in ipairs(order) do
 		p:SetFrameLevel((f:GetFrameLevel() or 1) + 10)
 		if i == 1 then
-			if titleFs then p:SetPoint("LEFT", titleFs, "RIGHT", 12, 0) else p:SetPoint("TOP", f, "TOP", 140, -6) end
+			if not titleFs then p:SetPoint("TOP", f, "TOP", 140, -6) end   -- else placed after the title's text (B.UpdatePills)
 		else p:SetPoint("LEFT", order[i - 1], "RIGHT", 6, 0) end
 		p:Hide()
 	end
@@ -633,6 +638,10 @@ function B.UpdatePills()
 	local p = B.pills
 	if not p then return end
 	p.online:Set(string.format(L.PILL_ONLINE, #R.List())); p.online:Show()
+	if B.titleFs then   -- the title text is centred across its band: start right after where the text ends
+		local w = B.titleFs.GetStringWidth and B.titleFs:GetStringWidth() or 0
+		p.online:ClearAllPoints(); p.online:SetPoint("LEFT", B.titleFs, "CENTER", math.floor((w or 0) / 2) + 12, 0)
+	end
 	p.discord:SetShown(ns.Discord and ns.Discord.Available() and true or false)
 	local old = 0
 	for _ in pairs(R.legacy or {}) do old = old + 1 end
@@ -1816,7 +1825,6 @@ end
 
 function B.Refresh()
 	if not B.frame or not B.frame:IsShown() then return end
-	B.UpdatePills()
 	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "feed"; ns.char.boardTab = "feed"; ns.char.guildSub = "feed" end   -- members: the wall, never stuck
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
 	local class, home = B.tab == "class", B.tab == "home"
@@ -1879,6 +1887,7 @@ function B.Refresh()
 	if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then rows = math.max(MIN_ROWS, math.ceil(math.ceil(#list / B.CARD_COLS) * (B.CARD_H + B.CARD_GAP) / ROW_H)) end
 	B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H)
 	B.SetTitle(B.TitleString())
+	B.UpdatePills()   -- after the title: they start where its text ends
 	local rested = ns.Rested and ns.Rested.Mine()
 	local top = rested and string.format(L.RESTED_MINE, rested) or ""
 	if B.tab == "mates" and ns.GuildMap then
@@ -1955,13 +1964,17 @@ function B.ShowTab(key)
 end
 
 -- Show a line at the book's foot: the newest replaces the last; 6 s, then a 1.5 s fade.
-B.FEEDBACK_HOLD, B.FEEDBACK_FADE = 6, 1.5
+B.FEEDBACK_HOLD, B.FEEDBACK_FADE, B.FEEDBACK_W = 6, 1.5, 520
 function B.Feedback(text)
 	local fb = B.feedback
 	if not fb then return end
 	fb.stamp = (fb.stamp or 0) + 1
 	local stamp = fb.stamp
-	fb.text:SetText(text); fb:SetAlpha(1); fb:Show()
+	fb.text:SetText(text); fb:SetAlpha(1)
+	local w = fb.text.GetStringWidth and fb.text:GetStringWidth() or 0
+	fb:SetWidth(math.min(B.FEEDBACK_W, math.max(160, (w > 0 and w or 0) + 40)))   -- as wide as its text: short ones leave the pager free
+	ns.Skin.InkOne(fb.text)
+	fb:Show()
 	local steps = 10
 	for i = 1, steps do
 		C_Timer.After(B.FEEDBACK_HOLD + B.FEEDBACK_FADE * i / steps, function()
@@ -2083,5 +2096,10 @@ ns.On("LM_ACHIEVEMENTS_CHANGED", function() ns.Dirty("board") end)
 ns.On("LM_ROLES_CHANGED", function() ns.Dirty("board") end)
 ns.On("LM_QUESTHUB_CHANGED", function() ns.Dirty("board") end)
 for _, e in ipairs({ "LM_GUILDNOTES_CHANGED", "LM_HISTORY_CHANGED", "LM_BANK_CHANGED" }) do ns.On(e, function() ns.Dirty("board") end) end
+-- Home shows my XP, my gear and the trainer: redraw on those too while it is the page shown (coalesced).
+ns.On("LM_MY_GEAR_CHANGED", function() if B.tab == "home" then ns.Dirty("board") end end)
+local homeFrame = CreateFrame("Frame")
+for _, e in ipairs({ "PLAYER_XP_UPDATE", "UPDATE_EXHAUSTION", "TRAINER_SHOW", "PLAYER_LEVEL_UP", "GET_ITEM_INFO_RECEIVED" }) do homeFrame:RegisterEvent(e) end
+homeFrame:SetScript("OnEvent", function() if B.tab == "home" then ns.Dirty("board") end end)
 ns.Slash("clase", function() B.ShowTab("class") end)
 ns.Slash("class", function() B.ShowTab("class") end)

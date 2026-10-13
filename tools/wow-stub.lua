@@ -254,6 +254,8 @@ function UnitXP() return STUB.player.xp or 0 end
 function UnitXPMax() return 1000 end
 function GetXPExhaustion() return STUB.player.rested end
 RAID_CLASS_COLORS = {}
+CLASS_ICON_TCOORDS = { WARRIOR = { 0, 0.25, 0, 0.25 }, MAGE = { 0.25, 0.49609375, 0, 0.25 }, ROGUE = { 0.49609375, 0.7421875, 0, 0.25 }, DRUID = { 0.7421875, 0.98828125, 0, 0.25 },
+	HUNTER = { 0, 0.25, 0.25, 0.5 }, SHAMAN = { 0.25, 0.49609375, 0.25, 0.5 }, PRIEST = { 0.49609375, 0.7421875, 0.25, 0.5 }, WARLOCK = { 0.7421875, 0.98828125, 0.25, 0.5 }, PALADIN = { 0, 0.25, 0.5, 0.75 } }
 C_Map.GetMapInfo = function(id) return { name = "Map " .. id, mapID = id } end
 MenuUtil = { CreateContextMenu = function(owner, fn) local root = { CreateTitle = function() end, CreateButton = function() end }; fn(owner, root) end }
 ChatFrameUtil = { SendTell = function(name) STUB.lastTell = name end }
