@@ -74,7 +74,7 @@ function M.List(dungeonId)
 end
 local function count(by)
 	local n = 0
-	for _, m in ipairs(M.List()) do if not by or m.by == by then n = n + 1 end end
+	for _, m in ipairs(M.List()) do if not m.sim and (not by or m.by == by) then n = n + 1 end end   -- /lm sim samples never count
 	return n
 end
 
