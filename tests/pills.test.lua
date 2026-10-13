@@ -7,7 +7,7 @@ STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1421, c = "MAGE" }), "GUILD",
 STUB.Receive("LVLM2", C.Encode("hb", { l = 12, z = 1412 }), "GUILD", "Ana-Testrealm")
 B.Toggle(); B.ShowTab("journal")
 local p = B.pills
-assert(p.online:IsShown() and p.online.text.text:find("|t 2 ", 1, true), "online pill: " .. tostring(p.online.text.text))
+assert(p.online:IsShown() and p.online.text.text:find("|t 3 ", 1, true), "online pill: " .. tostring(p.online.text.text))
 assert(not p.discord:IsShown(), "no Discord pill without a linked channel")
 assert(not p.legacy:IsShown(), "no old-version pill")
 p.online.scripts.OnClick(p.online)

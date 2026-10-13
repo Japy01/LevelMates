@@ -171,8 +171,9 @@ local function Build()
 	B.titleFs = titleFs
 	B.pills = { online = W.Pill(f, true), discord = W.Pill(f, true), legacy = W.Pill(f, true) }
 	local order = { B.pills.online, B.pills.discord, B.pills.legacy }
+	local band = f.TitleContainer or f   -- above the title band, which the template draws over the frame
 	for i, p in ipairs(order) do
-		p:SetFrameLevel((f:GetFrameLevel() or 1) + 10)
+		p:SetFrameLevel(math.max(f:GetFrameLevel() or 1, band.GetFrameLevel and band:GetFrameLevel() or 1) + 10)
 		if i == 1 then
 			if not titleFs then p:SetPoint("TOP", f, "TOP", 140, -6) end   -- else placed after the title's text (B.UpdatePills)
 		else p:SetPoint("LEFT", order[i - 1], "RIGHT", 6, 0) end
@@ -259,6 +260,7 @@ local function Build()
 			end
 			local name = self.mate
 			if not name then return end
+			if name == ns.Me() then ns.MateCard.Show(name); return end   -- me: my card (nothing to invite or whisper)
 			if mouse == "RightButton" then B.OpenMenu(name) else ns.Fire("LM_ROW_CLICK", name) end
 		end)
 		btn:SetScript("OnEnter", function(self)
@@ -634,14 +636,14 @@ local NEAR_RANGE = 5
 function B.TitleString()
 	local guild = GetGuildInfo and GetGuildInfo("player")
 	local base = (guild and guild ~= "") and (L.BOARD_TITLE .. " - " .. guild) or L.BOARD_TITLE
-	return string.format("%s (%d)", base, #R.List())
+	return string.format("%s (%d)", base, #R.List() + 1)   -- online with LevelMates, me included
 end
 
 -- The pills follow what they count; each hides when it has nothing to say.
 function B.UpdatePills()
 	local p = B.pills
 	if not p then return end
-	p.online:Set(string.format(L.PILL_ONLINE, #R.List())); p.online:Show()
+	p.online:Set(string.format(L.PILL_ONLINE, #R.List() + 1)); p.online:Show()
 	if B.titleFs then   -- the title text is centred across its band: start right after where the text ends
 		local w = B.titleFs.GetStringWidth and B.titleFs:GetStringWidth() or 0
 		p.online:ClearAllPoints(); p.online:SetPoint("LEFT", B.titleFs, "CENTER", math.floor((w or 0) / 2) + 12, 0)
@@ -704,7 +706,16 @@ local function Visible()
 		for _, name in ipairs(rest) do top[#top + 1] = name end
 		out = top
 	end
+	local me = ns.Me()   -- me first: my own row, my card a click away
+	if (B.search or "") == "" or me:lower():find(B.search:lower(), 1, true) then table.insert(out, 1, me) end
 	return out
+end
+
+-- My own row on the list, from the game (I am not in the roster of guildmates heard).
+function B.SelfMate()
+	local inGroup = IsInGroup and IsInGroup() or false
+	return { level = UnitLevel("player"), class = select(2, UnitClass("player")), mapId = C_Map.GetBestMapForUnit("player"),
+		inGroup = inGroup, hasSlot = inGroup and GetNumGroupMembers() < 5 }
 end
 
 -- Header texts and colours for the active tab; only the guildmates tab sorts.
@@ -822,8 +833,9 @@ local function FillMates(list)
 		local r, name = B.rows[i], list[i]
 		r.button.mate, r.button.adId = name, nil
 		if name then
-			local m = R.mates[name]
-			r.name:SetText(name); r.name:SetTextColor(ClassColor(m.class))
+			local self = name == ns.Me()
+			local m = R.mates[name] or (self and B.SelfMate()) or {}
+			r.name:SetText(self and string.format("%s (%s)", ns.ShortName and ns.ShortName(name) or name, L.YOU) or name); r.name:SetTextColor(ClassColor(m.class))
 			SetClassIcon(r.icon, m.class)
 			r.level:SetText(m.level)
 			r.level:SetTextColor(unpack(math.abs((m.level or 0) - mine) <= NEAR_RANGE and B.LEVEL_COLORS.near or B.LEVEL_COLORS.far))
@@ -834,7 +846,7 @@ local function FillMates(list)
 			r.group:SetTextColor(unpack(B.GROUP_COLORS[state]))
 			r.xph:SetText(m.xph and m.xph > 0 and tostring(m.xph) or "")
 			r.button:Show()
-			RowBg(r, i, ns.Partner and ns.Partner.Matches(name))
+			RowBg(r, i, not self and ns.Partner and ns.Partner.Matches(name))
 		else
 			r.button.mate = nil
 			ClearRow(r)
@@ -1918,7 +1930,9 @@ function B.Refresh()
 	B.recruitPanel:SetShown(recruit and B.recruitView ~= "inactive")
 	if recruit and B.recruitView ~= "inactive" then RefreshRecruit() end
 	local emptyText = ""
-	if #list == 0 then
+	local onlyMe = B.tab == "mates" and #list == 1 and list[1] == ns.Me()   -- my row alone: still say why nobody else shows, under it
+	B.frame.empty:ClearAllPoints(); B.frame.empty:SetPoint("TOP", 0, -(B.TOP + 40 + (onlyMe and ROW_H or 0)))
+	if #list == 0 or onlyMe then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
 		elseif goals then emptyText = L.GOAL_EMPTY
 		elseif feed then emptyText = L.FEED_EMPTY

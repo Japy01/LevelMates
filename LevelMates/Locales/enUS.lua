@@ -314,3 +314,4 @@ L.LEVELBAR_LINE = "Lv %d · %d%% (+%d%% rested) · %s XP/h · to level %s · %s 
 L.OPT_LEVELBAR = "Level bar"; L.OPT_LEVELBAR_TT = "A small bar with your XP per hour, time to level, time in the level and kills (also /lm bar). Right-click it to lock or hide it."
 L.DING_TITLE = "Level %d!"; L.DING_TOOK = "It took %s"; L.DING_RATE = "%d XP per hour"; L.DING_RANK = "Number %d in the guild"
 L.OPT_DING = "Banner when you level up"; L.OPT_DING_TT = "A few seconds in the middle of the screen: the new level, how long it took, your XP per hour and your place in the guild. A click closes it."
+L.YOU = "you"; L.DB_MY_CARD = "My card"; L.DB_MY_GEAR = "My gear"

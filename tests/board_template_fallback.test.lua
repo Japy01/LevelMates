@@ -11,4 +11,4 @@ local _, ns = ...
 ns.db.settings.style = "classic"
 ns.Board.Toggle()
 assert(ns.Board.frame and ns.Board.frame:IsShown(), "board still opens")
-assert(ns.Board.frame.TitleText.text == ns.L.BOARD_TITLE .. " - Test Guild (0)", "title on the basic frame")
+assert(ns.Board.frame.TitleText.text == ns.L.BOARD_TITLE .. " - Test Guild (1)", "title on the basic frame")

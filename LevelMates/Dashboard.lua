@@ -99,6 +99,13 @@ local function buildMe(p)
 	p.role:SetPoint("TOPLEFT", p.gearLabel, "BOTTOMLEFT", 0, -22)
 	p.week = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 	p.week:SetPoint("TOPLEFT", p.role, "BOTTOMLEFT", 0, -6)
+	-- my card and my gear, a click away
+	p.card = ns.Skin.Button(p)
+	p.card:SetSize(100, 20); p.card:SetPoint("TOPLEFT", p.week, "BOTTOMLEFT", 0, -12); p.card:SetText(L.DB_MY_CARD)
+	p.card:SetScript("OnClick", function() ns.MateCard.Show(ns.Me()) end)
+	p.gearButton = ns.Skin.Button(p)
+	p.gearButton:SetSize(100, 20); p.gearButton:SetPoint("LEFT", p.card, "RIGHT", 6, 0); p.gearButton:SetText(L.DB_MY_GEAR)
+	p.gearButton:SetScript("OnClick", function() if ns.GearWindow then ns.GearWindow.Open(ns.Me()) end end)
 end
 
 local function buildRuns(p)
@@ -223,6 +230,7 @@ local function refreshMe()
 		p.xpFill:SetWidth(1); p.xpRested:SetWidth(1); p.xpText:SetText("")
 	end
 	local g = ns.Gear.Mine()
+	p.gearButton:SetEnabled(g ~= nil and g.slots ~= nil)   -- read after the first moments out of combat
 	p.gearLabel:SetText(g and g.avg and g.avg > 0 and string.format(L.GEAR_ILVL, g.avg) or L.DB_GEAR)
 	for _, sq in ipairs(p.gear) do
 		local s = g and g.slots and g.slots[sq.slot]

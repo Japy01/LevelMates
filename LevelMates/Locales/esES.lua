@@ -315,3 +315,4 @@ L.LEVELBAR_LINE = "Nv %d · %d%% (+%d%% desc.) · %s XP/h · subir en %s · %s e
 L.OPT_LEVELBAR = "Barra de nivel"; L.OPT_LEVELBAR_TT = "Una barrita con tu XP por hora, el tiempo para subir, el tiempo en el nivel y las muertes (también /lm barra). Clic derecho para bloquearla u ocultarla."
 L.DING_TITLE = "¡Nivel %d!"; L.DING_TOOK = "Te llevó %s"; L.DING_RATE = "%d de XP por hora"; L.DING_RANK = "Puesto %d de la hermandad"
 L.OPT_DING = "Cartel al subir de nivel"; L.OPT_DING_TT = "Unos segundos en el centro de la pantalla: el nuevo nivel, lo que tardaste, tu XP por hora y tu puesto en la hermandad. Un clic lo cierra."
+L.YOU = "tú"; L.DB_MY_CARD = "Mi ficha"; L.DB_MY_GEAR = "Mi equipo"

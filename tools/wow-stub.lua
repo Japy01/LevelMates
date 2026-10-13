@@ -46,7 +46,7 @@ function Region:SetPoint(...) self.point = { ... } end
 function Region:ClearAllPoints() self.point = nil end
 function Region:GetEffectiveScale() return 1 end
 function Region:GetCenter() local c = STUB.minimapCenter or { 100, 100 }; return c[1], c[2] end
-function Region:GetFrameLevel() return 1 end
+function Region:GetFrameLevel() return self.frameLevel or 1 end
 function Region:SetSize(w, h) self.w, self.h = w, h end
 function Region:SetWidth(w) self.w = w end
 function Region:SetHeight(h) self.h = h end
@@ -75,7 +75,7 @@ function Region:GetScale() return self.scale or 1 end
 function Region:GetID() return self.id or 0 end
 function Region:SetID(id) self.id = id end
 function Region:SetFrameStrata() end
-function Region:SetFrameLevel() end
+function Region:SetFrameLevel(v) self.frameLevel = v end
 function Region:SetMovable() end
 function Region:EnableMouse() end
 function Region:SetClampedToScreen() end

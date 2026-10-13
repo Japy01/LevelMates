@@ -10,7 +10,7 @@ pal("Lejos"); pal("Cerca"); pal("Marcado")
 B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about Guildmates
 local function shown()
 	local out = {}
-	for i = 1, #B.rows do local r = B.rows[i]; if r.button:IsShown() then out[#out + 1] = r.name.text end end
+	for i = 1, #B.rows do local r = B.rows[i]; if r.button:IsShown() and r.button.mate ~= ns.Me() then out[#out + 1] = r.name.text end end
 	return table.concat(out, ",")
 end
 local function rowOf(name) for i = 1, #B.rows do if B.rows[i].name.text == name then return B.rows[i] end end end
