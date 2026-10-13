@@ -104,11 +104,13 @@ function CV.Build(parent)
 	local h1 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h1:SetPoint("TOPLEFT", PAD + 22, -24); h1:SetText(L.CV_NAME)
 	local h2 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h2:SetPoint("TOPRIGHT", -PAD - 50, -24); h2:SetText(L.CV_WHO)
 	local h3 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h3:SetPoint("TOPRIGHT", -PAD - 2, -24); h3:SetText(L.CV_RECIPES)
+	CV.left.hint:ClearAllPoints(); CV.left.hint:SetPoint("RIGHT", -PAD, 0); CV.left.hint:SetPoint("TOPLEFT", PAD + 2, -44)   -- under the column names
 	CV.profs = { items = {} }
 	for i = 1, CV.PROFS do CV.profs.items[i] = profRow(CV.left, i) end
 	CV.footer = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")); CV.footer:SetPoint("BOTTOMLEFT", PAD, PAD); CV.footer:SetPoint("RIGHT", -PAD, 0); CV.footer:SetJustifyH("LEFT")
 	CV.right = W.Panel(fr, "")
 	CV.right.title:Hide()
+	CV.right.hint:ClearAllPoints(); CV.right.hint:SetPoint("RIGHT", -PAD, 0); CV.right.hint:SetPoint("TOPLEFT", PAD + 2, -104)   -- under the header and the search
 	CV.icon = CV.right:CreateTexture(nil, "ARTWORK"); CV.icon:SetSize(36, 36); CV.icon:SetPoint("TOPLEFT", PAD, -24)
 	CV.title = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")); CV.title:SetPoint("TOPLEFT", CV.icon, "TOPRIGHT", 8, -1)
 	CV.sub = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")); CV.sub:SetPoint("TOPLEFT", CV.title, "BOTTOMLEFT", 0, -3)
@@ -240,7 +242,7 @@ function CV.Refresh()
 		for _, spell in ipairs(e and e.spells or {}) do spells[#spells + 1] = { spell = spell } end
 		for _, sp in ipairs(spells) do items[#items + 1] = sp end   -- enchants and the like, after the items
 		CV.icon:SetTexture(P.Icon(current.id)); CV.title:SetText(c.name); CV.title:SetTextColor(1, 0.82, 0)
-		CV.sub:SetText(string.format(L.CV_CRAFTER_SUB, P.Name(current.id), c.rank or 0, c.max or 0, e and ago(e.t) or L.CV_NOT_READ))
+		CV.sub:SetText(string.format(L.CV_CRAFTER_SUB, P.Name(current.id), c.rank or 0, c.max or 0, e and string.format(L.CV_READ, ago(e.t)) or L.CV_NOT_READ))
 		CV.big:SetText(tostring(#items)); CV.bigLabel:SetText(L.CV_RECIPES_LOWER); CV.colName:SetText(L.CV_ITEM)
 		setRows(items, function(r, item)
 			plainRow(r, false)

@@ -53,3 +53,11 @@ STUB.guildMembers.Pepe = nil; ns.Roster.InvalidateGuildRoster()
 local names = {}
 for _, c in ipairs(RC.Crafters()) do names[c.name] = true end
 assert(names.Mario and not names.Pepe, "only guildmates")
+
+-- the empty hint sits under the header, and a crafter never read says just that
+P.AddSample("Mario", { { id = 171, rank = 44, max = 75 } })
+CV.Select(171)
+CV.rows[1].scripts.OnClick(CV.rows[1], "LeftButton")
+assert(CV.right.hint:IsShown() and CV.right.hint.point and CV.right.hint.point[1] == "TOPLEFT" and CV.right.hint.point[3] <= -100, "the hint below the header and search")
+local readWord = (L.CV_CRAFTER_SUB:match("· (%S+) %%s$")) or ""
+assert(readWord == "" or not CV.sub.text:find(readWord .. " " .. L.CV_NOT_READ, 1, true), "not 'read not read yet': " .. CV.sub.text)
