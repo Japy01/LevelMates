@@ -1,5 +1,6 @@
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.char.groupsView = "catalog"   -- these checks are about the catalogue cards (the Groups section opens on Groups)
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, G, D, L = ns.Comm, ns.Board, ns.LFG, ns.Dungeons, ns.L
 local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STUB.sent[i].msg); if k == kind then return f end end end

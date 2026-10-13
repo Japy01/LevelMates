@@ -29,14 +29,13 @@ for _, b in ipairs(leader.buttons) do if b:IsShown() then texts[#texts + 1] = b.
 assert(table.concat(texts, ","):find(L.DP_INVITE_ALL, 1, true), "invite all for the leader: " .. table.concat(texts, ","))
 -- the Groups tab: my role, Together
 B.Toggle(); B.ShowTab("lfg")
-assert(B.roleLine:IsShown() and B.togetherButton:IsShown(), "my role and Together on the Groups tab")
-B.roleButtons.T.scripts.OnClick(B.roleButtons.T)
-assert(ns.Roles.Mine() == "T", "my role from the tab")
+assert(B.togetherButton:IsShown(), "Together on the Groups tab (my role is chosen in the form now)")
 B.togetherButton.scripts.OnClick(B.togetherButton)
 local together = false
 for _, r in ipairs(B.rows) do if r.button:IsShown() and r.button.togetherEntry then together = true end end
 assert(together, "Together rows")
--- the card badge: hh:mm · n/5
+-- the card badge: hh:mm · n/5 (on the catalogue)
+ns.char.groupsView = "catalog"
 B.togetherButton.scripts.OnClick(B.togetherButton)
 local card
 for _, c in ipairs(B.cards) do if c:IsShown() and c.dungeonId == 5 then card = c end end

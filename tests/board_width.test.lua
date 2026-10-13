@@ -1,6 +1,7 @@
 -- a wider book (900); columns grow in proportion; five dungeon cards a row; every tab still draws
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.char.groupsView = "catalog"   -- these checks are about the catalogue cards (the Groups section opens on Groups)
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(30)
 local B = ns.Board
 B.Toggle()

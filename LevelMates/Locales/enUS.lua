@@ -322,3 +322,7 @@ L.ACT_WSG = "Warsong Gulch"; L.ACT_AB = "Arathi Basin"; L.ACT_AV = "Alterac Vall
 L.WHEN_NOW = "Now"; L.ROLE_A = "any"; L.ROLE_SHORT_A = "*"; L.DC_FREE_ANY = "%d places"
 L.GR_WITHDRAW = "Withdraw"; L.ROLE_PLURAL_T = "Tanks"; L.ROLE_PLURAL_H = "Healers"; L.ROLE_PLURAL_D = "Damage"; L.ROLE_PLURAL_A = "Places"
 L.GR_WAITING = "waiting"
+L.TAB_LFG = "Groups"; L.HEAD_LFG = "Catalogue"; L.SUB_LFG = "Every dungeon, raid and battleground: a click opens its panel."; L.BTN_GROUPS = "Groups"; L.BTN_CATALOG = "Catalogue"
+L.CAT_d = "Dungeons"; L.CAT_r = "Raids"; L.CAT_p = "PvP"; L.GR_PLAYERS = "%d players"; L.GR_NAMED = "you name it"
+L.HEAD_GROUPS = "Groups"; L.SUB_GROUPS = "Now, today and later; make one on the right."; L.GR_NOW = "Now"; L.GR_HINT_NOW = "Nobody is looking for a group right now. Make one on the right with Now."
+L.GR_CHAT = "Group ads in chat"; L.GR_HINT_CHAT = "No group ads read from Trade or General."; L.GR_FORM = "Create a group"; L.GR_PICK = "Choose…"; L.GR_NAME = "Name"; L.GR_SIZE = "Size"

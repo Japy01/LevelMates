@@ -2,6 +2,7 @@ STUB.atlases["spellbook-Page-Right-C60"] = true
 STUB.atlases["spellbook-background-evergreen-ribbon"] = true
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.char.groupsView = "catalog"   -- these checks are about the catalogue cards (the Groups section opens on Groups)
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local B, SK, L = ns.Board, ns.Skin, ns.L
 assert(SK.On(), "one style")

@@ -1,5 +1,6 @@
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.char.groupsView = "catalog"   -- these checks are about the catalogue cards (the Groups section opens on Groups)
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, G, D, L = ns.Comm, ns.Board, ns.LFG, ns.Dungeons, ns.L
 STUB.player.level = 15
@@ -72,7 +73,7 @@ for _, e in ipairs(entries) do if e.text == string.format(L.LFG_WHISPER, "Tester
 assert(not whisperMe and pick(L.LFG_CANCEL_MINE) and G.mine == nil, "withdraw, never whisper myself")
 
 -- the bottom button and the other tabs
-assert(B.lfgButton:IsShown() and not B.helpButton:IsShown() and not B.nearCheck:IsShown(), "lfg tab buttons")
+assert(not B.lfgButton:IsShown() and B.groupsButton:IsShown() and B.catalogButton:IsShown() and not B.helpButton:IsShown() and not B.nearCheck:IsShown(), "groups tab buttons: the two views (the form posts now)")
 local clicks = 0
 ns.On("LM_LFG_BUTTON", function() clicks = clicks + 1 end)
 B.lfgButton.scripts.OnClick(B.lfgButton)

@@ -1,5 +1,6 @@
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.char.groupsView = "catalog"   -- these checks are about the catalogue cards (the Groups section opens on Groups)
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local CA, B, L = ns.ChatAds, ns.Board, ns.L
 assert(CA and ns.db.settings.readChatAds == true, "on by default")

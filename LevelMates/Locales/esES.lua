@@ -323,3 +323,7 @@ L.ACT_WSG = "Garganta Grito de Guerra"; L.ACT_AB = "Cuenca de Arathi"; L.ACT_AV 
 L.WHEN_NOW = "Ahora"; L.ROLE_A = "cualquiera"; L.ROLE_SHORT_A = "*"; L.DC_FREE_ANY = "%d plazas"
 L.GR_WITHDRAW = "Retirar"; L.ROLE_PLURAL_T = "Tanques"; L.ROLE_PLURAL_H = "Sanadores"; L.ROLE_PLURAL_D = "Daño"; L.ROLE_PLURAL_A = "Plazas"
 L.GR_WAITING = "en espera"
+L.TAB_LFG = "Grupos"; L.HEAD_LFG = "Catálogo"; L.SUB_LFG = "Cada mazmorra, banda y campo de batalla: un clic abre su panel."; L.BTN_GROUPS = "Grupos"; L.BTN_CATALOG = "Catálogo"
+L.CAT_d = "Mazmorras"; L.CAT_r = "Bandas"; L.CAT_p = "JcJ"; L.GR_PLAYERS = "%d jugadores"; L.GR_NAMED = "con nombre"
+L.HEAD_GROUPS = "Grupos"; L.SUB_GROUPS = "Ahora, hoy y más adelante; crea uno a la derecha."; L.GR_NOW = "Ahora"; L.GR_HINT_NOW = "Nadie busca grupo ahora mismo. Crea uno a la derecha con Ahora."
+L.GR_CHAT = "Anuncios del chat"; L.GR_HINT_CHAT = "No hay anuncios de grupo en Comercio ni General."; L.GR_FORM = "Crear grupo"; L.GR_PICK = "Elige…"; L.GR_NAME = "Nombre"; L.GR_SIZE = "Tamaño"

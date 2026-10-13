@@ -1,5 +1,6 @@
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
+ns.char.groupsView = "catalog"   -- these checks are about the catalogue cards (the Groups section opens on Groups)
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local DP, B, C, L = ns.DungeonPanel, ns.Board, ns.Comm, ns.L
 local function kinds(rows) local out = {}; for _, r in ipairs(rows) do out[#out + 1] = r.header and ("#" .. r.header) or r.kind end; return table.concat(out, ",") end

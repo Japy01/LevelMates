@@ -30,7 +30,7 @@ Cheers.lua
 Settings.lua
 Board.lua
 Dashboard.lua
-RunsView.lua
+GroupsView.lua
 LevelBar.lua
 Ding.lua
 GuildMap.lua

@@ -23,15 +23,16 @@ assert(LB.Kills() == 3, "a numbered-argument string works too: " .. LB.Kills())
 
 -- 2: the day buttons follow the clock
 B.Toggle(); B.ShowTab("lfg"); B.lfgCalendar = true; B.Refresh()
-local f = ns.RunsView.form
+local f = ns.GroupsView.form
 STUB.Advance(86400)
-ns.RunsView.Refresh()
-for i, chip in ipairs(f.days) do assert(chip.text == ns.MeetDialog.DayName(i - 1), "day " .. i .. " relabelled: " .. tostring(chip.text)) end
+ns.GroupsView.Refresh()
+for i, chip in ipairs(f.when) do if i > 1 then assert(chip.text == ns.MeetDialog.DayName(i - 2), "day " .. i .. " relabelled: " .. tostring(chip.text)) end end
 
 -- 3: more runs today and tomorrow than cards: the rest go to the list below, not out of reach
 for i = 1, 6 do M.AddSample("P" .. i, i, 20 + i * 10, {}) end
-ns.RunsView.Refresh()
+local GV = ns.GroupsView
+GV.Refresh()
 local cards, listed = 0, 0
-for _, c in ipairs(ns.RunsView.cards) do if c:IsShown() then cards = cards + 1 end end
-for _, it in ipairs(ns.RunsView.later.items) do if it:IsShown() then listed = listed + 1 end end
-assert(cards == ns.RunsView.CARDS and listed == 6 - ns.RunsView.CARDS, "cards " .. cards .. ", listed " .. listed)
+for _, c in ipairs(GV.soon.cards) do if c:IsShown() then cards = cards + 1 end end
+for _, it in ipairs(GV.later.items) do if it:IsShown() then listed = listed + 1 end end
+assert(cards == GV.SOON and listed == math.min(GV.LATER, 6 - GV.SOON) and (GV.later.right.text or ""):find("+", 1, true), "cards " .. cards .. ", listed " .. listed .. ", and the rest counted")

@@ -192,7 +192,7 @@ local function Build()
 	dash:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); dash:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + B.FOOT_H)
 	B.dashboard = dash
 	-- Groups → Runs: the cards and the form, over the rows' place too.
-	local runs = ns.RunsView.Build(f)
+	local runs = ns.GroupsView.Build(f)
 	runs:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); runs:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + B.FOOT_H)
 	B.runsView = runs
 
@@ -458,11 +458,26 @@ local function Build()
 	giftAdd:SetScript("OnClick", function() ns.Fire("LM_GIFT_ADD") end)
 	B.giftAdd = giftAdd
 
-	-- Dungeons tab: "Calendar" (bottom right) swaps the cards for the next 7 days of meetups.
-	local calendar = ns.Skin.Button(f)
-	calendar:SetSize(120, 20); calendar:SetPoint("BOTTOMRIGHT", -12, 3); calendar:SetText(L.BTN_CALENDAR)
-	calendar:SetScript("OnClick", function() B.lfgCalendar = not B.lfgCalendar; B.lfgTogether, B.lfgQuests = false, false; B.Refresh() end)
-	B.lfgCalendarButton = calendar
+	-- Groups tab: two views, bottom right: Groups (Now, today, later, the form) and the Catalogue (a card per activity).
+	local function setView(v) ns.char.groupsView = v; B.lfgTogether, B.lfgQuests = false, false; B.Refresh() end
+	local groupsB = ns.Skin.Button(f)
+	groupsB:SetSize(100, 20); groupsB:SetPoint("BOTTOMRIGHT", -12, 3); groupsB:SetText(L.BTN_GROUPS)
+	groupsB:SetScript("OnClick", function() setView("groups") end)
+	B.groupsButton = groupsB
+	local catalog = ns.Skin.Button(f)
+	catalog:SetSize(100, 20); catalog:SetPoint("RIGHT", groupsB, "LEFT", -6, 0); catalog:SetText(L.BTN_CATALOG)
+	catalog:SetScript("OnClick", function() setView("catalog") end)
+	B.catalogButton = catalog
+	local calendar = catalog   -- Together and Quests sit left of the two view buttons
+	-- the Catalogue's kinds, over the cards
+	B.catalogChips = {}
+	for i, k in ipairs({ "d", "r", "p" }) do
+		local chip = ns.Widgets.Chip(f, L["CAT_" .. k])
+		chip:SetWidth(100); chip:SetPoint("TOPLEFT", B.MARGIN + (i - 1) * 104, -(B.TOP - 2))
+		chip:SetScript("OnClick", function() ns.char.catalogKind = k; B.Refresh() end)
+		chip:Hide()
+		B.catalogChips[k] = chip
+	end
 	-- "Together": groups the addon suggests from who is online (left of Calendar)
 	local together = ns.Skin.Button(f)
 	together:SetSize(120, 20); together:SetPoint("RIGHT", calendar, "LEFT", -6, 0); together:SetText(L.BTN_TOGETHER)
@@ -1110,8 +1125,8 @@ end
 
 local function GridVisible()
 	local out, q = {}, (B.search or ""):lower()
-	for _, d in ipairs(ns.Dungeons.Sorted()) do
-		local match = q == "" or ns.Dungeons.Name(d.id):lower():find(q, 1, true) ~= nil
+	for _, d in ipairs(ns.Activities.List(ns.char.catalogKind or "d")) do
+		local match = q == "" or ns.Activities.Name(d.id):lower():find(q, 1, true) ~= nil
 		if not match then for _, a in ipairs(B.AdsFor(d.id)) do if a.name:lower():find(q, 1, true) then match = true end end end
 		if not match then for _, a in ipairs(ns.ChatAds.For(d.id)) do if a.name:lower():find(q, 1, true) then match = true end end end
 		if match then out[#out + 1] = d.id end
@@ -1125,26 +1140,29 @@ local function FillGrid(list)
 	for i, c in ipairs(B.cards) do
 		local id = list[i]
 		if id then
-			local d, ads = ns.Dungeons.Get(id), B.AdsFor(id)
+			local d, ads = ns.Activities.Get(id), B.AdsFor(id)
 			local col, row = (i - 1) % B.CARD_COLS, math.floor((i - 1) / B.CARD_COLS)
 			c:ClearAllPoints()
-			c:SetPoint("TOPLEFT", B.frame, "TOPLEFT", B.MARGIN + col * (B.CARD_W + B.CARD_GAP), -(B.TOP + row * (B.CARD_H + B.CARD_GAP)))
-			c.dungeonId, c.fits = id, ns.Dungeons.Fits(id, mine)
-			local tex, coords = ns.Dungeons.Art(id)
+			c:SetPoint("TOPLEFT", B.frame, "TOPLEFT", B.MARGIN + col * (B.CARD_W + B.CARD_GAP), -(B.TOP + 24 + row * (B.CARD_H + B.CARD_GAP)))   -- under the kind chips
+			c.dungeonId, c.activityId = id, id
+			c.fits = d.kind ~= "d" or ns.Dungeons.Fits(id, mine)
+			local tex, coords = d.art, d.coords
 			if tex and c.skin then   -- a taller picture: the same scene, more of it, so it is not stretched
 				local mid = (coords[3] + coords[4]) / 2
 				c.art:SetTexture(tex); c.art:SetTexCoord(coords[1], coords[2], math.max(0, mid - 0.31), math.min(1, mid + 0.31)); c.art:SetAlpha(c.fits and 1 or 0.55); c.art:Show()
 			elseif tex then c.art:SetTexture(tex); c.art:SetTexCoord(unpack(coords)); c.art:SetAlpha(c.fits and 1 or 0.45); c.art:Show() else c.art:Hide() end
 			if c.skin then c:SetBackdropBorderColor(unpack(c.fits and ns.Skin.C.card or ns.Skin.C.cardDim))
 			else c.bg:SetColorTexture(unpack(c.fits and { 0.35, 0.27, 0.05, 0.9 } or { 0.08, 0.08, 0.08, 0.9 })) end
-			c.name:SetText(ns.Dungeons.Name(id)); c.name:SetTextColor(unpack(c.fits and { 1, 0.82, 0 } or { 0.75, 0.75, 0.75 }))
-			c.levels:SetText(string.format(c.skin and L.CARD_LEVELS or "%d-%d", d.min, d.max))
+			c.name:SetText(ns.Activities.Name(id)); c.name:SetTextColor(unpack(c.fits and { 1, 0.82, 0 } or { 0.75, 0.75, 0.75 }))
+			if d.min and d.kind == "d" then c.levels:SetText(string.format(c.skin and L.CARD_LEVELS or "%d-%d", d.min, d.max))
+			elseif d.free then c.levels:SetText(L.GR_NAMED)
+			else c.levels:SetText(string.format(L.GR_PLAYERS, d.size)) end
 			local count, chat = #ads == 0 and "" or #ads == 1 and L.LFG_SEARCHING_ONE or string.format(L.LFG_SEARCHING, #ads), #ns.ChatAds.For(id)
 			if chat > 0 then count = count .. (count ~= "" and " · " or "") .. string.format(L.CHAT_ADS, chat) end
 			c.count:SetText(count)
 			local meet = ns.Meetups.List(id)[1]
 			if meet then
-				c.badge:SetText(ns.Meetups.When(meet) .. " · " .. ns.Meetups.Count(meet) .. "/5"); c.badge:Show()
+				c.badge:SetText(ns.Meetups.When(meet) .. " · " .. ns.Meetups.Count(meet) .. "/" .. (meet.size or 5)); c.badge:Show()
 			else
 				c.badge:SetText(""); c.badge:Hide()
 			end
@@ -1158,6 +1176,12 @@ end
 function B.DungeonTooltip(card)
 	if not GameTooltip then return end
 	local d = ns.Dungeons.Get(card.dungeonId)
+	if not d then   -- a raid or PvP card: its name and its groups
+		GameTooltip:SetOwner(card, "ANCHOR_RIGHT"); GameTooltip:AddLine(ns.Activities.Name(card.dungeonId), 1, 0.82, 0)
+		for _, g in ipairs(ns.Groups.List(card.dungeonId)) do GameTooltip:AddLine((g.at and ns.Meetups.When(g) or L.WHEN_NOW) .. " · " .. g.by .. " · " .. g.count .. "/" .. g.size, 1, 1, 1) end
+		GameTooltip:Show()
+		return
+	end
 	GameTooltip:SetOwner(card, "ANCHOR_RIGHT")
 	GameTooltip:AddLine(string.format("%s (%d-%d)", ns.Dungeons.Name(d.id), d.min, d.max), 1, 0.82, 0)
 	for _, a in ipairs(B.AdsFor(d.id)) do
@@ -1824,16 +1848,21 @@ local function RefreshTabs()
 	B.helpButton:SetShown(mates); B.nearCheck:SetShown(mates); B.nearLabel:SetShown(mates)
 	B.palCheck:SetShown(mates); B.palLabel:SetShown(mates)
 	B.palCheck:SetChecked(ns.Partner and ns.Partner.IsOn() or false)
-	B.lfgButton:SetShown(lfg and not B.lfgQuests)   -- the Quests view uses that corner
-	B.lfgCalendarButton:SetShown(lfg)
-	B.lfgCalendarButton:SetText(B.lfgCalendar and L.BTN_CARDS or L.BTN_RUNS)
+	B.lfgButton:SetShown(false)   -- the Groups view's form posts now
+	local catalogView = lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests
+	B.groupsButton:SetShown(lfg); B.catalogButton:SetShown(lfg)
+	if B.groupsButton.LockHighlight then
+		if lfg and B.lfgCalendar then B.groupsButton:LockHighlight() else B.groupsButton:UnlockHighlight() end
+		if catalogView then B.catalogButton:LockHighlight() else B.catalogButton:UnlockHighlight() end
+	end
+	for k, chip in pairs(B.catalogChips) do chip:SetShown(catalogView); chip:SetChecked(k == (ns.char.catalogKind or "d")) end
 	B.togetherButton:SetShown(lfg)
 	B.togetherButton:SetText(B.lfgTogether and L.BTN_CARDS or L.BTN_TOGETHER)
 	B.memberViewButton:SetShown(B.tab == "members"); B.memberViewButton:SetText(L["MEMBERS_VIEW_" .. B.membersView:upper()])
 	B.memberFilterButton:SetShown(B.tab == "members" and B.membersView == "list"); B.memberFilterButton:SetText(L["MEMBERS_FILTER_" .. B.memberFilter:upper()])
 	B.questsButton:SetShown(lfg)
 	B.questsButton:SetText(B.lfgQuests and L.BTN_CARDS or L.BTN_QUESTS)
-	B.roleLine:SetShown(lfg and not B.lfgQuests)
+	B.roleLine:SetShown(false)   -- my role is chosen in the form
 	B.questFilterButton:SetShown(lfg and B.lfgQuests); B.questPostButton:SetShown(lfg and B.lfgQuests)
 	B.questFilterButton:SetText(L["QH_FILTER_" .. B.questFilter:upper()])
 	for role, b in pairs(B.roleButtons) do b:SetEnabled(role ~= ns.Roles.Mine()) end   -- mine is pressed in
@@ -1860,6 +1889,7 @@ function B.Refresh()
 	if B.tab == "recruit" and not R.IAmOfficer() then B.tab = "feed"; ns.char.boardTab = "feed"; ns.char.guildSub = "feed" end   -- members: the wall, never stuck
 	local lfg, journal, goals, wishes, crafts, feed, recruit = B.tab == "lfg", B.tab == "journal", B.tab == "goals", B.tab == "wishes", B.tab == "crafts", B.tab == "feed", B.tab == "recruit"
 	local class, home = B.tab == "class", B.tab == "home"
+	B.lfgCalendar = lfg and ns.char.groupsView ~= "catalog" and not B.lfgTogether and not B.lfgQuests   -- the Groups view
 	local list, pages
 	if home then
 		list = {}   -- the dashboard draws Home
@@ -1902,7 +1932,7 @@ function B.Refresh()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
 	B.subtitle:SetText(journal and ns.Journal.PaceText() or feed and B.feedDeaths and string.format(L.FEED_CEMETERY_SUB, B.feedDeathCount or 0) or L["SUB_" .. hk])
-	if lfg and B.lfgCalendar then B.heading:SetText(L.HEAD_RUNS); B.subtitle:SetText(L.SUB_RUNS) end
+	if lfg and B.lfgCalendar then B.heading:SetText(L.HEAD_GROUPS); B.subtitle:SetText(L.SUB_GROUPS) end
 	if lfg and B.lfgTogether then B.heading:SetText(L.HEAD_TOGETHER); B.subtitle:SetText(L.SUB_TOGETHER) end
 	if lfg and B.lfgQuests then B.heading:SetText(L.HEAD_QUESTS); B.subtitle:SetText(L.SUB_QUESTS) end
 	if B.tab == "bank" then   -- whose look at the bank, and when
@@ -1933,6 +1963,7 @@ function B.Refresh()
 	B.restedText:SetText(top)
 	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif B.tab == "members" then FillMembers(list) elseif B.tab == "bank" then FillBank(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) elseif B.lfgTogether then FillTogether(list) elseif B.lfgQuests then FillQuests(list) else FillGrid(list) end else FillMates(list) end
 	if not lfg or B.lfgCalendar or B.lfgTogether or B.lfgQuests then for _, c in ipairs(B.cards) do c:Hide() end end
+	local catalogShown = lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests
 	if not crafts and not home then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
 	-- rows one under another; a section header (plaque) takes more height, and the window grows with it
 	local y, extra = 0, 0
@@ -1960,11 +1991,11 @@ function B.Refresh()
 	end
 	if recruit then emptyText = B.recruitView == "inactive" and #list == 0 and L.INACTIVE_EMPTY or "" end   -- the panel fills this tab
 	if home or runsView then emptyText = "" end
-	B.colStrip:SetShown(not (home or runsView))
+	B.colStrip:SetShown(not (home or runsView or catalogShown))
 	B.dashboard:SetShown(home)
 	B.runsView:SetShown(runsView and true or false)
 	if home then ns.Dashboard.Refresh() end
-	if runsView then ns.RunsView.Refresh() end
+	if runsView then ns.GroupsView.Refresh() end
 	B.frame.empty:SetText(emptyText)
 	RefreshTabs()
 	ns.Skin.InkPass()   -- what this page wrote, in ink
