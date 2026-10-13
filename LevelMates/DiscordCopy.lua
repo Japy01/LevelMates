@@ -31,7 +31,7 @@ local function roles(r)
 end
 local function adLine(name, a)
 	local d = ns.Dungeons.Get(a.d)
-	local where = d and string.format("%s (%d-%d)", ns.Dungeons.Name(a.d), d.min, d.max) or ns.Dungeons.Name(a.d)
+	local where = d and string.format("%s (%d-%d)", ns.Dungeons.Name(a.d), d.min, d.max) or ns.Activities.Name(a.d, a.t)
 	local line = string.format(L.DC_LFG, "**" .. name .. "**", "**" .. where .. "**") .. " · " .. string.format(L.DC_ROLES, roles(a.r))
 	if a.n then line = line .. " · \"" .. a.n .. "\"" end
 	return "• " .. line

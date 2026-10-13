@@ -68,13 +68,25 @@ function A.CleanName(text)
 		if n > A.NAME_MAX then break end
 		out[#out + 1] = ch
 	end
-	return (table.concat(out):gsub("%s+$", ""))
+	return (ns.CutUtf8(table.concat(out), 60):gsub("%s+$", ""))   -- and at most 60 bytes: what a message carries
+end
+-- The sizes a player can pick for an activity (none for dungeons and fixed ones).
+local SIZE_STEPS = { 2, 3, 4, 5, 10, 15, 20, 25, 40 }
+function A.Sizes(id)
+	local a = A.Get(id)
+	if not a or a.kind == "d" then return nil end
+	if a.sizes then return a.sizes end
+	if not (a.min and a.max) then return nil end
+	local out = {}
+	for _, n in ipairs(SIZE_STEPS) do if n >= a.min and n <= a.max then out[#out + 1] = n end end
+	return out
 end
 
 -- The size: the asked one when the activity allows it, else its own.
 function A.SizeOf(id, x)
 	local a = A.Get(id)
 	if not a then return tonumber(x) or 5 end
+	if a.kind == "d" then return 5 end   -- a dungeon's min/max are its levels, not sizes
 	x = tonumber(x)
 	if a.sizes then
 		for _, s in ipairs(a.sizes) do if s == x then return x end end

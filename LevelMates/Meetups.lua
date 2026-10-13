@@ -30,7 +30,7 @@ S.Define("qd", { class = "board", life = LIFE, lane = "urgent", max = M.MAX + 10
 		changed()
 	end })
 local place   -- the leader's placement (below)
-S.Define("qj", { class = "board", life = LIFE, lane = "urgent",
+S.Define("qj", { class = "board", life = LIFE, lane = "urgent", relayMax = (M.MAX + 10) * 40,   -- a late login gets every join of a raid
 	idOwner = function(id, owner) return id:match("%.([^%.]+)$") == key(owner) end,   -- only my own join
 	fields = { r = C.V.oneOf("T", "H", "D", "A") }, required = { "r" },
 	onChange = function(rec, old, how)

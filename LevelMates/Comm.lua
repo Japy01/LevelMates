@@ -133,7 +133,7 @@ C.SCHEMA = {
 	gp   = { l = int(0, 60), e = int(0, 100000) },
 	wl   = { ids = itemids(10) },
 	pf   = { p = profs },
-	lfj  = { id = word(8), r = oneOf("T", "H", "D", "A") },
+	lfj  = { id = word(8), r = oneOf("T", "H", "D", "A"), w = int(0, 4000000000) },
 	lfjx = { id = word(8) },
 	qd   = { id = word(8), d = int(1, 399), at = int(0, 100000000), n = text(40), x = int(2, 40), c = caps, t = text(60) },
 	qj   = { id = word(8), r = oneOf("T", "H", "D", "A") },

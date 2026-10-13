@@ -62,7 +62,7 @@ local function formLabels()
 	f.activityButton:SetText(a and A.Name(a.id) or L.GR_PICK)
 	local free = (f.kind == "o") or (a and a.free)
 	f.name:SetShown(free and true or false); f.nameLabel:SetShown(free and true or false)
-	local sized = a and (a.sizes or (a.min and a.max)) and true or false
+	local sized = a and ns.Activities.Sizes(a.id) ~= nil or false
 	f.sizeButton:SetShown(sized); f.sizeLabel:SetShown(sized)
 	if a then f.size = A.SizeOf(a.id, f.size) end
 	f.sizeButton:SetText(tostring(f.size or (a and a.size) or ""))
@@ -137,8 +137,7 @@ local function buildForm(p)
 	f.sizeButton = button(p, 70, "", function(self)
 		local a = f.d and ns.Activities.Get(f.d)
 		if not a then return end
-		local list, sizes = {}, a.sizes
-		if not sizes then sizes = {}; for n = a.min, a.max, (a.max - a.min >= 20 and 5 or 1) do sizes[#sizes + 1] = n end end
+		local list, sizes = {}, ns.Activities.Sizes(a.id) or {}
 		for _, n in ipairs(sizes) do list[#list + 1] = { tostring(n), function() f.size = n; formLabels() end } end
 		menu(self, list)
 	end)

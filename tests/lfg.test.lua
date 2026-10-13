@@ -25,7 +25,7 @@ assert(STUB.printed[#STUB.printed]:find(L.LFG_TOO_SOON, 1, true), "and the user 
 STUB.Advance(31)
 local oldId = G.mine.id
 assert(G.Post(1, "T") == true, "after 30 s a new post is allowed")
-assert(select(1, C.Decode(STUB.sent[#STUB.sent - 1].msg)) == "lfgx" and G.mine.id ~= oldId, "the old ad is withdrawn first")
+assert(select(1, C.Decode(STUB.sent[#STUB.sent].msg)) == "lfgx" and select(1, C.Decode(STUB.sent[#STUB.sent - 1].msg)) == "lfg" and G.mine.id ~= oldId, "the new ad goes out, then the old one is withdrawn (a refused post keeps the old)")
 G.Cancel()
 assert(lastKind() == "lfgx" and G.mine == nil, "cancel sends lfgx")
 

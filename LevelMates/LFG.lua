@@ -5,7 +5,7 @@ local _, ns = ...
 local G = {}
 ns.LFG = G
 local L, C, R, D, A = ns.L, ns.Comm, ns.Roster, ns.Dungeons, ns.Activities
-G.ads = {}     -- ad id -> { id, name, d, t, size, caps, lr, r, n, endsAt, joined, order }
+G.ads = {}     -- ad id -> { id, name, d, t, size, caps, lr, r, n, endsAt, joined, joinedAt }
 G.mine = nil   -- the same, mine
 -- A group "Now" (project 9): an activity (or a free name), its size and slots per role, the leader's role.
 local DURATION, MIN_GAP, MAX_ADS, GROUP_FULL = 20 * 60, 30, 50, 5
@@ -25,12 +25,14 @@ function G.NormRoles(roles)
 end
 
 function G.RolesText(roles)
+	if not roles then return "" end
 	local names = {}
 	for ch in tostring(roles):gmatch(".") do names[#names + 1] = L["ROLE_" .. ch] end
 	return table.concat(names, ", ")
 end
 
 function G.RolesShort(roles)
+	if not roles then return "" end
 	local out = {}
 	for ch in tostring(roles):gmatch(".") do out[#out + 1] = L["ROLE_SHORT_" .. ch] end
 	return table.concat(out, " ")
@@ -67,16 +69,19 @@ local function adFrom(f, name)
 	return { id = f.id, name = name, d = f.d, t = t, size = size, caps = caps, lr = lr, r = f.r, n = f.n }
 end
 
--- Who is in: the leader, then the joins in the order they came, while there is room.
+-- Who is in: the leader, then the joins by when each joined (their own clock, sent with the join), name to break a
+-- tie: the same order on every client, whatever order the messages came in.
 function G.Slots(ad)
-	local joins, listed = {}, {}
-	for _, name in ipairs(ad.order or {}) do
-		if ad.joined and ad.joined[name] and not listed[name] then joins[#joins + 1] = { name, ad.joined[name] }; listed[name] = true end
-	end
-	local rest = {}
-	for name in pairs(ad.joined or {}) do if not listed[name] then rest[#rest + 1] = name end end
-	table.sort(rest)
-	for _, name in ipairs(rest) do joins[#joins + 1] = { name, ad.joined[name] } end
+	local names = {}
+	for name in pairs(ad.joined or {}) do names[#names + 1] = name end
+	local at = ad.joinedAt or {}
+	table.sort(names, function(a, b)
+		local x, y = at[a] or math.huge, at[b] or math.huge
+		if x ~= y then return x < y end
+		return a < b
+	end)
+	local joins = {}
+	for _, name in ipairs(names) do joins[#joins + 1] = { name, ad.joined[name] } end
 	return A.Place(ad.caps, ad.name, ad.lr, joins)
 end
 function G.IsFull(ad) return A.Count(G.Slots(ad), ad.caps) >= ad.size end
@@ -100,12 +105,9 @@ function G.Post(spec, roles, note)
 	local caps = A.Caps(spec.d, size, spec.c)
 	local role = caps[spec.role or ""] and spec.role or (caps.A and "A" or ns.Roles.Of(ns.Me()))
 	local ad = { id = newId(), name = ns.Me(), d = spec.d, t = t, size = size, caps = caps, lr = role,
-		n = note ~= "" and note or nil, joined = {}, order = {}, dc = spec.discord and true or nil }
-	if G.mine then   -- a new ad replaces the old one everywhere
-		C.Send("lfgx", { id = G.mine.id }, "now")
-		G.mine = nil
-	end
-	if not C.Send("lfg", fieldsOf(ad, 20), "now") then ns.Fire("LM_LFG_CHANGED"); return false end
+		n = note ~= "" and note or nil, joined = {}, joinedAt = {}, dc = spec.discord and true or nil }
+	if not C.Send("lfg", fieldsOf(ad, 20), "now") then ns.Say(L.HELP_NEEDS_SHARE); ns.Fire("LM_LFG_CHANGED"); return false end   -- the old ad stays
+	if G.mine then C.Send("lfgx", { id = G.mine.id }, "now") end   -- the new ad replaces the old one everywhere
 	lastPost = now
 	ad.endsAt = now + DURATION
 	G.mine = ad
@@ -117,7 +119,7 @@ end
 -- An ad in the shape the views and Discord share with runs: { id, d, t, by, role, caps, size, n, joined, now = true }.
 function G.View(ad)
 	return { id = ad.id, d = ad.d, t = ad.t, by = ad.name, role = ad.lr, caps = ad.caps, size = ad.size, n = ad.n,
-		joined = ad.joined or {}, order = ad.order, now = true, dc = ad.dc, endsAt = ad.endsAt, mine = ad == G.mine }
+		joined = ad.joined or {}, joinedAt = ad.joinedAt, now = true, dc = ad.dc, endsAt = ad.endsAt, mine = ad == G.mine }
 end
 
 function G.Cancel()
@@ -166,9 +168,9 @@ C.OnMessage("lfg", function(f, name)
 	end
 	local endsAt = now + f.m * 60
 	if known then endsAt = math.min(known.endsAt, endsAt) end   -- a re-send never moves the clock forward
-	fresh.endsAt, fresh.joined, fresh.order = endsAt, known and known.joined or {}, known and known.order or {}   -- a re-send keeps its joins
+	fresh.endsAt, fresh.joined, fresh.joinedAt = endsAt, known and known.joined or {}, known and known.joinedAt or {}   -- a re-send keeps its joins
 	G.ads[f.id] = fresh
-	if G.myJoins[f.id] then C.Send("lfj", { id = f.id, r = G.myJoins[f.id] }) end   -- a newcomer gets my join after the ad
+	if G.myJoins[f.id] then C.Send("lfj", { id = f.id, r = G.myJoins[f.id], w = G.JoinedAt(f.id) }) end   -- a newcomer gets my join after the ad
 	local a = A.Get(f.d)
 	if not known and ns.db.settings.lfgNotices and (not a or a.kind ~= "d" or D.Fits(f.d, UnitLevel("player"))) then
 		ns.NoticeAt("lfg", L.LFG_NOTICE, name, A.Name(f.d, fresh.t), fresh.r and G.RolesText(fresh.r) or L.ROLE_A)
@@ -239,6 +241,7 @@ ns.On("LM_LOADED", function()
 	G.myJoins = ns.char.lfgJoins
 	for id, at in pairs(ns.char.lfgJoinsAt) do if time() - at > JOIN_LIFE then G.myJoins[id] = nil; ns.char.lfgJoinsAt[id] = nil end end
 end)
+function G.JoinedAt(id) return ns.char and ns.char.lfgJoinsAt and ns.char.lfgJoinsAt[id] or nil end
 local function adById(id) if G.mine and G.mine.id == id then return G.mine end; return G.ads[id] end
 local function joinedCount(ad) local n = 0; for _ in pairs(ad.joined or {}) do n = n + 1 end; return n end
 local function me() return ns.Me() end
@@ -248,11 +251,13 @@ function G.Join(id, role)
 	local ad = G.ads[id]
 	if not ad or not ad.caps[role] then return false end   -- a role this group has ("A" only where there are no roles)
 	if not A.Free(G.Slots(ad), ad.caps, role) then ns.Say(L.RUN_ROLE_FULL); return false end
-	if not C.Send("lfj", { id = id, r = role }, "now") then ns.Say(L.HELP_NEEDS_SHARE); return false end
+	local w = GetServerTime()
+	if not C.Send("lfj", { id = id, r = role, w = w }, "now") then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	G.myJoins[id] = role
-	if ns.char.lfgJoinsAt then ns.char.lfgJoinsAt[id] = time() end
+	if ns.char.lfgJoinsAt then ns.char.lfgJoinsAt[id] = w end
 	ad.joined = ad.joined or {}
-	if not ad.joined[me()] then ad.order = ad.order or {}; table.insert(ad.order, me()) end
+	ad.joinedAt = ad.joinedAt or {}
+	ad.joinedAt[me()] = ad.joinedAt[me()] or w
 	ad.joined[me()] = role
 	ns.Fire("LM_LFG_CHANGED")
 	return true
@@ -275,7 +280,8 @@ C.OnMessage("lfj", function(f, name)
 	if not ad.caps[f.r] then return end   -- a role this group does not have
 	ad.joined = ad.joined or {}
 	local new = ad.joined[name] == nil
-	if new then ad.order = ad.order or {}; table.insert(ad.order, name) end
+	ad.joinedAt = ad.joinedAt or {}
+	ad.joinedAt[name] = tonumber(f.w) or ad.joinedAt[name] or GetServerTime()   -- when they joined, by their clock
 	ad.joined[name] = f.r
 	if ad == G.mine then
 		if new then ns.NoticeAt("lfg", L.LFJ_NOTICE, name, A.Name(ad.d, ad.t), L["ROLE_" .. f.r]) end
@@ -292,7 +298,7 @@ end)
 -- A newcomer (or a poster back from a /reload) gets my joins again, while their ads live.
 ns.On("LM_HELLO_ANSWERED", function()
 	for id, role in pairs(G.myJoins) do
-		if G.ads[id] then C.Send("lfj", { id = id, r = role }) end
+		if G.ads[id] then C.Send("lfj", { id = id, r = role, w = G.JoinedAt(id) }) end
 	end
 end)
 

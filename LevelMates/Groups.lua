@@ -40,7 +40,7 @@ function GR.List(activity)
 		if ad and (not activity or ad.d == activity) then out[#out + 1] = fromAd(ad) end
 	end
 	local now = M.Now()
-	for _, m in ipairs(M.List(activity)) do if m.at >= now then out[#out + 1] = fromRun(m) end end
+	for _, m in ipairs(M.List(activity)) do if m.at > now - 30 then out[#out + 1] = fromRun(m) end end   -- a run just started keeps its card for half an hour
 	return out
 end
 

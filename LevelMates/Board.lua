@@ -366,7 +366,12 @@ local function Build()
 			c.badge:ClearAllPoints(); c.badge:SetPoint("TOPRIGHT", -8, -38)
 		end
 		-- a click opens the dungeon's panel next to the book; right-click, the quick menu
-		c:SetScript("OnClick", function(self, mouse) if mouse == "RightButton" then B.OpenDungeonMenu(self.dungeonId) else ns.DungeonPanel.Open(self.dungeonId) end end)
+		c:SetScript("OnClick", function(self, mouse)
+			if mouse == "RightButton" then
+				local a = ns.Activities.Get(self.dungeonId)
+				if a and a.kind ~= "d" then ns.GroupsView.Prefill(self.dungeonId) else B.OpenDungeonMenu(self.dungeonId) end   -- raids and PvP: create one there
+			else ns.DungeonPanel.Open(self.dungeonId) end
+		end)
 		c:SetScript("OnEnter", function(self) B.DungeonTooltip(self) end)
 		c:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 		c:Hide()

@@ -35,7 +35,7 @@ end
 -- moment later), a leave or a removal frees their slot.
 local function freeText(m, kind, who, role)
 	local caps = m.caps or ns.Activities.Caps(m.d, m.size)
-	local s = m.now and ns.LFG.Slots({ name = m.by, lr = m.role, caps = caps, joined = m.joined, order = m.order }) or ns.Meetups.Slots(m)
+	local s = m.now and ns.LFG.Slots({ name = m.by, lr = m.role, caps = caps, joined = m.joined, joinedAt = m.joinedAt }) or ns.Meetups.Slots(m)
 	for r in pairs(caps) do s[r] = s[r] or {} end
 	local function drop(name) for r in pairs(caps) do for i = #s[r], 1, -1 do if s[r][i] == name then table.remove(s[r], i) end end end end
 	if kind == "join" and role and caps[role] and #s[role] < caps[role] then drop(who); table.insert(s[role], who)

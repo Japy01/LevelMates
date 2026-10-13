@@ -84,7 +84,7 @@ function MC.Lines(name)
 	end
 	for _, mt in ipairs(ns.Meetups.List()) do
 		if mt.by == name or (mt.joined and mt.joined[name]) then
-			lines[#lines + 1] = string.format(L.CARD_MEETUP, ns.Dungeons.Name(mt.d), ns.Meetups.When(mt))
+			lines[#lines + 1] = string.format(L.CARD_MEETUP, ns.Activities.Name(mt.d, mt.t), ns.Meetups.When(mt))
 		end
 	end
 	if m and grouped(name) then
