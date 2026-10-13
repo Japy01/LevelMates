@@ -28,6 +28,9 @@ slot:Set("H", "Mario", "PRIEST")
 assert(slot.name.text == "Mario" and slot.icon:IsShown(), "a filled slot")
 slot:Set("T")
 assert(slot.name.text == L.ROLE_T and slot.empty, "an empty slot shows its role")
+assert(slot.icon:IsShown() and slot.icon.texture == W.ROLE_ICON and slot.icon.desaturated, "an empty slot: its role icon, greyed")
+slot:Set("D", "Pepe", nil)
+assert(slot.icon:IsShown() and slot.icon.texture == W.ROLE_ICON and not slot.icon.desaturated, "class unknown: the role icon, not a wrong class")
 -- confirm button
 local done = 0
 local b = W.ConfirmButton(parent, "Cancelar", function() done = done + 1 end)

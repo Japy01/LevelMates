@@ -46,7 +46,7 @@ assert(#STUB.printed == n + 1 and STUB.printed[#STUB.printed]:find("Mario", 1, t
 local s = W.Slot(UIParent)
 s:Set("D", "Pepe", "MAGE")
 s:Set("T", "Lola", nil)
-assert(not s.icon:IsShown(), "no class: no icon")
+assert(s.icon.texture == W.ROLE_ICON, "no class: the role icon, not the last class")
 
 -- I4: my XP, my gear and the MOTD redraw Home while it is open
 STUB.player.xp = (STUB.player.xp or 0) + 50

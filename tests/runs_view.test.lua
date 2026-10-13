@@ -18,6 +18,7 @@ M.AddSample("Luis", 6, -30, {})
 
 B.Toggle(); B.ShowTab("lfg")
 assert(B.lfgCalendarButton.text == L.BTN_RUNS, "the button says Runs")
+assert(B.roleLine.point[2] == B.lfgButton, "My role sits right of Look for group, not over it")
 B.lfgCalendarButton.scripts.OnClick(B.lfgCalendarButton)
 local RV = ns.RunsView
 assert(RV.frame:IsShown(), "the runs view")

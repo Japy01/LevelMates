@@ -5,7 +5,7 @@ local _, ns = ...
 local RV = {}
 ns.RunsView = RV
 local L = ns.L   -- Meetups and Dungeons load later: looked up when used
-RV.CARDS, RV.LATER, RV.DAYS = 4, 6, 7
+RV.CARDS, RV.LATER, RV.DAYS = 4, 5, 7
 local MINUTES = { 0, 15, 30, 45 }
 local PAD = 6
 

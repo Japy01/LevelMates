@@ -11,6 +11,7 @@ local unpack = unpack or table.unpack   -- the client has unpack; table.unpack c
 -- Layout: one place for the widths so the columns always fit inside the window.
 B.COLS = { 150, 50, 260, 70, 70 }   -- name, level, zone, group, xp/h
 B.GAP, B.MARGIN, B.WIDTH = 4, 24, 900   -- the margin keeps the text inside the page's drawn edge
+B.FOOT_H, B.FEEDBACK_W = 58, 720   -- under the dashboard: the page's curled edge, and above it the feedback line
 B.JCOLS = { 100, 1, 395, 1, 103 }   -- journal: when, -, entry, -, zone (same total as B.COLS)
 B.GCOLS = { 100, 1, 364, 70, 65 }   -- goals: by, -, goal, progress, until (same total as B.COLS)
 B.WCOLS = { 100, 1, 320, 105, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
@@ -153,7 +154,7 @@ local function Build()
 	-- The feedback line: what a click did, at the foot of the page; 6 s, then it fades; its × closes it. Clicks go
 	-- through the line to whatever is under it (the pager, the help rows).
 	local fb = CreateFrame("Frame", nil, f)
-	fb:SetSize(520, 22); fb:SetPoint("BOTTOM", 0, B.BOTTOM + 4); fb:SetFrameLevel((f:GetFrameLevel() or 1) + 20)
+	fb:SetSize(B.FEEDBACK_W, 22); fb:SetPoint("BOTTOM", 0, B.BOTTOM + B.FOOT_H - 26)   -- above the page's curled bottom edge; fb:SetFrameLevel((f:GetFrameLevel() or 1) + 20)
 	fb:EnableMouse(false)
 	fb.bg = fb:CreateTexture(nil, "BACKGROUND"); fb.bg:SetAllPoints(); fb.bg:SetColorTexture(unpack(ns.Skin.C.section))
 	fb.text = fb:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -184,11 +185,11 @@ local function Build()
 
 	-- Home: the dashboard, over the rows' place.
 	local dash = ns.Dashboard.Build(f)
-	dash:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); dash:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + 30)
+	dash:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); dash:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + B.FOOT_H)
 	B.dashboard = dash
 	-- Groups → Runs: the cards and the form, over the rows' place too.
 	local runs = ns.RunsView.Build(f)
-	runs:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); runs:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + 30)
+	runs:SetPoint("TOPLEFT", B.MARGIN, -(B.TOP - 4)); runs:SetPoint("BOTTOMRIGHT", -B.MARGIN, B.BOTTOM + B.FOOT_H)
 	B.runsView = runs
 
 	-- "Looking for a partner" (guildmates tab), in the header under the search box.
@@ -507,7 +508,7 @@ local function Build()
 	B.memberFilterButton = mfB
 	-- "My role: Tank Healer Damage" (bottom left of the Groups tab)
 	local roleLine = CreateFrame("Frame", nil, f)
-	roleLine:SetSize(260, 20); roleLine:SetPoint("BOTTOMLEFT", 12, 3)
+	roleLine:SetSize(260, 20); roleLine:SetPoint("LEFT", B.lfgButton, "RIGHT", 14, 0)   -- right of "Look for group", not over it
 	roleLine.label = roleLine:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	roleLine.label:SetPoint("LEFT", 0, 0); roleLine.label:SetText(L.RUN_MY_ROLE)
 	B.roleButtons = {}
@@ -1986,7 +1987,7 @@ function B.ShowTab(key)
 end
 
 -- Show a line at the book's foot: the newest replaces the last; 6 s, then a 1.5 s fade.
-B.FEEDBACK_HOLD, B.FEEDBACK_FADE, B.FEEDBACK_W = 6, 1.5, 520
+B.FEEDBACK_HOLD, B.FEEDBACK_FADE = 6, 1.5
 function B.Feedback(text)
 	local fb = B.feedback
 	if not fb then return end

@@ -81,6 +81,17 @@ end
 
 -- A role slot: the class icon and the name in the class colour; empty, the role in grey.
 local CLASS_ICON = "Interface\\TargetingFrame\\UI-Classes-Circles"
+W.ROLE_ICON = "Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES"   -- the game's tank/healer/damage circles
+local ROLE_KEY = { T = "TANK", H = "HEALER", D = "DAMAGER" }
+local function roleIcon(tex, role, grey)
+	tex:SetTexture(W.ROLE_ICON)
+	if GetTexCoordsForRoleSmallCircle then
+		local ok, l, r, t, b = pcall(GetTexCoordsForRoleSmallCircle, ROLE_KEY[role] or "DAMAGER")
+		if ok and l then tex:SetTexCoord(l, r, t, b) end
+	end
+	tex:SetDesaturated(grey and true or false); tex:SetAlpha(grey and 0.45 or 1)
+	tex:Show()
+end
 function W.Slot(parent)
 	local s = CreateFrame("Button", nil, parent)
 	s:SetSize(64, 48)
@@ -93,14 +104,14 @@ function W.Slot(parent)
 		if name then
 			self.empty = false
 			local coords = class and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[class]
-			if coords then self.icon:SetTexture(CLASS_ICON); self.icon:SetTexCoord(unpack(coords)); self.icon:Show()
-			else self.icon:Hide() end   -- class not known (not online): no icon rather than a wrong one
+			if coords then self.icon:SetTexture(CLASS_ICON); self.icon:SetTexCoord(unpack(coords)); self.icon:SetDesaturated(false); self.icon:SetAlpha(1); self.icon:Show()
+			else roleIcon(self.icon, role, false) end   -- class not known (not online): the role, never a wrong class
 			self.name:SetText(name)
 			local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
 			if c then self.name:SetTextColor(c.r, c.g, c.b) else self.name:SetTextColor(1, 1, 1) end
 		else
 			self.empty = true
-			self.icon:Hide()
+			roleIcon(self.icon, role, true)   -- the role it waits for, greyed
 			self.name:SetText(L["ROLE_" .. role] or role); self.name:SetTextColor(0.55, 0.5, 0.42)
 		end
 	end
