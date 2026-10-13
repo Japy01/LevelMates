@@ -47,7 +47,7 @@ assert(C.Validate("lfg", { d = 2, r = "H", id = "x1", m = 5 }) == true, "note is
 for _, bad in ipairs({ "", "X", "TT", "THDT", "t", "T,D" }) do
 	assert(C.Validate("lfg", { d = 2, r = bad, id = "x1", m = 5 }) == false, "roles refused: '" .. bad .. "'")
 end
-assert(C.Validate("lfg", { d = 0, r = "T", id = "x1", m = 5 }) == false and C.Validate("lfg", { d = 100, r = "T", id = "x1", m = 5 }) == false, "dungeon id range")
+assert(C.Validate("lfg", { d = 0, r = "T", id = "x1", m = 5 }) == false and C.Validate("lfg", { d = 400, r = "T", id = "x1", m = 5 }) == false, "activity id range (raids and PvP up to 399)")
 assert(C.Validate("lfg", { d = 2, r = "T", id = "x1", m = 0 }) == false and C.Validate("lfg", { d = 2, r = "T", id = "x1", m = 21 }) == false, "minutes range")
 assert(C.Validate("lfg", { d = 2, r = "T", id = "x1", m = 5, n = string.rep("x", 41) }) == false, "note longer than 40")
 assert(C.Validate("lfg", { d = 2, r = "T", m = 5 }) == false, "id required")

@@ -34,21 +34,30 @@ end
 -- What is still free: "faltan: sanador, 2 daño" or "completa". A join counts the joiner (the leader places them a
 -- moment later), a leave or a removal frees their slot.
 local function freeText(m, kind, who, role)
-	local s = ns.Meetups.Slots(m)
-	local function drop(name) for _, r in ipairs({ "T", "H", "D" }) do for i = #s[r], 1, -1 do if s[r][i] == name then table.remove(s[r], i) end end end end
-	if kind == "join" and role and #s[role] < ns.Meetups.CAP[role] then drop(who); table.insert(s[role], who)
+	local caps = m.caps or ns.Activities.Caps(m.d, m.size)
+	local s = m.now and ns.LFG.Slots({ name = m.by, lr = m.role, caps = caps, joined = m.joined, order = m.order }) or ns.Meetups.Slots(m)
+	for r in pairs(caps) do s[r] = s[r] or {} end
+	local function drop(name) for r in pairs(caps) do for i = #s[r], 1, -1 do if s[r][i] == name then table.remove(s[r], i) end end end end
+	if kind == "join" and role and caps[role] and #s[role] < caps[role] then drop(who); table.insert(s[role], who)
 	elseif kind == "leave" or kind == "remove" then drop(who) end
 	local parts = {}
-	for _, role in ipairs({ "T", "H", "D" }) do
-		local free = ns.Meetups.CAP[role] - #s[role]
-		if free > 0 then parts[#parts + 1] = (free > 1 and (free .. " ") or "") .. L["ROLE_" .. role] end
+	for _, r in ipairs({ "T", "H", "D", "A" }) do
+		local free = caps[r] and (caps[r] - #s[r]) or 0
+		if free > 0 then
+			if r == "A" then parts[#parts + 1] = string.format(L.DC_FREE_ANY, free)
+			else parts[#parts + 1] = (free > 1 and (free .. " ") or "") .. L["ROLE_" .. r] end
+		end
 	end
 	return #parts > 0 and string.format(L.DC_FREE, table.concat(parts, ", ")) or L.DC_FULL
 end
 
 -- One line, at most 236 bytes, no "|", no links; the note is what gets shortened.
 function DC.Line(kind, m, who, role)
-	local dungeon, when = ns.Dungeons.Name(m.d), ns.Meetups.When(m)
+	local A = ns.Activities
+	local a = A.Get(m.d)
+	local what = A.Name(m.d, m.t)
+	if a and a.kind ~= "d" then what = L["KIND_" .. a.kind] .. " · " .. what end   -- the type first (a dungeon goes as before)
+	local dungeon, when = what, (m.now or not m.at) and L.WHEN_NOW or ns.Meetups.When(m)
 	local head
 	if kind == "new" then head = string.format(L.DC_NEW, dungeon, when, m.by)
 	elseif kind == "join" then head = string.format(L.DC_JOIN, who, L["ROLE_" .. role], dungeon, when)

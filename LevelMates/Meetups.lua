@@ -6,9 +6,9 @@
 local _, ns = ...
 local M = {}
 ns.Meetups = M
-local L, C, R, D, S = ns.L, ns.Comm, ns.Roster, ns.Dungeons, ns.Sync
+local L, C, R, D, S, A = ns.L, ns.Comm, ns.Roster, ns.Dungeons, ns.Sync, ns.Activities
 M.MAX, M.PER_PERSON, M.KEEP, M.REMIND = 10, 2, 180, 15   -- at once, per creator, minutes kept after the hour, reminder
-local ROLES = { T = true, H = true, D = true }
+local ROLES = { T = true, H = true, D = true, A = true }
 local LIFE = 8 * 86400
 
 local function me() return ns.Me() end
@@ -20,23 +20,24 @@ local function joinId(id, name) return id .. "." .. key(name) end
 local function changed() ns.Fire("LM_MEETUPS_CHANGED") end
 
 S.Define("qd", { class = "board", life = LIFE, lane = "urgent", max = M.MAX + 10,
-	fields = { d = C.V.int(1, 99), at = C.V.int(0, 100000000), n = C.V.text(40), r = C.V.oneOf("T", "H", "D"), dc = C.V.int(0, 1) },
+	fields = { d = C.V.int(1, 399), at = C.V.int(0, 100000000), n = C.V.text(40), r = C.V.oneOf("T", "H", "D", "A"), dc = C.V.int(0, 1),
+		x = C.V.int(2, 40), c = C.V.caps, t = C.V.text(60) },
 	required = { "d", "at" },
 	onChange = function(rec, old, how)
-		if how == "live" and not old and not rec.dead and ns.db.settings.lfgNotices and D.Get(rec.d.d) then
-			ns.NoticeAt("lfg", L.MEET_NEW, rec.o, D.Name(rec.d.d), M.When({ at = rec.d.at }))
+		if how == "live" and not old and not rec.dead and ns.db.settings.lfgNotices and (A.Get(rec.d.d) or rec.d.t) then
+			ns.NoticeAt("lfg", L.MEET_NEW, rec.o, A.Name(rec.d.d, rec.d.t), M.When({ at = rec.d.at }))
 		end
 		changed()
 	end })
 local place   -- the leader's placement (below)
 S.Define("qj", { class = "board", life = LIFE, lane = "urgent",
 	idOwner = function(id, owner) return id:match("%.([^%.]+)$") == key(owner) end,   -- only my own join
-	fields = { r = C.V.oneOf("T", "H", "D") }, required = { "r" },
+	fields = { r = C.V.oneOf("T", "H", "D", "A") }, required = { "r" },
 	onChange = function(rec, old, how)
 		local mid = rec.id:match("^([^%.]+)%.")
 		local m = S.Get("qd", mid)
 		if how == "live" and not old and not rec.dead and m and m.o == me() then
-			ns.NoticeAt("lfg", L.MEET_JOINED, rec.o, D.Name(m.d.d), M.When(m.d), L["ROLE_" .. rec.d.r])
+			ns.NoticeAt("lfg", L.MEET_JOINED, rec.o, A.Name(m.d.d, m.d.t), M.When(m.d), L["ROLE_" .. rec.d.r])
 		end
 		if m and m.o == me() and how ~= "expired" then place(mid) end
 		changed()
@@ -46,16 +47,21 @@ S.Define("qm", { class = "board", life = LIFE, lane = "urgent", fields = { m = C
 	idOwner = function(id, owner) local r = S.Get("qd", id); return r ~= nil and r.o == owner end,
 	onChange = function() changed() end })
 
--- A run as the rest of the addon knows it: { id, d, at, n, by, role (the leader's), dc, joined = { [name] = role }, sim }.
+-- A run as the rest of the addon knows it: { id, d, t, at, n, by, role (the leader's), size, caps, dc, joined, sim }.
 local function view(rec)
-	local m = { id = rec.id, d = rec.d.d, at = rec.d.at, n = rec.d.n, by = rec.o, joined = {}, sim = rec.d.sim,
-		role = rec.d.r or ns.Roles.Of(rec.o), dc = rec.d.dc == 1 }
+	local t = rec.d.t and A.CleanName(rec.d.t) or nil
+	local size = A.SizeOf(rec.d.d, rec.d.x)
+	local caps = A.Caps(rec.d.d, size, rec.d.c)
+	local role = rec.d.r
+	if not caps[role or ""] then role = caps.A and "A" or ns.Roles.Of(rec.o) end
+	local m = { id = rec.id, d = rec.d.d, t = t ~= "" and t or nil, at = rec.d.at, n = rec.d.n, by = rec.o, joined = {}, sim = rec.d.sim,
+		role = role, size = size, caps = caps, dc = rec.d.dc == 1 }
 	local prefix = rec.id .. "."
 	for _, j in ipairs(S.List("qj", function(r) return r.id:sub(1, #prefix) == prefix end)) do m.joined[j.o] = j.d.r end
 	for name, role in pairs(rec.d.sj or {}) do m.joined[name] = role end   -- a sample's joiners
 	return m
 end
-local function live(rec) return M.Now() <= rec.d.at + M.KEEP and D.Get(rec.d.d) ~= nil end
+local function live(rec) return M.Now() <= rec.d.at + M.KEEP and (A.Get(rec.d.d) ~= nil or (rec.d.t ~= nil and rec.d.t ~= "")) end
 
 -- Soonest first; of one dungeon when given.
 function M.List(dungeonId)
@@ -76,49 +82,58 @@ end
 M.CAP = { T = 1, H = 1, D = 3 }
 local ORDER = { "T", "H", "D" }
 local function parse(text)
-	local out = { T = {}, H = {}, D = {} }
-	for role, name in tostring(text):gmatch("([THD])=([^,]+)") do table.insert(out[role], name) end
+	local out = { T = {}, H = {}, D = {}, A = {} }
+	for role, name in tostring(text):gmatch("([THDA])=([^,]+)") do table.insert(out[role], name) end
 	return out
 end
 local function encode(slots)
 	local parts = {}
-	for _, role in ipairs(ORDER) do for _, name in ipairs(slots[role]) do parts[#parts + 1] = role .. "=" .. name end end
+	for _, role in ipairs({ "T", "H", "D", "A" }) do for _, name in ipairs(slots[role] or {}) do parts[#parts + 1] = role .. "=" .. name end end
 	return table.concat(parts, ",")
 end
+-- The leader keeps a line-up only for small groups (it travels in one message); bigger ones place by order of joining.
+local LINEUP_MAX = 5
 local function joinsOf(id)   -- { { name, role } } in the order they came
 	local prefix, out = id .. ".", {}
 	for _, j in ipairs(S.List("qj", function(r) return r.id:sub(1, #prefix) == prefix end)) do out[#out + 1] = { j.o, j.d.r } end
 	return out
 end
-local function has(slots, name) for _, role in ipairs(ORDER) do for _, n in ipairs(slots[role]) do if n == name then return role end end end end
--- Who is in which slot: the leader's line-up when there is one (confirmed), else the leader and the joins in the
--- order they came while there is room (not confirmed yet). waiting: joins without a place.
+local function has(slots, name) for _, role in ipairs({ "T", "H", "D", "A" }) do for _, n in ipairs(slots[role] or {}) do if n == name then return role end end end end
+local function capsOf(m) return m.caps or A.Caps(m.d, m.size) end
+-- Who is in which slot: the leader's line-up when there is one (confirmed, small groups), else the leader and the
+-- joins in the order they came while their role has room (not confirmed yet). waiting: joins without a place.
 function M.Slots(m)
+	local caps = capsOf(m)
+	local qm = (m.size or 5) <= LINEUP_MAX and S.Get("qm", m.id)
 	local slots, confirmed
-	local qm = S.Get("qm", m.id)
 	if qm and qm.o == m.by then
-		slots, confirmed = parse(qm.d.m), true
-	else
-		slots, confirmed = { T = {}, H = {}, D = {} }, false
-		table.insert(slots[m.role or "D"], m.by)
-	end
-	local waiting = {}
-	for _, j in ipairs(joinsOf(m.id)) do
-		local name, role = j[1], j[2]
-		if not has(slots, name) then
-			if not confirmed and #slots[role] < M.CAP[role] then table.insert(slots[role], name)
-			else waiting[#waiting + 1] = name end
+		local listed = parse(qm.d.m)
+		slots, confirmed = {}, true
+		for role, cap in pairs(caps) do
+			slots[role] = {}
+			for _, name in ipairs(listed[role] or {}) do if #slots[role] < cap and not has(slots, name) then table.insert(slots[role], name) end end
 		end
+		local waiting = {}
+		for _, j in ipairs(joinsOf(m.id)) do if not has(slots, j[1]) then waiting[#waiting + 1] = j[1] end end
+		slots.waiting = waiting
+	else
+		local joins = joinsOf(m.id)
+		if m.sim then
+			local names = {}
+			for name in pairs(m.joined or {}) do names[#names + 1] = name end
+			table.sort(names)
+			for _, name in ipairs(names) do joins[#joins + 1] = { name, m.joined[name] } end   -- samples' joiners
+		end
+		slots, confirmed = A.Place(caps, m.by, m.role, joins), false
 	end
-	for name, role in pairs(m.joined or {}) do   -- samples' joiners
-		if m.sim and not has(slots, name) and #slots[role] < M.CAP[role] then table.insert(slots[role], name) end
-	end
-	slots.waiting, slots.confirmed = waiting, confirmed
+	for role in pairs(caps) do slots[role] = slots[role] or {} end
+	for _, role in ipairs({ "T", "H", "D", "A" }) do slots[role] = slots[role] or {} end   -- every role reads as a list
+	slots.confirmed = confirmed
 	return slots
 end
-function M.Free(m, role) return M.CAP[role] ~= nil and #M.Slots(m)[role] < M.CAP[role] end
-function M.IsFull(m) local s = M.Slots(m); return #s.T + #s.H + #s.D >= 5 end
-function M.Count(m) local s = M.Slots(m); return #s.T + #s.H + #s.D end
+function M.Free(m, role) local caps = capsOf(m); return caps[role] ~= nil and #M.Slots(m)[role] < caps[role] end
+function M.Count(m) return A.Count(M.Slots(m), capsOf(m)) end
+function M.IsFull(m) return M.Count(m) >= (m.size or 5) end
 
 -- The leader's side: people added by hand and people removed, kept with the character.
 local function hand(id) ns.char.runHand = ns.char.runHand or {}; ns.char.runHand[id] = ns.char.runHand[id] or {}; return ns.char.runHand[id] end
@@ -130,23 +145,27 @@ place = function(id)
 	if not rec or rec.o ~= me() then return end
 	local qm = S.Get("qm", id)
 	local before = qm and qm.d.m or ""
-	local current = qm and parse(qm.d.m) or { T = {}, H = {}, D = {} }
+	local m = view(rec)
+	if m.size > LINEUP_MAX then return true end   -- big groups place by order of joining: no line-up to keep
+	local caps = m.caps
+	local current = qm and parse(qm.d.m) or { T = {}, H = {}, D = {}, A = {} }
 	local joined = {}
 	for _, j in ipairs(joinsOf(id)) do joined[j[1]] = j[2] end
-	local slots = { T = {}, H = {}, D = {} }
-	local leaderRole = rec.d.r or ns.Roles.Of(me())
-	table.insert(slots[leaderRole], me())
-	for _, role in ipairs(ORDER) do
-		for _, name in ipairs(current[role]) do
-			if name ~= me() and not kicked(id)[name] and (joined[name] == role or hand(id)[name] == role) and #slots[role] < M.CAP[role] then
+	local slots = {}
+	for role in pairs(caps) do slots[role] = {} end
+	table.insert(slots[m.role], me())
+	local function room(role) return caps[role] and #slots[role] < caps[role] end
+	for _, role in ipairs({ "T", "H", "D", "A" }) do
+		for _, name in ipairs(current[role] or {}) do
+			if name ~= me() and not kicked(id)[name] and (joined[name] == role or hand(id)[name] == role) and room(role) then
 				table.insert(slots[role], name)
 			end
 		end
 	end
-	for name, role in pairs(hand(id)) do if not has(slots, name) and #slots[role] < M.CAP[role] then table.insert(slots[role], name) end end
+	for name, role in pairs(hand(id)) do if not has(slots, name) and room(role) then table.insert(slots[role], name) end end
 	for _, j in ipairs(joinsOf(id)) do
 		local name, role = j[1], j[2]
-		if not has(slots, name) and not kicked(id)[name] and #slots[role] < M.CAP[role] then table.insert(slots[role], name) end
+		if not has(slots, name) and not kicked(id)[name] and room(role) then table.insert(slots[role], name) end
 	end
 	local text = encode(slots)
 	if #text > 200 then ns.Say(L.RUN_TOO_LONG); return false end   -- five long names: the line-up cannot travel
@@ -158,8 +177,9 @@ M.Place = function(id) return place(id) end
 -- Called from clicks (the dungeon panel): the leader adds someone to a free role, or takes someone out.
 function M.AddMember(id, name, role)
 	local rec = S.Get("qd", id)
-	if not rec or rec.o ~= me() or not M.CAP[role] or name == me() then return false end
+	if not rec or rec.o ~= me() or name == me() then return false end
 	local m = view(rec)
+	if not m.caps[role] then return false end
 	if has(M.Slots(m), name) or not M.Free(m, role) then return false end
 	kicked(id)[name] = nil
 	hand(id)[name] = role
@@ -186,17 +206,28 @@ function M.MyRole(id)   -- a join counts while its meetup does
 	return j and j.d.r
 end
 
--- Called from a click (the meetup dialog). at: minutes since 1970.
-function M.Create(d, at, note, role, discord)
-	if not D.Get(d) then return false end
+-- Called from a click (the form or the meetup dialog). spec: { d, at (minutes since 1970), x, c, t, role, note,
+-- discord }. The old (d, at, note, role, discord) still works.
+function M.Create(spec, at, note, role, discord)
+	if type(spec) ~= "table" then spec = { d = spec, at = at, note = note, role = role, discord = discord } end
+	local d, a = spec.d, A.Get(spec.d)
+	at, note, role, discord = spec.at, spec.note, spec.role, spec.discord
+	if not a then return false end
+	local t = a.free and spec.t and A.CleanName(spec.t) or nil
+	if t == "" then t = nil end
 	if not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	if type(at) ~= "number" or at < M.Now() + 5 or at > M.Now() + 7 * 1440 then ns.Say(L.MEET_BAD_TIME); return false end
 	if count(me()) >= M.PER_PERSON or count() >= M.MAX then ns.Say(L.MEET_FULL); return false end
 	local clean = strtrim(tostring(note or "")):gsub("[%c|]", "")
 	clean = ns.CutUtf8(clean, 40)
-	role = M.CAP[role] and role or ns.Roles.Of(me())
+	local size = A.SizeOf(d, spec.x)
+	local caps = A.Caps(d, size, spec.c)
+	role = caps[role or ""] and role or (caps.A and "A" or ns.Roles.Of(me()))
+	local fields = { d = d, at = at, n = clean ~= "" and clean or nil, r = role, dc = discord and 1 or 0, t = t, _exp = (at + M.KEEP) * 60 }
+	if size ~= a.size then fields.x = size end
+	if a.kind == "r" and A.EncodeCaps(caps) ~= A.EncodeCaps(A.Caps(d, size)) then fields.c = A.EncodeCaps(caps) end
 	local id = newId()
-	if not S.Put("qd", id, { d = d, at = at, n = clean ~= "" and clean or nil, r = role, dc = discord and 1 or 0, _exp = (at + M.KEEP) * 60 }) then return false end
+	if not S.Put("qd", id, fields) then return false end
 	place(id)
 	if discord then ns.Discord.Run("new", view(S.Get("qd", id))) end
 	return true
@@ -217,6 +248,7 @@ function M.Join(id, role)
 	if not rec or rec.o == me() or not ROLES[role] then return false end
 	if not C.IsReady() then ns.Say(L.MEET_NOT_NOW); return false end
 	local m = view(rec)
+	if not m.caps[role] then return false end   -- a role this group has ("A" only where there are no roles)
 	if not M.Free(m, role) and has(M.Slots(m), me()) ~= role then ns.Say(L.RUN_ROLE_FULL); return false end
 	if not S.Put("qj", joinId(id, me()), { r = role, _exp = rec.e }) then return false end
 	ns.Discord.Run("join", view(rec), me(), role)
@@ -240,7 +272,7 @@ function M.Tick()
 		local left = m.at - M.Now()
 		if not reminded[m.id] and left >= 0 and left <= M.REMIND and (m.by == me() or M.MyRole(m.id)) then
 			reminded[m.id] = true
-			ns.NoticeAt("lfg", L.MEET_SOON, D.Name(m.d), M.When(m))
+			ns.NoticeAt("lfg", L.MEET_SOON, A.Name(m.d, m.t), M.When(m))
 		end
 	end
 end

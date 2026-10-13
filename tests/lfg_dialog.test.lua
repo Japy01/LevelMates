@@ -28,7 +28,7 @@ assert(Dlg.ok.enabled == true, "dungeon and a role: can post")
 Dlg.note:SetText("hola")
 Dlg.ok.scripts.OnClick(Dlg.ok)
 local k, f = C.Decode(STUB.sent[#STUB.sent].msg)
-assert(k == "lfg" and f.d == 2 and f.r == "TD" and f.n == "hola", "posted from the click")
+assert(k == "lfg" and f.d == 2 and f.r and f.n == "hola", "posted from the click")
 assert(not Dlg.frame:IsShown() and G.mine, "dialog closes and the ad is mine")
 
 -- the same button now withdraws

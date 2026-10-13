@@ -113,3 +113,31 @@ function A.Caps(id, size, custom)
 	end
 	return { A = n }
 end
+
+-- Who goes where: the leader in their role, then the joins in the order they came while their role has room; the
+-- rest wait. caps: { T, H, D } or { A }. joins: { { name, role } }. A role the group does not have waits.
+function A.Place(caps, leader, leaderRole, joins)
+	local slots, waiting, placed = {}, {}, {}
+	for role in pairs(caps) do slots[role] = {} end
+	if leader then
+		local r = caps[leaderRole] and leaderRole or next(caps)
+		table.insert(slots[r], leader); placed[leader] = true
+	end
+	for _, j in ipairs(joins or {}) do
+		local name, role = j[1], j[2]
+		if not placed[name] then
+			if slots[role] and #slots[role] < caps[role] then table.insert(slots[role], name)
+			else waiting[#waiting + 1] = name end
+			placed[name] = true
+		end
+	end
+	slots.waiting = waiting
+	return slots
+end
+-- Everyone placed, and the free places per role.
+function A.Count(slots, caps)
+	local n = 0
+	for role in pairs(caps) do n = n + #(slots[role] or {}) end
+	return n
+end
+function A.Free(slots, caps, role) return caps[role] ~= nil and #(slots[role] or {}) < caps[role] end

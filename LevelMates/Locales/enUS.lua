@@ -319,3 +319,4 @@ L.DISCORD_UNSURE = "The game does not let addons check the Discord link: it is t
 L.KIND_d = "Dungeon"; L.KIND_r = "Raid"; L.KIND_p = "PvP"; L.KIND_o = "Other"
 L.ACT_MC = "Molten Core"; L.ACT_ONY = "Onyxia's Lair"; L.ACT_ZG = "Zul'Gurub"; L.ACT_BWL = "Blackwing Lair"; L.ACT_AQ20 = "Ruins of Ahn'Qiraj"; L.ACT_AQ40 = "Temple of Ahn'Qiraj"; L.ACT_NAXX = "Naxxramas"; L.ACT_RAID_FREE = "Raid (named)"
 L.ACT_WSG = "Warsong Gulch"; L.ACT_AB = "Arathi Basin"; L.ACT_AV = "Alterac Valley"; L.ACT_WPVP = "World PvP"; L.ACT_OTHER = "Other"
+L.WHEN_NOW = "Now"; L.ROLE_A = "any"; L.ROLE_SHORT_A = "*"; L.DC_FREE_ANY = "%d places"

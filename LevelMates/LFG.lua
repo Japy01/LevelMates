@@ -4,9 +4,10 @@
 local _, ns = ...
 local G = {}
 ns.LFG = G
-local L, C, R, D = ns.L, ns.Comm, ns.Roster, ns.Dungeons
-G.ads = {}     -- ad id -> { name, d, r, n, endsAt }
-G.mine = nil   -- { id, d, r, n, endsAt }
+local L, C, R, D, A = ns.L, ns.Comm, ns.Roster, ns.Dungeons, ns.Activities
+G.ads = {}     -- ad id -> { id, name, d, t, size, caps, lr, r, n, endsAt, joined, order }
+G.mine = nil   -- the same, mine
+-- A group "Now" (project 9): an activity (or a free name), its size and slots per role, the leader's role.
 local DURATION, MIN_GAP, MAX_ADS, GROUP_FULL = 20 * 60, 30, 50, 5
 local ROLE_ORDER = { "T", "H", "D" }
 local lastPost = -math.huge
@@ -35,30 +36,88 @@ function G.RolesShort(roles)
 	return table.concat(out, " ")
 end
 
--- Called from a click (dialog button). Returns true when the ad went out.
-function G.Post(dungeonId, roles, note)
-	if not D.Get(dungeonId) then return false end
-	local r = G.NormRoles(roles)
-	if not r then return false end
+-- What travels: the activity, its size when not its own, the slots when not the default, the free name, my role, and
+-- the roles still wanted (for older readers of r).
+local function wanted(ad)
+	if not ad.caps.T and not ad.caps.H and not ad.caps.D then return nil end
+	local s, out = G.Slots(ad), ""
+	for _, role in ipairs(ROLE_ORDER) do if A.Free(s, ad.caps, role) then out = out .. role end end
+	return out ~= "" and out or nil
+end
+local function fieldsOf(ad, minutes)
+	local a = A.Get(ad.d)
+	local f = { d = ad.d, id = ad.id, m = minutes, lr = ad.lr, n = ad.n, t = ad.t, r = wanted(ad) }
+	if a and ad.size ~= a.size then f.x = ad.size end
+	if a and a.kind == "r" then
+		local default = A.Caps(ad.d, ad.size)
+		if A.EncodeCaps(default) ~= A.EncodeCaps(ad.caps) then f.c = A.EncodeCaps(ad.caps) end
+	end
+	return f
+end
+-- An ad as the views know it, from its fields.
+local function adFrom(f, name)
+	local a = A.Get(f.d)
+	local t = f.t and A.CleanName(f.t) or nil
+	if t == "" then t = nil end
+	if not a and not t then return nil end   -- an activity this version does not know, with no name: ignore
+	local size = A.SizeOf(f.d, f.x)
+	local caps = A.Caps(f.d, size, f.c)
+	local lr = f.lr
+	if not caps[lr or ""] then lr = caps.A and "A" or (ns.Roles.Of(name) or "D") end
+	return { id = f.id, name = name, d = f.d, t = t, size = size, caps = caps, lr = lr, r = f.r, n = f.n }
+end
+
+-- Who is in: the leader, then the joins in the order they came, while there is room.
+function G.Slots(ad)
+	local joins, listed = {}, {}
+	for _, name in ipairs(ad.order or {}) do
+		if ad.joined and ad.joined[name] and not listed[name] then joins[#joins + 1] = { name, ad.joined[name] }; listed[name] = true end
+	end
+	local rest = {}
+	for name in pairs(ad.joined or {}) do if not listed[name] then rest[#rest + 1] = name end end
+	table.sort(rest)
+	for _, name in ipairs(rest) do joins[#joins + 1] = { name, ad.joined[name] } end
+	return A.Place(ad.caps, ad.name, ad.lr, joins)
+end
+function G.IsFull(ad) return A.Count(G.Slots(ad), ad.caps) >= ad.size end
+
+-- Called from a click (the form or a dialog). spec: { d, x, c, t, role, note, discord }. The old (dungeonId, roles,
+-- note) still works. Returns true when the ad went out.
+function G.Post(spec, roles, note)
+	if type(spec) ~= "table" then spec = { d = spec, note = note, role = ns.Roles.Of(ns.Me()) } end
+	local a = A.Get(spec.d)
+	if not a then return false end
+	local t = a.free and spec.t and A.CleanName(spec.t) or nil
+	if t == "" then t = nil end
 	if IsInInstance and IsInInstance() then ns.Say(L.LFG_NO_INSTANCE); return false end
 	if not C.IsReady() then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	local now = GetTime()
 	if now - lastPost < MIN_GAP then ns.Say(L.LFG_TOO_SOON); return false end
-	note = strtrim(tostring(note or ""))
+	note = strtrim(tostring(spec.note or ""))
 	note = note:gsub("[%c|]", "")
 	note = ns.CutUtf8(note, 40)
-	local id = newId()
-	local fields = { d = dungeonId, r = r, id = id, m = 20 }
-	if note ~= "" then fields.n = note end
+	local size = A.SizeOf(spec.d, spec.x)
+	local caps = A.Caps(spec.d, size, spec.c)
+	local role = caps[spec.role or ""] and spec.role or (caps.A and "A" or ns.Roles.Of(ns.Me()))
+	local ad = { id = newId(), name = ns.Me(), d = spec.d, t = t, size = size, caps = caps, lr = role,
+		n = note ~= "" and note or nil, joined = {}, order = {}, dc = spec.discord and true or nil }
 	if G.mine then   -- a new ad replaces the old one everywhere
 		C.Send("lfgx", { id = G.mine.id }, "now")
 		G.mine = nil
 	end
-	if not C.Send("lfg", fields, "now") then ns.Fire("LM_LFG_CHANGED"); return false end
+	if not C.Send("lfg", fieldsOf(ad, 20), "now") then ns.Fire("LM_LFG_CHANGED"); return false end
 	lastPost = now
-	G.mine = { id = id, d = dungeonId, r = r, n = fields.n, endsAt = now + DURATION, joined = {} }
+	ad.endsAt = now + DURATION
+	G.mine = ad
+	if spec.discord then ns.Discord.Run("new", G.View(ad)) end
 	ns.Fire("LM_LFG_CHANGED")
 	return true
+end
+
+-- An ad in the shape the views and Discord share with runs: { id, d, t, by, role, caps, size, n, joined, now = true }.
+function G.View(ad)
+	return { id = ad.id, d = ad.d, t = ad.t, by = ad.name, role = ad.lr, caps = ad.caps, size = ad.size, n = ad.n,
+		joined = ad.joined or {}, order = ad.order, now = true, dc = ad.dc, endsAt = ad.endsAt, mine = ad == G.mine }
 end
 
 function G.Cancel()
@@ -91,7 +150,8 @@ local function count() local n = 0; for _ in pairs(G.ads) do n = n + 1 end; retu
 
 C.OnMessage("lfg", function(f, name)
 	if not R.mates[name] then return end        -- only people the roster knows: their level and class come from there
-	if not D.Get(f.d) then return end           -- a dungeon this version does not know (newer addon): ignore silently
+	local fresh = adFrom(f, name)
+	if not fresh then return end                -- an activity this version does not know, unnamed: ignore silently
 	local now = GetTime()
 	local known = G.ads[f.id]
 	if known and known.name ~= name then return end   -- an id belongs to whoever posted it: nobody else can take it over
@@ -106,10 +166,12 @@ C.OnMessage("lfg", function(f, name)
 	end
 	local endsAt = now + f.m * 60
 	if known then endsAt = math.min(known.endsAt, endsAt) end   -- a re-send never moves the clock forward
-	G.ads[f.id] = { id = f.id, name = name, d = f.d, r = f.r, n = f.n, endsAt = endsAt, joined = known and known.joined or {} }   -- a re-send keeps its joins
+	fresh.endsAt, fresh.joined, fresh.order = endsAt, known and known.joined or {}, known and known.order or {}   -- a re-send keeps its joins
+	G.ads[f.id] = fresh
 	if G.myJoins[f.id] then C.Send("lfj", { id = f.id, r = G.myJoins[f.id] }) end   -- a newcomer gets my join after the ad
-	if not known and ns.db.settings.lfgNotices and D.Fits(f.d, UnitLevel("player")) then
-		ns.NoticeAt("lfg", L.LFG_NOTICE, name, D.Name(f.d), G.RolesText(f.r))
+	local a = A.Get(f.d)
+	if not known and ns.db.settings.lfgNotices and (not a or a.kind ~= "d" or D.Fits(f.d, UnitLevel("player"))) then
+		ns.NoticeAt("lfg", L.LFG_NOTICE, name, A.Name(f.d, fresh.t), fresh.r and G.RolesText(fresh.r) or L.ROLE_A)
 	end
 	ns.Fire("LM_LFG_CHANGED")
 end)
@@ -125,9 +187,7 @@ ns.On("LM_HELLO_ANSWERED", function()
 	if not G.mine then return end
 	local left = math.floor((G.mine.endsAt - GetTime()) / 60)
 	if left < 1 then return end
-	local fields = { d = G.mine.d, r = G.mine.r, id = G.mine.id, m = math.min(20, left) }
-	if G.mine.n then fields.n = G.mine.n end
-	C.Send("lfg", fields)
+	C.Send("lfg", fieldsOf(G.mine, math.min(20, left)))
 end)
 
 -- A poster who leaves takes the ad along.
@@ -152,7 +212,7 @@ ns.On("LM_BEFORE_BYE", withdrawNow)
 local groupFrame = CreateFrame("Frame")
 groupFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 groupFrame:SetScript("OnEvent", function()
-	if G.mine and GetNumGroupMembers() >= GROUP_FULL then ns.Chat(L.LFG_FULL); G.Cancel() end
+	if G.mine and GetNumGroupMembers() >= (G.mine.size or GROUP_FULL) then ns.Chat(L.LFG_FULL); G.Cancel() end
 end)
 
 ns.On("LM_COMM_STOPPED", function()   -- sharing off: you see nobody and have no ad
@@ -186,11 +246,13 @@ local function me() return ns.Me() end
 -- Called from a click (a card's menu).
 function G.Join(id, role)
 	local ad = G.ads[id]
-	if not ad or not (role == "T" or role == "H" or role == "D") then return false end
+	if not ad or not ad.caps[role] then return false end   -- a role this group has ("A" only where there are no roles)
+	if not A.Free(G.Slots(ad), ad.caps, role) then ns.Say(L.RUN_ROLE_FULL); return false end
 	if not C.Send("lfj", { id = id, r = role }, "now") then ns.Say(L.HELP_NEEDS_SHARE); return false end
 	G.myJoins[id] = role
 	if ns.char.lfgJoinsAt then ns.char.lfgJoinsAt[id] = time() end
 	ad.joined = ad.joined or {}
+	if not ad.joined[me()] then ad.order = ad.order or {}; table.insert(ad.order, me()) end
 	ad.joined[me()] = role
 	ns.Fire("LM_LFG_CHANGED")
 	return true
@@ -210,12 +272,14 @@ C.OnMessage("lfj", function(f, name)
 	if not R.mates[name] then return end   -- only people the roster knows
 	local ad = adById(f.id)
 	if not ad or ad.name == name then return end
+	if not ad.caps[f.r] then return end   -- a role this group does not have
 	ad.joined = ad.joined or {}
 	local new = ad.joined[name] == nil
+	if new then ad.order = ad.order or {}; table.insert(ad.order, name) end
 	ad.joined[name] = f.r
 	if ad == G.mine then
-		if new then ns.NoticeAt("lfg", L.LFJ_NOTICE, name, D.Name(ad.d), L["ROLE_" .. f.r]) end
-		if not ad.fullTold and joinedCount(ad) >= 4 then ad.fullTold = true; ns.NoticeAt("lfg", L.LFJ_FULL, D.Name(ad.d)) end
+		if new then ns.NoticeAt("lfg", L.LFJ_NOTICE, name, A.Name(ad.d, ad.t), L["ROLE_" .. f.r]) end
+		if not ad.fullTold and G.IsFull(ad) then ad.fullTold = true; ns.NoticeAt("lfg", L.LFJ_FULL, A.Name(ad.d, ad.t)) end
 	end
 	ns.Fire("LM_LFG_CHANGED")
 end)

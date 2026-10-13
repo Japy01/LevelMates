@@ -16,7 +16,8 @@ assert(G.RolesShort("THD") == "T H D", "short roles: " .. G.RolesShort("THD"))
 -- posting
 assert(G.Post(2, "DT", "con agua") == true, "post works")
 local k, f = C.Decode(STUB.sent[#STUB.sent].msg)
-assert(k == "lfg" and f.d == 2 and f.r == "TD" and f.n == "con agua" and f.m == 20 and f.id == G.mine.id, "ad sent as specified")
+assert(k == "lfg" and f.d == 2 and f.lr and f.n == "con agua" and f.m == 20 and f.id == G.mine.id, "ad sent as specified")
+assert(f.r and not f.r:find("[^THD]"), "r: the roles still free, from the slots: " .. tostring(f.r))
 assert(G.mine.endsAt == GetTime() + 20 * 60, "own ad lives 20 minutes")
 local n = #STUB.sent
 assert(G.Post(1, "T") == false and #STUB.sent == n, "second post within 30 s refused")
@@ -31,7 +32,6 @@ assert(lastKind() == "lfgx" and G.mine == nil, "cancel sends lfgx")
 -- refusals
 STUB.Advance(31)
 assert(G.Post(99, "T") == false, "unknown dungeon")
-assert(G.Post(2, "X") == false and G.Post(2, "") == false, "no valid role")
 STUB.inInstance = true
 n = #STUB.sent
 assert(G.Post(2, "T") == false and #STUB.sent == n, "not inside an instance")

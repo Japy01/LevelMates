@@ -46,6 +46,9 @@ local function roles(v)
 end
 
 -- one of a closed set of words
+-- slots per role as text: "T2H3D5" or "A40"
+local function caps(v) return type(v) == "string" and #v >= 2 and #v <= 16 and v:match("^[THDA%d]+$") ~= nil end
+
 local function oneOf(...)
 	local set = {}
 	for _, w in ipairs({ ... }) do set[w] = true end
@@ -119,7 +122,7 @@ C.SCHEMA = {
 	help = { t = text(60), z = int(0, 100000), x = num(0, 100), y = num(0, 100), id = word(8) },
 	helpok = { id = word(8) },
 	helpgo = { id = word(8) },
-	lfg  = { d = int(1, 99), r = roles, n = text(40), id = word(8), m = int(1, 20) },
+	lfg  = { d = int(1, 399), r = roles, n = text(40), id = word(8), m = int(1, 20), lr = oneOf("T", "H", "D", "A"), x = int(2, 40), c = caps, t = text(60) },
 	lfgx = { id = word(8) },
 	pal  = { p = int(0, 1) },
 	rx   = { p = int(-1, 200) },
@@ -130,10 +133,10 @@ C.SCHEMA = {
 	gp   = { l = int(0, 60), e = int(0, 100000) },
 	wl   = { ids = itemids(10) },
 	pf   = { p = profs },
-	lfj  = { id = word(8), r = oneOf("T", "H", "D") },
+	lfj  = { id = word(8), r = oneOf("T", "H", "D", "A") },
 	lfjx = { id = word(8) },
-	qd   = { id = word(8), d = int(1, 99), at = int(0, 100000000), n = text(40) },
-	qj   = { id = word(8), r = oneOf("T", "H", "D") },
+	qd   = { id = word(8), d = int(1, 399), at = int(0, 100000000), n = text(40), x = int(2, 40), c = caps, t = text(60) },
+	qj   = { id = word(8), r = oneOf("T", "H", "D", "A") },
 	rt   = { i = int(1, 3), x = text(200), v = int(0, 4000000000) },
 	rc   = { t = int(0, 4000000000) },
 	gv   = { ids = itemids(10) },
@@ -152,11 +155,11 @@ C.SCHEMA = {
 	bye  = {},
 	hi   = { s = function(v) return type(v) == "string" and #v <= 200 and not v:find("[%c|]") end },
 }
-C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "r", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qj = { "id", "r" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, hi = { "s" } }
+C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qj = { "id", "r" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, hi = { "s" } }
 
 local REQUIRED = C.REQUIRED
 -- the field checks, for the record layer's types
-C.V = { text = text, word = word, int = int, num = num, idlist = idlist, itemids = itemids, oneOf = oneOf, roles = roles, saleList = saleList }
+C.V = { text = text, word = word, int = int, num = num, idlist = idlist, itemids = itemids, oneOf = oneOf, roles = roles, saleList = saleList, caps = caps }
 
 function C.Validate(kind, fields)
 	local schema = C.SCHEMA[kind]
