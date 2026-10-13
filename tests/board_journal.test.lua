@@ -18,7 +18,7 @@ B.tabs.journal.scripts.OnClick(B.tabs.journal)
 assert(B.tab == "journal" and ns.char.boardTab == "journal", "journal tab, remembered")
 assert(B.tabs.journal.enabled == false and B.tabs.mates.enabled ~= false and B.tabs.lfg.enabled ~= false, "active tab")
 assert(B.headText[1].text == L.COL_WHEN and B.headText[3].text == L.COL_ENTRY and B.headText[5].text == L.COL_ZONE, "headers")
-local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.WIDTH - 2 * B.MARGIN - (#cols - 1) * B.GAP) / sum) end
+local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.LIST_W - (#cols - 1) * B.GAP) / sum) end
 assert(B.rows[1].zone:GetWidth() == scaled(B.JCOLS, 3), "journal column widths, in proportion")
 
 local rows = visible()

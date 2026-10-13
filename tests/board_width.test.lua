@@ -9,7 +9,7 @@ assert(B.frame:GetWidth() == 900, "900 wide: " .. tostring(B.frame:GetWidth()))
 B.ShowTab("mates")
 local sum = 0
 for i = 1, 5 do sum = sum + B.headText[i]:GetWidth() end
-local usable = B.WIDTH - 2 * B.MARGIN - 4 * B.GAP
+local usable = B.LIST_W - 4 * B.GAP
 assert(math.abs(sum - usable) <= 2, "the columns fill the page: " .. sum .. " of " .. usable)
 B.ShowTab("lfg")
 assert(B.CARD_COLS == 5, "five cards a row")

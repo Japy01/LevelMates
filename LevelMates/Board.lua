@@ -42,7 +42,8 @@ local function Resolve(key) if key == "guild" then return ns.char.guildSub or "f
 B.TOP = 84                                  -- y of the column headers: heading, subtitle and divider sit above
 B.BOTTOM = 26                               -- height of the strip under the inset, where the buttons live
 B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10       -- window height without the mate and help rows (recomputed from the inset in Build)
-local ROW_W = B.WIDTH - 2 * B.MARGIN   -- the columns are scaled to fill it (SetColumns)
+B.LIST_W = B.WIDTH - 2 * B.MARGIN - 20   -- list rows stop short of the page's curled right edge
+local ROW_W = B.LIST_W   -- the columns are scaled to fill it (SetColumns)
 
 -- Colour coding: group state and how close a mate is to my level.
 B.GROUP_COLORS = { open = { 0.35, 0.9, 0.35 }, full = { 0.95, 0.35, 0.35 }, solo = { 0.7, 0.7, 0.7 } }
@@ -439,7 +440,7 @@ local function Build()
 	local nextb = ns.Skin.Button(f)
 	nextb:SetSize(110, 20); nextb:SetPoint("BOTTOM", 160, B.BOTTOM + 8); nextb:SetText(L.BTN_J_NEXT)
 	nextb:SetScript("OnClick", function() B.TurnPage(1) end)
-	local pageText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	local pageText = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")   -- gold: it sits on the page's darker curled foot
 	pageText:SetPoint("BOTTOM", 0, B.BOTTOM + 12)
 	B.journalPrev, B.journalNext, B.journalPageText = prev, nextb, pageText
 
@@ -626,7 +627,7 @@ local function Build()
 	end
 	-- dark ink for every text written on the parchment
 	local Ink = ns.Skin.InkFont
-	Ink(B.heading); Ink(B.restedText); Ink(B.subtitle); Ink(f.empty); Ink(B.journalPageText); Ink(B.palLabel)   -- not nearLabel: it sits on the dark bar under the page
+	Ink(B.heading); Ink(B.restedText); Ink(B.subtitle); Ink(f.empty); Ink(B.palLabel)   -- not nearLabel: it sits on the dark bar under the page
 	for _, label in ipairs(B.recruitLabels) do Ink(label) end
 	for _, fs in ipairs(B.headText) do Ink(fs) end
 	for _, r in ipairs(B.rows) do Ink(r.name); Ink(r.level); Ink(r.zone); Ink(r.group); Ink(r.xph) end
@@ -884,7 +885,7 @@ end
 local function SetColumns(widths)
 	local sum = 0
 	for _, w in ipairs(widths) do sum = sum + w end
-	local k = (B.WIDTH - 2 * B.MARGIN - (#widths - 1) * B.GAP) / sum
+	local k = (B.LIST_W - (#widths - 1) * B.GAP) / sum
 	local scaled = {}
 	for i, w in ipairs(widths) do scaled[i] = math.floor(w * k) end
 	widths = scaled

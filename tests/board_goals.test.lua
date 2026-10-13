@@ -21,7 +21,7 @@ assert(B.subs.goals, "a Guild sub-section")
 B.subs.goals.scripts.OnClick(B.subs.goals)
 assert(B.tab == "goals" and ns.char.boardTab == "goals", "goals tab, remembered")
 assert(B.headText[1].text == L.COL_BY and B.headText[3].text == L.COL_GOAL and B.headText[4].text == L.COL_PROGRESS and B.headText[5].text == L.COL_UNTIL, "headers")
-local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.WIDTH - 2 * B.MARGIN - (#cols - 1) * B.GAP) / sum) end
+local function scaled(cols, i) local sum = 0; for _, w in ipairs(cols) do sum = sum + w end; return math.floor(cols[i] * (B.LIST_W - (#cols - 1) * B.GAP) / sum) end
 assert(B.rows[1].zone:GetWidth() == scaled(B.GCOLS, 3), "goals column widths, in proportion")
 local rows = visible()
 assert(#rows == 2 and rows[1].zone.text == G.Text(G.Get("j1")) and rows[2].zone.text == G.Text(G.Get("j2")), "soonest deadline first")

@@ -20,7 +20,7 @@ assert(#M.List(5) == 0, "the second click cancels, redraw or not")
 
 -- C3: the rows span the whole page, not the old 620
 B.ShowTab("mates")
-assert(B.rows[1].button:GetWidth() == B.WIDTH - 2 * B.MARGIN, "row width: " .. tostring(B.rows[1].button:GetWidth()))
+assert(B.rows[1].button:GetWidth() == B.LIST_W, "row width: " .. tostring(B.rows[1].button:GetWidth()))
 
 -- C1: the feedback line sits on the parchment and does not take clicks meant for what is under it; its × closes it
 local fb = B.feedback
