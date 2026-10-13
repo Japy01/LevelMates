@@ -14,34 +14,77 @@ local function line(parent, layer)
 	return t
 end
 
--- A panel: a thin ink frame, a title (as written: Lua's upper() breaks accented letters) on the left, a note on the right, the hint inside when empty.
-function W.Panel(parent, title)
+-- A panel: a header band with an icon and a title (as written: Lua's upper() breaks accented letters), the book's
+-- ornament under it, a note on the right; a faint tint inside, a thin ink frame. Empty: the hint, and with
+-- SetEmptyArt a big faded icon above it and an action under it.
+function W.Panel(parent, title, icon)
 	local p = CreateFrame("Frame", nil, parent)
+	p.band = p:CreateTexture(nil, "BACKGROUND"); p.band:SetColorTexture(0.30, 0.18, 0.06, 0.22)
+	p.band:SetPoint("TOPLEFT"); p.band:SetPoint("TOPRIGHT"); p.band:SetHeight(18)
+	p.tint = p:CreateTexture(nil, "BACKGROUND"); p.tint:SetColorTexture(0.30, 0.18, 0.06, 0.06)
+	p.tint:SetPoint("TOPLEFT", 0, -18); p.tint:SetPoint("BOTTOMRIGHT")
 	p.top, p.bottom, p.left, p.right_ = line(p), line(p), line(p), line(p)
 	p.top:SetHeight(1); p.top:SetPoint("TOPLEFT", 0, -18); p.top:SetPoint("TOPRIGHT", 0, -18)
 	p.bottom:SetHeight(1); p.bottom:SetPoint("BOTTOMLEFT"); p.bottom:SetPoint("BOTTOMRIGHT")
 	p.left:SetWidth(1); p.left:SetPoint("TOPLEFT", 0, -18); p.left:SetPoint("BOTTOMLEFT")
 	p.right_:SetWidth(1); p.right_:SetPoint("TOPRIGHT", 0, -18); p.right_:SetPoint("BOTTOMRIGHT")
+	if SK.DIVIDER then   -- the book's own ornament under the header
+		p.ornament = p:CreateTexture(nil, "ARTWORK"); p.ornament:SetAtlas(SK.DIVIDER); p.ornament:SetHeight(8)
+		p.ornament:SetPoint("TOPLEFT", 0, -15); p.ornament:SetPoint("TOPRIGHT", 0, -15)
+	end
+	p.icon = p:CreateTexture(nil, "ARTWORK"); p.icon:SetSize(15, 15); p.icon:SetPoint("TOPLEFT", 2, -1)
+	p.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); p.icon:Hide()
 	p.title = ink(p:CreateFontString(nil, "OVERLAY", "GameFontNormal"))
 	p.title:SetPoint("TOPLEFT", 2, -2); p.title:SetText(title or "")
 	p.right = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
-	p.right:SetPoint("TOPRIGHT", -2, -4)
+	p.right:SetPoint("TOPRIGHT", -4, -4)
 	p.hint = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 	p.hint:SetPoint("TOPLEFT", 8, -26); p.hint:SetPoint("RIGHT", -8, 0); p.hint:SetJustifyH("LEFT"); p.hint:SetWordWrap(true)
 	p.hint:Hide()
 	function p:SetTitle(t) self.title:SetText(t or "") end
 	function p:SetNote(t) self.right:SetText(t or "") end
 	function p:SetHint(t) self.hint:SetText(t or "") end
-	function p:SetEmpty(empty) self.hint:SetShown(empty and true or false) end
+	-- the header's icon: a path, and optionally its crop
+	function p:SetIcon(tex, l, r, t, b)
+		if not tex then self.icon:Hide(); self.title:SetPoint("TOPLEFT", 2, -2); return end
+		self.icon:SetTexture(tex)
+		if l then self.icon:SetTexCoord(l, r, t, b) else self.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) end
+		self.icon:Show(); self.title:ClearAllPoints(); self.title:SetPoint("TOPLEFT", 21, -2)
+	end
+	-- empty: a big faded icon in the middle, the hint centred under it, and an action when there is one
+	function p:SetEmptyArt(tex, buttonText, fn)
+		self.emptyIcon = self.emptyIcon or self:CreateTexture(nil, "ARTWORK")
+		self.emptyIcon:SetSize(36, 36); self.emptyIcon:SetPoint("TOP", 0, -28)
+		self.emptyIcon:SetTexture(tex); self.emptyIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+		self.emptyIcon:SetDesaturated(true); self.emptyIcon:SetAlpha(0.35); self.emptyIcon:Hide()
+		self.hint:ClearAllPoints(); self.hint:SetPoint("TOP", self.emptyIcon, "BOTTOM", 0, -6)
+		self.hint:SetPoint("LEFT", 12, 0); self.hint:SetPoint("RIGHT", -12, 0); self.hint:SetJustifyH("CENTER")
+		if buttonText then
+			self.emptyButton = self.emptyButton or SK.Button(self)
+			self.emptyButton:SetSize(150, 20); self.emptyButton:SetPoint("TOP", self.hint, "BOTTOM", 0, -8)
+			self.emptyButton:SetText(buttonText); self.emptyButton:SetScript("OnClick", fn); self.emptyButton:Hide()
+		end
+	end
+	function p:SetEmpty(empty)
+		empty = empty and true or false
+		self.hint:SetShown(empty)
+		if self.emptyIcon then self.emptyIcon:SetShown(empty) end
+		if self.emptyButton then self.emptyButton:SetShown(empty) end
+	end
+	if icon then p:SetIcon(icon) end
 	return p
 end
 
--- A big number with its label underneath and a small line under that ("23 · item level · 14/17").
+-- A big number with an icon on its left, its label underneath and a small line under that ("23 · item level · 14/17");
+-- a thin bar at the foot when it has a share to show.
 function W.Stat(parent)
 	local s = CreateFrame("Frame", nil, parent)
 	s:SetSize(150, 54)
+	s.icon = s:CreateTexture(nil, "ARTWORK"); s.icon:SetSize(30, 30); s.icon:SetPoint("LEFT", 8, 2)
+	s.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); s.icon:Hide()
 	s.value = ink(s:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge"))
 	s.value:SetPoint("TOP", 0, -2)
+	if s.value.SetFont then pcall(s.value.SetFont, s.value, "Fonts\\MORPHEUS.TTF", 24, "") end   -- the game's letters for numbers
 	s.label = ink(s:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"))
 	s.label:SetPoint("TOP", s.value, "BOTTOM", 0, -2)
 	s.sub = ink(s:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
@@ -49,8 +92,21 @@ function W.Stat(parent)
 	s.frameTop, s.frameBottom = line(s), line(s)
 	s.frameTop:SetHeight(1); s.frameTop:SetPoint("TOPLEFT"); s.frameTop:SetPoint("TOPRIGHT")
 	s.frameBottom:SetHeight(1); s.frameBottom:SetPoint("BOTTOMLEFT"); s.frameBottom:SetPoint("BOTTOMRIGHT")
+	s.barBg = s:CreateTexture(nil, "BORDER"); s.barBg:SetColorTexture(0.24, 0.14, 0.05, 0.35)
+	s.barBg:SetPoint("BOTTOMLEFT", 50, 4); s.barBg:SetPoint("BOTTOMRIGHT", -12, 4); s.barBg:SetHeight(4); s.barBg:Hide()
+	s.bar = s:CreateTexture(nil, "ARTWORK"); s.bar:SetTexture("Interface/TargetingFrame/UI-StatusBar"); s.bar:SetVertexColor(0.80, 0.55, 0.12)
+	s.bar:SetPoint("LEFT", s.barBg, "LEFT", 0, 0); s.bar:SetHeight(4); s.bar:Hide()
 	function s:Set(value, label, sub)
 		self.value:SetText(tostring(value or "")); self.label:SetText(label or ""); self.sub:SetText(sub or "")
+	end
+	function s:SetIcon(tex) if tex then self.icon:SetTexture(tex); self.icon:Show() else self.icon:Hide() end end
+	-- a share 0..1, or nil for no bar
+	function s:SetBar(share)
+		if not share then self.bar:Hide(); self.barBg:Hide(); return end
+		local w = self.barBg:GetWidth()
+		if not w or w <= 0 then w = (self:GetWidth() or 150) - 62 end
+		self.bar:SetWidth(math.max(1, w * math.max(0, math.min(1, share))))
+		self.barBg:Show(); self.bar:Show()
 	end
 	return s
 end
