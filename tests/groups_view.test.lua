@@ -20,9 +20,19 @@ assert(L.TAB_LFG == "Groups" or L.TAB_LFG == "Grupos", "the section is Groups: "
 assert(GV.frame:IsShown(), "opens on the Groups view")
 for _, c in ipairs(B.cards) do assert(not c:IsShown(), "no catalogue cards here") end
 -- sections
-assert(GV.now.cards[1]:IsShown() and GV.now.cards[1].group.by == "Mario", "Mario's Now group")
-assert(GV.soon.cards[1]:IsShown() and GV.soon.cards[1].group.by == "Ana", "Ana's run today or tomorrow")
-assert(GV.later.items[1]:IsShown() and GV.later.items[1].text.text:find(ns.Dungeons.Name(6), 1, true), "Luis's run later")
+-- one list, five cards a page: Now first, then by time
+assert(GV.PER_PAGE >= 5 and #GV.list.cards == GV.PER_PAGE, "five cards a page")
+assert(GV.list.cards[1].group.by == "Mario" and GV.list.cards[2].group.by == "Ana" and GV.list.cards[3].group.by == "Luis", "Now, then today, then later")
+-- more than a page: the arrows
+for i = 1, 6 do M.AddSample("Q" .. i, i, 120 + i * 10, {}) end
+GV.Refresh()
+assert(GV.next:IsEnabled() and not GV.prev:IsEnabled(), "a second page")
+GV.next.scripts.OnClick(GV.next)
+assert(GV.page == 2 and GV.list.cards[1]:IsShown() and GV.prev:IsEnabled(), "page two")
+GV.prev.scripts.OnClick(GV.prev)
+M.RemoveSamples(); M.AddSample("Ana", 4, math.min(90, math.max(6, minsLeft - 1)), {}); M.AddSample("Luis", 6, 3 * 24 * 60, {})
+-- chat ads: a button that opens them
+assert(GV.chatButton, "the chat ads button")
 -- the form: a named raid of 20, Now, as healer
 local f = GV.form
 f.kinds.r.scripts.OnClick(f.kinds.r)

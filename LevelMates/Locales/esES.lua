@@ -329,3 +329,4 @@ L.HEAD_GROUPS = "Grupos"; L.SUB_GROUPS = "Ahora, hoy y más adelante; crea uno a
 L.GR_CHAT = "Anuncios del chat"; L.GR_HINT_CHAT = "No hay anuncios de grupo en Comercio ni General."; L.GR_FORM = "Crear grupo"; L.GR_PICK = "Elige…"; L.GR_NAME = "Nombre"; L.GR_SIZE = "Tamaño"
 L.DP_GROUPS = "Sus grupos"; L.DP_HINT_GROUPS = "Aún no hay grupos aquí. Crea uno abajo."; L.DP_MANAGE = "Mis partidas: plazas"; L.DP_CREATE = "Crear grupo aquí"
 L.DB_GROUPS = "Grupos"; L.DB_HINT_GROUPS = "Nadie busca grupo y no hay grupos planeados. Crea uno en la sección Grupos."
+L.GR_HINT_LIST = "Nadie busca grupo y no hay nada planeado esta semana. Crea uno a la derecha."; L.GR_COUNT = "%d grupos"; L.GR_CHAT_N = "Anuncios del chat: %d"

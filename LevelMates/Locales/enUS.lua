@@ -328,3 +328,4 @@ L.HEAD_GROUPS = "Groups"; L.SUB_GROUPS = "Now, today and later; make one on the 
 L.GR_CHAT = "Group ads in chat"; L.GR_HINT_CHAT = "No group ads read from Trade or General."; L.GR_FORM = "Create a group"; L.GR_PICK = "Choose…"; L.GR_NAME = "Name"; L.GR_SIZE = "Size"
 L.DP_GROUPS = "Its groups"; L.DP_HINT_GROUPS = "No groups here yet. Create one below."; L.DP_MANAGE = "My runs: places"; L.DP_CREATE = "Create a group here"
 L.DB_GROUPS = "Groups"; L.DB_HINT_GROUPS = "Nobody is looking for a group, and no groups are planned. Make one in the Groups section."
+L.GR_HINT_LIST = "Nobody is looking for a group and nothing is planned this week. Make one on the right."; L.GR_COUNT = "%d groups"; L.GR_CHAT_N = "Group ads in chat: %d"

@@ -6,7 +6,7 @@ local _, ns = ...
 local GV = {}
 ns.GroupsView = GV
 local L = ns.L   -- the rest load later: looked up when used
-GV.NOW, GV.SOON, GV.LATER, GV.CHAT, GV.DAYS = 2, 2, 3, 3, 7
+GV.PER_PAGE, GV.DAYS = 5, 7   -- cards a page; days ahead
 local MINUTES = { 0, 15, 30, 45 }
 local PAD = 6
 
@@ -199,10 +199,23 @@ function GV.Build(parent)
 	local W = ns.Widgets
 	local fr = CreateFrame("Frame", nil, parent)
 	GV.frame = fr
-	GV.now = W.Panel(fr, L.GR_NOW); GV.now:SetHint(L.GR_HINT_NOW); cards(GV.now, GV.NOW)
-	GV.soon = W.Panel(fr, L.RUNS_SOON); GV.soon:SetHint(L.RUNS_HINT_SOON); cards(GV.soon, GV.SOON)
-	GV.later = W.Panel(fr, L.RUNS_LATER); GV.later:SetHint(L.RUNS_HINT_LATER); items(GV.later, GV.LATER)
-	GV.chat = W.Panel(fr, L.GR_CHAT); GV.chat:SetHint(L.GR_HINT_CHAT); items(GV.chat, GV.CHAT)
+	-- one list of groups, a page of cards at a time: Now first, then by time (each card says when)
+	GV.list = W.Panel(fr, L.HEAD_GROUPS); GV.list:SetHint(L.GR_HINT_LIST); cards(GV.list, GV.PER_PAGE)
+	GV.page = 1
+	GV.prev = button(GV.list, 28, "<", function() GV.page = math.max(1, GV.page - 1); GV.Refresh() end)
+	GV.next = button(GV.list, 28, ">", function() GV.page = GV.page + 1; GV.Refresh() end)
+	GV.next:SetPoint("BOTTOMRIGHT", -PAD, PAD); GV.prev:SetPoint("RIGHT", GV.next, "LEFT", -4, 0)
+	GV.pageText = ink(GV.list:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	GV.pageText:SetPoint("RIGHT", GV.prev, "LEFT", -6, 0)
+	-- the chat's group ads: a button that lists them, to whisper
+	GV.chatButton = button(GV.list, 190, "", function(self)
+		local list = {}
+		for _, e in ipairs(GV.chatAds or {}) do
+			list[#list + 1] = { e.a.name .. ": " .. ns.Dungeons.Name(e.d), function() ns.Board.Whisper(e.a.full or e.a.name) end }
+		end
+		menu(self, list)
+	end)
+	GV.chatButton:SetPoint("BOTTOMLEFT", PAD, PAD)
 	GV.formPanel = W.Panel(fr, L.GR_FORM)
 	buildForm(GV.formPanel)
 	GV.form.role = ns.Roles.Of(ns.Me())
@@ -219,13 +232,7 @@ function GV.Layout()
 	local h = fr:GetHeight()
 	if not h or h <= 0 then h = 436 end
 	local lw = math.floor(w * GV.LEFT_W)
-	local cardsH = 22 + 2 * (ns.Widgets.GROUPCARD_H + 4) + 2
-	GV.now:ClearAllPoints(); GV.now:SetPoint("TOPLEFT", 0, 0); GV.now:SetSize(lw, cardsH)
-	GV.soon:ClearAllPoints(); GV.soon:SetPoint("TOPLEFT", 0, -cardsH - 6); GV.soon:SetSize(lw, cardsH)
-	local rest = math.max(70, h - 2 * cardsH - 12)
-	local half = math.floor((lw - 8) / 2)
-	GV.later:ClearAllPoints(); GV.later:SetPoint("TOPLEFT", 0, -2 * cardsH - 12); GV.later:SetSize(half, rest)
-	GV.chat:ClearAllPoints(); GV.chat:SetPoint("TOPLEFT", half + 8, -2 * cardsH - 12); GV.chat:SetSize(lw - half - 8, rest)
+	GV.list:ClearAllPoints(); GV.list:SetPoint("TOPLEFT", 0, 0); GV.list:SetSize(lw, h)
 	GV.formPanel:ClearAllPoints(); GV.formPanel:SetPoint("TOPLEFT", lw + GV.GAP, 0); GV.formPanel:SetSize(w - lw - GV.GAP, h)
 end
 
@@ -238,43 +245,24 @@ end
 function GV.Refresh()
 	if not GV.frame or not GV.frame:IsShown() then return end
 	GV.Layout()
-	local now, soon, later = {}, {}, {}
+	local all = {}
 	for _, g in ipairs(ns.Groups.List()) do
-		if g.src == "now" then now[#now + 1] = g
-		else
-			local day = dayIndex(g.at)
-			if day <= 1 then soon[#soon + 1] = g elseif day < GV.DAYS then later[#later + 1] = g end
-		end
+		if g.src == "now" or dayIndex(g.at) < GV.DAYS then all[#all + 1] = g end
 	end
-	for i = #now, GV.NOW + 1, -1 do table.insert(later, 1, now[i]) end     -- more than the cards: first in the list below
-	for i = #soon, GV.SOON + 1, -1 do table.insert(later, 1, soon[i]) end
-	for i, c in ipairs(GV.now.cards) do c:Set(now[i]) end
-	for i, c in ipairs(GV.soon.cards) do c:Set(soon[i]) end
-	GV.now:SetEmpty(#now == 0); GV.soon:SetEmpty(#soon == 0)
-	GV.now:SetNote(#now > GV.NOW and string.format(L.RUNS_MORE, #now - GV.NOW) or "")
-	GV.soon:SetNote(#soon > GV.SOON and string.format(L.RUNS_MORE, #soon - GV.SOON) or "")
-	for i, it in ipairs(GV.later.items) do
-		local g = later[i]
-		if g then
-			it.text:SetText((g.at and ns.Meetups.When(g) or L.WHEN_NOW) .. "  ·  " .. g.name .. "  ·  " .. (ns.ShortName and ns.ShortName(g.by) or g.by) .. "  (" .. g.count .. "/" .. g.size .. ")")
-			it.fn = function() ns.Board.OpenGroupMembers(g) end
-			it:Show()
-		else it:Hide() end
-	end
-	GV.later:SetEmpty(#later == 0)
-	GV.later:SetNote(#later > GV.LATER and string.format(L.RUNS_MORE, #later - GV.LATER) or "")
+	local pages = math.max(1, math.ceil(#all / GV.PER_PAGE))
+	GV.page = math.min(math.max(1, GV.page or 1), pages)
+	local first = (GV.page - 1) * GV.PER_PAGE
+	for i, c in ipairs(GV.list.cards) do c:Set(all[first + i]) end
+	GV.list:SetEmpty(#all == 0)
+	GV.list:SetNote(#all > 0 and string.format(L.GR_COUNT, #all) or "")
+	GV.prev:SetEnabled(GV.page > 1); GV.next:SetEnabled(GV.page < pages)
+	GV.prev:SetShown(pages > 1); GV.next:SetShown(pages > 1)
+	GV.pageText:SetText(pages > 1 and string.format("%d/%d", GV.page, pages) or "")
 	local chat = {}
 	for _, d in ipairs(ns.Dungeons.Sorted()) do for _, a in ipairs(ns.ChatAds.For(d.id)) do chat[#chat + 1] = { d = d.id, a = a } end end
 	table.sort(chat, function(x, y) return x.a.t > y.a.t end)
-	for i, it in ipairs(GV.chat.items) do
-		local e = chat[i]
-		if e then
-			it.text:SetText(e.a.name .. ": " .. ns.Dungeons.Name(e.d))
-			it.fn = function() ns.Board.Whisper(e.a.name) end
-			it:Show()
-		else it:Hide() end
-	end
-	GV.chat:SetEmpty(#chat == 0)
+	GV.chatAds = chat
+	GV.chatButton:SetText(string.format(L.GR_CHAT_N, #chat)); GV.chatButton:SetEnabled(#chat > 0)
 	formLabels()
 	ns.Skin.InkPass()
 end

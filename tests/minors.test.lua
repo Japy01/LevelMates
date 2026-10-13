@@ -67,8 +67,7 @@ M.AddSample("Ana", 4, 60, {})
 B.ShowTab("lfg"); B.lfgCalendar = true; B.Refresh()
 local meets = 0
 local GV = ns.GroupsView
-for _, c in ipairs(GV.soon.cards) do if c:IsShown() then meets = meets + 1 end end
-for _, it in ipairs(GV.later.items) do if it:IsShown() then meets = meets + 1 end end
+for _, c in ipairs(GV.list.cards) do if c:IsShown() then meets = meets + 1 end end
 assert(meets == 1, "only the one still to come: " .. meets)
 B.lfgCalendar = false
 

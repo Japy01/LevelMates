@@ -33,6 +33,6 @@ for i = 1, 6 do M.AddSample("P" .. i, i, 20 + i * 10, {}) end
 local GV = ns.GroupsView
 GV.Refresh()
 local cards, listed = 0, 0
-for _, c in ipairs(GV.soon.cards) do if c:IsShown() then cards = cards + 1 end end
-for _, it in ipairs(GV.later.items) do if it:IsShown() then listed = listed + 1 end end
-assert(cards == GV.SOON and listed == math.min(GV.LATER, 6 - GV.SOON) and (GV.later.right.text or ""):find("+", 1, true), "cards " .. cards .. ", listed " .. listed .. ", and the rest counted")
+for _, c in ipairs(GV.list.cards) do if c:IsShown() then cards = cards + 1 end end
+listed = 6 - cards
+assert(cards == GV.PER_PAGE and GV.next:IsEnabled(), "a page of cards, the rest a click away: " .. cards)
