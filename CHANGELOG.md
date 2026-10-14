@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+- **Talent viewer fixed**: every talent now sits in its own branch (on Forever a talent belongs to several groups, and most ended up nowhere). Trees shared by 0.5.0 are dropped and asked for again.
+- **View build** in a member's menu (Guild > Members), for any class.
+- `/lm talentos` says what LevelMates reads of your tree and build.
+
 ## 0.5.0
 
 - **Fixed: "LevelMates has been blocked from an action"** when changing talents. The build code is now made from the talent API; the game's talent window is never asked.
