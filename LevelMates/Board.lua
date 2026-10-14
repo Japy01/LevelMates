@@ -1584,6 +1584,9 @@ function B.OpenMemberMenu(m)
 			root:CreateButton(L.MENU_INVITE, function() B.Invite(m.name) end)
 		end
 		if R.mates[m.name] or m.name == ns.Me() then root:CreateButton(L.MEMBER_CARD, function() ns.Fire("LM_ROW_CLICK", m.name) end) end
+		local mine = ns.Builds.List()[1]
+		local build = m.name == ns.Me() and (mine and mine.mine and mine) or ns.Builds.Of(m.name)   -- any class: the viewer draws every tree
+		if build and build.b then root:CreateButton(L.CLASS_VIEW_BUILD, function() ns.TalentView.Open(build) end) end
 		if ns.GuildNotes.CanWrite(m.name) then root:CreateButton(L.NOTE_WRITE, function() B.AskNote(m.name) end) end
 	end)
 end

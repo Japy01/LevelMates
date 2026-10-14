@@ -347,3 +347,4 @@ L.GIFT_BOUND = "That item is bound (or a quest item): it cannot be given or sold
 L.CV_TRADABLE = "Tradable only"; L.CV_WHO_ELSE = "Who else crafts it?"; L.CV_OTHER = "Other"; L.CV_SPELLS = "Enchants and others"
 L.GEAR_INSPECTING = "Inspecting…"; L.GEAR_SRC_SYNC = "shared"; L.GEAR_SRC_INSPECT = "inspected"
 L.GF_LEVEL = "Guild first to level %d"; L.GF_PROF = "Guild first to 300 in %s"; L.GF_TOLD = "%s: %s!"; L.GF_NOBODY = "Nobody yet"
+L.TL_REPORT_NONE = "Talents: the game gives me no tree right now."; L.TL_REPORT = "Talents: %d nodes (%d hidden). Per branch: %s"; L.TL_REPORT_POINTS = "Talents: points read from your build: %s"

@@ -169,3 +169,21 @@ assert(st[1] == "max", "granted: full")
 assert(TL.BranchName("MAGE", { name = "Fuego" }, 2) == "Fuego", "the game's name")
 assert(TL.BranchName("MAGE", { name = "Tree 2" }, 2) == ns.L.TREE_MAGE_2 and TL.BranchName("MAGE", { name = "" }, 1) == ns.L.TREE_MAGE_1, "classic names")
 assert(TL.BranchIcon("MAGE", { icon = 0 }, 3) and TL.BranchIcon("MAGE", { icon = 135846 }, 3) == 135846, "icons")
+
+-- a node belongs to several groups (Forever): its branch is the one that is a branch; a node in none, by its place
+C_Traits.GetTreeNodes = function() return { 201, 202, 203, 204 } end
+C_Traits.GetGroupDisplayInfoByTreeID = function() return { { groupID = 11, orderIndex = 1, displayName = "Arcano" }, { groupID = 12, orderIndex = 2, displayName = "Fuego" } } end
+local nodeInfo = {
+	[201] = { posX = 1000, groupIDs = { 999, 11 } },
+	[202] = { posX = 5000, groupIDs = { 12, 999 } },
+	[203] = { posX = 5200, groupIDs = { 999 } },   -- no branch: by its place, Fuego
+	[204] = { posX = 900 },                         -- none at all: Arcano
+}
+C_Traits.GetNodeInfo = function(_, id) local i = nodeInfo[id]; return { ID = id, posX = i.posX, posY = 100, maxRanks = 1, type = 0, groupIDs = i.groupIDs, entryIDs = {} } end
+local p = TL.ReadMine()
+local g = {}
+for _, n in ipairs(p.nodes) do g[n.id] = n.group end
+assert(g[201] == 11 and g[202] == 12 and g[203] == 12 and g[204] == 11, "branches: " .. tostring(g[201]) .. " " .. tostring(g[202]) .. " " .. tostring(g[203]) .. " " .. tostring(g[204]))
+-- plans of the old format (wrong branches) are not used: asked again
+assert(TL.EncodeLayout(p):sub(1, 2) == "2~", "the new format")
+assert(TL.DecodeLayout("1" .. TL.EncodeLayout(p):sub(2)) == nil, "the old one: not used")

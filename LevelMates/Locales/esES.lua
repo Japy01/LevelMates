@@ -348,3 +348,4 @@ L.GIFT_BOUND = "Ese objeto está ligado (o es de misión): no se puede regalar n
 L.CV_TRADABLE = "Solo comerciables"; L.CV_WHO_ELSE = "¿Quién más lo fabrica?"; L.CV_OTHER = "Otros"; L.CV_SPELLS = "Encantamientos y otros"
 L.GEAR_INSPECTING = "Inspeccionando…"; L.GEAR_SRC_SYNC = "compartido"; L.GEAR_SRC_INSPECT = "inspeccionado"
 L.GF_LEVEL = "Primero de la hermandad en nivel %d"; L.GF_PROF = "Primero de la hermandad con 300 en %s"; L.GF_TOLD = "¡%s: %s!"; L.GF_NOBODY = "Aún nadie"
+L.TL_REPORT_NONE = "Talentos: el juego no me da tu árbol ahora mismo."; L.TL_REPORT = "Talentos: %d nodos (%d ocultos). Por rama: %s"; L.TL_REPORT_POINTS = "Talentos: puntos leídos de tu build: %s"

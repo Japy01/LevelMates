@@ -83,6 +83,7 @@ function TL.HashOf(code)
 end
 
 ------------------------------------------------------------------ a plan as text
+TL.LAYOUT_VERSION = "2"   -- 2: each node in its real branch (1 took a node's first group, often not its branch)
 -- "1~tree~hash~groups~nodes": groups "id,order,icon,name" joined by ";", nodes "id,x,y,max,type,group,spell/spell,to/to,h"
 -- (to: the nodes its arrows lead to; h: 1 when the game does not show it)
 local function clean(s) return (tostring(s or ""):gsub("[~;,|%c]", " ")) end
@@ -96,12 +97,12 @@ function TL.EncodeLayout(plan)
 		for _, t in ipairs(n.to or {}) do to[#to + 1] = tostring(t) end
 		nodes[#nodes + 1] = table.concat({ n.id, n.x or 0, n.y or 0, n.max or 1, n.type or 0, n.group or 0, table.concat(spells, "/"), table.concat(to, "/"), n.hidden and "1" or "" }, ",")
 	end
-	return table.concat({ "1", plan.tree or 0, plan.hash or "", table.concat(groups, ";"), table.concat(nodes, ";") }, "~")
+	return table.concat({ TL.LAYOUT_VERSION, plan.tree or 0, plan.hash or "", table.concat(groups, ";"), table.concat(nodes, ";") }, "~")
 end
 function TL.DecodeLayout(text)
 	if type(text) ~= "string" then return nil end
 	local v, tree, hash, groups, nodes = text:match("^(%d+)~(%d+)~(%x*)~([^~]*)~([^~]*)$")
-	if v ~= "1" then return nil end
+	if v ~= TL.LAYOUT_VERSION then return nil end   -- an older format: asked again
 	local plan = { tree = tonumber(tree), hash = hash ~= "" and hash or nil, groups = {}, nodes = {} }
 	for part in groups:gmatch("[^;]+") do
 		local id, order, icon, name = part:match("^(%-?%d+),(%-?%d+),(%-?%d+),(.*)$")
@@ -231,6 +232,8 @@ function TL.ReadMine()
 		plan.groups[#plan.groups + 1] = { id = g.groupID, order = g.orderIndex or 0, icon = tonumber(g.icon) or 0, name = g.displayName }
 	end
 	table.sort(plan.groups, function(a, b) return a.order < b.order end)
+	local branch = {}
+	for _, g in ipairs(plan.groups) do branch[g.id] = true end
 	for _, id in ipairs(ids) do   -- every node, in the tree's order: the code walks them all
 		local n = call(C_Traits.GetNodeInfo, config, id) or {}
 		local spells = {}
@@ -241,11 +244,48 @@ function TL.ReadMine()
 		end
 		local to = {}
 		for _, e in ipairs(n.visibleEdges or {}) do if e.targetNode then to[#to + 1] = e.targetNode end end
+		-- a node can be in several groups (Forever): its branch is the one of them that is a branch
+		local group
+		for _, gid in ipairs(n.groupIDs or {}) do if branch[gid] and not group then group = gid end end
 		plan.nodes[#plan.nodes + 1] = { id = id, x = math.floor(n.posX or 0), y = math.floor(n.posY or 0), max = n.maxRanks or 1,
-			type = n.type or 0, group = n.groupIDs and n.groupIDs[1] or 0, spells = spells, to = to, hidden = n.isVisible == false or nil }
+			type = n.type or 0, group = group, spells = spells, to = to, hidden = n.isVisible == false or nil }
+	end
+	-- in no branch: the branch whose nodes stand nearest (by column)
+	local sum, count = {}, {}
+	for _, n in ipairs(plan.nodes) do if n.group then sum[n.group] = (sum[n.group] or 0) + n.x; count[n.group] = (count[n.group] or 0) + 1 end end
+	for _, n in ipairs(plan.nodes) do
+		if not n.group then
+			local best, dist
+			for gid, s in pairs(sum) do
+				local d = math.abs(n.x - s / count[gid])
+				if not dist or d < dist then best, dist = gid, d end
+			end
+			n.group = best or 0
+		end
 	end
 	return plan
 end
+
+-- /lm talentos: what this client reads of my tree (to tell a reading problem from a drawing one).
+function TL.Report()
+	local plan = TL.ReadMine()
+	if not plan then ns.Chat(ns.L.TL_REPORT_NONE); return end
+	local per, hidden = {}, 0
+	for _, n in ipairs(plan.nodes) do
+		if n.hidden then hidden = hidden + 1 else per[n.group] = (per[n.group] or 0) + 1 end
+	end
+	local parts = {}
+	for i, g in ipairs(plan.groups) do parts[#parts + 1] = TL.BranchName(plan.class, g, i) .. " " .. (per[g.id] or 0) end
+	ns.Chat(ns.L.TL_REPORT, #plan.nodes, hidden, table.concat(parts, ", "))
+	local code = TL.MyCode()
+	local got = code and TL.Decode(code, plan)
+	if got then
+		local pts = {}
+		for i, g in ipairs(plan.groups) do pts[#pts + 1] = TL.BranchName(plan.class, g, i) .. " " .. (got.points[g.id] or 0) end
+		ns.Chat(ns.L.TL_REPORT_POINTS, table.concat(pts, ", "))
+	end
+end
+ns.Slash("talentos", TL.Report)
 
 ------------------------------------------------------------------ my build's code, from the game
 -- The same text the game's own export gives, made from the talent API alone: its window is never opened nor asked
@@ -333,7 +373,7 @@ local function sendMine()
 	local plan = TL.ReadMine()
 	if not plan or not plan.class then return false end
 	lastSent = GetTime()
-	ns.db.talentLayoutSent = { h = plan.hash, t = time() }
+	ns.db.talentLayoutSent = { h = plan.hash, t = time(), v = TL.LAYOUT_VERSION }
 	return C.SendBig("tlo", { c = plan.class, h = plan.hash, L = TL.EncodeLayout(plan) }, "normal")
 end
 C.OnMessage("tlo", function(f, name)
@@ -365,6 +405,6 @@ ns.On("LM_WORLD", function(isInitial, isReloading)
 	C_Timer.After(20 + math.random() * 20, function()
 		if not C.IsReady() then return end
 		local mine, last = TL.ReadMine(), ns.db.talentLayoutSent
-		if mine and not (last and last.h == mine.hash and time() - (last.t or 0) < WEEK) then sendMine() end
+		if mine and not (last and last.h == mine.hash and last.v == TL.LAYOUT_VERSION and time() - (last.t or 0) < WEEK) then sendMine() end
 	end)
 end)
