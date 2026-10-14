@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2
+
+- **LevelMates is now Guild Companion.** The new name shows in the addon list, the book, chat and Discord lines; `/guildcompanion` opens it too. Its folder and saved data keep the old name, so updating loses nothing, and old and new versions still talk to each other.
+
 ## 0.5.1
 
 - **Talent viewer fixed**: every talent now sits in its own branch (on Forever a talent belongs to several groups, and most ended up nowhere). Trees shared by 0.5.0 are dropped and asked for again.
