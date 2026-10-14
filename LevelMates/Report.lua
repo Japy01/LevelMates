@@ -50,10 +50,31 @@ function RP.Text()
 	end
 	table.sort(changed)
 	add("%s: %s", L.REPORT_OPTIONS, #changed > 0 and table.concat(changed, ", ") or "-")
+	add("%s:", L.REPORT_BLOCKED)
+	local blocked = ns.db.blocked or {}
+	if #blocked == 0 then add("  -") else
+		for _, b in ipairs(blocked) do add("  %s %s %s (%s%s)", date("%d/%m %H:%M", b.t), b.e == "ADDON_ACTION_FORBIDDEN" and "forbidden" or "blocked", tostring(b.f), tostring(b.v), b.c and ", combat" or "") end
+	end
 	add("%s:", L.REPORT_ERRORS)
 	if #errors == 0 then add("  -") else for _, e in ipairs(errors) do add("  %s", e) end end
 	return table.concat(lines, "\n")
 end
+
+-- The game blocked one of our actions ("LevelMates has been blocked from an action"): which one, kept across reloads
+-- (the last few) for the report; the chat says once a session where to find it.
+RP.KEEP_BLOCKED = 5
+local toldBlocked
+local blockedEv = CreateFrame("Frame")
+blockedEv:RegisterEvent("ADDON_ACTION_BLOCKED"); blockedEv:RegisterEvent("ADDON_ACTION_FORBIDDEN")
+blockedEv:SetScript("OnEvent", function(_, event, addon, fn)
+	if addon ~= "LevelMates" or not ns.db then return end
+	if issecretvalue and issecretvalue(fn) then fn = "?" end
+	ns.db.blocked = ns.db.blocked or {}
+	local list = ns.db.blocked
+	list[#list + 1] = { e = event, f = tostring(fn or "?"), t = time(), v = tostring(ns.VERSION), c = InCombatLockdown and InCombatLockdown() or nil }
+	while #list > RP.KEEP_BLOCKED do table.remove(list, 1) end
+	if not toldBlocked then toldBlocked = true; ns.Chat(L.BLOCKED_TOLD, tostring(fn or "?")) end
+end)
 
 ns.Slash("informe", function() ns.DiscordCopy.OpenText(RP.Text()) end)
 ns.Slash("report", function() ns.DiscordCopy.OpenText(RP.Text()) end)
