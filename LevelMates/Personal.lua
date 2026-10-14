@@ -11,7 +11,7 @@ local function me() return ns.Me() end
 local function expired(g) return today() > g.e + G.KEEP_DAYS end
 local function theirs()
 	ns.db.personal = ns.db.personal or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.personal[k] = ns.db.personal[k] or {}
 	return ns.db.personal[k]
 end

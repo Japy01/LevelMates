@@ -17,7 +17,7 @@ local function me() return ns.Me() end
 local function myClass() return select(2, UnitClass("player")) end
 local function store()
 	ns.db.roles = ns.db.roles or {}
-	local g = GetGuildInfo("player") or "?"
+	local g = ns.GuildKey()
 	ns.db.roles[g] = ns.db.roles[g] or {}
 	return ns.db.roles[g]
 end

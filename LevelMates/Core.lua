@@ -58,6 +58,22 @@ function ns.ItemInfo(item)
 	return fn(item)
 end
 -- What happened on its own (a guildmate, the game): always in chat, where it stays.
+-- Forever's secret values: a game result an addon may hold but not read (compare, add, format, index, iterate):
+-- any read throws. Every game value that is compared, formatted or iterated goes through these.
+function ns.Plain(v) if issecretvalue and issecretvalue(v) then return nil end; return v end
+function ns.List(v) v = ns.Plain(v); if type(v) == "table" then return v end; return {} end   -- a list to iterate, or nothing
+function ns.Same(a, b) local ok, eq = pcall(function() return a ~= nil and a == b end); return ok and eq == true end   -- GUIDs, names
+-- The guild's name as a key for saved data ("?" when the game hides it: nothing is stored under a secret).
+function ns.GuildKey()
+	local ok, g = pcall(GetGuildInfo, "player")
+	g = ok and ns.Plain(g) or nil
+	return type(g) == "string" and g ~= "" and g or "?"
+end
+-- Chat from a click, when the game allows it (not in a chat lockdown); a refused send is false, never an error.
+function ns.SendChat(text, kind, lang, target)
+	if InChatMessagingLockdown and InChatMessagingLockdown() then return false end
+	return pcall(SendChatMessage, text, kind, lang, target) == true
+end
 function ns.Chat(fmt, ...) print("|cff7ec8ff" .. ns.TITLE .. "|r " .. string.format(fmt, ...)) end
 -- What a click did: at the foot of the book while it is open, else in chat (and lines with a link: chat, to be clicked).
 function ns.Say(fmt, ...)

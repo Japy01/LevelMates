@@ -10,7 +10,7 @@ local COUNT_KIND = { lvl = "level", qst = "quest", dun = "dungeon" }
 
 local function today() return math.floor(time() / 86400) end
 local function me() return ns.Me() end
-local function guildKey() return GetGuildInfo("player") or "?" end
+local function guildKey() return ns.GuildKey() end
 local function store()
 	ns.db.goals = ns.db.goals or {}
 	local k = guildKey()

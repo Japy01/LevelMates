@@ -9,7 +9,7 @@ GH.MAX, GH.SETTLE = 500, 2
 
 local function store()
 	ns.db.history = ns.db.history or {}
-	local g = GetGuildInfo("player") or "?"
+	local g = ns.GuildKey()
 	ns.db.history[g] = ns.db.history[g] or { log = {}, snap = nil, race = {} }
 	return ns.db.history[g]
 end

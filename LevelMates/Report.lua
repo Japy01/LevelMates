@@ -21,7 +21,7 @@ function RP.Text()
 	local function add(fmt, ...) lines[#lines + 1] = string.format(fmt, ...) end
 	local build, number = GetBuildInfo()
 	add(ns.TITLE .. " %s · WoW %s (%s) · %s", tostring(ns.VERSION), tostring(build), tostring(number), GetLocale())
-	add("%s: %s", L.REPORT_GUILD, IsInGuild() and (GetGuildInfo("player") or "?") or "-")
+	add("%s: %s", L.REPORT_GUILD, IsInGuild() and (ns.GuildKey()) or "-")
 	local s = ns.Comm.stats
 	add("%s: %s · %d/%d/%d (%s) · %d %s", L.REPORT_MESSAGES, ns.Comm.ActiveTransport(), s.sent, s.received, s.bad, L.REPORT_SRB, s.queued, L.REPORT_QUEUED)
 	-- how many guildmates and which versions they run (no names: the report may be pasted in public)

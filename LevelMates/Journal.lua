@@ -165,7 +165,8 @@ local function quality(link)
 	return hex and COLOR_QUALITY[hex:lower()]
 end
 local function isMine(guid, sender)
-	if guid and guid ~= "" then return guid == UnitGUID("player") end
+	guid = ns.Plain(guid)
+	if guid and guid ~= "" then return ns.Same(guid, UnitGUID("player")) end
 	return sender ~= nil and sender ~= "" and ns.ShortName(sender) == ns.Me()
 end
 

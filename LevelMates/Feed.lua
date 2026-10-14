@@ -12,7 +12,7 @@ local function me() return ns.Me() end
 function F.Now() return math.floor(time() / 60) end   -- minutes since 1970
 local function store()
 	ns.db.feed = ns.db.feed or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.feed[k] = ns.db.feed[k] or {}
 	return ns.db.feed[k]
 end

@@ -13,7 +13,7 @@ local function me() return ns.Me() end
 local function mine() ns.char.gifts = ns.char.gifts or {}; return ns.char.gifts end
 local function theirs()
 	ns.db.gifts = ns.db.gifts or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.gifts[k] = ns.db.gifts[k] or {}
 	return ns.db.gifts[k]
 end
@@ -88,11 +88,11 @@ function GF.Bound(id)
 	if not (C_Container and C_Container.GetContainerNumSlots and C_Container.GetContainerItemInfo) then return false end
 	local copies, free = 0, 0
 	for bag = 0, 4 do
-		for slot = 1, C_Container.GetContainerNumSlots(bag) or 0 do
-			local info = C_Container.GetContainerItemInfo(bag, slot)
-			if info and info.itemID == id then
+		for slot = 1, ns.Plain(C_Container.GetContainerNumSlots(bag)) or 0 do
+			local info = ns.Plain(C_Container.GetContainerItemInfo(bag, slot))
+			if type(info) == "table" and ns.Plain(info.itemID) == id then
 				copies = copies + 1
-				local bound = info.isBound == true
+				local bound = ns.Plain(info.isBound) == true
 				if not bound and ItemLocation and C_Item and C_Item.IsBound then
 					local ok, b = pcall(function() return C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot)) end)
 					bound = ok and b == true

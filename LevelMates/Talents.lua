@@ -222,28 +222,29 @@ function TL.ReadMine()
 	local info = config and call(C_Traits.GetConfigInfo, config)
 	local tree = info and info.treeIDs and info.treeIDs[1]
 	if not tree then return nil end
-	local ids = call(C_Traits.GetTreeNodes, tree)
+	local ids = ns.Plain(call(C_Traits.GetTreeNodes, tree))
 	if type(ids) ~= "table" or #ids == 0 then return nil end
-	local hash = call(C_Traits.GetTreeHash, tree)
+	local hash = ns.Plain(call(C_Traits.GetTreeHash, tree))
 	local hex = {}
 	for i = 1, 16 do hex[i] = string.format("%02x", (type(hash) == "table" and tonumber(hash[i])) or 0) end
 	local plan = { class = select(2, UnitClass("player")), tree = tree, hash = table.concat(hex), groups = {}, nodes = {} }
-	for _, g in ipairs(call(C_Traits.GetGroupDisplayInfoByTreeID, tree) or {}) do
-		plan.groups[#plan.groups + 1] = { id = g.groupID, order = g.orderIndex or 0, icon = tonumber(g.icon) or 0, name = g.displayName }
+	for _, g in ipairs(ns.List(call(C_Traits.GetGroupDisplayInfoByTreeID, tree))) do
+		g = ns.Plain(g)
+		if g and ns.Plain(g.groupID) then plan.groups[#plan.groups + 1] = { id = g.groupID, order = ns.Plain(g.orderIndex) or 0, icon = tonumber(ns.Plain(g.icon)) or 0, name = ns.Plain(g.displayName) } end
 	end
 	table.sort(plan.groups, function(a, b) return a.order < b.order end)
 	local branch = {}
 	for _, g in ipairs(plan.groups) do branch[g.id] = true end
 	for _, id in ipairs(ids) do   -- every node, in the tree's order: the code walks them all
-		local n = call(C_Traits.GetNodeInfo, config, id) or {}
+		local n = ns.Plain(call(C_Traits.GetNodeInfo, config, id)) or {}
 		local spells = {}
-		for _, entryID in ipairs(n.entryIDs or {}) do
+		for _, entryID in ipairs(ns.List(n.entryIDs)) do
 			local e = call(C_Traits.GetEntryInfo, config, entryID)
 			local d = e and e.definitionID and call(C_Traits.GetDefinitionInfo, e.definitionID)
 			spells[#spells + 1] = d and d.spellID or 0
 		end
 		local to = {}
-		for _, e in ipairs(n.visibleEdges or {}) do if e.targetNode then to[#to + 1] = e.targetNode end end
+		for _, e in ipairs(ns.List(n.visibleEdges)) do e = ns.Plain(e); if e and ns.Plain(e.targetNode) then to[#to + 1] = e.targetNode end end
 		-- a node can be in several groups (Forever): its branch is the one of them that is a branch
 		local group
 		for _, gid in ipairs(n.groupIDs or {}) do if branch[gid] and not group then group = gid end end
@@ -312,7 +313,7 @@ function TL.MyCode()
 	local config = call(C_ClassTalents.GetActiveConfigID)
 	local info = config and call(C_Traits.GetConfigInfo, config)
 	local tree = info and info.treeIDs and info.treeIDs[1]
-	local ids = tree and call(C_Traits.GetTreeNodes, tree)
+	local ids = tree and ns.Plain(call(C_Traits.GetTreeNodes, tree))
 	if type(ids) ~= "table" or #ids == 0 then return nil end
 	local spec = PlayerUtil and PlayerUtil.GetCurrentSpecID and call(PlayerUtil.GetCurrentSpecID)
 	local hash = call(C_Traits.GetTreeHash, tree)
@@ -321,7 +322,7 @@ function TL.MyCode()
 	w.put(16, tonumber(spec) or 0)
 	for i = 1, 16 do w.put(8, type(hash) == "table" and tonumber(hash[i]) or 0) end
 	for _, id in ipairs(ids) do
-		local n = call(C_Traits.GetNodeInfo, config, id)
+		local n = ns.Plain(call(C_Traits.GetNodeInfo, config, id))
 		if not n then return nil end   -- a node we can't read: a wrong code is worse than none
 		local bought, active = n.ranksPurchased or 0, n.activeRank or 0
 		local selected = bought > 0 or active - bought > 0

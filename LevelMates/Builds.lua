@@ -11,7 +11,7 @@ local function me() return ns.Me() end
 local function myClass() return select(2, UnitClass("player")) end
 local function store()
 	ns.db.builds = ns.db.builds or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.builds[k] = ns.db.builds[k] or {}
 	return ns.db.builds[k]
 end
@@ -33,8 +33,9 @@ function BU.Groups()
 	if not cfg then return {} end
 	local ok, groups = pcall(C_Traits.GetGroupDisplayInfoByTreeID, treeId)
 	local out = {}
-	for _, g in ipairs(ok and groups or {}) do
-		if g.groupID then   -- Forever names them "Tree 1": the classic names of my class instead
+	for _, g in ipairs(ok and ns.List(groups) or {}) do
+		g = ns.Plain(g)
+		if g and ns.Plain(g.groupID) then   -- Forever names them "Tree 1": the classic names of my class instead
 			local name = ns.Talents and ns.Talents.BranchName(myClass(), { name = g.displayName }, #out + 1) or g.displayName
 			out[#out + 1] = { id = g.groupID, name = name or ("#" .. g.groupID) }
 		end
@@ -50,8 +51,9 @@ local function points()
 	for _, g in ipairs(groups) do ids[#ids + 1] = g.id end
 	local ok, infos = pcall(C_Traits.GetGroupCurrencyInfo, cfg, ids)
 	local spentBy = {}
-	for _, gi in ipairs(ok and infos or {}) do
-		local c = gi.currencyInfos and gi.currencyInfos[1]
+	for _, gi in ipairs(ok and ns.List(infos) or {}) do
+		gi = ns.Plain(gi) or {}
+		local c = ns.List(gi.currencyInfos)[1]
 		if gi.traitNodeGroupID then spentBy[gi.traitNodeGroupID] = c and c.spent or 0 end
 	end
 	local parts = {}

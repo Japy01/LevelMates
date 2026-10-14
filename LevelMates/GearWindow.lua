@@ -68,8 +68,8 @@ end
 
 local function unitFor(name)
 	if name == ns.Me() then return "player" end
-	if UnitName and UnitName("target") == name then return "target" end
-	for i = 1, 4 do if UnitName and UnitName("party" .. i) == name then return "party" .. i end end
+	if UnitName and ns.Same(UnitName("target"), name) then return "target" end
+	for i = 1, 4 do if UnitName and ns.Same(UnitName("party" .. i), name) then return "party" .. i end end
 end
 
 -- Under the item level: how old the data is and where it came from; in a warning colour after a few days.

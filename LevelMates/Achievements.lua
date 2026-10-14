@@ -118,7 +118,7 @@ ns.On("LM_LOADED", function() backfill(); AC.Check(); quiet = false end)
 C.OnMessage("ac", function(f, name)
 	if not R.mates[name] then return end
 	ns.db.ach = ns.db.ach or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.ach[k] = ns.db.ach[k] or {}
 	local ids = {}
 	for id in tostring(f.ids or ""):gmatch("%d+") do local a = AC.LIST[tonumber(id)]; if a then ids[#ids + 1] = a.id end end
@@ -128,7 +128,7 @@ end)
 
 -- A guildmate's achievements (ids), newest numbering last.
 function AC.Of(name)
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	local e = ns.db.ach and ns.db.ach[k] and ns.db.ach[k][name]
 	if not e or e.t < time() - AC.FORGET_DAYS * 86400 then return {} end
 	return e.ids

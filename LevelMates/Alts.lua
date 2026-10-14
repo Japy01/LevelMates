@@ -47,7 +47,7 @@ function AL.SetSharing() PS.Mark("now") end
 
 local function store()
 	ns.db.alts = ns.db.alts or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.alts[k] = ns.db.alts[k] or {}
 	return ns.db.alts[k]
 end

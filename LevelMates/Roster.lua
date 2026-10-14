@@ -29,7 +29,8 @@ function R.GuildMembers()
 			info = ok and plain(info) or nil
 			local full = type(info) == "table" and plain(info.name) or nil
 			if full then
-				local online = plain(info.presence) ~= OFFLINE
+				local pr = plain(info.presence)
+				local online = pr ~= nil and pr ~= OFFLINE   -- unreadable: offline, not online
 				local days
 				if not online then
 					local y, mo, d, h = plain(info.lastOnlineYear), plain(info.lastOnlineMonth), plain(info.lastOnlineDay), plain(info.lastOnlineHour)
@@ -87,8 +88,14 @@ function R.IsOfficer(name)
 	local role = guildSet[name]
 	return role == 1 or role == 2
 end
+-- A secret or failing answer is "not an officer" (never a right by mistake); the rank index 0 is the guild master.
 function R.IAmOfficer()
-	return (IsGuildLeader and IsGuildLeader()) or (C_GuildInfo and C_GuildInfo.IsGuildOfficer and C_GuildInfo.IsGuildOfficer()) or false
+	local ok, leader = pcall(function() return IsGuildLeader and IsGuildLeader() end)
+	if ok and ns.Plain(leader) == true then return true end
+	local ok2, officer = pcall(function() return C_GuildInfo and C_GuildInfo.IsGuildOfficer and C_GuildInfo.IsGuildOfficer() end)
+	if ok2 and ns.Plain(officer) == true then return true end
+	local ok3, _, _, rank = pcall(GetGuildInfo, "player")
+	return ok3 and ns.Plain(rank) == 0
 end
 
 function R.MyQuests()

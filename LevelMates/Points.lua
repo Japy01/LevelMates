@@ -33,7 +33,7 @@ local function mine()
 end
 local function store()
 	ns.db.points = ns.db.points or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.points[k] = ns.db.points[k] or {}
 	return ns.db.points[k]
 end
@@ -191,7 +191,7 @@ ns.On("LM_WORLD", function() settledAt = GetTime() + 60 end)
 function PT.CheckMilestones()
 	if not (ns.db and IsInGuild()) then return end
 	local quiet = not settledAt or GetTime() < settledAt
-	local guild = GetGuildInfo("player") or "?"
+	local guild = ns.GuildKey()
 	ns.db.milestones = ns.db.milestones or {}
 	ns.db.milestones[guild] = ns.db.milestones[guild] or {}
 	local ms = ns.db.milestones[guild]

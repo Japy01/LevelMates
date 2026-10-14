@@ -103,7 +103,7 @@ local function myClass() return select(2, UnitClass("player")) end
 local function shared() ns.char.sharedMacros = ns.char.sharedMacros or {}; return ns.char.sharedMacros end
 local function store()
 	ns.db.macros = ns.db.macros or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.macros[k] = ns.db.macros[k] or {}
 	return ns.db.macros[k]
 end

@@ -71,9 +71,9 @@ function GE.Read()
 	local slots = slotsOf("player")
 	GE.reads = GE.reads + 1
 	local avg, filled = GE.Average(slots)
-	local _, _, race = UnitRace("player")
+	local race = ns.Plain(select(3, UnitRace("player")))   -- a secret number on Forever (measured by others): then none
 	local old = ns.char.gear
-	ns.char.gear = { slots = slots, avg = avg, filled = filled, r = race, x = UnitSex("player"), t = time(), src = "self" }
+	ns.char.gear = { slots = slots, avg = avg, filled = filled, r = race, x = ns.Plain(UnitSex("player")), t = time(), src = "self" }
 	if not old or GE.Encode(old.slots) ~= GE.Encode(slots) then ns.Fire("LM_MY_GEAR_CHANGED"); ns.Fire("LM_GEAR_CHANGED") end
 end
 
@@ -92,7 +92,7 @@ ns.On("LM_MY_GEAR_CHANGED", function() share.Mark() end)   -- mine only: theirs 
 -- Theirs.
 local function theirs()
 	ns.db.gear = ns.db.gear or {}
-	local g = GetGuildInfo("player") or "?"
+	local g = ns.GuildKey()
 	ns.db.gear[g] = ns.db.gear[g] or {}
 	return ns.db.gear[g]
 end
@@ -118,20 +118,20 @@ function GE.InspectUnit(name)
 	local units = { "target" }
 	for i = 1, 4 do units[#units + 1] = "party" .. i end
 	for _, u in ipairs(units) do
-		if UnitName(u) == name then
+		if ns.Same(UnitName(u), name) then
 			local ok, can = pcall(CanInspect, u)
 			if ok and can then return u end
 		end
 	end
 end
-local function same(a, b) local ok, eq = pcall(function() return a ~= nil and a == b end); return ok and eq end   -- GUIDs can be hidden values
+local same = ns.Same   -- GUIDs can be hidden values
 function GE.Inspect(unit, name)
 	if pending and GetTime() - pending.at < GE.INSPECT_WAIT then return false end
 	if not (unit and CanInspect and NotifyInspect) then return false end
 	local ok, can = pcall(CanInspect, unit)
 	if not (ok and can) then return false end
 	pending = { unit = unit, name = name, guid = UnitGUID(unit), at = GetTime() }
-	NotifyInspect(unit)
+	if not pcall(NotifyInspect, unit) then pending = nil; return false end   -- refused by the game: nothing waits
 	return true
 end
 local insp = CreateFrame("Frame")
@@ -140,7 +140,7 @@ insp:SetScript("OnEvent", function(_, _, guid)
 	if not pending or not same(guid, pending.guid) then return end
 	local p = pending
 	pending = nil
-	if not same(UnitGUID(p.unit), p.guid) or UnitName(p.unit) ~= p.name then return end   -- someone else by now
+	if not same(UnitGUID(p.unit), p.guid) or not same(UnitName(p.unit), p.name) then return end   -- someone else by now
 	local slots = slotsOf(p.unit)
 	if not next(slots) then return end
 	local avg, filled = GE.Average(slots)

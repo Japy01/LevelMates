@@ -13,7 +13,7 @@ local function myClass() return select(2, UnitClass("player")) end
 local function newId() return string.format("%04x%04x", math.random(0, 65535), math.random(0, 65535)):sub(1, 8) end
 local function store()
 	ns.db.questions = ns.db.questions or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.questions[k] = ns.db.questions[k] or {}
 	return ns.db.questions[k]
 end

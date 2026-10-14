@@ -12,7 +12,7 @@ for _, id in ipairs(P.IDS) do KNOWN[id] = true end
 local function me() return ns.Me() end
 local function theirs()
 	ns.db.professions = ns.db.professions or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.professions[k] = ns.db.professions[k] or {}
 	return ns.db.professions[k]
 end

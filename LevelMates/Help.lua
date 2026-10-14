@@ -100,7 +100,7 @@ end)
 function H.Coming(id)
 	local h = H.active[id]
 	if not h then return end
-	SendChatMessage(string.format(L.HELP_COMING, ns.Me()), "WHISPER", nil, h.name)
+	ns.SendChat(string.format(L.HELP_COMING, ns.Me()), "WHISPER", nil, h.name)
 	C.Send("helpgo", { id = id }, "now")   -- an addon message, not chat: tells the asker who is coming
 	ns.Fire("LM_HELP_GIVEN", id, h.name)   -- guild points, once per request (and twice a day per asker)
 end

@@ -48,9 +48,12 @@ function RC.Mine() ns.char.recipes = ns.char.recipes or {}; return ns.char.recip
 -- My window only: not linked, not the guild's view, not an NPC crafter; and the profession is one of mine.
 local function myWindow()
 	local T = C_TradeSkillUI
-	if not (T and T.IsTradeSkillReady and T.IsTradeSkillReady()) then return false end
+	if not T then return false end
+	local okR, ready = pcall(function() return T.IsTradeSkillReady and T.IsTradeSkillReady() end)
+	if not okR or ns.Plain(ready) ~= true then return false end
 	for _, fn in ipairs({ "IsTradeSkillLinked", "IsTradeSkillGuild", "IsTradeSkillGuildMember", "IsNPCCrafting" }) do
-		if T[fn] and T[fn]() then return false end
+		local ok, v = pcall(function() return T[fn] and T[fn]() end)
+		if not ok or ns.Plain(v) then return false end   -- a check that fails is not "no": not read
 	end
 	return true
 end
@@ -59,8 +62,9 @@ local KNOWN_LINES = {}
 for _, id in ipairs(ns.Professions.IDS) do KNOWN_LINES[id] = true end
 local told
 local function line()
-	local info = C_TradeSkillUI.GetBaseProfessionInfo and C_TradeSkillUI.GetBaseProfessionInfo()
-	if type(info) ~= "table" or not info.professionID then return nil end
+	local okI, info = pcall(function() return C_TradeSkillUI.GetBaseProfessionInfo and C_TradeSkillUI.GetBaseProfessionInfo() end)
+	info = okI and ns.Plain(info) or nil
+	if type(info) ~= "table" or not ns.Plain(info.professionID) then return nil end
 	local id = info.professionID
 	if not KNOWN_LINES[id] and info.parentProfessionID and KNOWN_LINES[info.parentProfessionID] then id = info.parentProfessionID end
 	if not KNOWN_LINES[id] then
@@ -70,10 +74,12 @@ local function line()
 	return id, info.skillLevel or 0, info.maxSkillLevel or 0
 end
 local function outputItem(rid)
-	local out = C_TradeSkillUI.GetRecipeOutputItemData and C_TradeSkillUI.GetRecipeOutputItemData(rid)
-	local item = type(out) == "table" and (out.itemID or tonumber(tostring(out.hyperlink or ""):match("item:(%d+)") or ""))
+	local okO, out = pcall(function() return C_TradeSkillUI.GetRecipeOutputItemData and C_TradeSkillUI.GetRecipeOutputItemData(rid) end)
+	out = okO and ns.Plain(out) or nil
+	local item = type(out) == "table" and (ns.Plain(out.itemID) or tonumber(tostring(ns.Plain(out.hyperlink) or ""):match("item:(%d+)") or ""))
 	if item then return item end
-	local link = C_TradeSkillUI.GetRecipeItemLink and C_TradeSkillUI.GetRecipeItemLink(rid)   -- older clients
+	local okL, link = pcall(function() return C_TradeSkillUI.GetRecipeItemLink and C_TradeSkillUI.GetRecipeItemLink(rid) end)   -- older clients
+	link = okL and ns.Plain(link) or nil
 	return link and tonumber(tostring(link):match("item:(%d+)") or "")
 end
 function RC.Scan()
@@ -85,9 +91,11 @@ function RC.Scan()
 	if skills and skills[id] and skills[id].rank and math.abs(rank - skills[id].rank) > RC.RANK_MARGIN then return end   -- not my rank: not my window
 	RC.scans = RC.scans + 1
 	local items, spells = {}, {}
-	for _, rid in ipairs(C_TradeSkillUI.GetAllRecipeIDs() or {}) do
-		local info = C_TradeSkillUI.GetRecipeInfo(rid)
-		if info and info.learned ~= false then
+	local okA, all = pcall(C_TradeSkillUI.GetAllRecipeIDs)
+	for _, rid in ipairs(okA and ns.List(all) or {}) do
+		local okI, info = pcall(C_TradeSkillUI.GetRecipeInfo, rid)
+		info = okI and ns.Plain(info) or nil
+		if type(info) == "table" and ns.Plain(info.learned) ~= false then
 			local item = outputItem(rid)
 			if item then items[#items + 1] = item else spells[#spells + 1] = rid end
 		end
@@ -167,7 +175,7 @@ end)
 RC.FORGET = 60 * 86400
 local function theirs()
 	ns.db.recipes = ns.db.recipes or {}
-	local g = GetGuildInfo("player") or "?"
+	local g = ns.GuildKey()
 	ns.db.recipes[g] = ns.db.recipes[g] or {}
 	return ns.db.recipes[g]
 end
@@ -299,8 +307,7 @@ function RC.Ask(name, item)
 	local key = name .. ":" .. item
 	if GetTime() - (asked[key] or -math.huge) < 60 then ns.Say(L.RC_ASKED_ALREADY, name); return false end
 	asked[key] = GetTime()
-	SendChatMessage(string.format(L.RC_ASK, RC.Link(item)), "WHISPER", nil, name)
-	return true
+	return ns.SendChat(string.format(L.RC_ASK, RC.Link(item)), "WHISPER", nil, name)
 end
 
 ------------------------------------------------------------------ tooltips

@@ -13,7 +13,7 @@ local function me() return ns.Me() end
 local function now() return (GetServerTime and GetServerTime()) or time() end
 local function store()
 	ns.db.recruit = ns.db.recruit or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.recruit[k] = ns.db.recruit[k] or { templates = { L.RECRUIT_DEFAULT, "", "" } }
 	return ns.db.recruit[k]
 end
@@ -28,8 +28,8 @@ end
 local function plain(v) return (tostring(v):gsub("%%", "%%%%")) end
 -- {hermandad}/{guild}, {conectados}/{online}, {nivel}/{level}; at most 255 bytes once filled in.
 function RC.Expand(text)
-	local guild = plain(GetGuildInfo("player") or "")
-	local online = plain(select(3, GetNumGuildMembers()) or 0)
+	local guild = plain(ns.Plain(GetGuildInfo("player")) or "")
+	local online = plain(ns.Plain(select(3, GetNumGuildMembers())) or 0)
 	local sum, n = UnitLevel("player"), 1
 	for _, m in pairs(R.mates) do if m.level then sum, n = sum + m.level, n + 1 end end
 	local level = plain(math.floor(sum / n + 0.5))
@@ -121,7 +121,7 @@ function RC.ShowPrompt()
 		post:SetSize(130, 22); post:SetPoint("BOTTOMLEFT", 16, 12); post:SetText(L.RECRUIT_POST)
 		post:SetScript("OnClick", function()   -- a click: the post
 			local msg, ch = RC.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2)
-			if msg then SendChatMessage(msg, "CHANNEL", nil, ch); RC.Posted() end
+			if msg and ns.SendChat(msg, "CHANNEL", nil, ch) then RC.Posted() end
 			p:Hide()
 		end)
 		local later = ns.Skin.Button(p)

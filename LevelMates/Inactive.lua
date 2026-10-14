@@ -9,7 +9,7 @@ local L = ns.L
 
 local function store()
 	ns.db.joined = ns.db.joined or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.joined[k] = ns.db.joined[k] or { who = {} }
 	return ns.db.joined[k]
 end

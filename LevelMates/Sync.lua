@@ -15,7 +15,7 @@ local function now() return GetServerTime() end
 local function me() return ns.Me() end
 local function store(t)
 	ns.db.sync = ns.db.sync or {}
-	local g = GetGuildInfo("player") or "?"
+	local g = ns.GuildKey()
 	ns.db.sync[g] = ns.db.sync[g] or {}
 	ns.db.sync[g][t] = ns.db.sync[g][t] or {}
 	return ns.db.sync[g][t]

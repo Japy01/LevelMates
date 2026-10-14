@@ -10,7 +10,7 @@ local function me() return ns.Me() end
 local function mine() ns.char.wishes = ns.char.wishes or {}; return ns.char.wishes end
 local function theirs()
 	ns.db.wishes = ns.db.wishes or {}
-	local k = GetGuildInfo("player") or "?"
+	local k = ns.GuildKey()
 	ns.db.wishes[k] = ns.db.wishes[k] or {}
 	return ns.db.wishes[k]
 end
