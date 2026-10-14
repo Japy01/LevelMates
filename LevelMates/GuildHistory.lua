@@ -17,15 +17,12 @@ local function maxLevel() return (GetMaxPlayerLevel and GetMaxPlayerLevel()) or 
 
 -- The guild list as it is now: name -> { level, rank, class }; nil when the game has not given it yet.
 local function read()
-	local club = C_Club and C_Club.GetGuildClubId and C_Club.GetGuildClubId()
-	if not club then return nil end
+	local list = ns.Roster.GuildMembers()   -- whatever API the client allows (the community list can be secret)
+	if not list then return nil end
 	local out, n = {}, 0
-	for _, id in ipairs(C_Club.GetClubMembers(club) or {}) do
-		local info = C_Club.GetMemberInfo(club, id)
-		if info and info.name then
-			out[ns.ShortName(info.name)] = { level = info.level or 0, rank = info.guildRankOrder or 0, class = info.classID or info.classFileName }
-			n = n + 1
-		end
+	for _, m in ipairs(list) do
+		out[m.name] = { level = m.level or 0, rank = m.rank or 0, class = m.classID or m.classFile }
+		n = n + 1
 	end
 	if n == 0 then return nil end
 	return out, n
@@ -69,6 +66,7 @@ function GH.Scan()
 	local now, rows = read()
 	if not now then return end
 	local total = GetNumGuildMembers and GetNumGuildMembers() or rows
+	if issecretvalue and issecretvalue(total) then total = rows end
 	local partial = (total or 0) > rows
 	local s = store()
 	if not s.snap and partial then return end   -- never a baseline from a list still loading

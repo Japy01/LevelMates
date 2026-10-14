@@ -4,21 +4,14 @@ local _, ns = ...
 local MB = {}
 ns.Members = MB
 local R = ns.Roster
-local OFFLINE = 3   -- Enum.ClubMemberPresence.Offline
 
 -- The guild list, read at most every 30 s: { name, level, rank, role, online, zone, note }.
 local cache, cachedAt = nil, -math.huge
 local function roster()
 	if cache and GetTime() - cachedAt < 30 then return cache end
 	cache, cachedAt = {}, GetTime()
-	local club = C_Club and C_Club.GetGuildClubId and C_Club.GetGuildClubId()
-	if not club then return cache end
-	for _, id in ipairs(C_Club.GetClubMembers(club) or {}) do
-		local info = C_Club.GetMemberInfo(club, id)
-		if info and info.name then
-			cache[#cache + 1] = { name = ns.ShortName(info.name), level = info.level or 0, rank = info.guildRankOrder or 0, role = info.role,
-				online = info.presence ~= OFFLINE, zone = info.zone, days = info.lastOnlineYear and ((info.lastOnlineYear or 0) * 365 + (info.lastOnlineMonth or 0) * 30 + (info.lastOnlineDay or 0)) }
-		end
+	for _, m in ipairs(ns.Roster.GuildMembers() or {}) do   -- whatever API the client allows (the community list can be secret)
+		cache[#cache + 1] = { name = m.name, level = m.level or 0, rank = m.rank or 0, role = m.role, online = m.online, zone = m.zone, days = m.days }
 	end
 	return cache
 end
