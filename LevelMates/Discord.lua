@@ -112,7 +112,7 @@ function DC.Line(kind, m, who, role)
 	elseif kind == "add" then head = string.format(L.DC_ADD, m.by, who, L["ROLE_" .. role], dungeon, when)
 	elseif kind == "remove" then head = string.format(L.DC_REMOVE, m.by, who, dungeon, when)
 	else head = string.format(L.DC_CANCEL, dungeon, when, m.by) end
-	local line = "[LevelMates] " .. head
+	local line = "[" .. ns.TITLE .. "] " .. head
 	if kind ~= "cancel" then line = line .. " · " .. freeText(m, kind, who, role) end
 	line = line:gsub("|", "")
 	local note = m.n and m.n ~= "" and tostring(m.n):gsub("|", "") or nil

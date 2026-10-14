@@ -1,15 +1,15 @@
 local _, ns = ...
 local L = setmetatable({}, { __index = function(t, k) return k end })
 ns.L = L
-L.BOARD_TITLE = "LevelMates"
+L.BOARD_TITLE = "Guild Companion"
 L.COL_NAME = "Name"; L.COL_LEVEL = "Lv"; L.COL_ZONE = "Zone"; L.COL_GROUP = "Group"; L.COL_XPH = "XP/h"
 L.GROUP_FREE = "open"; L.GROUP_FULL = "full"; L.SOLO = "solo"
-L.EMPTY = "No guildmates with LevelMates online right now."
+L.EMPTY = "No guildmates with Guild Companion online right now."
 L.EMPTY_FILTERED = "Nobody matches your filters. Clear them to see everyone."
 L.BOARD_HEADING = "Guildmates online"; L.BOARD_SUBTITLE = "Click a name for their card; right-click: invite, whisper or waypoint."; L.SEARCH_HINT = "Search name..."
 L.FILTER_NEAR = "Near my level (±5)"
 L.NOT_IN_GUILD = "You are not in a guild."
-L.BINDING_TOGGLE = "Show or hide the LevelMates board"
+L.BINDING_TOGGLE = "Show or hide the Guild Companion board"
 L.MENU_INVITE = "Invite"; L.MENU_WHISPER = "Whisper"; L.MENU_WAYPOINT = "Set waypoint"
 L.BTN_HELP = "Ask for help"; L.BTN_HELP_CANCEL = "Cancel help request"; L.BTN_COMING = "On my way"
 L.HELP_PROMPT = "What do you need help with? (up to 60 characters)"
@@ -36,8 +36,8 @@ L.MINIMAP_LEFT = "Left-click: show or hide the board"; L.MINIMAP_RIGHT = "Right-
 L.OPT_TRANSPORT = "Transport"; L.OPT_TRANSPORT_TT = "How messages travel. Auto tries the guild channel, then a hidden channel."
 L.TRANSPORT_AUTO = "Auto"; L.TRANSPORT_GUILD = "Guild channel"; L.TRANSPORT_CHANNEL = "Hidden channel"
 L.OPT_DEBUG = "Debug lines in chat"
-L.HELP_CMD = "LevelMates: /lm (board), /lm help <text>, /lm cancel, /lm options, /lm debug"
-L.STATUS = "LevelMates: %d mates online, transport %s, sent %d, received %d, dropped %d"
+L.HELP_CMD = "Guild Companion: /lm (board), /lm help <text>, /lm cancel, /lm options, /lm debug"
+L.STATUS = "Guild Companion: %d mates online, transport %s, sent %d, received %d, dropped %d"
 L.DUNGEON_HALL_OF_THANES = "Hall of Thanes"; L.DUNGEON_RAGEFIRE_CHASM = "Ragefire Chasm"; L.DUNGEON_RUINS_OF_LORDAERON = "Ruins of Lordaeron"
 L.DUNGEON_WAILING_CAVERNS = "Wailing Caverns"; L.DUNGEON_DEADMINES = "The Deadmines"; L.DUNGEON_SHADOWFANG_KEEP = "Shadowfang Keep"
 L.ROLE_T = "tank"; L.ROLE_H = "healer"; L.ROLE_D = "damage"
@@ -103,7 +103,7 @@ L.DUNGEON_DALARAN = "City of Dalaran"; L.DUNGEON_GNOMEREGAN = "Gnomeregan"; L.DU
 L.DUNGEON_SM_GRAVEYARD = "Scarlet Monastery: Graveyard"; L.DUNGEON_SM_LIBRARY = "Scarlet Monastery: Library"
 L.LFG_SEARCHING = "%d looking"; L.LFG_SEARCHING_ONE = "1 looking"; L.LFG_WHISPER = "Whisper %s"; L.LFG_INVITE = "Invite %s"; L.LFG_HERE = "Look for a group here"; L.LFG_CANCEL_MINE = "Withdraw my ad"
 L.OPT_SCREEN = "Screen notices"; L.OPT_SCREEN_TT = "Important notices also in the middle of the screen."; L.OPT_LEVELUP = "Guildmates' level-ups"; L.OPT_LEVELUP_TT = "A chat line with a [Congratulate] link when a guildmate levels up."
-L.VERSION_NEW = "There is a newer LevelMates (%s). Update when you can."
+L.VERSION_NEW = "There is a newer Guild Companion (%s). Update when you can."
 L.HEAD_MATES = "Guildmates online"; L.SUB_MATES = "Click a name for their card; right-click: invite, whisper or waypoint."; L.SEARCH_MATES = "Search name..."
 L.HEAD_LFG = "Dungeons"; L.SUB_LFG = "Click a card: join, whisper, invite or look for a group there."; L.SEARCH_LFG = "Search..."
 L.HEAD_JOURNAL = "My journal"; L.SUB_JOURNAL = "Your journey: levels, quests, dungeons, loot..."; L.SEARCH_JOURNAL = "Search text..."
@@ -143,7 +143,7 @@ L.RECRUIT_LAST = "Last post: %s ago (%s)"; L.RECRUIT_NONE = "Nobody has posted y
 L.RECRUIT_READY = "You can post now."; L.RECRUIT_EMPTY = "That template is empty."; L.RECRUIT_NO_CHANNEL = "You are not in channel %d (Trade is only in cities)."
 L.RECRUIT_PROMPT = "Time to post the guild recruitment."; L.RECRUIT_LATER = "Not now"
 L.OPT_LANGUAGE = "Language"; L.OPT_LANGUAGE_TT = "The addon's language. A change takes effect after reloading the interface."; L.LANGUAGE_AUTO = "Automatic (the game's)"
-L.LANGUAGE_RELOAD = "LevelMates will use the new language after reloading the interface. Reload now?"; L.BTN_RELOAD = "Reload"
+L.LANGUAGE_RELOAD = "Guild Companion will use the new language after reloading the interface. Reload now?"; L.BTN_RELOAD = "Reload"
 
 -- Class tab
 L.TAB_CLASS = "Class"; L.HEAD_CLASS = "Your class"; L.SUB_CLASS = "Guild builds and macros for your class. Click a row for its options."; L.SEARCH_CLASS = "Name or macro..."
@@ -153,7 +153,7 @@ L.CHAT_ADS = "%d in chat"; L.CHAT_AD_LINE = "Chat · %s: «%s» (%s ago)"; L.CHA
 L.OPT_CHAT_ADS = "Read group ads from chat"; L.OPT_CHAT_ADS_TT = "Dungeon cards also count group ads posted in Trade, General and other public channels. Only read on your computer; nothing is sent."
 
 -- Builds
-L.BUILD_LINK = "LevelMates: build"; L.OPT_BUILD = "Share my talent build"; L.OPT_BUILD_TT = "Guildmates of your class see your points per branch and level, and can open your build in the game's viewer."
+L.BUILD_LINK = "Guild Companion: build"; L.OPT_BUILD = "Share my talent build"; L.OPT_BUILD_TT = "Guildmates of your class see your points per branch and level, and can open your build in the game's viewer."
 
 -- Macros
 L.MACRO_COMBAT = "Macros cannot be created in combat."; L.MACRO_EXISTS = "You already have a macro called %s."; L.MACRO_FULL = "No room for another character macro."
@@ -180,7 +180,7 @@ L.OPT_TRAINER = "Trainer reminder"; L.OPT_TRAINER_TT = "When you level up, tells
 
 -- Group XP bars
 L.GROUPXP_TITLE = "Group XP"; L.OPT_GROUPXP = "Group XP bars"; L.OPT_GROUPXP_TT = "While grouped with guildmates, a small window shows everyone's XP. Your XP percent goes to your guild only while you are grouped with a guildmate."
-L.CARD_NO_QUESTS = "They do not share their quests, so LevelMates cannot tell which of yours they lack."; L.CARD_MISSING = "Your quests they do not have:"; L.CARD_SHARE_QUEST = "Share: %s"
+L.CARD_NO_QUESTS = "They do not share their quests, so Guild Companion cannot tell which of yours they lack."; L.CARD_MISSING = "Your quests they do not have:"; L.CARD_SHARE_QUEST = "Share: %s"
 L.GROUPXP_PAUSED = "Group XP (paused in dungeons)"
 
 -- Ask your class
@@ -219,10 +219,10 @@ L.HELP_SENT = "Help request sent to your guild: %s. Click the button again to ca
 L.OPT_POINTS = "Share my guild points"; L.OPT_POINTS_TT = "What you do (levels, dungeons with guildmates, quests, helps, gifts, meetups) adds to the guild level, the weekly challenge and the weekly top three."
 L.CHALLENGE_d = "%d dungeons in a group"; L.CHALLENGE_l = "%d levels between everyone"; L.CHALLENGE_h = "%d helps"; L.CHALLENGE_q = "%d quests turned in"
 L.CHALLENGE_DONE_SHORT = "Weekly challenge done!"; L.CHALLENGE_DONE = "Weekly challenge done! %s"
-L.GUILD_LEVEL_UP = "The guild reaches level %d in LevelMates!"; L.GUILD_LEVEL_WALL = "Guild level %d"
+L.GUILD_LEVEL_UP = "The guild reaches level %d in Guild Companion!"; L.GUILD_LEVEL_WALL = "Guild level %d"
 
 -- Home
-L.HOME_INVITE_TEXT = "Guild %s: install LevelMates (CurseForge, World of Warcraft: Forever) to see who is online and leveling near you, find dungeon groups and push the guild level together."
+L.HOME_INVITE_TEXT = "Guild %s: install Guild Companion (CurseForge, World of Warcraft: Forever) to see who is online and leveling near you, find dungeon groups and push the guild level together."
 
 -- Home and the five tabs
 L.TAB_HOME = "Home"; L.TAB_GUILD = "Guild"; L.HEAD_HOME = "Home"; L.SUB_HOME = "What is going on in the guild and what you can do now."; L.SEARCH_HOME = "Search..."
@@ -230,11 +230,11 @@ L.HOME_GUILD = "The guild"; L.HOME_NOW = "Right now"; L.HOME_FORYOU = "For you";
 L.HOME_LEVEL = "Guild level %d"; L.HOME_DONE = "done!"; L.HOME_GO = "On my way"; L.HOME_JOIN = "Join"; L.HOME_SEE = "See"; L.HOME_INVITE = "Invite"
 L.HOME_BUY = "Buy"; L.HOME_RESERVE = "Reserve"; L.HOME_TRAINER = "%d spells at your trainer"; L.HOME_COPY = "Copy"
 L.HOME_RANK_l = "Most levels"; L.HOME_RANK_d = "Most dungeons"; L.HOME_RANK_h = "Most helps"
-L.HOME_ALONE_TITLE = "Bring your guild"; L.HOME_ALONE = "Guildmates show up here once they install LevelMates. Copy an invite to paste in guild chat or Discord."
+L.HOME_ALONE_TITLE = "Bring your guild"; L.HOME_ALONE = "Guildmates show up here once they install Guild Companion. Copy an invite to paste in guild chat or Discord."
 L.INK_HELP = "Text darkness: /lm ink 1 (lightest) to 5 (darkest). Now: %d."; L.INK_SET = "Text darkness set to %d."
 
 -- Report
-L.REPORT_GUILD = "Guild"; L.REPORT_MESSAGES = "Messages"; L.REPORT_SRB = "sent/received/rejected"; L.REPORT_QUEUED = "waiting"; L.REPORT_MATES = "Guildmates seen"; L.REPORT_POINTS = "My points"; L.REPORT_GUILD_TOTAL = "guild"; L.REPORT_OPTIONS = "Changed options"; L.REPORT_ERRORS = "Last LevelMates errors"
+L.REPORT_GUILD = "Guild"; L.REPORT_MESSAGES = "Messages"; L.REPORT_SRB = "sent/received/rejected"; L.REPORT_QUEUED = "waiting"; L.REPORT_MATES = "Guildmates seen"; L.REPORT_POINTS = "My points"; L.REPORT_GUILD_TOTAL = "guild"; L.REPORT_OPTIONS = "Changed options"; L.REPORT_ERRORS = "Last Guild Companion errors"
 
 -- Achievements
 L.ACH_lvl10 = "First steps"; L.ACH_lvl20 = "On the road"; L.ACH_lvl30 = "Seasoned"; L.ACH_lvl40 = "Veteran"; L.ACH_lvl50 = "Almost there"; L.ACH_lvl60 = "Level 60!"
@@ -255,7 +255,7 @@ L.DP_YOUR_LEVEL = "your level"; L.DP_WITHDRAW = "Withdraw"; L.DP_LEAVE = "Leave"
 L.GROUPXP_NONE = "Group XP bars are back; they show while you are grouped with guildmates."
 L.OPT_QUIET = "Quiet mode"; L.OPT_QUIET_TT = "Only what matters: help requests, groups and goals. The other notices, the messages in the middle of the screen and the sound are off; turning it off brings them back as they were."
 L.ROUTE_SET = "Route set to %s: %s (%.0f, %.0f). Follow the pin on screen or on the map."; L.ROUTE_FAIL = "The game does not allow a map pin in %s."; L.ROUTE_SPOT = "the sighting"
-L.CARD_OLD_VERSION = "Uses an old LevelMates (0.3): they need to update to see you."
+L.CARD_OLD_VERSION = "Uses an old Guild Companion (0.3): they need to update to see you."
 L.REPORT_QUEUE = "Queue"; L.REPORT_HELD = "held"; L.REPORT_DROPPED = "dropped"; L.REPORT_RECORDS = "Records"; L.REPORT_OLD = "Guildmates on an old version"
 L.STATUS_QUEUE = "queue: %d waiting, %d held, %d dropped"; L.STATUS_MEMORY = "memory: %.0f KB (%.0f KB after a collect)"
 L.RUN_ROLE_FULL = "That role is full in this run."
@@ -288,10 +288,10 @@ L.RC_TOOLTIP = "Crafted by: %s"; L.TRAIN_JOURNEYMAN = "train: Journeyman"; L.TRA
 L.MOTD_NEW = "%s: message of the day: %s"; L.NOTE_NOT_ALLOWED = "You cannot write that."
 L.FEED_JOIN = "joined the guild"; L.FEED_LEAVE = "is no longer in the guild"; L.FEED_R60 = "reached level %d"; L.RACE_FIRST = "%s is the first of the guild to reach level %d!"; L.RACE_REACHED = "%s reached level %d."
 L.OPT_BANK = "Share the guild bank when I open it"; L.OPT_BANK_TT = "What you see in the guild bank goes to your guildmates when you close it, so they know what is there."
-L.TAB_MEMBERS = "Members"; L.HEAD_MEMBERS = "Members"; L.SUB_MEMBERS = "Everyone in the guild, with or without LevelMates, and their shared notes."; L.TAB_BANK = "Bank"; L.HEAD_BANK = "Guild bank"; L.SUB_BANK = "Nobody has shared the guild bank yet: it shows here when someone opens it."; L.SUB_BANK_SEEN = "As %s saw it %s ago · %s"
+L.TAB_MEMBERS = "Members"; L.HEAD_MEMBERS = "Members"; L.SUB_MEMBERS = "Everyone in the guild, with or without Guild Companion, and their shared notes."; L.TAB_BANK = "Bank"; L.HEAD_BANK = "Guild bank"; L.SUB_BANK = "Nobody has shared the guild bank yet: it shows here when someone opens it."; L.SUB_BANK_SEEN = "As %s saw it %s ago · %s"
 L.MEMBERS_VIEW_LIST = "View: list"; L.MEMBERS_VIEW_HISTORY = "View: history"; L.MEMBERS_VIEW_ALTS = "View: alts"; L.MEMBERS_VIEW_RACE = "View: race to 60"
 L.MEMBERS_FILTER_ALL = "Show: all"; L.MEMBERS_FILTER_ONLINE = "Show: online"; L.MEMBERS_FILTER_OFFICERS = "Show: officers"; L.MEMBERS_FILTER_NONOTE = "Show: no note"
-L.GUILD_RANK_N = "rank %d"; L.MEMBER_DAYS = "%d days ago"; L.MEMBER_CARD = "Card"; L.NOTE_WRITE = "Write note"; L.NOTE_PROMPT = "Note for %s (everyone with LevelMates sees it):"
+L.GUILD_RANK_N = "rank %d"; L.MEMBER_DAYS = "%d days ago"; L.MEMBER_CARD = "Card"; L.NOTE_WRITE = "Write note"; L.NOTE_PROMPT = "Note for %s (everyone with Guild Companion sees it):"
 L.HIST_JOIN = "joined"; L.HIST_LEAVE = "left"; L.HIST_RANKUP = "promoted (rank %s)"; L.HIST_RANKDOWN = "demoted (rank %s)"; L.HIST_R60 = "reached level %s"
 L.ALTS_PROVEN = "same account"; L.ALTS_SAID = "as they say"; L.RACE_FIRST_TAG = "first of the guild"; L.RACE_CLASS_TAG = "first of the class"; L.RACE_BEFORE_TAG = "already there"
 L.OPT_GEAR = "Share my gear"; L.OPT_GEAR_TT = "Your equipped items, their item level and enchants, and your race for the model: guildmates see them on your card."
@@ -301,7 +301,7 @@ L.CONFIRM_RUN = "Cancel this run? Everyone who joined is told."; L.CONFIRM_QUEST
 L.PILL_ONLINE = "|TInterface\\FriendsFrame\\StatusIcon-Online:12|t %d online"; L.PILL_DISCORD = "Discord linked"; L.PILL_OLD = "On 0.3: %d"
 L.DB_ME = "My character"; L.DB_NOW = "Now"; L.DB_RUNS = "Next runs"; L.DB_QUESTS = "Quests"; L.DB_WHERE = "Who is where"; L.DB_WALL = "Today in the guild"
 L.DB_HINT_NOW = "Nobody needs help or a group right now. Ask for help or post a group from Guildmates and Groups."; L.DB_HINT_RUNS = "No runs planned. In Groups, pick a dungeon and set a time."
-L.DB_HINT_QUESTS = "Nobody looks for help with a quest. Alt+click a quest in your log to post it."; L.DB_HINT_WHERE = "Nobody else is online with LevelMates."; L.DB_HINT_WALL = "Nothing on the wall this week yet."
+L.DB_HINT_QUESTS = "Nobody looks for help with a quest. Alt+click a quest in your log to post it."; L.DB_HINT_WHERE = "Nobody else is online with Guild Companion."; L.DB_HINT_WALL = "Nothing on the wall this week yet."
 L.DB_INVITE = "Copy an invite"; L.DB_STAT_LEVEL = "guild level"; L.DB_STAT_ONLINE = "online"; L.DB_STAT_ILVL = "my item level"
 L.DB_LEVEL_CLASS = "Level %d %s"; L.DB_XP = "XP %d%%  ·  rested %d%%"; L.DB_GEAR = "Gear"; L.DB_WEEK = "This week: %d points"; L.DB_NEXT = "%d next"; L.DB_SOMEWHERE = "Somewhere"
 L.BTN_RUNS = "Runs"; L.HEAD_RUNS = "Runs"; L.SUB_RUNS = "Today and tomorrow as cards, the rest of the week below; set one up on the right."
@@ -332,14 +332,14 @@ L.GR_HINT_LIST = "Nobody is looking for a group and nothing is planned this week
 L.CV_PROFESSIONS = "Professions"; L.CV_NAME = "Name"; L.CV_WHO = "Who"; L.CV_RECIPES = "Recipes"; L.CV_FOOTER = "%d characters, %d recipes known."
 L.CV_SEARCH = "Item name, link or number"; L.CV_BACK = "Back"; L.CV_PROF_SUB = "%d crafters · %d recipes"; L.CV_CRAFTERS = "crafters"; L.CV_RECIPES_LOWER = "recipes"
 L.CV_CRAFTER_SUB = "%s %d/%d · read %s"; L.CV_NOT_READ = "not read yet"; L.CV_YOU = "you"; L.CV_ITEM = "Item"; L.CV_FOUND = "Who crafts it"; L.CV_FOUND_N = "%d items found"; L.CV_ITEMS = "items"; L.CV_OFFLINE = "offline"
-L.CV_NO_RECIPES = "%s has not opened this profession's window with LevelMates yet: their recipes show once they do."
+L.CV_NO_RECIPES = "%s has not opened this profession's window with Guild Companion yet: their recipes show once they do."
 L.CV_NONE_HERE = "%s has no recipes to list in this profession (gathering ones have none)."
 L.CV_CRAFTER_SUB = "%s %d/%d · %s"; L.CV_READ = "read %s"
-L.OPT_DISCORD_TAG = "Tag for the guild's Discord bot"; L.OPT_DISCORD_TAG_TT = "Only if your guild runs the LevelMates bot: the lines you send to Discord start with a short tag [LM1 ...] that the bot reads to keep a sign-up board. Linking Discord: guild master or officer, Guild (J) > member list > Guild Control > Discord Settings."
+L.OPT_DISCORD_TAG = "Tag for the guild's Discord bot"; L.OPT_DISCORD_TAG_TT = "Only if your guild runs the Guild Companion bot: the lines you send to Discord start with a short tag [LM1 ...] that the bot reads to keep a sign-up board. Linking Discord: guild master or officer, Guild (J) > member list > Guild Control > Discord Settings."
 L.DT_START = "Discord test: for %d seconds, every Discord message shows here as the addon receives it. Write something in the linked channel."; L.DT_LINE = "Discord test · %s: %s"; L.DT_PROTECTED = "(text hidden from addons)"
-L.OPT_GUILD_TAG = "Discord bot tag for the whole guild"; L.OPT_GUILD_TAG_TT = "Guild master or officers: turns the bot tag on for everyone with LevelMates in the guild (each player may opt out below). Others can see it but not change it."; L.OPT_TAG_OFF = "Not the guild's bot tag for me"; L.OPT_TAG_OFF_TT = "When your guild turned the bot tag on, your lines go without it. A group made with the tag still tags everyone's joins and leaves."
+L.OPT_GUILD_TAG = "Discord bot tag for the whole guild"; L.OPT_GUILD_TAG_TT = "Guild master or officers: turns the bot tag on for everyone with Guild Companion in the guild (each player may opt out below). Others can see it but not change it."; L.OPT_TAG_OFF = "Not the guild's bot tag for me"; L.OPT_TAG_OFF_TT = "When your guild turned the bot tag on, your lines go without it. A group made with the tag still tags everyone's joins and leaves."
 L.DB_MAKE_GROUP = "Create a group"
-L.TV_TITLE = "%s's talents · level %d"; L.TV_WAITING = "I do not have this class's tree yet: I asked the guild for it (it comes as soon as someone of that class with LevelMates is online)."; L.TV_OTHER_TREE = "This build is for another version of the tree: I asked the guild for the current one. Meanwhile you can view it in the game's window."; L.TV_BAD = "This build cannot be read. You can try the game's window."; L.TV_GAME = "View in the game's window"; L.TV_RANK = "Rank %d/%d"; L.TV_NOT_TAKEN = "Not taken"; L.TV_GRANTED = "Granted"
+L.TV_TITLE = "%s's talents · level %d"; L.TV_WAITING = "I do not have this class's tree yet: I asked the guild for it (it comes as soon as someone of that class with Guild Companion is online)."; L.TV_OTHER_TREE = "This build is for another version of the tree: I asked the guild for the current one. Meanwhile you can view it in the game's window."; L.TV_BAD = "This build cannot be read. You can try the game's window."; L.TV_GAME = "View in the game's window"; L.TV_RANK = "Rank %d/%d"; L.TV_NOT_TAKEN = "Not taken"; L.TV_GRANTED = "Granted"
 L.TREE_WARRIOR_1 = "Arms"; L.TREE_WARRIOR_2 = "Fury"; L.TREE_WARRIOR_3 = "Protection"; L.TREE_PALADIN_1 = "Holy"; L.TREE_PALADIN_2 = "Protection"; L.TREE_PALADIN_3 = "Retribution"; L.TREE_HUNTER_1 = "Beast Mastery"; L.TREE_HUNTER_2 = "Marksmanship"; L.TREE_HUNTER_3 = "Survival"; L.TREE_ROGUE_1 = "Assassination"; L.TREE_ROGUE_2 = "Combat"; L.TREE_ROGUE_3 = "Subtlety"; L.TREE_PRIEST_1 = "Discipline"; L.TREE_PRIEST_2 = "Holy"; L.TREE_PRIEST_3 = "Shadow"; L.TREE_SHAMAN_1 = "Elemental"; L.TREE_SHAMAN_2 = "Enhancement"; L.TREE_SHAMAN_3 = "Restoration"; L.TREE_MAGE_1 = "Arcane"; L.TREE_MAGE_2 = "Fire"; L.TREE_MAGE_3 = "Frost"; L.TREE_WARLOCK_1 = "Affliction"; L.TREE_WARLOCK_2 = "Demonology"; L.TREE_WARLOCK_3 = "Destruction"; L.TREE_DRUID_1 = "Balance"; L.TREE_DRUID_2 = "Feral Combat"; L.TREE_DRUID_3 = "Restoration"
 L.TV_TOTAL = "Points: %d"
 L.GEAR_AWAY = "Out of sight. Target them or group with them to see their model."

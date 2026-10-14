@@ -7,7 +7,7 @@ ns.db.settings.sharePos = true
 
 -- the report: what is needed to understand a problem (guildmates counted by version, no names)
 local text = RP.Text()
-for _, want in ipairs({ "LevelMates", ns.VERSION, "1.60.1", "Test Guild", C.ActiveTransport(), "0.3.0 ×1", "sharePos" }) do
+for _, want in ipairs({ "Guild Companion", ns.VERSION, "1.60.1", "Test Guild", C.ActiveTransport(), "0.3.0 ×1", "sharePos" }) do
 	assert(text:find(want, 1, true), "has " .. want .. ":\n" .. text)
 end
 assert(not text:find("Mario", 1, true), "no names")

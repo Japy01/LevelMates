@@ -1,5 +1,6 @@
 -- Core.lua: SavedVariables, event bus, slash commands. Nothing here talks to other players.
 local ADDON, ns = ...
+ns.TITLE = "Guild Companion"   -- the name players see; inside (folder, saved data, messages) it stays LevelMates
 ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
 
 local DEFAULTS = {
@@ -48,7 +49,7 @@ function ns.Fire(event, ...)
 end
 
 function ns.Log(fmt, ...)
-	if ns.db and ns.db.settings.debug then print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
+	if ns.db and ns.db.settings.debug then print("|cff7ec8ff" .. ns.TITLE .. "|r " .. string.format(fmt, ...)) end
 end
 -- An item's info: name, link, quality, ... On Forever only C_Item.GetItemInfo exists (the old global is gone).
 function ns.ItemInfo(item)
@@ -57,13 +58,13 @@ function ns.ItemInfo(item)
 	return fn(item)
 end
 -- What happened on its own (a guildmate, the game): always in chat, where it stays.
-function ns.Chat(fmt, ...) print("|cff7ec8ffLevelMates|r " .. string.format(fmt, ...)) end
+function ns.Chat(fmt, ...) print("|cff7ec8ff" .. ns.TITLE .. "|r " .. string.format(fmt, ...)) end
 -- What a click did: at the foot of the book while it is open, else in chat (and lines with a link: chat, to be clicked).
 function ns.Say(fmt, ...)
 	local text = string.format(fmt, ...)
 	local B = ns.Board
 	if B and B.frame and B.frame:IsShown() and B.Feedback and not text:find("|H", 1, true) then B.Feedback(text); return end
-	print("|cff7ec8ffLevelMates|r " .. text)
+	print("|cff7ec8ff" .. ns.TITLE .. "|r " .. text)
 end
 
 -- Important notices: the chat line, and the same text in the middle of the screen when the option is on
@@ -74,7 +75,7 @@ function ns.Screen(text)
 	UIErrorsFrame:AddMessage(plain, 1, 0.82, 0)
 end
 local function notice(where, text)
-	print("|cff7ec8ffLevelMates|r " .. text)   -- notices always reach chat, book open or not
+	print("|cff7ec8ff" .. ns.TITLE .. "|r " .. text)   -- notices always reach chat, book open or not
 	ns.Screen(text)
 	if ns.Tray then ns.Tray.Add(text, where) end   -- and the tray keeps them
 end
@@ -122,7 +123,7 @@ end
 
 local subs = {}
 function ns.Slash(sub, fn) subs[sub] = fn end
-SLASH_LEVELMATES1 = "/lm"; SLASH_LEVELMATES2 = "/levelmates"
+SLASH_LEVELMATES1 = "/lm"; SLASH_LEVELMATES2 = "/levelmates"; SLASH_LEVELMATES3 = "/guildcompanion"
 SlashCmdList["LEVELMATES"] = function(msg)
 	msg = strtrim(msg or "")
 	local sub, rest = msg:match("^(%S+)%s*(.-)$")
