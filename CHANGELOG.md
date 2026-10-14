@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.4
+
+- When the game blocks an action of the addon, the chat says so and `/lm informe` lists which action, when and with which version. Copy that text to whoever helps.
+
 ## 0.5.3
 
 - **The addon is now called Forever Guild** (it was LevelMates, then Guild Companion for a day). `/foreverguild` opens it; `/lm` and `/guildcompanion` still work. Nothing is lost when updating.
