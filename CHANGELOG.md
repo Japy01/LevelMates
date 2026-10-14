@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.3
+
+- **The addon is now called Forever Guild** (it was LevelMates, then Guild Companion for a day). `/foreverguild` opens it; `/lm` and `/guildcompanion` still work. Nothing is lost when updating.
+
 ## 0.5.2
 
 - **LevelMates is now Guild Companion.** The new name shows in the addon list, the book, chat and Discord lines; `/guildcompanion` opens it too. Its folder and saved data keep the old name, so updating loses nothing, and old and new versions still talk to each other.
