@@ -1,6 +1,6 @@
 -- Core.lua: SavedVariables, event bus, slash commands. Nothing here talks to other players.
 local ADDON, ns = ...
-ns.TITLE = "Guild Companion"   -- the name players see; inside (folder, saved data, messages) it stays LevelMates
+ns.TITLE = "Forever Guild"   -- the name players see; inside (folder, saved data, messages) it stays LevelMates
 ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
 
 local DEFAULTS = {
@@ -123,7 +123,7 @@ end
 
 local subs = {}
 function ns.Slash(sub, fn) subs[sub] = fn end
-SLASH_LEVELMATES1 = "/lm"; SLASH_LEVELMATES2 = "/levelmates"; SLASH_LEVELMATES3 = "/guildcompanion"
+SLASH_LEVELMATES1 = "/lm"; SLASH_LEVELMATES2 = "/levelmates"; SLASH_LEVELMATES3 = "/foreverguild"; SLASH_LEVELMATES4 = "/guildcompanion"
 SlashCmdList["LEVELMATES"] = function(msg)
 	msg = strtrim(msg or "")
 	local sub, rest = msg:match("^(%S+)%s*(.-)$")

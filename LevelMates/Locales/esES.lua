@@ -5,12 +5,12 @@ local L = {}
 ns.LocaleES = L
 L.COL_NAME = "Nombre"; L.COL_LEVEL = "Niv"; L.COL_ZONE = "Zona"; L.COL_GROUP = "Grupo"; L.COL_XPH = "XP/h"
 L.GROUP_FREE = "hueco"; L.GROUP_FULL = "lleno"; L.SOLO = "solo"
-L.EMPTY = "Ningún hermano con Guild Companion conectado ahora mismo."
+L.EMPTY = "Ningún hermano con Forever Guild conectado ahora mismo."
 L.EMPTY_FILTERED = "Nadie coincide con tus filtros. Quítalos para ver a todos."
 L.BOARD_HEADING = "Hermanos conectados"; L.BOARD_SUBTITLE = "Clic: su ficha. Clic derecho: invitar, susurrar o ruta."; L.SEARCH_HINT = "Buscar nombre..."
 L.FILTER_NEAR = "Cerca de mi nivel (±5)"
 L.NOT_IN_GUILD = "No estás en una hermandad."
-L.BINDING_TOGGLE = "Mostrar u ocultar el tablón de Guild Companion"
+L.BINDING_TOGGLE = "Mostrar u ocultar el tablón de Forever Guild"
 L.MENU_INVITE = "Invitar"; L.MENU_WHISPER = "Susurrar"; L.MENU_WAYPOINT = "Poner punto de ruta"
 L.BTN_HELP = "Pedir ayuda"; L.BTN_HELP_CANCEL = "Cancelar petición"; L.BTN_COMING = "Voy"
 L.HELP_PROMPT = "¿Con qué necesitas ayuda? (hasta 60 caracteres)"
@@ -37,8 +37,8 @@ L.MINIMAP_LEFT = "Clic izquierdo: mostrar u ocultar el tablón"; L.MINIMAP_RIGHT
 L.OPT_TRANSPORT = "Transporte"; L.OPT_TRANSPORT_TT = "Por dónde viajan los mensajes. Auto prueba el canal de hermandad y luego uno oculto."
 L.TRANSPORT_AUTO = "Automático"; L.TRANSPORT_GUILD = "Canal de hermandad"; L.TRANSPORT_CHANNEL = "Canal oculto"
 L.OPT_DEBUG = "Líneas de depuración en el chat"
-L.HELP_CMD = "Guild Companion: /lm (tablón), /lm ayuda <texto>, /lm cancelar, /lm opciones, /lm debug"
-L.STATUS = "Guild Companion: %d hermanos conectados, transporte %s, enviados %d, recibidos %d, descartados %d"
+L.HELP_CMD = "Forever Guild: /lm (tablón), /lm ayuda <texto>, /lm cancelar, /lm opciones, /lm debug"
+L.STATUS = "Forever Guild: %d hermanos conectados, transporte %s, enviados %d, recibidos %d, descartados %d"
 L.DUNGEON_HALL_OF_THANES = "Salón de los Feudales"; L.DUNGEON_RAGEFIRE_CHASM = "Sima Ígnea"; L.DUNGEON_RUINS_OF_LORDAERON = "Ruinas de Lordaeron"
 L.DUNGEON_WAILING_CAVERNS = "Cuevas de los Lamentos"; L.DUNGEON_DEADMINES = "Minas de la Muerte"; L.DUNGEON_SHADOWFANG_KEEP = "Castillo de Colmillo Oscuro"
 L.ROLE_T = "tanque"; L.ROLE_H = "sanador"; L.ROLE_D = "daño"
@@ -104,7 +104,7 @@ L.DUNGEON_DALARAN = "Ciudad de Dalaran"; L.DUNGEON_GNOMEREGAN = "Gnomeregan"; L.
 L.DUNGEON_SM_GRAVEYARD = "Monasterio Escarlata: Cementerio"; L.DUNGEON_SM_LIBRARY = "Monasterio Escarlata: Biblioteca"
 L.LFG_SEARCHING = "%d buscan"; L.LFG_SEARCHING_ONE = "1 busca"; L.LFG_WHISPER = "Susurrar a %s"; L.LFG_INVITE = "Invitar a %s"; L.LFG_HERE = "Buscar grupo aquí"; L.LFG_CANCEL_MINE = "Retirar mi anuncio"
 L.OPT_SCREEN = "Avisos en pantalla"; L.OPT_SCREEN_TT = "Los avisos importantes también en el centro de la pantalla."; L.OPT_LEVELUP = "Subidas de nivel de hermanos"; L.OPT_LEVELUP_TT = "Una línea en el chat con un enlace [Felicitar] cuando un hermano sube de nivel."
-L.VERSION_NEW = "Hay una versión nueva de Guild Companion (%s). Actualiza cuando puedas."
+L.VERSION_NEW = "Hay una versión nueva de Forever Guild (%s). Actualiza cuando puedas."
 L.HEAD_MATES = "Hermanos conectados"; L.SUB_MATES = "Clic: su ficha. Clic derecho: invitar, susurrar o ruta."; L.SEARCH_MATES = "Buscar nombre..."
 L.HEAD_LFG = "Mazmorras"; L.SUB_LFG = "Clic en una tarjeta: apuntarte, susurrar, invitar o buscar grupo ahí."; L.SEARCH_LFG = "Buscar..."
 L.HEAD_JOURNAL = "Mi diario"; L.SUB_JOURNAL = "Tu viaje: niveles, misiones, mazmorras, botín..."; L.SEARCH_JOURNAL = "Buscar texto..."
@@ -144,7 +144,7 @@ L.RECRUIT_LAST = "Último anuncio: hace %s (%s)"; L.RECRUIT_NONE = "Nadie ha pub
 L.RECRUIT_READY = "Ya puedes publicar."; L.RECRUIT_EMPTY = "Esa plantilla está vacía."; L.RECRUIT_NO_CHANNEL = "No estás en el canal %d (el de Comercio solo está en las ciudades)."
 L.RECRUIT_PROMPT = "Toca publicar el reclutamiento de la hermandad."; L.RECRUIT_LATER = "Ahora no"
 L.OPT_LANGUAGE = "Idioma"; L.OPT_LANGUAGE_TT = "El idioma del addon. El cambio se aplica al recargar la interfaz."; L.LANGUAGE_AUTO = "Automático (el del juego)"
-L.LANGUAGE_RELOAD = "Guild Companion usará el nuevo idioma al recargar la interfaz. ¿Recargar ahora?"; L.BTN_RELOAD = "Recargar"
+L.LANGUAGE_RELOAD = "Forever Guild usará el nuevo idioma al recargar la interfaz. ¿Recargar ahora?"; L.BTN_RELOAD = "Recargar"
 
 -- Class tab
 L.TAB_CLASS = "Clase"; L.HEAD_CLASS = "Tu clase"; L.SUB_CLASS = "Builds y macros de tu clase en la hermandad. Clic en una fila para sus opciones."; L.SEARCH_CLASS = "Nombre o macro..."
@@ -154,7 +154,7 @@ L.CHAT_ADS = "%d en el chat"; L.CHAT_AD_LINE = "Chat · %s: «%s» (hace %s)"; L
 L.OPT_CHAT_ADS = "Leer anuncios del chat"; L.OPT_CHAT_ADS_TT = "Las tarjetas de mazmorra cuentan también los anuncios de grupo de Comercio, General y otros canales públicos. Solo se leen en tu ordenador; no se envía nada."
 
 -- Builds
-L.BUILD_LINK = "Guild Companion: build"; L.OPT_BUILD = "Compartir mi build de talentos"; L.OPT_BUILD_TT = "Los hermanos de tu clase ven tus puntos por rama y tu nivel, y pueden abrir tu build en la ventana del juego."
+L.BUILD_LINK = "Forever Guild: build"; L.OPT_BUILD = "Compartir mi build de talentos"; L.OPT_BUILD_TT = "Los hermanos de tu clase ven tus puntos por rama y tu nivel, y pueden abrir tu build en la ventana del juego."
 
 -- Macros
 L.MACRO_COMBAT = "No se pueden crear macros en combate."; L.MACRO_EXISTS = "Ya tienes una macro llamada %s."; L.MACRO_FULL = "No queda hueco para otra macro de personaje."
@@ -181,7 +181,7 @@ L.OPT_TRAINER = "Recordatorio de entrenador"; L.OPT_TRAINER_TT = "Al subir de ni
 
 -- Barras de XP del grupo
 L.GROUPXP_TITLE = "XP del grupo"; L.OPT_GROUPXP = "Barras de XP del grupo"; L.OPT_GROUPXP_TT = "En grupo con hermanos, una ventanita muestra la XP de todos. Tu % de XP va a tu hermandad solo mientras vas en grupo con algún hermano."
-L.CARD_NO_QUESTS = "No comparte sus misiones, así que Guild Companion no sabe cuáles de las tuyas le faltan."; L.CARD_MISSING = "Misiones tuyas que no tiene:"; L.CARD_SHARE_QUEST = "Compartir: %s"
+L.CARD_NO_QUESTS = "No comparte sus misiones, así que Forever Guild no sabe cuáles de las tuyas le faltan."; L.CARD_MISSING = "Misiones tuyas que no tiene:"; L.CARD_SHARE_QUEST = "Compartir: %s"
 L.GROUPXP_PAUSED = "XP del grupo (en pausa en mazmorras)"
 
 -- Pregunta a tu clase
@@ -220,10 +220,10 @@ L.HELP_SENT = "Petición de ayuda enviada a tu hermandad: %s. Pulsa el botón ot
 L.OPT_POINTS = "Compartir mis puntos de hermandad"; L.OPT_POINTS_TT = "Lo que haces (niveles, mazmorras con hermanos, misiones, ayudas, regalos, quedadas) suma al nivel de la hermandad, al reto semanal y a los mejores de la semana."
 L.CHALLENGE_d = "%d mazmorras en grupo"; L.CHALLENGE_l = "%d niveles entre todos"; L.CHALLENGE_h = "%d ayudas"; L.CHALLENGE_q = "%d misiones entregadas"
 L.CHALLENGE_DONE_SHORT = "¡Reto semanal cumplido!"; L.CHALLENGE_DONE = "¡Reto semanal cumplido! %s"
-L.GUILD_LEVEL_UP = "¡La hermandad llega a nivel %d en Guild Companion!"; L.GUILD_LEVEL_WALL = "Nivel de hermandad %d"
+L.GUILD_LEVEL_UP = "¡La hermandad llega a nivel %d en Forever Guild!"; L.GUILD_LEVEL_WALL = "Nivel de hermandad %d"
 
 -- Inicio
-L.HOME_INVITE_TEXT = "Hermandad %s: instalad Guild Companion (CurseForge, World of Warcraft: Forever) para ver quién está conectado y subiendo cerca de vosotros, encontrar grupo para mazmorras y subir juntos el nivel de la hermandad."
+L.HOME_INVITE_TEXT = "Hermandad %s: instalad Forever Guild (CurseForge, World of Warcraft: Forever) para ver quién está conectado y subiendo cerca de vosotros, encontrar grupo para mazmorras y subir juntos el nivel de la hermandad."
 
 -- Inicio y las cinco pestañas
 L.TAB_HOME = "Inicio"; L.TAB_GUILD = "Hermandad"; L.HEAD_HOME = "Inicio"; L.SUB_HOME = "Lo que pasa en la hermandad y lo que puedes hacer ahora."; L.SEARCH_HOME = "Buscar..."
@@ -231,11 +231,11 @@ L.HOME_GUILD = "La hermandad"; L.HOME_NOW = "Ahora mismo"; L.HOME_FORYOU = "Para
 L.HOME_LEVEL = "Nivel de hermandad %d"; L.HOME_DONE = "¡hecho!"; L.HOME_GO = "Voy"; L.HOME_JOIN = "Me apunto"; L.HOME_SEE = "Ver"; L.HOME_INVITE = "Invitar"
 L.HOME_BUY = "Comprar"; L.HOME_RESERVE = "Reservar"; L.HOME_TRAINER = "%d hechizos en tu entrenador"; L.HOME_COPY = "Copiar"
 L.HOME_RANK_l = "Más niveles"; L.HOME_RANK_d = "Más mazmorras"; L.HOME_RANK_h = "Más ayudas"
-L.HOME_ALONE_TITLE = "Trae a tu hermandad"; L.HOME_ALONE = "Tus hermanos salen aquí cuando instalan Guild Companion. Copia una invitación para pegarla en el chat de hermandad o en Discord."
+L.HOME_ALONE_TITLE = "Trae a tu hermandad"; L.HOME_ALONE = "Tus hermanos salen aquí cuando instalan Forever Guild. Copia una invitación para pegarla en el chat de hermandad o en Discord."
 L.INK_HELP = "Oscuridad del texto: /lm tinta 1 (más claro) a 5 (más oscuro). Ahora: %d."; L.INK_SET = "Oscuridad del texto: %d."
 
 -- Informe
-L.REPORT_GUILD = "Hermandad"; L.REPORT_MESSAGES = "Mensajes"; L.REPORT_SRB = "enviados/recibidos/rechazados"; L.REPORT_QUEUED = "en cola"; L.REPORT_MATES = "Hermanos vistos"; L.REPORT_POINTS = "Mis puntos"; L.REPORT_GUILD_TOTAL = "hermandad"; L.REPORT_OPTIONS = "Opciones cambiadas"; L.REPORT_ERRORS = "Últimos errores de Guild Companion"
+L.REPORT_GUILD = "Hermandad"; L.REPORT_MESSAGES = "Mensajes"; L.REPORT_SRB = "enviados/recibidos/rechazados"; L.REPORT_QUEUED = "en cola"; L.REPORT_MATES = "Hermanos vistos"; L.REPORT_POINTS = "Mis puntos"; L.REPORT_GUILD_TOTAL = "hermandad"; L.REPORT_OPTIONS = "Opciones cambiadas"; L.REPORT_ERRORS = "Últimos errores de Forever Guild"
 
 -- Logros
 L.ACH_lvl10 = "Primeros pasos"; L.ACH_lvl20 = "En camino"; L.ACH_lvl30 = "Curtido"; L.ACH_lvl40 = "Veterano"; L.ACH_lvl50 = "Ya casi"; L.ACH_lvl60 = "¡Nivel 60!"
@@ -256,7 +256,7 @@ L.DP_YOUR_LEVEL = "de tu nivel"; L.DP_WITHDRAW = "Retirar"; L.DP_LEAVE = "Me bor
 L.GROUPXP_NONE = "Las barras de XP vuelven a estar activas; salen cuando vas en grupo con hermanos."
 L.OPT_QUIET = "Modo tranquilo"; L.OPT_QUIET_TT = "Solo lo importante: ayudas, grupos y metas. Los demás avisos, los del centro de la pantalla y el sonido se apagan; al desactivarlo vuelven como estaban."
 L.ROUTE_SET = "Ruta marcada hacia %s: %s (%.0f, %.0f). Sigue el marcador en pantalla o en el mapa."; L.ROUTE_FAIL = "El juego no permite poner marcadores en %s."; L.ROUTE_SPOT = "el avistamiento"
-L.CARD_OLD_VERSION = "Usa un Guild Companion antiguo (0.3): tiene que actualizar para veros."
+L.CARD_OLD_VERSION = "Usa un Forever Guild antiguo (0.3): tiene que actualizar para veros."
 L.REPORT_QUEUE = "Cola"; L.REPORT_HELD = "retenidos"; L.REPORT_DROPPED = "descartados"; L.REPORT_RECORDS = "Registros"; L.REPORT_OLD = "Compañeros con versión antigua"
 L.STATUS_QUEUE = "cola: %d esperando, %d retenidos, %d descartados"; L.STATUS_MEMORY = "memoria: %.0f KB (%.0f KB tras recoger)"
 L.RUN_ROLE_FULL = "Ese rol ya está completo en esta partida."
@@ -289,10 +289,10 @@ L.RC_TOOLTIP = "Lo fabrica: %s"; L.TRAIN_JOURNEYMAN = "entrenar: Oficial"; L.TRA
 L.MOTD_NEW = "%s: mensaje del día: %s"; L.NOTE_NOT_ALLOWED = "No puedes escribir eso."
 L.FEED_JOIN = "entró en la hermandad"; L.FEED_LEAVE = "ya no está en la hermandad"; L.FEED_R60 = "llegó al nivel %d"; L.RACE_FIRST = "¡%s es el primero de la hermandad en llegar al nivel %d!"; L.RACE_REACHED = "%s llegó al nivel %d."
 L.OPT_BANK = "Compartir el banco de la hermandad al abrirlo"; L.OPT_BANK_TT = "Lo que ves en el banco de la hermandad se comparte con tus compañeros al cerrarlo, para que sepan qué hay."
-L.TAB_MEMBERS = "Miembros"; L.HEAD_MEMBERS = "Miembros"; L.SUB_MEMBERS = "Toda la hermandad, con o sin Guild Companion, y sus notas compartidas."; L.TAB_BANK = "Banco"; L.HEAD_BANK = "Banco de la hermandad"; L.SUB_BANK = "Nadie ha compartido aún el banco: sale aquí cuando alguien lo abre."; L.SUB_BANK_SEEN = "Como lo vio %s hace %s · %s"
+L.TAB_MEMBERS = "Miembros"; L.HEAD_MEMBERS = "Miembros"; L.SUB_MEMBERS = "Toda la hermandad, con o sin Forever Guild, y sus notas compartidas."; L.TAB_BANK = "Banco"; L.HEAD_BANK = "Banco de la hermandad"; L.SUB_BANK = "Nadie ha compartido aún el banco: sale aquí cuando alguien lo abre."; L.SUB_BANK_SEEN = "Como lo vio %s hace %s · %s"
 L.MEMBERS_VIEW_LIST = "Ver: lista"; L.MEMBERS_VIEW_HISTORY = "Ver: historial"; L.MEMBERS_VIEW_ALTS = "Ver: alts"; L.MEMBERS_VIEW_RACE = "Ver: carrera al 60"
 L.MEMBERS_FILTER_ALL = "Mostrar: todos"; L.MEMBERS_FILTER_ONLINE = "Mostrar: conectados"; L.MEMBERS_FILTER_OFFICERS = "Mostrar: oficiales"; L.MEMBERS_FILTER_NONOTE = "Mostrar: sin nota"
-L.GUILD_RANK_N = "rango %d"; L.MEMBER_DAYS = "hace %d días"; L.MEMBER_CARD = "Ficha"; L.NOTE_WRITE = "Escribir nota"; L.NOTE_PROMPT = "Nota para %s (la ve todo el que tenga Guild Companion):"
+L.GUILD_RANK_N = "rango %d"; L.MEMBER_DAYS = "hace %d días"; L.MEMBER_CARD = "Ficha"; L.NOTE_WRITE = "Escribir nota"; L.NOTE_PROMPT = "Nota para %s (la ve todo el que tenga Forever Guild):"
 L.HIST_JOIN = "entró"; L.HIST_LEAVE = "salió"; L.HIST_RANKUP = "ascendido (rango %s)"; L.HIST_RANKDOWN = "degradado (rango %s)"; L.HIST_R60 = "llegó al nivel %s"
 L.ALTS_PROVEN = "misma cuenta"; L.ALTS_SAID = "según dice"; L.RACE_FIRST_TAG = "primero de la hermandad"; L.RACE_CLASS_TAG = "primero de su clase"; L.RACE_BEFORE_TAG = "ya estaba"
 L.OPT_GEAR = "Compartir mi equipo"; L.OPT_GEAR_TT = "Los objetos que llevas, su nivel y encantamientos, y tu raza para el modelo: tus compañeros los ven en tu ficha."
@@ -302,7 +302,7 @@ L.CONFIRM_RUN = "¿Cancelar esta partida? Se avisa a quien se apuntó."; L.CONFI
 L.PILL_ONLINE = "|TInterface\\FriendsFrame\\StatusIcon-Online:12|t %d conectados"; L.PILL_DISCORD = "Discord enlazado"; L.PILL_OLD = "Con la 0.3: %d"
 L.DB_ME = "Mi personaje"; L.DB_NOW = "Ahora"; L.DB_RUNS = "Próximas partidas"; L.DB_QUESTS = "Misiones"; L.DB_WHERE = "Quién está dónde"; L.DB_WALL = "Hoy en la hermandad"
 L.DB_HINT_NOW = "Nadie pide ayuda ni grupo ahora mismo. Pide ayuda o anuncia un grupo desde Compañeros y Grupos."; L.DB_HINT_RUNS = "No hay partidas. En Grupos, elige una mazmorra y pon una hora."
-L.DB_HINT_QUESTS = "Nadie busca ayuda con una misión. Alt+clic en una misión de tu registro para anunciarla."; L.DB_HINT_WHERE = "No hay nadie más conectado con Guild Companion."; L.DB_HINT_WALL = "Aún no hay nada en el muro esta semana."
+L.DB_HINT_QUESTS = "Nadie busca ayuda con una misión. Alt+clic en una misión de tu registro para anunciarla."; L.DB_HINT_WHERE = "No hay nadie más conectado con Forever Guild."; L.DB_HINT_WALL = "Aún no hay nada en el muro esta semana."
 L.DB_INVITE = "Copiar una invitación"; L.DB_STAT_LEVEL = "nivel de hermandad"; L.DB_STAT_ONLINE = "conectados"; L.DB_STAT_ILVL = "mi nivel de objeto"
 L.DB_LEVEL_CLASS = "Nivel %d %s"; L.DB_XP = "XP %d%%  ·  descansada %d%%"; L.DB_GEAR = "Equipo"; L.DB_WEEK = "Esta semana: %d puntos"; L.DB_NEXT = "%d próximas"; L.DB_SOMEWHERE = "En algún sitio"
 L.BTN_RUNS = "Partidas"; L.HEAD_RUNS = "Partidas"; L.SUB_RUNS = "Hoy y mañana en tarjetas, el resto de la semana debajo; crea una a la derecha."
@@ -333,14 +333,14 @@ L.GR_HINT_LIST = "Nadie busca grupo y no hay nada planeado esta semana. Crea uno
 L.CV_PROFESSIONS = "Profesiones"; L.CV_NAME = "Nombre"; L.CV_WHO = "Quién"; L.CV_RECIPES = "Recetas"; L.CV_FOOTER = "%d personajes, %d recetas conocidas."
 L.CV_SEARCH = "Nombre, enlace o número del objeto"; L.CV_BACK = "Volver"; L.CV_PROF_SUB = "%d artesanos · %d recetas"; L.CV_CRAFTERS = "artesanos"; L.CV_RECIPES_LOWER = "recetas"
 L.CV_CRAFTER_SUB = "%s %d/%d · leído %s"; L.CV_NOT_READ = "sin leer aún"; L.CV_YOU = "tú"; L.CV_ITEM = "Objeto"; L.CV_FOUND = "Quién lo fabrica"; L.CV_FOUND_N = "%d objetos encontrados"; L.CV_ITEMS = "objetos"; L.CV_OFFLINE = "desconectado"
-L.CV_NO_RECIPES = "%s aún no ha abierto la ventana de esta profesión con Guild Companion: sus recetas salen cuando lo haga."
+L.CV_NO_RECIPES = "%s aún no ha abierto la ventana de esta profesión con Forever Guild: sus recetas salen cuando lo haga."
 L.CV_NONE_HERE = "%s no tiene recetas que listar en esta profesión (las de recolección no tienen)."
 L.CV_CRAFTER_SUB = "%s %d/%d · %s"; L.CV_READ = "leído %s"
-L.OPT_DISCORD_TAG = "Marca para el bot de Discord de la hermandad"; L.OPT_DISCORD_TAG_TT = "Solo si tu hermandad usa el bot de Guild Companion: las líneas que envías a Discord empiezan con una marca corta [LM1 ...] que el bot lee para llevar un tablón de inscripción. Enlazar Discord: líder u oficial, Hermandad (J) > lista de miembros > Control de hermandad > Ajustes de Discord."
+L.OPT_DISCORD_TAG = "Marca para el bot de Discord de la hermandad"; L.OPT_DISCORD_TAG_TT = "Solo si tu hermandad usa el bot de Forever Guild: las líneas que envías a Discord empiezan con una marca corta [LM1 ...] que el bot lee para llevar un tablón de inscripción. Enlazar Discord: líder u oficial, Hermandad (J) > lista de miembros > Control de hermandad > Ajustes de Discord."
 L.DT_START = "Prueba de Discord: durante %d segundos, cada mensaje de Discord sale aquí tal como lo recibe el addon. Escribe algo en el canal enlazado."; L.DT_LINE = "Prueba de Discord · %s: %s"; L.DT_PROTECTED = "(texto oculto para los addons)"
-L.OPT_GUILD_TAG = "Marca del bot para toda la hermandad"; L.OPT_GUILD_TAG_TT = "Líder u oficiales: activa la marca del bot para todos los que tengan Guild Companion en la hermandad (cada uno puede quitarla abajo). El resto la ve, pero no puede cambiarla."; L.OPT_TAG_OFF = "No usar la marca de la hermandad"; L.OPT_TAG_OFF_TT = "Si tu hermandad activó la marca del bot, tus líneas van sin ella. Un grupo creado con la marca la sigue poniendo en los avisos de quien se apunta o se sale."
+L.OPT_GUILD_TAG = "Marca del bot para toda la hermandad"; L.OPT_GUILD_TAG_TT = "Líder u oficiales: activa la marca del bot para todos los que tengan Forever Guild en la hermandad (cada uno puede quitarla abajo). El resto la ve, pero no puede cambiarla."; L.OPT_TAG_OFF = "No usar la marca de la hermandad"; L.OPT_TAG_OFF_TT = "Si tu hermandad activó la marca del bot, tus líneas van sin ella. Un grupo creado con la marca la sigue poniendo en los avisos de quien se apunta o se sale."
 L.DB_MAKE_GROUP = "Crear grupo"
-L.TV_TITLE = "Talentos de %s · nivel %d"; L.TV_WAITING = "Aún no tengo el árbol de esta clase: se lo he pedido a la hermandad (llega en cuanto alguien de esa clase con Guild Companion esté conectado)."; L.TV_OTHER_TREE = "Esta build es de otra versión del árbol: he pedido la actual a la hermandad. Mientras, puedes verla en la ventana del juego."; L.TV_BAD = "Esta build no se puede leer. Puedes probar en la ventana del juego."; L.TV_GAME = "Ver en la ventana del juego"; L.TV_RANK = "Rango %d/%d"; L.TV_NOT_TAKEN = "No elegido"; L.TV_GRANTED = "Concedido"
+L.TV_TITLE = "Talentos de %s · nivel %d"; L.TV_WAITING = "Aún no tengo el árbol de esta clase: se lo he pedido a la hermandad (llega en cuanto alguien de esa clase con Forever Guild esté conectado)."; L.TV_OTHER_TREE = "Esta build es de otra versión del árbol: he pedido la actual a la hermandad. Mientras, puedes verla en la ventana del juego."; L.TV_BAD = "Esta build no se puede leer. Puedes probar en la ventana del juego."; L.TV_GAME = "Ver en la ventana del juego"; L.TV_RANK = "Rango %d/%d"; L.TV_NOT_TAKEN = "No elegido"; L.TV_GRANTED = "Concedido"
 L.TREE_WARRIOR_1 = "Armas"; L.TREE_WARRIOR_2 = "Furia"; L.TREE_WARRIOR_3 = "Protección"; L.TREE_PALADIN_1 = "Sagrado"; L.TREE_PALADIN_2 = "Protección"; L.TREE_PALADIN_3 = "Reprensión"; L.TREE_HUNTER_1 = "Dominio de bestias"; L.TREE_HUNTER_2 = "Puntería"; L.TREE_HUNTER_3 = "Supervivencia"; L.TREE_ROGUE_1 = "Asesinato"; L.TREE_ROGUE_2 = "Combate"; L.TREE_ROGUE_3 = "Sutileza"; L.TREE_PRIEST_1 = "Disciplina"; L.TREE_PRIEST_2 = "Sagrado"; L.TREE_PRIEST_3 = "Sombra"; L.TREE_SHAMAN_1 = "Elemental"; L.TREE_SHAMAN_2 = "Mejora"; L.TREE_SHAMAN_3 = "Restauración"; L.TREE_MAGE_1 = "Arcano"; L.TREE_MAGE_2 = "Fuego"; L.TREE_MAGE_3 = "Escarcha"; L.TREE_WARLOCK_1 = "Aflicción"; L.TREE_WARLOCK_2 = "Demonología"; L.TREE_WARLOCK_3 = "Destrucción"; L.TREE_DRUID_1 = "Equilibrio"; L.TREE_DRUID_2 = "Combate feral"; L.TREE_DRUID_3 = "Restauración"
 L.TV_TOTAL = "Puntos: %d"
 L.GEAR_AWAY = "Fuera de alcance. Ponlo de objetivo o en tu grupo para ver su modelo."

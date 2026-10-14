@@ -1,6 +1,6 @@
-# Guild Companion
+# Forever Guild
 
-(Formerly LevelMates. The folder and saved data keep that name, so updating loses nothing.)
+(Formerly LevelMates, then Forever Guild. The folder and saved data keep that name, so updating loses nothing.)
 
 A guild companion for leveling together in World of Warcraft: Forever. See which guildmates are online and where, find dungeon groups, set guild goals, share wishlists and professions, and keep up with what happens in the guild.
 

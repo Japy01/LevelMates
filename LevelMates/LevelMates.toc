@@ -1,5 +1,5 @@
 ## Interface: 16001
-## Title: Guild Companion
+## Title: Forever Guild
 ## Notes: Level up together with your guild: guildmates online, dungeon groups and meetups, builds and macros for your class, guild goals, wishlist and giveaways, professions, a guild wall, rares and help.|nAddon messages to your guild only. Nothing from combat.
 ## Notes-esES: Sube de nivel con tu hermandad: hermanos conectados, grupos y quedadas de mazmorra, builds y macros de tu clase, metas, deseos y regalos, oficios, muro de la hermandad, raros y ayuda.|nSolo mensajes de addon a tu hermandad. Nada de combate.
 ## Author: Diego and contributors

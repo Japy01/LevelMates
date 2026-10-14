@@ -7,7 +7,7 @@ local function kinds(rows) local out = {}; for _, r in ipairs(rows) do out[#out 
 -- nobody around: the guild block and the invite, nothing else
 local rows = HM.Rows()
 assert(kinds(rows) == "#guild,level,challenge,invite", "alone: " .. kinds(rows))
-assert(HM.InviteText():find("Guild Companion", 1, true), "an invite to copy")
+assert(HM.InviteText():find("Forever Guild", 1, true), "an invite to copy")
 
 -- guildmates: near my level or in my zone, help, groups, meetups today, gifts I wish for, trainer
 STUB.items[2589] = "|cffffffff|Hitem:2589::::::::20:::::::|h[Linen Cloth]|h|r"

@@ -15,5 +15,5 @@ local ran
 ns.Slash("ping", function(rest) ran = rest end)
 SlashCmdList["LEVELMATES"]("ping hola")
 assert(ran == "hola", "slash subcommand with rest")
-assert(ns.L.BOARD_TITLE == "Guild Companion", "locale loaded")
+assert(ns.L.BOARD_TITLE == "Forever Guild", "locale loaded")
 STUB.locale = "esES"

@@ -22,7 +22,7 @@ assert(f, "the tag first: " .. line)
 assert(f.id == "a1b2c3d4" and f.ev == "new" and f.act == "101" and f.at == "29333333", "id, event, activity, when")
 assert(f.by == "Santo_Fiämbre" and f.lr == "T", "the leader (spaces as _) and their role")
 assert(f.s == "T1/5,H0/10,D0/25", "places after the event: " .. tostring(f.s))
-assert(line:find("[Guild Companion]", 1, true), "the human text follows")
+assert(line:find("[Forever Guild]", 1, true), "the human text follows")
 -- a join: who and their role, places counted with them
 local j = fields(DC.Line("join", run, "Ana Bel", "H"))
 assert(j.ev == "join" and j.who == "Ana_Bel" and j.wr == "H" and j.s == "T1/5,H1/10,D0/25", "a join: " .. tostring(j.s))

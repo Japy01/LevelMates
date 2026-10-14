@@ -46,7 +46,7 @@ assert(#ms.A == 40 and #ms.waiting == 1, "40 placed, one waits: " .. #ms.A .. "/
 assert(M.IsFull(mine) and M.Count(mine) == 40, "full")
 -- Discord: the type first, what is missing per role
 local line = ns.Discord.Line("new", { id = "x", d = 101, at = M.Now() + 90, by = ns.Me(), role = "D", caps = A.Caps(101), size = 40, n = string.rep("n", 40), joined = {} })
-assert(line:find("^%[Guild Companion%]") and line:find(L.KIND_r, 1, true) and line:find(A.Name(101), 1, true), "type and name: " .. line)
+assert(line:find("^%[Forever Guild%]") and line:find(L.KIND_r, 1, true) and line:find(A.Name(101), 1, true), "type and name: " .. line)
 assert(#line <= 236, "at most 236 bytes: " .. #line)
 local now = ns.Discord.Line("new", { id = "y", d = 5, by = ns.Me(), role = "T", caps = A.Caps(5), size = 5, joined = {} })
 assert(now:find(L.WHEN_NOW, 1, true), "a Now group says so: " .. now)
