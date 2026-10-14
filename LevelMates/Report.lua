@@ -53,7 +53,10 @@ function RP.Text()
 	add("%s:", L.REPORT_BLOCKED)
 	local blocked = ns.db.blocked or {}
 	if #blocked == 0 then add("  -") else
-		for _, b in ipairs(blocked) do add("  %s %s %s (%s%s)", date("%d/%m %H:%M", b.t), b.e == "ADDON_ACTION_FORBIDDEN" and "forbidden" or "blocked", tostring(b.f), tostring(b.v), b.c and ", combat" or "") end
+		for _, b in ipairs(blocked) do
+			add("  %s %s %s (%s%s)", date("%d/%m %H:%M", b.t), b.e == "ADDON_ACTION_FORBIDDEN" and "forbidden" or "blocked", tostring(b.f), tostring(b.v), b.c and ", combat" or "")
+			if b.s and b.s ~= "" then add("    %s", b.s) end
+		end
 	end
 	add("%s:", L.REPORT_ERRORS)
 	if #errors == 0 then add("  -") else for _, e in ipairs(errors) do add("  %s", e) end end
@@ -71,9 +74,22 @@ blockedEv:SetScript("OnEvent", function(_, event, addon, fn)
 	if issecretvalue and issecretvalue(fn) then fn = "?" end
 	ns.db.blocked = ns.db.blocked or {}
 	local list = ns.db.blocked
-	list[#list + 1] = { e = event, f = tostring(fn or "?"), t = time(), v = tostring(ns.VERSION), c = InCombatLockdown and InCombatLockdown() or nil }
+	-- the event fires inside the call itself: the stack shows which of our lines made it. Only our lines, the first few.
+	local where = {}
+	local ok, stack = pcall(debugstack, 2, 12, 0)
+	if ok and type(stack) == "string" then
+		for line in stack:gmatch("[^\n]+") do
+			local file, num = line:match("AddOns[/\\]LevelMates[/\\](.-%.lua):(%d+)")
+			if file and #where < 4 then where[#where + 1] = file .. ":" .. num end
+		end
+	end
+	list[#list + 1] = { e = event, f = tostring(fn or "?"), t = time(), v = tostring(ns.VERSION), c = InCombatLockdown and InCombatLockdown() or nil, s = table.concat(where, " < ") }
 	while #list > RP.KEEP_BLOCKED do table.remove(list, 1) end
-	if not toldBlocked then toldBlocked = true; ns.Chat(L.BLOCKED_TOLD, tostring(fn or "?")) end
+	if not toldBlocked then   -- said a moment later: printing inside the blocked call itself would taint the chat frame
+		toldBlocked = true
+		local what = tostring(fn or "?")
+		C_Timer.After(0, function() ns.Chat(L.BLOCKED_TOLD, what) end)
+	end
 end)
 
 ns.Slash("informe", function() ns.DiscordCopy.OpenText(RP.Text()) end)

@@ -13,9 +13,10 @@ local heldIn = {}          -- runId -> dungeon id (the run itself may be gone: a
 local blockedAt = -math.huge
 local sending, sendingLine  -- the run and line going out right now (for ADDON_ACTION_BLOCKED)
 
--- The guild linked its channel, and I linked my account (the game lets nobody else write there). On Forever the
--- link checks are restricted and answer an addon nothing: that is "unknown", not "no". Only an explicit false refuses;
--- if the send is then blocked, the line is held for a click and "Copy for Discord" stays.
+-- Whether the guild linked its channel and I linked my account cannot be asked: on Forever C_Discord's link checks
+-- (IsGuildChannelLinked, IsUserOAuthed, GetGuildLinkStatus) are protected, and an addon's call is blocked with the
+-- "blocked from an action" dialog (taint log, 2026-10-14). Only IsEnabled is asked; the link is taken as unknown.
+-- If a send is then blocked, the line is held for a click and "Copy for Discord" stays.
 local function ask(fn)   -- true, false or nil (unknown)
 	if not (C_Discord and C_Discord[fn]) then return false end
 	local ok, v = pcall(C_Discord[fn])
@@ -24,11 +25,7 @@ local function ask(fn)   -- true, false or nil (unknown)
 end
 function DC.Available()
 	if ask("IsEnabled") ~= true then return false, "DISCORD_NO_GUILD" end
-	local linked, oauth = ask("IsGuildChannelLinked"), ask("IsUserOAuthed")
-	if linked == false then return false, "DISCORD_NO_GUILD" end
-	if oauth == false then return false, "DISCORD_NO_USER" end
-	if linked == nil or oauth == nil then return true, "DISCORD_UNSURE" end
-	return true
+	return true, "DISCORD_UNSURE"
 end
 
 -- What is still free: "faltan: sanador, 2 daño" or "completa". A join counts the joiner (the leader places them a

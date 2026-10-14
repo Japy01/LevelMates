@@ -5,11 +5,10 @@ STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(30)
 local DC, M, C = ns.Discord, ns.Meetups, ns.Comm
 local posted = {}
 SendChatMessage = function(text, chatType) posted[#posted + 1] = { text = text, type = chatType } end
-C_Discord = { IsEnabled = function() return true end, IsGuildChannelLinked = function() return true end, IsUserOAuthed = function() return false end }
-assert(select(2, DC.Available()) == "DISCORD_NO_USER", "not linked: why")
-C_Discord.IsGuildChannelLinked = function() return false end
-assert(select(2, DC.Available()) == "DISCORD_NO_GUILD", "guild not linked: why")
-C_Discord.IsGuildChannelLinked = function() return true end
+-- Ruling (2026-10-14): the link checks are protected on Forever and are never called; only IsEnabled decides
+C_Discord = { IsEnabled = function() return false end, IsGuildChannelLinked = function() return true end, IsUserOAuthed = function() return false end }
+assert(select(2, DC.Available()) == "DISCORD_NO_GUILD", "not enabled: why")
+C_Discord.IsEnabled = function() return true end
 C_Discord.IsUserOAuthed = function() error("secret") end
 assert(DC.Available(), "an error is unknown, not no: allowed (the send itself tells)")
 -- Forever: the restricted checks answer nothing to an addon. Unknown is allowed; only an explicit false refuses
