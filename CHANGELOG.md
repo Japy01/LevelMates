@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.6
+
+- **Fixed: an empty Home, Members and guild history for guild members** (not the guild master). Forever hands them the guild list as a secret value; the addon now reads the classic roster instead and skips what it cannot read.
+- Hardened against secret values and protected calls everywhere: officer check, who is online, inspect, invites, talents, recipes, bags, chat sends. A hidden value is "unknown", never an error or a wrong yes.
+
 ## 0.5.4
 
 - When the game blocks an action of the addon, the chat says so and `/lm informe` lists which action, when and with which version. Copy that text to whoever helps.
