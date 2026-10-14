@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.0
+
+- **Fixed: "LevelMates has been blocked from an action"** when changing talents. The build code is now made from the talent API; the game's talent window is never asked.
+- **Talent viewer** (View build, on cards and the Class tab): a guildmate's build drawn on their class tree, as the game's window: a panel per branch with its points, talents on a grid with the game's own art (full, partial, open, locked), arrows, spell tooltips. Each player shares their class tree once a week; a missing tree is asked for. The game's link is still one click away.
+- **Class tab**: branch names (Arms, Fury…) where Forever only says "Tree 1".
+- **Guild firsts**: the first to reach level 10, 20… 60 and 300 in each profession, by the server's clock; the same second is shared. Listed in Journal > Achievements.
+- **Inspect**: the Gear window of your target or a group member, even without LevelMates. The window says how old its data is and where it came from (shared, inspected), in orange after three days.
+- **Gear window**: out of sight, the class crest instead of an empty model (Forever cannot dress a model by race). Items with a random suffix ("of the Bear") show their right name and stats.
+- **Market**: bound and quest items can no longer be offered.
+- **Recipes**: a crafter's recipes by kind, level and name, with headings; "Tradable only"; "Who else crafts it?". Wrong recipe data cleans itself (professions someone no longer has, ranks a level can't have, a window that was not yours).
+
 ## 0.4.0
 
 - **A tag for a Discord bot** (Options > Share, off by default): Discord lines start with [LM1 ...] so a bot can keep a sign-up board; format in docs/discord-tag.md. Now groups announced in Discord post their joins, leaves and withdrawal too.
