@@ -101,9 +101,9 @@ function CV.Build(parent)
 	local fr = CreateFrame("Frame", nil, parent)
 	CV.frame = fr
 	CV.left = W.Panel(fr, L.CV_PROFESSIONS)
-	local h1 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h1:SetPoint("TOPLEFT", PAD + 22, -24); h1:SetText(L.CV_NAME)
-	local h2 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h2:SetPoint("TOPRIGHT", -PAD - 50, -24); h2:SetText(L.CV_WHO)
-	local h3 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h3:SetPoint("TOPRIGHT", -PAD - 2, -24); h3:SetText(L.CV_RECIPES)
+	local h1 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h1:SetPoint("TOPLEFT", PAD + 22, -28); h1:SetText(L.CV_NAME)
+	local h2 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h2:SetPoint("TOPRIGHT", -PAD - 50, -28); h2:SetText(L.CV_WHO)
+	local h3 = ink(CV.left:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); h3:SetPoint("TOPRIGHT", -PAD - 2, -28); h3:SetText(L.CV_RECIPES)
 	CV.left.hint:ClearAllPoints(); CV.left.hint:SetPoint("RIGHT", -PAD, 0); CV.left.hint:SetPoint("TOPLEFT", PAD + 2, -44)   -- under the column names
 	CV.profs = { items = {} }
 	for i = 1, CV.PROFS do CV.profs.items[i] = profRow(CV.left, i) end
@@ -111,7 +111,7 @@ function CV.Build(parent)
 	CV.right = W.Panel(fr, "")
 	CV.right.title:Hide()
 	CV.right.hint:ClearAllPoints(); CV.right.hint:SetPoint("RIGHT", -PAD, 0); CV.right.hint:SetPoint("TOPLEFT", PAD + 2, -104)   -- under the header and the search
-	CV.icon = CV.right:CreateTexture(nil, "ARTWORK"); CV.icon:SetSize(36, 36); CV.icon:SetPoint("TOPLEFT", PAD, -24)
+	CV.icon = CV.right:CreateTexture(nil, "ARTWORK"); CV.icon:SetSize(36, 36); CV.icon:SetPoint("TOPLEFT", PAD, -28)
 	CV.title = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")); CV.title:SetPoint("TOPLEFT", CV.icon, "TOPRIGHT", 8, -1)
 	CV.sub = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")); CV.sub:SetPoint("TOPLEFT", CV.title, "BOTTOMLEFT", 0, -3)
 	CV.big = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")); CV.big:SetPoint("TOPRIGHT", -PAD - 4, -24)

@@ -59,7 +59,7 @@ ns.char.ach = { lvl10 = time(), lvl20 = time() }
 ns.char.goal = { l = 30, e = time() + 86400 * 5 }
 STUB.Fire("PLAYER_LEVEL_UP", 20); STUB.Advance(2)   -- a guild first claimed (level 20)
 B.Refresh()
-assert(DB.me.ach.text == string.format(L.DB_ACH, 2, #ns.Achievements.LIST, 1), "achievements and firsts: " .. tostring(DB.me.ach.text))
+assert(DB.me.ach.text == string.format(L.DB_ACH, 2, #ns.Achievements.LIST) and DB.me.firsts.text == string.format(L.DB_FIRSTS, 1), "achievements and firsts: " .. tostring(DB.me.ach.text))
 assert(DB.me.goal.text == string.format(L.DB_GOAL, 30) and DB.me.goal:IsShown(), "my goal")
 ns.char.goal = nil
 B.Refresh()

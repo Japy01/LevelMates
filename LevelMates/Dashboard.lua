@@ -45,7 +45,7 @@ local function items(panel, n, withButton, withIcon, tall)
 	for i = 1, n do
 		local it = CreateFrame("Button", nil, panel)
 		it:SetHeight(h)
-		it:SetPoint("TOPLEFT", PAD, -24 - (i - 1) * (h + 2)); it:SetPoint("RIGHT", -PAD, 0)
+		it:SetPoint("TOPLEFT", PAD, -28 - (i - 1) * (h + 2)); it:SetPoint("RIGHT", -PAD, 0)
 		it.text = ink(it:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 		it.text:SetJustifyH("LEFT"); it.text:SetWordWrap(false)
 		if withIcon then
@@ -97,7 +97,7 @@ end
 ------------------------------------------------------------------ build
 local function buildMe(p)
 	-- my face, the game's portrait, in a round frame; name and level beside it
-	p.portrait = p:CreateTexture(nil, "ARTWORK"); p.portrait:SetSize(42, 42); p.portrait:SetPoint("TOPLEFT", PAD, -26)
+	p.portrait = p:CreateTexture(nil, "ARTWORK"); p.portrait:SetSize(42, 42); p.portrait:SetPoint("TOPLEFT", PAD, -30)
 	p.portraitRing = p:CreateTexture(nil, "OVERLAY"); p.portraitRing:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
 	p.portraitRing:SetSize(72, 72); p.portraitRing:SetPoint("TOPLEFT", p.portrait, "TOPLEFT", 0, 0)   -- the ring sits in the texture's top-left corner (as on the minimap button)
 	p.name = ink(p:CreateFontString(nil, "OVERLAY", "GameFontNormal"))
@@ -106,7 +106,7 @@ local function buildMe(p)
 	p.level:SetPoint("TOPLEFT", p.name, "BOTTOMLEFT", 0, -4)
 	-- the XP bar (the game's own bar texture), with the rested part ahead of it
 	p.xpBg = p:CreateTexture(nil, "BORDER"); p.xpBg:SetColorTexture(0.12, 0.07, 0.03, 0.45)
-	p.xpBg:SetPoint("TOPLEFT", PAD, -76); p.xpBg:SetPoint("RIGHT", -PAD, 0); p.xpBg:SetHeight(12)
+	p.xpBg:SetPoint("TOPLEFT", PAD, -80); p.xpBg:SetPoint("RIGHT", -PAD, 0); p.xpBg:SetHeight(12)
 	p.xpRested = p:CreateTexture(nil, "ARTWORK"); p.xpRested:SetTexture("Interface/TargetingFrame/UI-StatusBar"); p.xpRested:SetVertexColor(0.25, 0.4, 0.9, 0.55)
 	p.xpRested:SetPoint("TOPLEFT", p.xpBg); p.xpRested:SetHeight(12)
 	p.xpFill = p:CreateTexture(nil, "OVERLAY"); p.xpFill:SetTexture("Interface/TargetingFrame/UI-StatusBar"); p.xpFill:SetVertexColor(0.58, 0.2, 0.75, 1)
@@ -138,14 +138,16 @@ local function buildMe(p)
 	p.role:SetPoint("TOPLEFT", p.gearLabel, "BOTTOMLEFT", 0, -56)
 	p.week = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 	p.week:SetPoint("TOPLEFT", p.role, "BOTTOMLEFT", 0, -6)
-	-- my achievements and guild firsts, and my goal when I set one
+	-- my achievements, my guild firsts, and my goal when I set one: a short line each
 	p.ach = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
-	p.ach:SetPoint("TOPLEFT", p.week, "BOTTOMLEFT", 0, -6); p.ach:SetPoint("RIGHT", -PAD, 0); p.ach:SetJustifyH("LEFT"); p.ach:SetWordWrap(false)
+	p.ach:SetPoint("TOPLEFT", p.week, "BOTTOMLEFT", 0, -6)
+	p.firsts = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	p.firsts:SetPoint("TOPLEFT", p.ach, "BOTTOMLEFT", 0, -6)
 	p.goal = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
-	p.goal:SetPoint("TOPLEFT", p.ach, "BOTTOMLEFT", 0, -6)
+	p.goal:SetPoint("TOPLEFT", p.firsts, "BOTTOMLEFT", 0, -6)
 	-- my card and my gear, a click away
 	p.card = ns.Skin.Button(p)
-	p.card:SetSize(100, 20); p.card:SetPoint("TOPLEFT", p.ach, "BOTTOMLEFT", 0, -34); p.card:SetText(L.DB_MY_CARD)
+	p.card:SetSize(100, 20); p.card:SetPoint("TOPLEFT", p.firsts, "BOTTOMLEFT", 0, -34); p.card:SetText(L.DB_MY_CARD)
 	p.card:SetScript("OnClick", function() ns.MateCard.Show(ns.Me()) end)
 	p.gearButton = ns.Skin.Button(p)
 	p.gearButton:SetSize(100, 20); p.gearButton:SetPoint("LEFT", p.card, "RIGHT", 6, 0); p.gearButton:SetText(L.DB_MY_GEAR)
@@ -156,7 +158,7 @@ local function buildRuns(p)
 	p.cards = {}
 	for i = 1, DB.RUNS do
 		local c = ns.Widgets.GroupCard(p, true, true)
-		c:SetPoint("TOPLEFT", PAD, -22 - (i - 1) * 68); c:SetPoint("RIGHT", -PAD, 0)
+		c:SetPoint("TOPLEFT", PAD, -26 - (i - 1) * 68); c:SetPoint("RIGHT", -PAD, 0)
 		p.cards[i] = c
 	end
 end
@@ -237,11 +239,11 @@ function DB.Layout()
 	local cx, rx = lw + DB.COL_GAP, lw + cw + 2 * DB.COL_GAP
 	local avail = h + top
 	DB.me:ClearAllPoints(); DB.me:SetPoint("TOPLEFT", 0, top); DB.me:SetSize(lw, avail)
-	local nowH, runsH = 22 + DB.NOW * (ITEM_H + 2) + 8, 22 + DB.RUNS * 68
+	local nowH, runsH = 26 + DB.NOW * (ITEM_H + 2) + 8, 26 + DB.RUNS * 68
 	DB.now:ClearAllPoints(); DB.now:SetPoint("TOPLEFT", cx, top); DB.now:SetSize(cw, nowH)
 	DB.runs:ClearAllPoints(); DB.runs:SetPoint("TOPLEFT", cx, top - nowH - 8); DB.runs:SetSize(cw, runsH)
 	DB.quests:ClearAllPoints(); DB.quests:SetPoint("TOPLEFT", cx, top - nowH - runsH - 16); DB.quests:SetSize(cw, math.max(60, avail - nowH - runsH - 16))
-	local whereH = 22 + DB.ZONES * (ITEM_H + 2) + 6
+	local whereH = 26 + DB.ZONES * (ITEM_H + 2) + 6
 	DB.where:ClearAllPoints(); DB.where:SetPoint("TOPLEFT", rx, top); DB.where:SetSize(rw, whereH)
 	DB.wall:ClearAllPoints(); DB.wall:SetPoint("TOPLEFT", rx, top - whereH - 8); DB.wall:SetSize(rw, math.max(60, avail - whereH - 8))
 end
@@ -338,7 +340,7 @@ local function refreshMine()
 		local first = GF.First(f.w)
 		if first then for _, n in ipairs(first.names) do if n == ns.Me() then firsts = firsts + 1 end end end
 	end
-	p.ach:SetText(string.format(L.DB_ACH, have, #AC.LIST, firsts))
+	p.ach:SetText(string.format(L.DB_ACH, have, #AC.LIST)); p.firsts:SetText(string.format(L.DB_FIRSTS, firsts))
 	local g = ns.Personal.Mine()
 	p.goal:SetShown(g ~= nil)
 	if g then p.goal:SetText(string.format(L.DB_GOAL, g.l)) end
