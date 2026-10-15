@@ -156,6 +156,20 @@ local function Build()
 	nearLabel:SetPoint("LEFT", near, "RIGHT", 2, 0); nearLabel:SetText(L.FILTER_NEAR)
 	B.nearLabel = nearLabel
 	B.nearCheck = near
+	-- the book's size, a step at a time: two small buttons by the close button (Options and /lm tamaño set any size)
+	local function stepButton(text, delta)
+		local b = ns.Skin.Button(f)
+		b:SetSize(22, 20); b:SetText(text); b.lmKeep = true
+		b:SetScript("OnClick", function() B.SetScale((ns.db.settings.boardScale or 100) + delta); B.UpdateScaleButtons() end)
+		b:SetScript("OnEnter", function(self) if GameTooltip then GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:AddLine(L.OPT_SIZE, 1, 0.82, 0); GameTooltip:AddLine(L.OPT_SIZE_TT, 1, 1, 1, true); GameTooltip:Show() end end)
+		b:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+		return b
+	end
+	B.scaleUp, B.scaleDown = stepButton("+", 10), stepButton("-", -10)
+	local anchor = f.CloseButton or f
+	B.scaleUp:SetPoint("RIGHT", anchor, f.CloseButton and "LEFT" or "TOPRIGHT", f.CloseButton and -2 or -30, f.CloseButton and 0 or -4)
+	B.scaleDown:SetPoint("RIGHT", B.scaleUp, "LEFT", -2, 0)
+	B.UpdateScaleButtons()
 
 	-- The feedback line: what a click did, at the foot of the page; 6 s, then it fades; its × closes it. Clicks go
 	-- through the line to whatever is under it (the pager, the help rows).
@@ -2212,7 +2226,14 @@ function B.SetScale(pct)
 	if not pct or pct < B.SCALE_MIN or pct > B.SCALE_MAX then return false end
 	ns.db.settings.boardScale = math.floor(pct)
 	if B.frame then B.frame:SetScale(ns.db.settings.boardScale / 100) end
+	B.UpdateScaleButtons()
 	return true
+end
+-- The step buttons grey out at the ends.
+function B.UpdateScaleButtons()
+	if not B.scaleUp then return end
+	local s = ns.db.settings.boardScale or 100
+	B.scaleUp:SetEnabled(s < B.SCALE_MAX); B.scaleDown:SetEnabled(s > B.SCALE_MIN)
 end
 local function SetSize(rest)
 	local n = tonumber(strtrim(rest or ""))

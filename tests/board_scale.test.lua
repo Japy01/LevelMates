@@ -12,3 +12,15 @@ SlashCmdList["LEVELMATES"]("tamaño 115")
 assert(ns.db.settings.boardScale == 115 and math.abs(B.frame:GetScale() - 1.15) < 0.001, "the command")
 SlashCmdList["LEVELMATES"]("size")
 assert(ns.db.settings.boardScale == 115, "no number: help, unchanged")
+
+-- two small buttons on the book itself, by the close button: 10 % a step, greyed at the ends
+B.SetScale(100)
+assert(B.scaleUp and B.scaleDown and B.scaleUp:IsShown() and B.scaleDown:IsShown(), "the buttons")
+B.scaleUp.scripts.OnClick(B.scaleUp)
+assert(ns.db.settings.boardScale == 110 and math.abs(B.frame:GetScale() - 1.1) < 0.001, "+10")
+for _ = 1, 10 do B.scaleUp.scripts.OnClick(B.scaleUp) end
+assert(ns.db.settings.boardScale == 150 and not B.scaleUp:IsEnabled() and B.scaleDown:IsEnabled(), "stops at 150, + greyed")
+for _ = 1, 10 do B.scaleDown.scripts.OnClick(B.scaleDown) end
+assert(ns.db.settings.boardScale == 80 and not B.scaleDown:IsEnabled() and B.scaleUp:IsEnabled(), "stops at 80, - greyed")
+SlashCmdList["LEVELMATES"]("tamaño 100")
+assert(B.scaleUp:IsEnabled() and B.scaleDown:IsEnabled(), "both again after the command")
