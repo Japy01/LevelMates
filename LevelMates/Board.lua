@@ -169,6 +169,9 @@ local function Build()
 	local anchor = f.CloseButton or f
 	B.scaleUp:SetPoint("RIGHT", anchor, f.CloseButton and "LEFT" or "TOPRIGHT", f.CloseButton and -2 or -30, f.CloseButton and 0 or -4)
 	B.scaleDown:SetPoint("RIGHT", B.scaleUp, "LEFT", -2, 0)
+	for _, b in ipairs({ B.scaleUp, B.scaleDown }) do   -- above the window's own frame art, as the close button is
+		if b.SetFrameLevel then b:SetFrameLevel(((f.CloseButton and f.CloseButton.GetFrameLevel and f.CloseButton:GetFrameLevel()) or f:GetFrameLevel()) + 1) end
+	end
 	B.UpdateScaleButtons()
 
 	-- The feedback line: what a click did, at the foot of the page; 6 s, then it fades; its × closes it. Clicks go
