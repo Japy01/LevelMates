@@ -91,6 +91,7 @@ local function Build()
 	B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10
 	f:SetSize(B.WIDTH, B.CHROME + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows
 	f:SetFrameStrata("HIGH"); if f.SetToplevel then f:SetToplevel(true) end   -- above the action bars, as the game's own panels
+	f:SetScale((ns.db.settings.boardScale or 100) / 100)   -- the size chosen in Options (/lm tamaño)
 	f:SetMovable(true); f:EnableMouse(true); f:SetClampedToScreen(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving)
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); local p, _, rp, x, y = self:GetPoint(); ns.char.board = { p, rp, x, y } end)
@@ -2204,6 +2205,22 @@ ns.On("LM_MEETUPS_CHANGED", function() ns.Dirty("board") end)
 ns.On("LM_RECRUIT_CHANGED", function() ns.Dirty("board") end)
 ns.Slash("reclutar", function() B.ShowTab("recruit") end)
 -- /lm tinta 1-5: how dark the text on the page is, tried live.
+-- The book's size: a scale on the whole frame, 80-150 %, from Options or /lm tamaño N.
+B.SCALE_MIN, B.SCALE_MAX = 80, 150
+function B.SetScale(pct)
+	pct = tonumber(pct)
+	if not pct or pct < B.SCALE_MIN or pct > B.SCALE_MAX then return false end
+	ns.db.settings.boardScale = math.floor(pct)
+	if B.frame then B.frame:SetScale(ns.db.settings.boardScale / 100) end
+	return true
+end
+local function SetSize(rest)
+	local n = tonumber(strtrim(rest or ""))
+	if not n or not B.SetScale(n) then ns.Say(L.SIZE_HELP, ns.db.settings.boardScale or 100, B.SCALE_MIN, B.SCALE_MAX); return end
+	ns.Say(L.SIZE_SET, math.floor(n))
+end
+ns.Slash("tamaño", SetSize); ns.Slash("tamano", SetSize); ns.Slash("size", SetSize)
+
 local function SetInk(rest)
 	local n = tonumber(strtrim(rest or ""))
 	if not (n and ns.Skin.INK_LEVELS[n]) then ns.Say(L.INK_HELP, ns.Skin.InkLevel()); return end

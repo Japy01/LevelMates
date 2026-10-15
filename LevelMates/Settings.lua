@@ -52,6 +52,14 @@ ns.On("LM_LOADED", function()
 	Lang("auto", L.OPT_LANGUAGE .. ": " .. L.LANGUAGE_AUTO)
 	Lang("enUS", L.OPT_LANGUAGE .. ": English")
 	Lang("esES", L.OPT_LANGUAGE .. ": Español")
+	-- the book's size: three radio-like checkboxes (a scale on the whole frame)
+	local function Size(value, name)
+		local proxy = Settings.RegisterProxySetting(category, "LevelMates_size_" .. value, Settings.VarType.Boolean, L.OPT_SIZE .. ": " .. name, (ns.db.settings.boardScale or 100) == value,
+			function() return (ns.db.settings.boardScale or 100) == value end,
+			function(v) if v then ns.Board.SetScale(value) end end)
+		Settings.CreateCheckbox(category, proxy, L.OPT_SIZE_TT)
+	end
+	Size(100, L.SIZE_NORMAL); Size(115, L.SIZE_BIG); Size(130, L.SIZE_HUGE)
 	Bool(category, "minimap", L.OPT_MINIMAP, L.OPT_MINIMAP_TT, function() ns.Fire("LM_MINIMAP_CHANGED") end)
 	Bool(category, "sound", L.OPT_SOUND)
 	Bool(category, "mapPins", L.OPT_MAP, L.OPT_MAP_TT, function() ns.GuildMap.Refresh() end)
