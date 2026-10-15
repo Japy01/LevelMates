@@ -7,14 +7,15 @@ local DB = {}
 ns.Dashboard = DB
 local L, R = ns.L, ns.Roster
 local unpack = unpack or table.unpack
-DB.NOW, DB.RUNS, DB.QUESTS, DB.ZONES, DB.WALL = 3, 2, 3, 6, 6
+DB.NOW, DB.RUNS, DB.QUESTS, DB.ZONES, DB.WALL = 3, 2, 3, 5, 6
 local GEAR_SLOTS = { 1, 2, 3, 15, 5, 9, 10, 6, 7, 8, 11, 12, 13, 14, 16, 17, 18 }   -- the 17 that count (no shirt, no tabard)
 local CLASS_ICON = "Interface\\TargetingFrame\\UI-Classes-Circles"
-local ITEM_H, PAD = 18, 6
+local ITEM_H, ITEM_H2, PAD = 18, 30, 6   -- a line; a two-line entry (the wall)
 local I = "Interface\\Icons\\"
 local ICONS = { online = I .. "Spell_Holy_PrayerOfFortitude", ilvl = I .. "INV_Chest_Plate01", challenge = I .. "INV_Misc_Map_01",
 	now = I .. "INV_Misc_PocketWatch_01", groups = I .. "INV_Misc_Key_03", quests = I .. "INV_Misc_Note_01",
-	where = I .. "INV_Misc_Map02", wall = I .. "INV_Misc_Book_09" }
+	where = I .. "INV_Misc_Map02", wall = I .. "INV_Misc_Book_09",
+	help = I .. "Spell_Holy_Heal", gift = I .. "INV_Misc_Bag_10", trainer = I .. "INV_Misc_Book_09" }
 -- the wall: an icon per kind of entry
 local WALL_ICONS = { lvl = I .. "Spell_ChargePositive", dth = I .. "Ability_Rogue_FeignDeath", dun = I .. "INV_Misc_Key_03",
 	itm = I .. "INV_Misc_Bag_10", pgl = I .. "INV_Misc_Map_01", gol = I .. "INV_Misc_Map_01", join = I .. "INV_Letter_15",
@@ -36,32 +37,40 @@ local function classOf(name)
 end
 local function zoneName(mapId) local info = mapId and C_Map.GetMapInfo(mapId); return info and info.name or "" end
 
--- Lines in a panel: a text, an optional button on the right; the whole line clickable when given an action.
-local function items(panel, n, withButton, withIcon)
+-- Lines in a panel: a text; an icon first and a short note (withIcon); a button on the right (withButton); two
+-- lines tall with the note under the text (tall: the wall). The whole line is clickable when given an action.
+local function items(panel, n, withButton, withIcon, tall)
 	panel.items = {}
+	local h = tall and ITEM_H2 or ITEM_H
 	for i = 1, n do
 		local it = CreateFrame("Button", nil, panel)
-		it:SetHeight(ITEM_H)
-		it:SetPoint("TOPLEFT", PAD, -24 - (i - 1) * (ITEM_H + 2)); it:SetPoint("RIGHT", -PAD, 0)
+		it:SetHeight(h)
+		it:SetPoint("TOPLEFT", PAD, -24 - (i - 1) * (h + 2)); it:SetPoint("RIGHT", -PAD, 0)
 		it.text = ink(it:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 		it.text:SetJustifyH("LEFT"); it.text:SetWordWrap(false)
-		if withIcon then   -- an icon first, and a short text on the right (the time)
-			it.icon = it:CreateTexture(nil, "ARTWORK"); it.icon:SetSize(14, 14); it.icon:SetPoint("LEFT")
+		if withIcon then
+			local sz = tall and 18 or 14
+			it.icon = it:CreateTexture(nil, "ARTWORK"); it.icon:SetSize(sz, sz); it.icon:SetPoint("LEFT", 0, 0)
 			it.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 			it.right = ink(it:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
-			it.right:SetPoint("RIGHT"); it.right:SetJustifyH("RIGHT")
-			it.text:SetPoint("LEFT", it.icon, "RIGHT", 4, 0); it.text:SetPoint("RIGHT", it.right, "LEFT", -6, 0)
-		else
-			it.text:SetPoint("LEFT")
+			it.right:SetJustifyH(tall and "LEFT" or "RIGHT")
 		end
-		if withIcon then
-		elseif withButton then
+		if withButton then
 			it.action = ns.Skin.Button(it)
 			it.action:SetSize(70, 18); it.action:SetPoint("RIGHT")
 			it.action:SetScript("OnClick", function(self) if self.fn then self.fn() end end)
-			it.text:SetPoint("RIGHT", it.action, "LEFT", -4, 0)
+		end
+		if tall then   -- the text along the top, the note (the time) small under it
+			it.text:SetPoint("TOPLEFT", it.icon, "TOPRIGHT", 4, 2); it.text:SetPoint("RIGHT")
+			it.right:SetPoint("TOPLEFT", it.text, "BOTTOMLEFT", 0, -1); it.right:SetAlpha(0.75)
+		elseif withIcon and withButton then
+			it.text:SetPoint("LEFT", it.icon, "RIGHT", 4, 0); it.right:SetPoint("RIGHT", it.action, "LEFT", -4, 0); it.text:SetPoint("RIGHT", it.right, "LEFT", -4, 0)
+		elseif withIcon then
+			it.text:SetPoint("LEFT", it.icon, "RIGHT", 4, 0); it.right:SetPoint("RIGHT"); it.text:SetPoint("RIGHT", it.right, "LEFT", -6, 0)
+		elseif withButton then
+			it.text:SetPoint("LEFT"); it.text:SetPoint("RIGHT", it.action, "LEFT", -4, 0)
 		else
-			it.text:SetPoint("RIGHT")
+			it.text:SetPoint("LEFT"); it.text:SetPoint("RIGHT")
 		end
 		if i % 2 == 0 then it.stripe = it:CreateTexture(nil, "BACKGROUND"); it.stripe:SetAllPoints(); it.stripe:SetColorTexture(0.30, 0.18, 0.06, 0.06) end
 		it:SetScript("OnClick", function(self) if self.fn then self.fn() end end)
@@ -129,9 +138,14 @@ local function buildMe(p)
 	p.role:SetPoint("TOPLEFT", p.gearLabel, "BOTTOMLEFT", 0, -56)
 	p.week = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 	p.week:SetPoint("TOPLEFT", p.role, "BOTTOMLEFT", 0, -6)
+	-- my achievements and guild firsts, and my goal when I set one
+	p.ach = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	p.ach:SetPoint("TOPLEFT", p.week, "BOTTOMLEFT", 0, -6); p.ach:SetPoint("RIGHT", -PAD, 0); p.ach:SetJustifyH("LEFT"); p.ach:SetWordWrap(false)
+	p.goal = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	p.goal:SetPoint("TOPLEFT", p.ach, "BOTTOMLEFT", 0, -6)
 	-- my card and my gear, a click away
 	p.card = ns.Skin.Button(p)
-	p.card:SetSize(100, 20); p.card:SetPoint("TOPLEFT", p.week, "BOTTOMLEFT", 0, -12); p.card:SetText(L.DB_MY_CARD)
+	p.card:SetSize(100, 20); p.card:SetPoint("TOPLEFT", p.ach, "BOTTOMLEFT", 0, -34); p.card:SetText(L.DB_MY_CARD)
 	p.card:SetScript("OnClick", function() ns.MateCard.Show(ns.Me()) end)
 	p.gearButton = ns.Skin.Button(p)
 	p.gearButton:SetSize(100, 20); p.gearButton:SetPoint("LEFT", p.card, "RIGHT", 6, 0); p.gearButton:SetText(L.DB_MY_GEAR)
@@ -188,22 +202,17 @@ function DB.Build(parent)
 	DB.motd = motd
 	-- panels
 	DB.me = W.Panel(f, L.DB_ME); buildMe(DB.me)
-	DB.now = W.Panel(f, L.DB_NOW, ICONS.now); DB.now:SetHint(L.DB_HINT_NOW); items(DB.now, DB.NOW, true)
+	DB.now = W.Panel(f, L.DB_NOW, ICONS.now); DB.now:SetHint(L.DB_HINT_NOW); items(DB.now, DB.NOW, true, true)
 	DB.runs = W.Panel(f, L.DB_GROUPS, ICONS.groups); DB.runs:SetHint(L.DB_HINT_GROUPS); buildRuns(DB.runs)
 	DB.groups = DB.runs
 	DB.groups:SetEmptyArt(ICONS.groups, L.DB_MAKE_GROUP, function() ns.char.groupsView = "groups"; ns.Board.ShowTab("lfg") end)
 	DB.quests = W.Panel(f, L.DB_QUESTS, ICONS.quests); DB.quests:SetHint(L.DB_HINT_QUESTS); items(DB.quests, DB.QUESTS, false)
 	DB.quests:SetEmptyArt(ICONS.quests)
 	DB.where = W.Panel(f, L.DB_WHERE, ICONS.where); DB.where:SetHint(L.DB_HINT_WHERE); buildWhere(DB.where)
-	DB.where:SetEmptyArt(ICONS.where)
-	DB.wall = W.Panel(f, L.DB_WALL, ICONS.wall); DB.wall:SetHint(L.DB_HINT_WALL); items(DB.wall, DB.WALL, false, true)
+	DB.where:SetEmptyArt(ICONS.where, L.DB_INVITE, function() ns.DiscordCopy.OpenText(ns.Home.InviteText()) end)   -- alone: the invite to copy
+	DB.invite = DB.where.emptyButton
+	DB.wall = W.Panel(f, L.DB_WALL, ICONS.wall); DB.wall:SetHint(L.DB_HINT_WALL); items(DB.wall, DB.WALL, false, true, true)
 	DB.wall:SetEmptyArt(ICONS.wall)
-	-- alone: the invite to copy, in the middle
-	local invite = ns.Skin.Button(DB.now)
-	invite:SetSize(150, 20); invite:SetPoint("BOTTOM", 0, 8); invite:SetText(L.DB_INVITE)
-	invite:SetScript("OnClick", function() ns.DiscordCopy.OpenText(ns.Home.InviteText()) end)
-	invite:Hide()
-	DB.invite = invite
 	DB.Layout()
 	f:Hide()
 	return f
@@ -247,7 +256,7 @@ local function refreshStats()
 	DB.stats[3]:Set(g and g.avg and g.avg > 0 and g.avg or "-", L.DB_STAT_ILVL, g and ((g.filled or 0) .. "/17") or "")
 	DB.stats[3]:SetBar(g and (g.filled or 0) / 17 or 0)
 	local ch = PT.Challenge()
-	DB.stats[4]:Set(ch.have .. "/" .. ch.goal, ch.text, ch.done and L.HOME_DONE or ""); DB.stats[4]:SetBar(ch.goal > 0 and ch.have / ch.goal or 0)
+	DB.stats[4]:Set(ch.have .. "/" .. ch.goal, L["CHALLENGE_WEEK_" .. ch.cat] or ch.text, ch.done and L.HOME_DONE or ""); DB.stats[4]:SetBar(ch.goal > 0 and ch.have / ch.goal or 0)
 end
 
 local function refreshMe()
@@ -301,7 +310,7 @@ local function refreshNow()
 	for _, id in ipairs(ns.Help.List()) do
 		local h = ns.Help.active[id]
 		local zone = zoneName(h.mapId)
-		list[#list + 1] = { text = h.name .. ": " .. h.text .. (zone ~= "" and ("  ·  " .. zone) or ""), button = L.HOME_GO, fn = function() ns.Help.Coming(id) end }
+		list[#list + 1] = { text = h.name .. ": " .. h.text .. (zone ~= "" and ("  ·  " .. zone) or ""), button = L.HOME_GO, fn = function() ns.Help.Coming(id) end, icon = ICONS.help }
 	end
 	-- (groups looking for people are in the Groups panel below)
 	-- what is for me: an offer of something I wish for, spells waiting at the trainer
@@ -309,20 +318,30 @@ local function refreshNow()
 		if not g.mine and not g.reservedBy and ns.Wishlist.Has(g.id) then
 			local open = function() ns.Board.OpenWishMenu(g.id, "give", false, g.name) end
 			list[#list + 1] = { text = g.name .. ": " .. (ns.Wishlist.Link(g.id) or string.format(L.WISH_UNKNOWN, g.id)) .. "  ·  " .. (g.price and ns.Gifts.Money(g.price) or L.GIVES),
-				button = g.price and L.HOME_BUY or L.HOME_RESERVE, fn = open }
+				button = g.price and L.HOME_BUY or L.HOME_RESERVE, fn = open, icon = ICONS.gift }
 		end
 	end
-	local due = ns.Trainer.Due()
-	if #due > 0 then
-		local names = {}
-		for i = 1, math.min(3, #due) do names[i] = due[i].name end
-		list[#list + 1] = { text = string.format(L.HOME_TRAINER, #due) .. ": " .. table.concat(names, ", ") .. (#due > 3 and "…" or "") }
+	for _, s in ipairs(ns.Trainer.Due()) do   -- one line per spell waiting at my trainer
+		list[#list + 1] = { text = string.format(L.HOME_TRAINER_ONE, s.rank and (s.name .. " (" .. s.rank .. ")") or s.name), icon = ICONS.trainer }
 	end
-	fill(DB.now, list, function(it, e) setItem(it, e.text, e.fn, e.button, e.button and e.fn) end)
+	fill(DB.now, list, function(it, e) setItem(it, e.text, e.fn, e.button, e.button and e.fn, e.icon) end)
 	DB.now:SetNote(#list > 0 and tostring(#list) or "")
-	local alone = #R.List() == 0
-	DB.invite:SetShown(alone)
-	DB.now:SetHint(alone and L.HOME_ALONE or L.DB_HINT_NOW)   -- alone: how to bring the guild in, the button under it
+end
+
+-- My achievements and guild firsts, and my goal when I set one.
+local function refreshMine()
+	local p, AC, GF = DB.me, ns.Achievements, ns.GuildFirsts
+	local have = 0
+	for _, a in ipairs(AC.LIST) do if AC.Has(a.id) then have = have + 1 end end
+	local firsts = 0
+	for _, f in ipairs(GF.LIST) do
+		local first = GF.First(f.w)
+		if first then for _, n in ipairs(first.names) do if n == ns.Me() then firsts = firsts + 1 end end end
+	end
+	p.ach:SetText(string.format(L.DB_ACH, have, #AC.LIST, firsts))
+	local g = ns.Personal.Mine()
+	p.goal:SetShown(g ~= nil)
+	if g then p.goal:SetText(string.format(L.DB_GOAL, g.l)) end
 end
 
 local function refreshRuns()
@@ -355,6 +374,7 @@ local function refreshWhere()
 	table.sort(order, function(a, b) if #zones[a] ~= #zones[b] then return #zones[a] > #zones[b] end; return zoneName(a) < zoneName(b) end)
 	local list = {}
 	for i = 1, math.min(DB.ZONES, #order) do list[i] = { id = order[i], names = zones[order[i]] } end
+	DB.where:SetHint(#R.List() == 0 and L.HOME_ALONE or L.DB_HINT_WHERE)   -- alone: how to bring the guild in, the invite under it
 	fill(DB.where, list, function(it, z)
 		local zn = zoneName(z.id)
 		setItem(it, (zn ~= "" and zn or L.DB_SOMEWHERE) .. " (" .. #z.names .. ")", function() ns.Board.SetTab("mates") end)
@@ -374,7 +394,8 @@ local function refreshWall()
 		list[i] = e
 	end
 	fill(DB.wall, list, function(it, e)
-		setItem(it, F.Who(e) .. " " .. F.Text(e), function() ns.Board.SetTab("feed") end, nil, nil, WALL_ICONS[e.k] or ICONS.wall, F.Ago(e))
+		setItem(it, F.Who(e) .. " " .. F.Text(e), function() ns.Board.SetTab("feed") end, nil, nil, WALL_ICONS[e.k] or ICONS.wall,
+			string.format(L.FEED_AGO, ns.Journal.Short(math.max(0, F.Now() - e.t) * 60)))
 	end)
 end
 
@@ -385,6 +406,6 @@ function DB.Refresh()
 	local motd, by = ns.GuildNotes.Motd()
 	if motd then DB.motd.text:SetText((by and (by .. ": ") or "") .. motd) end
 	DB.motd:SetShown(motd ~= nil)
-	refreshMe(); refreshNow(); refreshRuns(); refreshQuests(); refreshWhere(); refreshWall()
+	refreshMe(); refreshMine(); refreshNow(); refreshRuns(); refreshQuests(); refreshWhere(); refreshWall()
 	ns.Skin.InkPass()
 end

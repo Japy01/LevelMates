@@ -6,7 +6,7 @@ STUB.player.level = 20; STUB.player.rested = 450
 STUB.Receive("LVLM2", C.Encode("hb", { l = 21, z = 1421 }), "GUILD", "Mario-Testrealm")
 STUB.Receive("LVLM2", C.Encode("rx", { p = 80 }), "GUILD", "Mario-Testrealm")
 STUB.Receive("LVLM2", C.Encode("hb", { l = 40, z = 1421 }), "GUILD", "Ana-Testrealm")
-B.Toggle()
+B.Toggle(); B.ShowTab("mates")   -- Ruling (2026-10-15): Home shows my rested in "My character", not beside the heading
 local function rowOf(name) for i = 1, #B.rows do if B.rows[i].name.text == name then return B.rows[i] end end end
 
 assert(B.restedText and B.restedText.text:sub(1, #string.format(L.RESTED_MINE, 45)) == string.format(L.RESTED_MINE, 45), "my rested next to the heading: " .. tostring(B.restedText and B.restedText.text))

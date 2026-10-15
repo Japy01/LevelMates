@@ -184,6 +184,28 @@ function R.Expire()
 	if changed then ns.Fire("LM_ROSTER_CHANGED") end
 end
 
+-- Who had the addon lately: each heartbeat is remembered in the guild's saved data (level, zone, class, when), so the
+-- Guildmates page can list who was seen today though offline now. Kept a week.
+R.SEEN_DAYS, R.SEEN_HOURS = 7, 24
+local function seenStore() ns.db.lastSeen = ns.db.lastSeen or {}; local k = ns.GuildKey(); ns.db.lastSeen[k] = ns.db.lastSeen[k] or {}; return ns.db.lastSeen[k] end   -- (db.seen belongs to Goals)
+function R.Remember(name, m)
+	if not ns.db or m.sim then return end
+	seenStore()[name] = { t = time(), level = m.level, mapId = m.mapId, class = m.class }
+end
+-- Offline now, seen in the last hours, still in the guild: newest first.
+function R.Seen(hours)
+	local out, s, now = {}, seenStore(), time()
+	local cutoff = now - (hours or R.SEEN_HOURS) * 3600
+	for name, e in pairs(s) do
+		if now - (e.t or 0) > R.SEEN_DAYS * 86400 then s[name] = nil
+		elseif not R.mates[name] and name ~= ns.Me() and (e.t or 0) >= cutoff and R.IsGuildmate(name) then
+			out[#out + 1] = { name = name, level = e.level, mapId = e.mapId, class = e.class, t = e.t }
+		end
+	end
+	table.sort(out, function(a, b) if a.t ~= b.t then return a.t > b.t end; return a.name < b.name end)
+	return out
+end
+
 function R.List()
 	local out = {}
 	for name in pairs(R.mates) do out[#out + 1] = name end
@@ -203,6 +225,7 @@ C.OnMessage("hb", function(f, name)
 	m.seenAt = GetTime()
 	if f.x and f.y then m.posAt = GetTime() end   -- the map drops positions older than five minutes
 	R.mates[name] = m
+	R.Remember(name, m)
 	if before and f.l > before then ns.Fire("LM_MATE_LEVELUP", name, f.l) end   -- a mate I already knew
 	if not same then ns.Fire("LM_ROSTER_CHANGED") elseif moved then ns.Fire("LM_MATE_MOVED", name) end
 end)

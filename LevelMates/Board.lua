@@ -341,6 +341,9 @@ local function Build()
 		B.rows[i] = r
 	end
 	f.empty = Col(f, B.WIDTH - 40, "CENTER"); f.empty:SetPoint("TOP", 0, -(B.TOP + 40))
+	-- Guildmates, when nobody else has the addon: the invite to copy, under the line that says so
+	B.inviteButton = ns.Skin.Button(f); B.inviteButton:SetSize(180, 20); B.inviteButton:SetPoint("TOP", f.empty, "BOTTOM", 0, -10); B.inviteButton:SetText(L.DB_INVITE)
+	B.inviteButton:SetScript("OnClick", function() ns.DiscordCopy.OpenText(ns.Home.InviteText()) end); B.inviteButton:Hide()
 
 	-- Dungeons tab: a card per dungeon (art, name, levels, how many are looking), as the dungeon journal's home.
 	B.CARD_W = math.floor((B.WIDTH - 2 * B.MARGIN - (B.CARD_COLS - 1) * B.CARD_GAP) / B.CARD_COLS)
@@ -851,12 +854,40 @@ end
 -- A new page: its bars start where they are, no growth from the previous page's values.
 local function ResetBars() for _, r in ipairs(B.rows or {}) do r.barFill.lmW = nil; growing[r.barFill] = nil end end
 
+-- The Guildmates page: who is online, then who was seen today though offline now (a header row, then grey rows).
+local function MatesVisible()
+	local out = Visible()
+	if (B.search or "") ~= "" then return out end
+	local mine = UnitLevel("player")
+	local seen = {}
+	for _, e in ipairs(R.Seen()) do
+		if not ns.char.boardNear or math.abs((e.level or 0) - mine) <= NEAR_RANGE then seen[#seen + 1] = e end
+	end
+	if #seen == 0 then return out end
+	out[#out + 1] = { header = string.format("%s (%d)", L.SEEN_TODAY, #seen) }
+	for _, e in ipairs(seen) do out[#out + 1] = { seen = e } end
+	return out
+end
+
 local function FillMates(list)
 	local mine = UnitLevel("player")
 	for i = 1, ROWS do
 		local r, name = B.rows[i], list[i]
-		r.button.mate, r.button.adId = name, nil
-		if name then
+		r.button.mate, r.button.adId = type(name) == "string" and name or nil, nil
+		r.icon:SetDesaturated(false)
+		if type(name) == "table" and name.header then
+			r.icon:Hide(); r.name:SetText(name.header); r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
+			r.button:Show(); SectionHeader(r)
+		elseif type(name) == "table" then   -- seen today, offline now: grey, with when
+			local e = name.seen
+			r.button.mate = e.name
+			r.name:SetText(e.name); r.name:SetTextColor(0.6, 0.6, 0.6)
+			SetClassIcon(r.icon, e.class); r.icon:SetDesaturated(true)
+			r.level:SetText(e.level or ""); r.level:SetTextColor(0.6, 0.6, 0.6)
+			r.zone:SetText(string.format(L.SEEN_AGO, ns.Journal.Short(math.max(0, time() - (e.t or 0))))); r.zone:SetTextColor(0.6, 0.6, 0.6)
+			r.group:SetText(""); r.xph:SetText("")
+			r.button:Show(); RowBg(r, i, false)
+		elseif name then
 			local self = name == ns.Me()
 			local m = R.mates[name] or (self and B.SelfMate()) or {}
 			r.name:SetText(self and string.format("%s (%s)", ns.ShortName and ns.ShortName(name) or name, L.YOU) or name); r.name:SetTextColor(ClassColor(m.class))
@@ -1948,7 +1979,7 @@ function B.Refresh()
 	else
 		if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then list = GridVisible()
 		elseif lfg and B.lfgCalendar then list = {}   -- the runs view draws it
-		else list, pages = Page(lfg and (B.lfgTogether and TogetherVisible() or B.lfgQuests and QuestsVisible() or CalendarVisible()) or Visible()) end
+		else list, pages = Page(lfg and (B.lfgTogether and TogetherVisible() or B.lfgQuests and QuestsVisible() or CalendarVisible()) or MatesVisible()) end
 	end
 	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or home and B.HCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
 	SetHeaders()
@@ -1983,7 +2014,7 @@ function B.Refresh()
 			top = top .. (top ~= "" and "  ·  " or "") .. string.format(L.ZONE_BUSY, n, info and info.name or tostring(mapId))
 		end
 	end
-	B.restedText:SetText(top)
+	B.restedText:SetText(home and "" or top)   -- Home has it in "My character"
 	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif B.tab == "members" then FillMembers(list) elseif B.tab == "bank" then FillBank(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) elseif B.lfgTogether then FillTogether(list) elseif B.lfgQuests then FillQuests(list) else FillGrid(list) end else FillMates(list) end
 	if not lfg or B.lfgCalendar or B.lfgTogether or B.lfgQuests then for _, c in ipairs(B.cards) do c:Hide() end end
 	local catalogShown = lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests
@@ -2014,6 +2045,7 @@ function B.Refresh()
 	end
 	if recruit then emptyText = B.recruitView == "inactive" and #list == 0 and L.INACTIVE_EMPTY or "" end   -- the panel fills this tab
 	if home or runsView or crafts then emptyText = "" end
+	B.inviteButton:SetShown(B.tab == "mates" and emptyText == L.EMPTY)   -- nobody else has the addon: the invite to copy
 	B.colStrip:SetShown(not (home or runsView or catalogShown or crafts))
 	B.craftsView:SetShown(crafts and true or false)
 	if B.searchBox then B.searchBox:SetShown(not crafts) end   -- the crafts view has its own search

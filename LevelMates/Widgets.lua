@@ -79,21 +79,22 @@ end
 -- a thin bar at the foot when it has a share to show.
 function W.Stat(parent)
 	local s = CreateFrame("Frame", nil, parent)
-	s:SetSize(150, 54)
-	s.icon = s:CreateTexture(nil, "ARTWORK"); s.icon:SetSize(30, 30); s.icon:SetPoint("LEFT", 8, 2)
+	s:SetSize(150, 58)
+	-- the icon on the left; the number and its words beside it, left-aligned; the bar along the whole foot
+	s.icon = s:CreateTexture(nil, "ARTWORK"); s.icon:SetSize(34, 34); s.icon:SetPoint("TOPLEFT", 6, -6)
 	s.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); s.icon:Hide()
 	s.value = ink(s:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge"))
-	s.value:SetPoint("TOP", 0, -2)
+	s.value:SetPoint("TOPLEFT", 48, -3); s.value:SetJustifyH("LEFT")
 	if s.value.SetFont then pcall(s.value.SetFont, s.value, "Fonts\\MORPHEUS.TTF", 24, "") end   -- the game's letters for numbers
 	s.label = ink(s:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"))
-	s.label:SetPoint("TOP", s.value, "BOTTOM", 0, -2)
+	s.label:SetPoint("TOPLEFT", s.value, "BOTTOMLEFT", 0, -1); s.label:SetPoint("RIGHT", -6, 0); s.label:SetJustifyH("LEFT"); s.label:SetWordWrap(false)
 	s.sub = ink(s:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
-	s.sub:SetPoint("TOP", s.label, "BOTTOM", 0, -1)
+	s.sub:SetPoint("LEFT", s.label, "RIGHT", 4, 0); s.sub:SetJustifyH("LEFT")
 	s.frameTop, s.frameBottom = line(s), line(s)
 	s.frameTop:SetHeight(1); s.frameTop:SetPoint("TOPLEFT"); s.frameTop:SetPoint("TOPRIGHT")
 	s.frameBottom:SetHeight(1); s.frameBottom:SetPoint("BOTTOMLEFT"); s.frameBottom:SetPoint("BOTTOMRIGHT")
 	s.barBg = s:CreateTexture(nil, "BORDER"); s.barBg:SetColorTexture(0.24, 0.14, 0.05, 0.35)
-	s.barBg:SetPoint("BOTTOMLEFT", 50, 4); s.barBg:SetPoint("BOTTOMRIGHT", -12, 4); s.barBg:SetHeight(4); s.barBg:Hide()
+	s.barBg:SetPoint("BOTTOMLEFT", 6, 4); s.barBg:SetPoint("BOTTOMRIGHT", -6, 4); s.barBg:SetHeight(4); s.barBg:Hide()
 	s.bar = s:CreateTexture(nil, "ARTWORK"); s.bar:SetTexture("Interface/TargetingFrame/UI-StatusBar"); s.bar:SetVertexColor(0.80, 0.55, 0.12)
 	s.bar:SetPoint("LEFT", s.barBg, "LEFT", 0, 0); s.bar:SetHeight(4); s.bar:Hide()
 	function s:Set(value, label, sub)
@@ -104,7 +105,7 @@ function W.Stat(parent)
 	function s:SetBar(share)
 		if not share then self.bar:Hide(); self.barBg:Hide(); return end
 		local w = self.barBg:GetWidth()
-		if not w or w <= 0 then w = (self:GetWidth() or 150) - 62 end
+		if not w or w <= 0 then w = (self:GetWidth() or 150) - 12 end
 		self.bar:SetWidth(math.max(1, w * math.max(0, math.min(1, share))))
 		self.barBg:Show(); self.bar:Show()
 	end

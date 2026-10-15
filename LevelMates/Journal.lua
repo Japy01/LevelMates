@@ -38,6 +38,13 @@ function J.RemoveWhere(fn)
 	ns.Fire("LM_JOURNAL_CHANGED")
 end
 
+-- A short duration for a column: "<1 min", "5 min", "10 h", "2 d".
+function J.Short(sec)
+	if sec < 60 then return L.J_DUR_LT end
+	if sec >= 86400 then return string.format(L.J_DUR_D, math.floor(sec / 86400)) end
+	if sec >= 3600 then return string.format(L.J_DUR_H, math.floor(sec / 3600)) end
+	return string.format(L.J_DUR_M, math.floor(sec / 60))
+end
 function J.Duration(sec)
 	if sec < 60 then return L.J_DUR_LT end
 	if sec >= 86400 then return string.format(L.J_DUR_DH, math.floor(sec / 86400), math.floor(sec % 86400 / 3600)) end
