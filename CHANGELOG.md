@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.7
+
+- **Book size**: Options (normal, big, very big), `/lm tamaño 80-150`, and - / + buttons by the close button.
+- **Guildmates** lists who was seen today though offline now (grey, with when); when nobody else has the addon, the invite to copy is right there.
+- **Home**: bigger panel headings; the four numbers with the icon on the left and one thing each; the wall writes two lines per entry with a short time; Now shows the trainer's spells one per line with icons; the invite lives in Who is where; my panel sums up achievements, guild firsts and my goal; no rested text beside the heading.
+
 ## 0.5.6
 
 - **Fixed: an empty Home, Members and guild history for guild members** (not the guild master). Forever hands them the guild list as a secret value; the addon now reads the classic roster instead and skips what it cannot read.
