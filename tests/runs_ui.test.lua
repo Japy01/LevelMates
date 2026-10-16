@@ -44,5 +44,5 @@ assert(card and card.badge.text:find("/5", 1, true), "badge with n/5: " .. tostr
 assert(table.concat(ns.MateCard.Lines("Mario"), "\n"):find(L.ROLE_H, 1, true), "role on the card")
 -- Options: my role
 local found = false
-for _, s in ipairs(ns.Settings.AllSettings()) do if s.name == L.OPT_ROLE_T then found = true end end
+for _, s in ipairs(ns.Settings.AllSettings()) do if s.name == L.OPT_ROLE and s.dropdown then found = true end end   -- Ruling 2026-10-16: one dropdown
 assert(found, "my role in Options")

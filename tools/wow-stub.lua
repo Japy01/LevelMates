@@ -193,8 +193,16 @@ Settings = {
 		cat.settings[#cat.settings + 1] = s
 		return s
 	end,
-	CreateCheckbox = function() end, CreateSlider = function() end, RegisterAddOnCategory = function() end, OpenToCategory = function() end,
+	CreateCheckbox = function(cat, setting) setting.checkbox = true end, RegisterAddOnCategory = function() end, OpenToCategory = function() end,
+	-- the modern controls: a dropdown over a text container, a slider over its options, recorded on the setting
+	CreateDropdown = function(cat, setting, options, tooltip) setting.dropdown = true; setting.options = options end,
+	CreateSlider = function(cat, setting, options, tooltip) setting.slider = options end,
+	CreateControlTextContainer = function() local c = { data = {} }; function c:Add(v, l) self.data[#self.data + 1] = { value = v, label = l } end; function c:GetData() return self.data end; return c end,
+	CreateSliderOptions = function(min, max, step) local o = { min = min, max = max, step = step }; function o:SetLabelFormatter() end; return o end,
 }
+SettingsPanel = { GetLayout = function(_, cat) cat.layout = cat.layout or { inits = {} }; local l = cat.layout; function l:AddInitializer(i) self.inits[#self.inits + 1] = i end; return l end }
+function CreateSettingsListSectionHeaderInitializer(name) return { header = name } end
+MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
 function strsplit(d, s, n) local out, i = {}, 1; for piece in (s .. d):gmatch("(.-)" .. d:gsub("%p", "%%%0")) do out[#out + 1] = piece end; return unpack(out) end
 function strtrim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
 function strlower(s) return s:lower() end
