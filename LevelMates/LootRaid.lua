@@ -98,6 +98,11 @@ end
 local function bossNow()
 	if lastBoss and GetTime() - lastBoss.t < LR.BOSS_MEMORY then return lastBoss end
 end
+function LR.BossNow() return bossNow() end
+function LR.GroupNames() return groupNames() end
+-- The cost the master looter's window set for a slot before giving it (LootWindow): the award carries it.
+local nextCost = {}
+function LR.NextCost(slot, cost) nextCost[slot] = cost end
 
 ------------------------------------------------------------------ master loot
 local slots, given, recorded, hooked = {}, {}, {}, false
@@ -132,7 +137,8 @@ local function onSlotCleared(slot)
 	recorded[key] = GetTime()
 	local boss = bossNow()
 	local r = raid()
-	local id = LT.Award(s.id, ns.ShortName(to), { boss = boss and boss.name, enc = boss and boss.id, proof = "ml", raid = r and r.id })
+	local cost = nextCost[slot]; nextCost[slot] = nil
+	local id = LT.Award(s.id, ns.ShortName(to), { boss = boss and boss.name, enc = boss and boss.id, proof = "ml", cost = cost, raid = r and r.id })
 	if id then LT.Confirm(id, "ml") end
 end
 

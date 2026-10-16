@@ -412,6 +412,20 @@ local function Build()
 	help:SetSize(120, 20); help:SetPoint("BOTTOMLEFT", 12, 3); help:SetText(L.BTN_HELP)
 	help:SetScript("OnClick", function() ns.Fire("LM_HELP_BUTTON") end)
 	B.helpButton = help
+	-- Guild > Loot: the raid (officers), the rules (officers), the standings to copy
+	local lootRaid = ns.Skin.Button(f)
+	lootRaid:SetSize(120, 20); lootRaid:SetPoint("BOTTOMLEFT", 12, 3)
+	lootRaid:SetScript("OnClick", function() if ns.LootRaid.raid then ns.LootRaid.Stop() else ns.LootRaid.Start() end; B.Refresh() end)
+	B.lootRaidButton = lootRaid
+	local lootRules = ns.Skin.Button(f)
+	lootRules:SetSize(90, 20); lootRules:SetPoint("LEFT", lootRaid, "RIGHT", 6, 0); lootRules:SetText(L.BTN_LOOT_RULES)
+	lootRules:SetScript("OnClick", function() B.AskLootRules() end)
+	B.lootRulesButton = lootRules
+	local lootCopy = ns.Skin.Button(f)
+	lootCopy:SetSize(130, 20); lootCopy:SetPoint("LEFT", lootRules, "RIGHT", 6, 0); lootCopy:SetText(L.BTN_LOOT_COPY)
+	lootCopy:SetScript("OnClick", function() ns.DiscordCopy.OpenText(ns.Loot.StandingsText()) end)
+	B.lootCopyButton = lootCopy
+	lootRaid:Hide(); lootRules:Hide(); lootCopy:Hide()
 
 	-- Dungeons tab: its own action button in the same spot as "Ask for help".
 	local lfg = ns.Skin.Button(f)
@@ -1770,6 +1784,24 @@ function B.AskLootEntry(name)
 	}
 	StaticPopup_Show("LEVELMATES_LOOT_ENTRY", name, nil, name)
 end
+-- The rules box: "<boss> <attendance> [quality]" in one line.
+function B.AskLootRules()
+	StaticPopupDialogs["LEVELMATES_LOOT_RULES"] = StaticPopupDialogs["LEVELMATES_LOOT_RULES"] or {
+		text = L.LOOT_RULES_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 20, timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function(self)
+			local eb = self.GetEditBox and self:GetEditBox() or self.EditBox
+			local b, a, q = tostring(eb and eb:GetText() or ""):match("^%s*(%d+)%s+(%d+)%s*(%d*)")
+			if b then ns.LootRaid.SetRules({ boss = b, att = a, quality = q ~= "" and q or nil }) else ns.Say(L.LOOT_RULES_BAD) end
+		end,
+		EditBoxOnEnterPressed = function(self)
+			local b, a, q = tostring(self:GetText() or ""):match("^%s*(%d+)%s+(%d+)%s*(%d*)")
+			if b then ns.LootRaid.SetRules({ boss = b, att = a, quality = q ~= "" and q or nil }) else ns.Say(L.LOOT_RULES_BAD) end
+			self:GetParent():Hide()
+		end,
+	}
+	local r = ns.LootRaid.Rules()
+	StaticPopup_Show("LEVELMATES_LOOT_RULES", r.boss, r.att)
+end
 -- A row's click: someone's entries (and, for officers, an entry); an award's hand-over or cancel (officers).
 function B.OpenLootMenu(c)
 	local officer = R.IAmOfficer() or R.IsOfficer(ns.Me())
@@ -2059,6 +2091,10 @@ local function RefreshTabs()
 	B.journalClear:SetShown(journal and B.journalView ~= "ach"); B.journalFilterButton:SetShown(journal and B.journalView ~= "ach")
 	B.journalAchButton:SetShown(journal); B.journalAchButton:SetText(B.journalView == "ach" and L.BTN_JOURNAL or L.BTN_ACH)
 	B.lootViewButton:SetShown(B.tab == "loot")
+	local lootOfficer = B.tab == "loot" and (R.IAmOfficer() or R.IsOfficer(ns.Me()))
+	B.lootRaidButton:SetShown(lootOfficer); B.lootRaidButton:SetText(ns.LootRaid.raid and L.BTN_LOOT_RAID_CLOSE or L.BTN_LOOT_RAID_OPEN)
+	B.lootRulesButton:SetShown(lootOfficer); B.lootCopyButton:SetShown(B.tab == "loot")
+	if B.tab == "loot" then B.lootCopyButton:ClearAllPoints(); if lootOfficer then B.lootCopyButton:SetPoint("LEFT", B.lootRulesButton, "RIGHT", 6, 0) else B.lootCopyButton:SetPoint("BOTTOMLEFT", 12, 3) end end
 	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or B.lootView == "history" and L.BTN_LOOT_STANDINGS or L.BTN_LOOT_HISTORY)
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 	B.goalNew:SetShown(goals and R.IAmOfficer())

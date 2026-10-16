@@ -104,6 +104,14 @@ function LT.Refund(entryId, reason)
 	return LT.Post(rec.d.w, -rec.d.p, "refund", reason or L.LOOT_REFUND, { item = rec.d.i, raid = rec.d.g, ref = entryId })
 end
 
+-- The standings as plain text (for Discord): one line each.
+function LT.StandingsText()
+	local lines = { string.format(L.LOOT_COPY_TITLE, date("%d/%m/%Y")) }
+	for _, s in ipairs(LT.Standings()) do lines[#lines + 1] = string.format("%s: %d (%s)", s.name, s.total, string.format(L.LOOT_EARNED_SPENT, s.earned, s.spent)) end
+	if #lines == 1 then lines[2] = L.LOOT_EMPTY end
+	return table.concat(lines, "\n")
+end
+
 ------------------------------------------------------------------ awards
 local function award(id) local rec = S.Get("la", id); return rec and rec.d, rec end
 local function put(id, d) return S.Put("la", id, d) end
