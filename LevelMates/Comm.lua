@@ -213,7 +213,8 @@ end
 local handlers = {}
 C.stats = { sent = 0, received = 0, bad = 0, queued = 0, lockdownSkips = 0, retries = 0, dropped = 0, held = 0 }
 local queue = {}            -- { text, kind, lane = "urgent"|"normal", target, heldAt }
-C.MAX_QUEUE, C.HOLD_URGENT, C.HOLD_NORMAL = 300, 600, 3600
+C.MAX_QUEUE, C.HOLD_URGENT, C.HOLD_NORMAL, C.HOLD_LONG = 300, 600, 3600, 4 * 3600
+C.LONG_HOLD = { lk = true, la = true }   -- the loot book: a raid night is longer than an hour
 -- Kinds that go ahead of everything else: help and groups are about now.
 C.URGENT = { help = true, helpok = true, helpgo = true, lfg = true, lfgx = true, lfj = true, lfjx = true }
 local allowance, lastTick = 10, 0   -- per-prefix: 10 burst, +1/s
@@ -272,7 +273,7 @@ local function pump()
 	-- held too long (inside an instance, or under a lockdown): gone; whole-state senders re-mark pending
 	for i = #queue, 1, -1 do
 		local item = queue[i]
-		if item.heldAt and now - item.heldAt > (item.lane == "urgent" and C.HOLD_URGENT or C.HOLD_NORMAL) then
+		if item.heldAt and now - item.heldAt > (C.LONG_HOLD[item.kind] and C.HOLD_LONG or item.lane == "urgent" and C.HOLD_URGENT or C.HOLD_NORMAL) then
 			table.remove(queue, i); C.stats.dropped = C.stats.dropped + 1; ns.Fire("LM_COMM_DROPPED", item.kind)
 		end
 	end
