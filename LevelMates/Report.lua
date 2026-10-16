@@ -50,6 +50,7 @@ function RP.Text()
 	end
 	table.sort(changed)
 	add("%s: %s", L.REPORT_OPTIONS, #changed > 0 and table.concat(changed, ", ") or "-")
+	add("%s: %s", L.REPORT_PROBE, (ns.RaidProbe and ns.RaidProbe.Line()) or "-")
 	add("%s:", L.REPORT_BLOCKED)
 	local blocked = ns.db.blocked or {}
 	if #blocked == 0 then add("  -") else
