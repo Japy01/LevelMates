@@ -36,6 +36,67 @@ S.Define("la", { class = "board", life = LT.AWARD_LIFE, relayMax = 500,
 	may = function(rec, who) return rec.o == who or officer(who) end,   -- any officer may move an award on
 	onChange = changed })
 
+------------------------------------------------------------------ soft reserves
+-- One round a night, opened by an officer (lro, eight hours); a reserve (lr) is one item in one's own name (its id
+-- is made from the name: nobody reserves for another). Over the limit is shown, never blocked.
+LT.RESERVE_LIFE = 8 * 3600
+S.Define("lro", { class = "board", life = LT.RESERVE_LIFE, writerOwns = true, fields = { on = C.V.int(0, 1) }, required = { "on" },
+	accept = function(f, owner) return officer(owner) end,
+	may = function(rec, who) return officer(who) end,
+	onChange = changed })
+local function reserveId(name, item) return "v" .. ns.NameKey(name) .. tostring(item) end
+S.Define("lr", { class = "board", life = LT.RESERVE_LIFE, fields = { i = C.V.int(1, 999999), b = C.V.text(60) }, required = { "i" },
+	idOwner = function(id, owner) return id:sub(2, 9) == ns.NameKey(owner) end,
+	onChange = changed })
+function LT.ReservesOpen()
+	local rec = S.Get("lro", "round")
+	return rec ~= nil and rec.d.on == 1
+end
+function LT.OpenReserves()
+	if not officer(me()) then ns.Say(L.LOOT_NOT_OFFICER); return false end
+	return S.Put("lro", "round", { on = 1 }) and true or false
+end
+function LT.CloseReserves()
+	if not officer(me()) then ns.Say(L.LOOT_NOT_OFFICER); return false end
+	if not LT.ReservesOpen() then return false end
+	return S.Remove("lro", "round") and true or false
+end
+-- Everyone's live reserves while the round is open: { name, i, t }, by name then item.
+function LT.Reserves()
+	local out = {}
+	if not LT.ReservesOpen() then return out end
+	for _, rec in ipairs(S.List("lr")) do out[#out + 1] = { name = rec.o, i = rec.d.i, b = rec.d.b, t = rec.v } end
+	table.sort(out, function(a, b) if a.name ~= b.name then return a.name < b.name end; return a.i < b.i end)
+	return out
+end
+function LT.ReservedBy(item)
+	local names = {}
+	for _, r in ipairs(LT.Reserves()) do if r.i == item then names[#names + 1] = r.name end end
+	table.sort(names)
+	return names
+end
+-- Mine, oldest first, those past the limit marked over.
+function LT.MyReserves()
+	local out = {}
+	for _, r in ipairs(LT.Reserves()) do if r.name == me() then out[#out + 1] = r end end
+	table.sort(out, function(a, b) return a.t < b.t end)
+	local limit = ns.LootRaid and ns.LootRaid.Rules().reserves or 2
+	for k, r in ipairs(out) do r.over = k > limit end
+	return out
+end
+-- From a click: one item of mine. Refused without a round, or twice the same item.
+function LT.Reserve(item, boss)
+	item = tonumber(item)
+	if not item then return false end
+	if not LT.ReservesOpen() then ns.Say(L.LOOT_NO_ROUND); return false end
+	if S.Get("lr", reserveId(me(), item)) then return false end
+	return S.Put("lr", reserveId(me(), item), { i = item, b = boss }) and true or false
+end
+function LT.Unreserve(item)
+	item = tonumber(item)
+	return item ~= nil and S.Remove("lr", reserveId(me(), item)) and true or false
+end
+
 ------------------------------------------------------------------ the ledger
 -- total, earned, spent of someone
 function LT.Balance(name)

@@ -415,7 +415,11 @@ local function Build()
 	-- Guild > Loot: the raid (officers), the rules (officers), the standings to copy
 	local lootRaid = ns.Skin.Button(f)
 	lootRaid:SetSize(120, 20); lootRaid:SetPoint("BOTTOMLEFT", 12, 3)
-	lootRaid:SetScript("OnClick", function() if ns.LootRaid.raid then ns.LootRaid.Stop() else ns.LootRaid.Start() end; B.Refresh() end)
+	lootRaid:SetScript("OnClick", function()
+		if B.lootView == "reserves" then if ns.Loot.ReservesOpen() then ns.Loot.CloseReserves() else ns.Loot.OpenReserves() end
+		elseif ns.LootRaid.raid then ns.LootRaid.Stop() else ns.LootRaid.Start() end
+		B.Refresh()
+	end)
 	B.lootRaidButton = lootRaid
 	local lootRules = ns.Skin.Button(f)
 	lootRules:SetSize(90, 20); lootRules:SetPoint("LEFT", lootRaid, "RIGHT", 6, 0); lootRules:SetText(L.BTN_LOOT_RULES)
@@ -425,7 +429,11 @@ local function Build()
 	lootCopy:SetSize(130, 20); lootCopy:SetPoint("LEFT", lootRules, "RIGHT", 6, 0); lootCopy:SetText(L.BTN_LOOT_COPY)
 	lootCopy:SetScript("OnClick", function() ns.DiscordCopy.OpenText(ns.Loot.StandingsText()) end)
 	B.lootCopyButton = lootCopy
-	lootRaid:Hide(); lootRules:Hide(); lootCopy:Hide()
+	local lootReserve = ns.Skin.Button(f)
+	lootReserve:SetSize(110, 20); lootReserve:SetPoint("LEFT", lootCopy, "RIGHT", 6, 0); lootReserve:SetText(L.BTN_LOOT_RESERVE)
+	lootReserve:SetScript("OnClick", function() B.AskLootReserve() end)
+	B.lootReserveButton = lootReserve
+	lootRaid:Hide(); lootRules:Hide(); lootCopy:Hide(); lootReserve:Hide()
 
 	-- Dungeons tab: its own action button in the same spot as "Ask for help".
 	local lfg = ns.Skin.Button(f)
@@ -482,7 +490,7 @@ local function Build()
 	lootView:SetSize(120, 20); lootView:SetPoint("RIGHT", filter, "LEFT", -8, 0)
 	lootView:SetScript("OnClick", function()
 		if B.lootView == "ledger" then B.lootView, B.lootPerson = "standings", nil
-		else B.lootView = B.lootView == "history" and "standings" or "history" end
+		else B.lootView = B.lootView == "history" and "reserves" or B.lootView == "reserves" and "standings" or "history" end
 		B.lootPage = 1; B.Refresh()
 	end)
 	B.lootViewButton = lootView
@@ -819,6 +827,8 @@ local function SetHeaders()
 	if B.tab == "loot" then
 		if B.lootView == "history" then
 			B.headText[1]:SetText(L.COL_ITEM); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_FOR); B.headText[4]:SetText(L.COL_STATE); B.headText[5]:SetText(L.COL_WHEN)
+		elseif B.lootView == "reserves" then
+			B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ITEM); B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_WHEN)
 		elseif B.lootView == "ledger" then
 			B.headText[1]:SetText(L.COL_WHEN); B.headText[2]:SetText(L.COL_POINTS); B.headText[3]:SetText(L.COL_REASON); B.headText[4]:SetText(L.COL_KIND); B.headText[5]:SetText(L.COL_BY)
 		else
@@ -1715,6 +1725,8 @@ local function LootVisible()
 	local LT, out = ns.Loot, {}
 	if B.lootView == "ledger" and B.lootPerson then
 		for _, e in ipairs(LT.Ledger(B.lootPerson)) do out[#out + 1] = { entry = e } end
+	elseif B.lootView == "reserves" then
+		for _, r in ipairs(LT.Reserves()) do out[#out + 1] = { reserve = r } end
 	elseif B.lootView == "history" then
 		for _, a in ipairs(LT.History(B.search)) do out[#out + 1] = { award = a } end
 	else
@@ -1745,6 +1757,14 @@ local function FillLoot(list)
 			r.zone:SetText(e.i and (ns.Recipes.Link(e.i) .. "  ·  " .. e.r) or e.r); r.zone:SetTextColor(1, 1, 1)
 			r.group:SetText(L["LOOT_KIND_" .. e.k] or e.k); r.group:SetTextColor(0.8, 0.8, 0.8)
 			r.xph:SetText(e.by or ""); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show(); RowBg(r, i, false)
+		elseif c and c.reserve then
+			local v = c.reserve
+			r.name:SetText(v.name); r.name:SetTextColor(ClassColor(R.mates[v.name] and R.mates[v.name].class))
+			r.level:SetText("")
+			r.zone:SetText(ns.Recipes.Link(v.i) .. (v.b and ("  ·  " .. v.b) or "")); r.zone:SetTextColor(1, 1, 1)
+			r.group:SetText(v.name == ns.Me() and L.LOOT_MINE or ""); r.group:SetTextColor(0.8, 0.8, 0.8)
+			r.xph:SetText(ago(v.t)); r.xph:SetTextColor(0.7, 0.7, 0.7)
 			r.button:Show(); RowBg(r, i, false)
 		elseif c and c.award then
 			local a = c.award
@@ -1784,6 +1804,23 @@ function B.AskLootEntry(name)
 	}
 	StaticPopup_Show("LEVELMATES_LOOT_ENTRY", name, nil, name)
 end
+-- The reserve box: an item link or number.
+function B.AskLootReserve()
+	StaticPopupDialogs["LEVELMATES_LOOT_RESERVE"] = StaticPopupDialogs["LEVELMATES_LOOT_RESERVE"] or {
+		text = L.LOOT_RESERVE_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 200, timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function(self)
+			local eb = self.GetEditBox and self:GetEditBox() or self.EditBox
+			local id = ns.Wishlist.ItemId(eb and eb:GetText())
+			if id then ns.Loot.Reserve(id) else ns.Say(L.WISH_NOT_ITEM) end
+		end,
+		EditBoxOnEnterPressed = function(self)
+			local id = ns.Wishlist.ItemId(self:GetText())
+			if id then ns.Loot.Reserve(id) else ns.Say(L.WISH_NOT_ITEM) end
+			self:GetParent():Hide()
+		end,
+	}
+	StaticPopup_Show("LEVELMATES_LOOT_RESERVE")
+end
 -- The rules box: "<boss> <attendance> [quality]" in one line.
 function B.AskLootRules()
 	StaticPopupDialogs["LEVELMATES_LOOT_RULES"] = StaticPopupDialogs["LEVELMATES_LOOT_RULES"] or {
@@ -1814,6 +1851,10 @@ function B.OpenLootMenu(c)
 		elseif c.entry then
 			root:CreateTitle(c.entry.r)
 			if officer and c.entry.k ~= "refund" then root:CreateButton(L.LOOT_MENU_REFUND, function() ns.Confirm(string.format(L.LOOT_REFUND_CONFIRM, c.entry.p, B.lootPerson or "?"), function() ns.Loot.Refund(c.entry.id, L.LOOT_REFUND) end) end) end
+		elseif c.reserve then
+			root:CreateTitle(ns.ItemInfo(c.reserve.i) or ("#" .. c.reserve.i))
+			if c.reserve.name == ns.Me() then root:CreateButton(L.LOOT_MENU_UNRESERVE, function() ns.Loot.Unreserve(c.reserve.i) end) end
+			if R.mates[c.reserve.name] then root:CreateButton(L.MEMBER_CARD, function() ns.MateCard.Show(c.reserve.name) end) end
 		elseif c.award then
 			local a = c.award
 			root:CreateTitle((ns.ItemInfo(a.i) or ("#" .. a.i)) .. " → " .. a.to)
@@ -2092,10 +2133,13 @@ local function RefreshTabs()
 	B.journalAchButton:SetShown(journal); B.journalAchButton:SetText(B.journalView == "ach" and L.BTN_JOURNAL or L.BTN_ACH)
 	B.lootViewButton:SetShown(B.tab == "loot")
 	local lootOfficer = B.tab == "loot" and (R.IAmOfficer() or R.IsOfficer(ns.Me()))
-	B.lootRaidButton:SetShown(lootOfficer); B.lootRaidButton:SetText(ns.LootRaid.raid and L.BTN_LOOT_RAID_CLOSE or L.BTN_LOOT_RAID_OPEN)
+	B.lootRaidButton:SetShown(lootOfficer)
+	if B.lootView == "reserves" then B.lootRaidButton:SetText(ns.Loot.ReservesOpen() and L.BTN_LOOT_ROUND_CLOSE or L.BTN_LOOT_ROUND_OPEN)
+	else B.lootRaidButton:SetText(ns.LootRaid.raid and L.BTN_LOOT_RAID_CLOSE or L.BTN_LOOT_RAID_OPEN) end
+	B.lootReserveButton:SetShown(B.tab == "loot" and B.lootView == "reserves" and ns.Loot.ReservesOpen())
 	B.lootRulesButton:SetShown(lootOfficer); B.lootCopyButton:SetShown(B.tab == "loot")
 	if B.tab == "loot" then B.lootCopyButton:ClearAllPoints(); if lootOfficer then B.lootCopyButton:SetPoint("LEFT", B.lootRulesButton, "RIGHT", 6, 0) else B.lootCopyButton:SetPoint("BOTTOMLEFT", 12, 3) end end
-	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or B.lootView == "history" and L.BTN_LOOT_STANDINGS or L.BTN_LOOT_HISTORY)
+	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or B.lootView == "history" and L.BTN_LOOT_RESERVES or B.lootView == "reserves" and L.BTN_LOOT_STANDINGS or L.BTN_LOOT_HISTORY)
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
@@ -2173,7 +2217,7 @@ function B.Refresh()
 	end
 	if recruit and B.recruitView == "inactive" then B.heading:SetText(L.HEAD_INACTIVE); B.subtitle:SetText(L.SUB_INACTIVE) end
 	if B.tab == "loot" then   -- whose entries, with their balance
-		B.subtitle:SetText(B.lootView == "ledger" and string.format(L.SUB_LOOT_LEDGER, B.lootPerson or "?", ns.Loot.Balance(B.lootPerson or "")) or B.lootView == "history" and L.SUB_LOOT_HISTORY or L.SUB_LOOT)
+		B.subtitle:SetText(B.lootView == "ledger" and string.format(L.SUB_LOOT_LEDGER, B.lootPerson or "?", ns.Loot.Balance(B.lootPerson or "")) or B.lootView == "history" and L.SUB_LOOT_HISTORY or B.lootView == "reserves" and string.format(L.SUB_LOOT_RESERVES, ns.LootRaid.Rules().reserves) or L.SUB_LOOT)
 	end
 	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
 	B.subtitle:SetShown((B.MainOf(B.tab) ~= "guild") or B.tab == "bank" or B.tab == "loot")   -- the bank says whose look it shows   -- the sub-section buttons sit there
@@ -2218,7 +2262,7 @@ function B.Refresh()
 		elseif goals then emptyText = L.GOAL_EMPTY
 		elseif feed then emptyText = L.FEED_EMPTY
 		elseif crafts then emptyText = #ns.Professions.List() > 0 and L.EMPTY_FILTERED or L.CRAFTS_EMPTY
-		elseif B.tab == "loot" then emptyText = B.lootView == "history" and L.LOOT_HISTORY_EMPTY or B.lootView == "ledger" and L.LOOT_LEDGER_EMPTY or L.LOOT_EMPTY
+		elseif B.tab == "loot" then emptyText = B.lootView == "history" and L.LOOT_HISTORY_EMPTY or B.lootView == "ledger" and L.LOOT_LEDGER_EMPTY or B.lootView == "reserves" and (ns.Loot.ReservesOpen() and L.LOOT_RESERVES_EMPTY or L.LOOT_NO_ROUND_YET) or L.LOOT_EMPTY
 		elseif wishes then emptyText = L.WISH_EMPTY
 		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD
 		elseif lfg then emptyText = B.lfgCalendar and L.CAL_EMPTY or B.lfgTogether and L.TOGETHER_EMPTY or B.lfgQuests and L.QH_EMPTY or L.EMPTY_FILTERED   -- every dungeon has a card: empty only when the search hides them all

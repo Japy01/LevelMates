@@ -41,7 +41,7 @@ assert(B.lootView == "standings", "back to standings")
 -- the history view: awards with item, who, boss, state
 local aw = LT.Award(9001, "Luis", { boss = "Lucifron", proof = "ml", cost = 5 })
 B.lootViewButton.scripts.OnClick(B.lootViewButton)
-assert(B.lootView == "history" and B.lootViewButton.text == L.BTN_LOOT_STANDINGS, "history view")
+assert(B.lootView == "history" and B.lootViewButton.text == L.BTN_LOOT_RESERVES, "history view (the button offers the next view: reserves)")
 rows = shownRows()
 assert(#rows == 1 and rows[1].name.text:find("Casco de Lucifron", 1, true) and rows[1].zone.text:find("Luis", 1, true) and rows[1].zone.text:find("Lucifron", 1, true) and rows[1].group.text == L.LOOT_STATE_aw, "the award row: " .. tostring(rows[1].group.text))
 assert(B.headText[3].text == L.COL_FOR and B.headText[4].text == L.COL_STATE, "history headers")

@@ -130,8 +130,11 @@ function LW.Refresh()
 	end
 	local it = LW.items[LW.current or 1]
 	local list = it and candidates(it.slot) or {}
-	local wanted = {}
-	if it then for _, n in ipairs(ns.Wishlist.WantedBy(it.id)) do wanted[n] = true end end
+	local wanted, reserved = {}, {}
+	if it then
+		for _, n in ipairs(ns.Wishlist.WantedBy(it.id)) do wanted[n] = true end
+		for _, n in ipairs(LT.ReservedBy(it.id)) do reserved[n] = true end
+	end
 	for i, r in ipairs(LW.rows) do
 		local c = list[i]
 		if c and it then
@@ -141,7 +144,7 @@ function LW.Refresh()
 			if col then r.name:SetTextColor(col.r, col.g, col.b) else r.name:SetTextColor(1, 1, 1) end
 			r.points:SetText(LT.Balance(c.name))
 			r.plus:SetText(LT.PlusOne(c.name))
-			r.wish:SetText(wanted[c.name] and L.LW_WANTS or "")
+			r.wish:SetText(reserved[c.name] and L.LW_RESERVED or wanted[c.name] and L.LW_WANTS or "")
 			local il = wornLevel(c.name, it.id)
 			r.worn:SetText(il and tostring(il) or "")
 			r:Show()
