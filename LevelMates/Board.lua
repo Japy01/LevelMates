@@ -27,11 +27,11 @@ B.ICOLS = { 150, 50, 160, 110, 130 }   -- inactive members: name, level, rank, a
 B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 5, 8, 104, 50   -- dungeon cards (room for two-line names)
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
 B.TAB_KEYS = { "home", "mates", "lfg", "guild", "journal" }   -- the five main tabs
-B.GUILD_KEYS = { "feed", "goals", "wishes", "crafts", "class", "members", "bank", "recruit" }   -- the Guild tab's sub-sections
-B.CONTENT_KEYS = { "home", "mates", "lfg", "journal", "feed", "goals", "wishes", "crafts", "class", "members", "bank", "recruit" }   -- what a page shows
-local TAB_LABELS = { home = "TAB_HOME", guild = "TAB_GUILD", mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT", members = "TAB_MEMBERS", bank = "TAB_BANK" }
+B.GUILD_KEYS = { "feed", "goals", "wishes", "crafts", "class", "members", "bank", "loot", "recruit" }   -- the Guild tab's sub-sections
+B.CONTENT_KEYS = { "home", "mates", "lfg", "journal", "feed", "goals", "wishes", "crafts", "class", "members", "bank", "loot", "recruit" }   -- what a page shows
+local TAB_LABELS = { home = "TAB_HOME", guild = "TAB_GUILD", mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT", members = "TAB_MEMBERS", bank = "TAB_BANK", loot = "TAB_LOOT" }
 B.TAB_LABELS = TAB_LABELS
-local HEAD_KEY = { home = "HOME", mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT", members = "MEMBERS", bank = "BANK" }
+local HEAD_KEY = { home = "HOME", mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT", members = "MEMBERS", bank = "BANK", loot = "LOOT" }
 local TAB_ICON = { home = "Interface\\Icons\\INV_Misc_Book_09", mates = "Interface\\Icons\\Spell_Holy_PrayerOfFortitude",
 	lfg = "Interface\\Icons\\INV_Misc_Key_03", guild = "banner", journal = "Interface\\Icons\\INV_Misc_Note_01" }
 local function KnownTab(key) for _, k in ipairs(B.CONTENT_KEYS) do if k == key then return key end end; return "home" end
@@ -270,6 +270,10 @@ local function Build()
 				return
 			end
 			if B.tab == "bank" then return end
+			if B.tab == "loot" then
+				if self.lootEntry then B.OpenLootMenu(self.lootEntry) end
+				return
+			end
 			if B.tab == "crafts" then
 				if self.recipesHeader then B.recipesOf = nil; B.Refresh()   -- back to the professions
 				elseif self.crafter then B.OpenCraftMenu(self.crafter.name, self.entryItem)
@@ -431,7 +435,7 @@ local function Build()
 	local prevSub
 	for _, key in ipairs(B.GUILD_KEYS) do
 		local b = ns.Skin.Button(f)
-		b:SetSize(76, 20); b:SetText(L[TAB_LABELS[key]])   -- eight of them on one line
+		b:SetSize(72, 20); b:SetText(L[TAB_LABELS[key]])   -- nine of them on one line
 		if prevSub then b:SetPoint("LEFT", prevSub, "RIGHT", 4, 0) else b:SetPoint("TOPLEFT", f, "TOPLEFT", B.MARGIN, -(insetTop + 36)) end
 		b:SetScript("OnClick", function() B.SetTab(key) end)
 		B.subs[key], prevSub = b, b
@@ -459,6 +463,15 @@ local function Build()
 	ach:SetSize(120, 20); ach:SetPoint("RIGHT", filter, "LEFT", -8, 0)
 	ach:SetScript("OnClick", function() B.journalView = B.journalView ~= "ach" and "ach" or nil; B.journalPage = 1; B.Refresh() end)
 	B.journalAchButton = ach
+	-- Loot: standings / history, and Back from someone's entries
+	local lootView = ns.Skin.Button(f)
+	lootView:SetSize(120, 20); lootView:SetPoint("RIGHT", filter, "LEFT", -8, 0)
+	lootView:SetScript("OnClick", function()
+		if B.lootView == "ledger" then B.lootView, B.lootPerson = "standings", nil
+		else B.lootView = B.lootView == "history" and "standings" or "history" end
+		B.lootPage = 1; B.Refresh()
+	end)
+	B.lootViewButton = lootView
 	local prev = ns.Skin.Button(f)
 	prev:SetSize(110, 20); prev:SetPoint("BOTTOM", -160, B.BOTTOM + 8); prev:SetText(L.BTN_J_PREV)
 	prev:SetScript("OnClick", function() B.TurnPage(-1) end)
@@ -786,6 +799,17 @@ local function SetHeaders()
 	end
 	if B.tab == "class" then
 		B.headText[1]:SetText(""); B.headText[2]:SetText(""); B.headText[3]:SetText(""); B.headText[4]:SetText(L.COL_LEVEL); B.headText[5]:SetText("")
+		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
+		return
+	end
+	if B.tab == "loot" then
+		if B.lootView == "history" then
+			B.headText[1]:SetText(L.COL_ITEM); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_FOR); B.headText[4]:SetText(L.COL_STATE); B.headText[5]:SetText(L.COL_WHEN)
+		elseif B.lootView == "ledger" then
+			B.headText[1]:SetText(L.COL_WHEN); B.headText[2]:SetText(L.COL_POINTS); B.headText[3]:SetText(L.COL_REASON); B.headText[4]:SetText(L.COL_KIND); B.headText[5]:SetText(L.COL_BY)
+		else
+			B.headText[1]:SetText(L.COL_NAME); B.headText[2]:SetText(L.COL_POINTS); B.headText[3]:SetText(L.COL_EARNED_SPENT); B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_LAST)
+		end
 		for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
 		return
 	end
@@ -1672,6 +1696,102 @@ local function FillBank(list)
 	end
 end
 
+-- Guild > Loot: the standings, someone's entries, or the awards history (B.lootView).
+local function LootVisible()
+	local LT, out = ns.Loot, {}
+	if B.lootView == "ledger" and B.lootPerson then
+		for _, e in ipairs(LT.Ledger(B.lootPerson)) do out[#out + 1] = { entry = e } end
+	elseif B.lootView == "history" then
+		for _, a in ipairs(LT.History(B.search)) do out[#out + 1] = { award = a } end
+	else
+		local q = (B.search or ""):lower()
+		for _, s in ipairs(LT.Standings()) do if q == "" or s.name:lower():find(q, 1, true) then out[#out + 1] = { standing = s } end end
+	end
+	return out
+end
+local function ago(t) return t and t > 0 and string.format(L.FEED_AGO, ns.Journal.Short(math.max(0, GetServerTime() - t))) or "" end
+local function FillLoot(list)
+	for i = 1, ROWS do
+		local r, c = B.rows[i], list[i]
+		r.button.mate, r.button.adId = nil, nil
+		r.button.lootEntry = c
+		r.icon:Hide(); r.barBg:Hide(); r.barFill:Hide()
+		if c and c.standing then
+			local s = c.standing
+			r.name:SetText(s.name); r.name:SetTextColor(ClassColor(R.mates[s.name] and R.mates[s.name].class))
+			SetClassIcon(r.icon, R.mates[s.name] and R.mates[s.name].class)
+			r.level:SetText(s.total); r.level:SetTextColor(1, 0.82, 0)
+			r.zone:SetText(string.format(L.LOOT_EARNED_SPENT, s.earned, s.spent)); r.zone:SetTextColor(0.8, 0.8, 0.8)
+			r.group:SetText(""); r.xph:SetText(ago(s.last)); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show(); RowBg(r, i, false)
+		elseif c and c.entry then
+			local e = c.entry
+			r.name:SetText(ago(e.v)); r.name:SetTextColor(0.7, 0.7, 0.7)
+			r.level:SetText((e.p > 0 and "+" or "") .. e.p); r.level:SetTextColor(unpack(e.p > 0 and { 0.4, 1, 0.4 } or { 1, 0.4, 0.4 }))
+			r.zone:SetText(e.i and (ns.Recipes.Link(e.i) .. "  ·  " .. e.r) or e.r); r.zone:SetTextColor(1, 1, 1)
+			r.group:SetText(L["LOOT_KIND_" .. e.k] or e.k); r.group:SetTextColor(0.8, 0.8, 0.8)
+			r.xph:SetText(e.by or ""); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show(); RowBg(r, i, false)
+		elseif c and c.award then
+			local a = c.award
+			r.name:SetText(ns.Recipes.Link(a.i)); r.name:SetTextColor(1, 1, 1)
+			r.level:SetText("")
+			r.zone:SetText(a.to .. (a.b and ("  ·  " .. a.b) or "") .. ((a.c or 0) > 0 and ("  ·  " .. a.c .. " " .. L.LOOT_PTS) or "")); r.zone:SetTextColor(0.9, 0.9, 0.9)
+			r.group:SetText(L["LOOT_STATE_" .. a.s] or a.s); r.group:SetTextColor(unpack(a.s == "x" or a.s == "c" and { 0.6, 0.6, 0.6 } or a.s == "aw" and { 1, 0.82, 0 } or { 0.4, 1, 0.4 }))
+			r.xph:SetText(ago(a.at)); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show(); RowBg(r, i, false)
+		else
+			ClearRow(r)
+		end
+	end
+end
+-- "10 Lucifron" / "-15 Casco": the points and the reason, or nil.
+function B.ParseLootEntry(text)
+	local p, reason = strtrim(tostring(text or "")):match("^([%+%-]?%d+)%s+(.+)$")
+	p = tonumber(p)
+	if not p or p == 0 or not reason or strtrim(reason) == "" then return nil end
+	return p, strtrim(reason)
+end
+-- The box for an officer's entry: points and reason in one line.
+function B.AskLootEntry(name)
+	StaticPopupDialogs["LEVELMATES_LOOT_ENTRY"] = StaticPopupDialogs["LEVELMATES_LOOT_ENTRY"] or {
+		text = L.LOOT_ADD_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 90, timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function(self, data)
+			local eb = self.GetEditBox and self:GetEditBox() or self.EditBox
+			local p, reason = B.ParseLootEntry(eb and eb:GetText())
+			if p then ns.Loot.Post(data, p, "adj", reason) else ns.Say(L.LOOT_ADD_BAD) end
+		end,
+		EditBoxOnEnterPressed = function(self)
+			local dialog = self:GetParent()
+			local p, reason = B.ParseLootEntry(self:GetText())
+			if p then ns.Loot.Post(dialog.data, p, "adj", reason) else ns.Say(L.LOOT_ADD_BAD) end
+			dialog:Hide()
+		end,
+	}
+	StaticPopup_Show("LEVELMATES_LOOT_ENTRY", name, nil, name)
+end
+-- A row's click: someone's entries (and, for officers, an entry); an award's hand-over or cancel (officers).
+function B.OpenLootMenu(c)
+	local officer = R.IAmOfficer() or R.IsOfficer(ns.Me())
+	MenuUtil.CreateContextMenu(B.frame, function(_, root)
+		if c.standing then
+			root:CreateTitle(c.standing.name)
+			root:CreateButton(L.LOOT_MENU_LEDGER, function() B.lootView, B.lootPerson, B.lootPage = "ledger", c.standing.name, 1; B.Refresh() end)
+			if officer then root:CreateButton(L.LOOT_MENU_ADD, function() B.AskLootEntry(c.standing.name) end) end
+			if R.mates[c.standing.name] or c.standing.name == ns.Me() then root:CreateButton(L.MEMBER_CARD, function() ns.MateCard.Show(c.standing.name) end) end
+		elseif c.entry then
+			root:CreateTitle(c.entry.r)
+			if officer and c.entry.k ~= "refund" then root:CreateButton(L.LOOT_MENU_REFUND, function() ns.Confirm(string.format(L.LOOT_REFUND_CONFIRM, c.entry.p, B.lootPerson or "?"), function() ns.Loot.Refund(c.entry.id, L.LOOT_REFUND) end) end) end
+		elseif c.award then
+			local a = c.award
+			root:CreateTitle((ns.ItemInfo(a.i) or ("#" .. a.i)) .. " → " .. a.to)
+			if officer and (a.s == "aw") then root:CreateButton(L.LOOT_MENU_CONFIRM, function() ns.Loot.Confirm(a.id, "manual") end) end
+			if officer and (a.s == "aw" or a.s == "rc") then root:CreateButton(L.LOOT_MENU_CANCEL, function() ns.Confirm(L.LOOT_CANCEL_CONFIRM, function() ns.Loot.Cancel(a.id, L.LOOT_CANCELLED) end) end) end
+			if R.mates[a.to] then root:CreateButton(L.MEMBER_CARD, function() ns.MateCard.Show(a.to) end) end
+		end
+	end)
+end
+
 -- Who goes in a group, by role (a card's click).
 function B.OpenGroupMembers(g)
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
@@ -1864,7 +1984,7 @@ function B.OpenShareMacroMenu(owner)
 end
 
 -- Pages of ROWS for the long tabs (journal, goals, wishes, a long Mates list…); the pager sits in the help-rows area.
-local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", home = "homePage", feed = "feedPage", mates = "matePage", members = "memberPage", bank = "bankPage" }
+local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", home = "homePage", feed = "feedPage", mates = "matePage", members = "memberPage", bank = "bankPage", loot = "lootPage" }
 local function PageKey() if B.tab == "lfg" then return B.lfgCalendar and "calendarPage" or B.lfgTogether and "togetherPage" or B.lfgQuests and "questsPage" or nil end; return PAGE_KEY[B.tab] end
 local function Page(all)
 	local key = PageKey()
@@ -1938,6 +2058,8 @@ local function RefreshTabs()
 	B.lfgButton:SetText(ns.LFG.mine and L.BTN_LFG_CANCEL or L.BTN_LFG)
 	B.journalClear:SetShown(journal and B.journalView ~= "ach"); B.journalFilterButton:SetShown(journal and B.journalView ~= "ach")
 	B.journalAchButton:SetShown(journal); B.journalAchButton:SetText(B.journalView == "ach" and L.BTN_JOURNAL or L.BTN_ACH)
+	B.lootViewButton:SetShown(B.tab == "loot")
+	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or B.lootView == "history" and L.BTN_LOOT_STANDINGS or L.BTN_LOOT_HISTORY)
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
@@ -1983,6 +2105,8 @@ function B.Refresh()
 		list, pages = Page(MembersVisible())
 	elseif B.tab == "bank" then
 		list, pages = Page(BankVisible())
+	elseif B.tab == "loot" then
+		list, pages = Page(LootVisible())
 	elseif crafts then
 		list = {}   -- the crafts view draws it
 	elseif wishes then
@@ -2012,8 +2136,11 @@ function B.Refresh()
 		B.subtitle:SetText(snap and string.format(L.SUB_BANK_SEEN, snap.by, ns.Journal.Duration(math.max(0, GetServerTime() - snap.t)), ns.Gifts.Money(snap.m)) or L.SUB_BANK)
 	end
 	if recruit and B.recruitView == "inactive" then B.heading:SetText(L.HEAD_INACTIVE); B.subtitle:SetText(L.SUB_INACTIVE) end
+	if B.tab == "loot" then   -- whose entries, with their balance
+		B.subtitle:SetText(B.lootView == "ledger" and string.format(L.SUB_LOOT_LEDGER, B.lootPerson or "?", ns.Loot.Balance(B.lootPerson or "")) or B.lootView == "history" and L.SUB_LOOT_HISTORY or L.SUB_LOOT)
+	end
 	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
-	B.subtitle:SetShown((B.MainOf(B.tab) ~= "guild") or B.tab == "bank")   -- the bank says whose look it shows   -- the sub-section buttons sit there
+	B.subtitle:SetShown((B.MainOf(B.tab) ~= "guild") or B.tab == "bank" or B.tab == "loot")   -- the bank says whose look it shows   -- the sub-section buttons sit there
 	B.divider:SetShown(B.MainOf(B.tab) ~= "guild")
 	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end
@@ -2033,7 +2160,7 @@ function B.Refresh()
 		end
 	end
 	B.restedText:SetText(home and "" or top)   -- Home has it in "My character"
-	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif B.tab == "members" then FillMembers(list) elseif B.tab == "bank" then FillBank(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) elseif B.lfgTogether then FillTogether(list) elseif B.lfgQuests then FillQuests(list) else FillGrid(list) end else FillMates(list) end
+	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif B.tab == "members" then FillMembers(list) elseif B.tab == "bank" then FillBank(list) elseif B.tab == "loot" then FillLoot(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) elseif B.lfgTogether then FillTogether(list) elseif B.lfgQuests then FillQuests(list) else FillGrid(list) end else FillMates(list) end
 	if not lfg or B.lfgCalendar or B.lfgTogether or B.lfgQuests then for _, c in ipairs(B.cards) do c:Hide() end end
 	local catalogShown = lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests
 	if not crafts and not home then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
@@ -2055,6 +2182,7 @@ function B.Refresh()
 		elseif goals then emptyText = L.GOAL_EMPTY
 		elseif feed then emptyText = L.FEED_EMPTY
 		elseif crafts then emptyText = #ns.Professions.List() > 0 and L.EMPTY_FILTERED or L.CRAFTS_EMPTY
+		elseif B.tab == "loot" then emptyText = B.lootView == "history" and L.LOOT_HISTORY_EMPTY or B.lootView == "ledger" and L.LOOT_LEDGER_EMPTY or L.LOOT_EMPTY
 		elseif wishes then emptyText = L.WISH_EMPTY
 		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD
 		elseif lfg then emptyText = B.lfgCalendar and L.CAL_EMPTY or B.lfgTogether and L.TOGETHER_EMPTY or B.lfgQuests and L.QH_EMPTY or L.EMPTY_FILTERED   -- every dungeon has a card: empty only when the search hides them all
@@ -2076,10 +2204,10 @@ function B.Refresh()
 	RefreshTabs()
 	ns.Skin.InkPass()   -- what this page wrote, in ink
 	local paged = pages and pages > 1
-	if (goals or wishes or crafts or feed or class or recruit or home or B.tab == "mates" or lfg or B.tab == "members" or B.tab == "bank") and paged then   -- the pager only when there is more than one page
+	if (goals or wishes or crafts or feed or class or recruit or home or B.tab == "mates" or lfg or B.tab == "members" or B.tab == "bank" or B.tab == "loot") and paged then   -- the pager only when there is more than one page
 		B.journalPrev:Show(); B.journalNext:Show(); B.journalPageText:Show()
 	end
-	if journal or goals or wishes or crafts or feed or recruit or class or home or B.tab == "members" or B.tab == "bank" then
+	if journal or goals or wishes or crafts or feed or recruit or class or home or B.tab == "members" or B.tab == "bank" or B.tab == "loot" then
 		for _, hr in ipairs(B.helpRows) do hr.text:Hide(); hr.button:Hide() end   -- the pager uses this area
 	else
 		RefreshHelp(paged and 1 or 0)   -- a long list: its pager at the foot, the requests above it
@@ -2272,3 +2400,4 @@ homeFrame:SetScript("OnEvent", function(_, event)
 end)
 ns.Slash("clase", function() B.ShowTab("class") end)
 ns.Slash("class", function() B.ShowTab("class") end)
+ns.On("LM_LOOT_CHANGED", function() ns.Dirty("board") end)

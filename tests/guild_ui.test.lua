@@ -18,9 +18,9 @@ STUB.Receive("LVLM2", C.Encode("gn", STUB.Rec{ id = ns.NameKey("Mario"), f = "Ma
 STUB.Receive("LVLM2", C.Encode("gmo", STUB.Rec{ id = "motd", n = "Raid el viernes" }), "GUILD", "Luis-Testrealm")
 STUB.Fire("GUILD_ROSTER_UPDATE"); STUB.Advance(3)
 B.Toggle()
--- eight sub-tabs that fit
-assert(#B.GUILD_KEYS == 8 and B.subs.members and B.subs.bank, "members and bank among the sub-tabs")
-for _, k in ipairs(B.GUILD_KEYS) do assert(B.subs[k]:GetWidth() <= 76, "narrow: " .. k) end
+-- nine sub-tabs that fit (Ruling 2026-10-16: Loot joined them; the buttons narrowed to 72)
+assert(#B.GUILD_KEYS == 9 and B.subs.members and B.subs.bank and B.subs.loot, "members, bank and loot among the sub-tabs")
+for _, k in ipairs(B.GUILD_KEYS) do assert(B.subs[k]:GetWidth() <= 72, "narrow: " .. k) end
 -- Home: the message of the day first
 B.ShowTab("home")
 assert(ns.Dashboard.motd:IsShown() and ns.Dashboard.motd.text.text:find("Raid el viernes", 1, true), "the MOTD strip on Home")
