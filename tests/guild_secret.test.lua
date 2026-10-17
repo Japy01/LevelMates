@@ -42,7 +42,7 @@ B.Toggle(); B.ShowTab("home")
 local okH, errH = pcall(B.Refresh)
 assert(okH, "Home draws: " .. tostring(errH))
 local DB = ns.Dashboard
-assert(DB.stats[2].value.text == "1", "online count drawn: " .. tostring(DB.stats[2].value.text))
+assert(DB.stats[2].value.text == tostring(ns.Roster.OnlineCount()), "online count drawn (everyone online since 2026-10-17): " .. tostring(DB.stats[2].value.text))
 -- a secret member entry (the list is readable, one member is not): skipped, no error
 C_Club.GetClubMembers = function() return { "Tester", "Mario", "Ana" } end
 C_Club.GetMemberInfo = function(_, id) if id == "Ana" then return SECRET end; return { name = id, level = 20, presence = 1, role = 4, guildRankOrder = 4, classID = 8 } end

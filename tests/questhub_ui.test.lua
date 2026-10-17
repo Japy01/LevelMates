@@ -6,7 +6,7 @@ local B, C, L, QH = ns.Board, ns.Comm, ns.L, ns.Questhub
 local entries
 MenuUtil.CreateContextMenu = function(owner, fn)
 	entries = {}
-	local root = { CreateTitle = function() end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
+	local root = { CreateTitle = function() end, CreateRadio = function(_, text, isSel, setSel, data) entries[#entries + 1] = { text = text, radio = true, selected = isSel(data) and true or false, cb = function() setSel(data) end } end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
 	fn(owner, root)
 end
 local function has(text) for _, e in ipairs(entries) do if e.text == text then return e end end end
@@ -25,10 +25,10 @@ assert(has(L.QH_ME_TOO) and has(L.DP_WHISPER) and has(L.DP_INVITE), "menu: me to
 has(L.QH_ME_TOO).cb()
 assert(QH.IJoined(row.button.questEntry.id), "me too from the menu")
 -- filter cycles
-assert(B.questFilter == "all"); B.questFilterButton.scripts.OnClick(B.questFilterButton); assert(B.questFilter == "zone", "filter: zone")
-B.questFilterButton.scripts.OnClick(B.questFilterButton); B.questFilterButton.scripts.OnClick(B.questFilterButton)
+assert(B.questFilter == "all"); B.questFilterButton.scripts.OnClick(B.questFilterButton); has(L.QH_FILTER_ZONE).cb(); assert(B.questFilter == "zone", "filter: zone")
+B.questFilterButton.scripts.OnClick(B.questFilterButton); has(L.QH_FILTER_GROUP).cb()
 assert(B.questFilter == "group", "filter: group")
-B.questFilterButton.scripts.OnClick(B.questFilterButton); assert(B.questFilter == "all", "and back")
+B.questFilterButton.scripts.OnClick(B.questFilterButton); has(L.QH_FILTER_ALL).cb(); assert(B.questFilter == "all", "and back")
 -- the post button: a menu of my quests
 B.questPostButton.scripts.OnClick(B.questPostButton)
 assert(has("Quest 202"), "my quests to post")

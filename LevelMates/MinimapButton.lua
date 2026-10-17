@@ -11,13 +11,25 @@ function M.AngleFromCursor(cx, cy, mx, my)
 	return math.deg(atan2(cy - my, cx - mx)) % 360
 end
 
+-- Where the button goes for an angle: on the circle; on a square minimap (the shape minimap addons declare), along
+-- the square's edge, so the button never floats inside the map or hangs off a corner.
+function M.Offset(angle, half, shape)
+	local rad = math.rad(angle)
+	local x, y = math.cos(rad), math.sin(rad)
+	if shape == "SQUARE" then
+		local k = math.max(math.abs(x), math.abs(y))
+		if k > 0 then x, y = x / k, y / k end
+		return x * half, y * half
+	end
+	return x * (half + 5), y * (half + 5)
+end
 function M.Place(angle)
 	local b = M.button
 	if not b then return end
-	local radius = Minimap:GetWidth() / 2 + 5
-	local rad = math.rad(angle)
+	local shape = Minimap.GetMinimapShape and Minimap:GetMinimapShape() or (GetMinimapShape and GetMinimapShape()) or "ROUND"
+	local x, y = M.Offset(angle, Minimap:GetWidth() / 2, shape)
 	b:ClearAllPoints()
-	b:SetPoint("CENTER", Minimap, "CENTER", math.cos(rad) * radius, math.sin(rad) * radius)
+	b:SetPoint("CENTER", Minimap, "CENTER", x, y)
 end
 
 function M.Refresh()

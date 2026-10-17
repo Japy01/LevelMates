@@ -4,11 +4,20 @@ local S = {}
 ns.Settings = S
 local L = ns.L
 
+S.byKey = {}   -- the switch objects by their key: quiet mode tells the ones it changes to redraw
 local function Bool(category, key, name, tooltip, onChange)
 	local setting = Settings.RegisterAddOnSetting(category, "LevelMates_" .. key, key, ns.db.settings, Settings.VarType.Boolean, name, ns.DEFAULTS[key])   -- the panel's Defaults button restores the shipped value
 	if onChange then setting:SetValueChangedCallback(function(_, v) onChange(v) end) end
 	Settings.CreateCheckbox(category, setting, tooltip)
+	S.byKey[key] = setting
 	return setting
+end
+-- A button on a page (the game's own), nothing when the client lacks it.
+local function Button(category, name, text, click, tooltip)
+	pcall(function()
+		local layout = SettingsPanel and SettingsPanel.GetLayout and SettingsPanel:GetLayout(category)
+		if layout and CreateSettingsButtonInitializer then layout:AddInitializer(CreateSettingsButtonInitializer(name, text, click, tooltip)) end
+	end)
 end
 
 -- Three pages so nobody gets lost: General (the main switch, language, minimap, sound, transport), Share (what goes
@@ -79,6 +88,13 @@ ns.On("LM_LOADED", function()
 		Choice(category, "size", L.OPT_SIZE, L.OPT_SIZE_TT, { { value = "100", label = L.SIZE_NORMAL }, { value = "115", label = L.SIZE_BIG }, { value = "130", label = L.SIZE_HUGE } },
 			function() return tostring(ns.db.settings.boardScale or 100) end, function(v) ns.Board.SetScale(tonumber(v)) end)
 	end
+	-- the ink: how dark the writing is, 1 (lightest) to 5 (darkest)
+	if Settings.CreateSliderOptions and Settings.CreateSlider then
+		local ink = Settings.RegisterProxySetting(category, "LevelMates_ink", Settings.VarType.Number, L.OPT_INK, 4,
+			function() return ns.Skin.InkLevel() end, function(v) ns.db.settings.ink = math.floor(v); ns.Skin.InkPass() end)
+		Settings.CreateSlider(category, ink, Settings.CreateSliderOptions(1, #ns.Skin.INK_LEVELS, 1), L.OPT_INK_TT)
+	end
+	Button(category, L.OPT_RESET_POS, L.OPT_RESET_POS_BTN, function() ns.Board.ResetPosition() end, L.OPT_RESET_POS_TT)
 	Bool(category, "minimap", L.OPT_MINIMAP, L.OPT_MINIMAP_TT, function() ns.Fire("LM_MINIMAP_CHANGED") end)
 	Bool(category, "sound", L.OPT_SOUND)
 	Header(category, L.OPT_H_MAP)
@@ -155,6 +171,10 @@ function S.SetQuiet(on)
 	elseif not on and st.quietSaved then
 		for _, k in ipairs(S.QUIET_KEYS) do if st.quietSaved[k] ~= nil then st[k] = st.quietSaved[k] end end
 		st.quietSaved = nil
+	end
+	for _, k in ipairs(S.QUIET_KEYS) do   -- the switches on the page show their new state at once
+		local s = S.byKey[k]
+		if s and s.NotifyUpdate then pcall(s.NotifyUpdate, s) end
 	end
 end
 

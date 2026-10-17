@@ -136,7 +136,7 @@ end
 local function post(runId, line)
 	sending, sendingLine = runId, line
 	held[runId] = nil
-	local ok = pcall(SendChatMessage, line, "GUILD_DISCORD")
+	local ok = ns.SendChat(line, "GUILD_DISCORD")
 	sending, sendingLine = nil, nil
 	if not ok then held[runId] = line end
 	ns.Fire("LM_DISCORD_CHANGED")

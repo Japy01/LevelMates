@@ -217,6 +217,7 @@ function DB.Build(parent)
 	-- the guild chat, in the middle: the session's lines and a box to write (the whole guild, with or without the addon)
 	DB.chat = W.Panel(f, L.DB_CHAT, ICONS.chat); DB.chat:SetHint(L.DB_HINT_CHAT); items(DB.chat, DB.CHAT, false)
 	for _, it in ipairs(DB.chat.items) do it.text.lmKeep = true; it:SetScript("OnClick", nil) end   -- the lines keep their class colours
+	ns.GuildChat.Hyperlinks(DB.chat)   -- item links: their tooltip under the cursor
 	DB.chatInput = CreateFrame("EditBox", nil, DB.chat, "InputBoxTemplate")
 	DB.chatInput:SetHeight(20); DB.chatInput:SetPoint("BOTTOMLEFT", PAD + 6, 6); DB.chatInput:SetPoint("RIGHT", -PAD - 66, 0); DB.chatInput:SetAutoFocus(false); DB.chatInput:SetMaxLetters(255)
 	DB.chatInput:SetScript("OnEnterPressed", function(self) if ns.GuildChat.Send(self:GetText()) then self:SetText("") end end)
@@ -266,7 +267,7 @@ local function refreshStats()
 	local PT = ns.Points
 	local level, into, need = PT.Level(PT.GuildTotal())
 	DB.stats[1]:Set(level, L.DB_STAT_LEVEL, into .. "/" .. need); DB.stats[1]:SetBar(need > 0 and into / need or 0)
-	DB.stats[2]:Set(#R.List() + 1, L.DB_STAT_ONLINE, ""); DB.stats[2]:SetBar(nil)
+	DB.stats[2]:Set(R.OnlineCount(), L.DB_STAT_ONLINE, string.format(L.DB_STAT_WITH_ADDON, #R.List() + 1)); DB.stats[2]:SetBar(nil)
 	local g = ns.Gear.Mine()
 	DB.stats[3]:Set(g and g.avg and g.avg > 0 and g.avg or "-", L.DB_STAT_ILVL, g and ((g.filled or 0) .. "/17") or "")
 	DB.stats[3]:SetBar(g and (g.filled or 0) / 17 or 0)

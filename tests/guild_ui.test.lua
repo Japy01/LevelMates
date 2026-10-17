@@ -6,7 +6,7 @@ local B, C, L = ns.Board, ns.Comm, ns.L
 local entries
 MenuUtil.CreateContextMenu = function(owner, fn)
 	entries = {}
-	local root = { CreateTitle = function() end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
+	local root = { CreateTitle = function() end, CreateRadio = function(_, text, isSel, setSel, data) entries[#entries + 1] = { text = text, radio = true, selected = isSel(data) and true or false, cb = function() setSel(data) end } end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
 	fn(owner, root)
 end
 local function opt(t) for _, e in ipairs(entries) do if e.text == t then return e end end end
@@ -34,7 +34,7 @@ for _, r in ipairs(B.rows) do if r.button:IsShown() and r.button.memberEntry the
 assert(n == 4, "all four members: " .. n)
 mario.button.scripts.OnClick(mario.button, "LeftButton")
 assert(opt(L.MENU_WHISPER) and opt(L.MENU_INVITE), "whisper and invite")
-assert(B.memberFilter == "all"); B.memberFilterButton.scripts.OnClick(B.memberFilterButton); assert(B.memberFilter == "online", "filter: online")
+assert(B.memberFilter == "all"); B.memberFilterButton.scripts.OnClick(B.memberFilterButton); opt(L.MEMBERS_FILTER_ONLINE).cb(); assert(B.memberFilter == "online", "filter: online")
 B.memberFilter = "all"; B.Refresh()   -- Ruling 2026-10-17: the stub's members are offline unless a test says otherwise, so the page is redrawn with every member
 -- my own row: write my note
 local mine
@@ -44,9 +44,9 @@ assert(opt(L.NOTE_WRITE), "write my note")
 -- the views (Mario shares an alt)
 STUB.guildMembers.Marito = true; ns.Roster.InvalidateGuildRoster(); ns.Members.Invalidate()
 STUB.Receive("LVLM2", C.Encode("al", { n = "Marito" }), "GUILD", "Mario-Testrealm")
-local kinds = { "historyEntry", "altEntry", "raceEntry" }
-for _, field in ipairs(kinds) do
-	B.memberViewButton.scripts.OnClick(B.memberViewButton)
+local kinds = { historyEntry = L.MEMBERS_VIEW_HISTORY, altEntry = L.MEMBERS_VIEW_ALTS, raceEntry = L.MEMBERS_VIEW_RACE }
+for field, label in pairs(kinds) do
+	B.memberViewButton.scripts.OnClick(B.memberViewButton); opt(label).cb()
 	local any = false
 	for _, r in ipairs(B.rows) do if r.button:IsShown() and r.button[field] then any = true end end
 	assert(any or field == "historyEntry", "rows for " .. field)

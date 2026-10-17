@@ -1,6 +1,7 @@
 -- Comm.lua: wire format and transport. Format: "2<US>kind<US>k=v;k=v", US = \031, on its own prefix (protocol v2:
 -- a clean cut from 0.3.x, whose prefix is only listened to for telling them to update).
 local _, ns = ...
+local L = ns.L
 local C = {}
 ns.Comm = C
 C.VERSION = "2"
@@ -243,6 +244,7 @@ local function ensureChannel()
 	local id = GetChannelName(name)
 	if (not id or id == 0) and GetTime() - lastJoin >= 5 then   -- joining is a server round-trip: ask, then poll on later pumps
 		JoinTemporaryChannel(name); lastJoin = GetTime(); id = GetChannelName(name)
+		if ns.db and not ns.db.channelNoticed then ns.db.channelNoticed = true; ns.Chat(L.COMM_CHANNEL_NOTICE, name) end   -- once per account: what that channel is
 	end
 	channelId = (id and id > 0) and id or nil
 	return channelId

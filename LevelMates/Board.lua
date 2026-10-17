@@ -100,6 +100,12 @@ local function Build()
 	B.SetTitle(B.TitleString())
 	tinsert(UISpecialFrames, "LevelMatesBoard")
 	f:Hide()
+	-- the game's own sounds: the spellbook's on open and close (closed any way: Esc, the ×, the command)
+	f:SetScript("OnShow", function() B.Sound("IG_SPELLBOOK_OPEN") end)
+	f:SetScript("OnHide", function() B.Sound("IG_SPELLBOOK_CLOSE") end)
+	-- the mouse wheel turns the page of whatever list is paged
+	f:EnableMouseWheel(true)
+	f:SetScript("OnMouseWheel", function(_, delta) B.TurnPage(delta > 0 and -1 or 1) end)
 
 	-- Heading, subtitle, divider and the name search, in the style of the dungeon journal.
 	B.heading = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -177,7 +183,8 @@ local function Build()
 	-- The feedback line: what a click did, at the foot of the page; 6 s, then it fades; its × closes it. Clicks go
 	-- through the line to whatever is under it (the pager, the help rows).
 	local fb = CreateFrame("Frame", nil, f)
-	fb:SetSize(B.FEEDBACK_W, 22); fb:SetPoint("BOTTOM", 0, B.BOTTOM + B.FOOT_H - 26)   -- above the page's curled bottom edge; fb:SetFrameLevel((f:GetFrameLevel() or 1) + 20)
+	fb:SetSize(B.FEEDBACK_W, 22); fb:SetPoint("BOTTOM", 0, B.BOTTOM + B.FOOT_H - 26)   -- above the page's curled bottom edge
+	fb:SetFrameLevel((f:GetFrameLevel() or 1) + 20)
 	fb:EnableMouse(false)
 	fb.bg = fb:CreateTexture(nil, "BACKGROUND"); fb.bg:SetAllPoints(); fb.bg:SetColorTexture(unpack(ns.Skin.C.section))
 	fb.text = fb:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -473,11 +480,9 @@ local function Build()
 	local filter = ns.Skin.Button(f)
 	filter:SetSize(140, 20); filter:SetPoint("BOTTOMRIGHT", -12, 3)
 	filter:SetScript("OnClick", function(self)
-		MenuUtil.CreateContextMenu(self, function(_, root)
-			for _, kind in ipairs(ns.Journal.FILTERS) do
-				root:CreateButton(ns.Journal.FilterName(kind), function() B.journalFilter = kind; B.journalPage = 1; B.Refresh() end)
-			end
-		end)
+		local options = {}
+		for _, kind in ipairs(ns.Journal.FILTERS) do options[#options + 1] = { value = kind, label = ns.Journal.FilterName(kind) } end
+		W.PickMenu(self, L.BTN_J_FILTER_TITLE, options, B.journalFilter or "all", function(kind) B.journalFilter = kind; B.journalPage = 1; B.Refresh() end)
 	end)
 	B.journalFilterButton = filter
 	-- Journal tab: "Achievements" (bottom right, left of the filter) swaps the journal for my achievements
@@ -488,10 +493,10 @@ local function Build()
 	-- Loot: standings / history, and Back from someone's entries
 	local lootView = ns.Skin.Button(f)
 	lootView:SetSize(120, 20); lootView:SetPoint("RIGHT", filter, "LEFT", -8, 0)
-	lootView:SetScript("OnClick", function()
-		if B.lootView == "ledger" then B.lootView, B.lootPerson = "standings", nil
-		else B.lootView = B.lootView == "history" and "reserves" or B.lootView == "reserves" and "standings" or "history" end
-		B.lootPage = 1; B.Refresh()
+	B.LOOT_VIEWS = { { value = "standings", label = L.BTN_LOOT_STANDINGS }, { value = "history", label = L.BTN_LOOT_HISTORY }, { value = "reserves", label = L.BTN_LOOT_RESERVES } }
+	lootView:SetScript("OnClick", function(self)
+		if B.lootView == "ledger" then B.lootView, B.lootPerson = "standings", nil; B.lootPage = 1; B.Refresh(); return end   -- Back
+		W.PickMenu(self, L.BTN_VIEW_TITLE, B.LOOT_VIEWS, B.lootView or "standings", function(v) B.lootView = v; B.lootPage = 1; B.Refresh() end)
 	end)
 	B.lootViewButton = lootView
 	local prev = ns.Skin.Button(f)
@@ -558,9 +563,10 @@ local function Build()
 	local FILTERS = { "all", "zone", "level", "group" }
 	local filterB = ns.Skin.Button(f)
 	filterB:SetSize(140, 20); filterB:SetPoint("BOTTOMLEFT", 12, 3)
-	filterB:SetScript("OnClick", function()
-		for i, k in ipairs(FILTERS) do if k == B.questFilter then B.questFilter = FILTERS[i % #FILTERS + 1]; break end end
-		B.Refresh()
+	filterB:SetScript("OnClick", function(self)
+		local options = {}
+		for _, k in ipairs(FILTERS) do options[#options + 1] = { value = k, label = L["QH_FILTER_" .. k:upper()] } end
+		W.PickMenu(self, L.BTN_SHOW_TITLE, options, B.questFilter, function(v) B.questFilter = v; B.Refresh() end)
 	end)
 	B.questFilterButton = filterB
 	local postB = ns.Skin.Button(f)
@@ -579,16 +585,18 @@ local function Build()
 	local VIEWS, MFILTERS = { "list", "history", "alts", "race" }, { "all", "online", "officers", "nonote" }
 	local viewB = ns.Skin.Button(f)
 	viewB:SetSize(130, 20); viewB:SetPoint("BOTTOMLEFT", 12, 3)
-	viewB:SetScript("OnClick", function()
-		for i, k in ipairs(VIEWS) do if k == B.membersView then B.membersView = VIEWS[i % #VIEWS + 1]; break end end
-		B.memberPage = 1; B.Refresh()
+	viewB:SetScript("OnClick", function(self)
+		local options = {}
+		for _, k in ipairs(VIEWS) do options[#options + 1] = { value = k, label = L["MEMBERS_VIEW_" .. k:upper()] } end
+		W.PickMenu(self, L.BTN_VIEW_TITLE, options, B.membersView, function(v) B.membersView = v; B.memberPage = 1; B.Refresh() end)
 	end)
 	B.memberViewButton = viewB
 	local mfB = ns.Skin.Button(f)
 	mfB:SetSize(130, 20); mfB:SetPoint("LEFT", viewB, "RIGHT", 6, 0)
-	mfB:SetScript("OnClick", function()
-		for i, k in ipairs(MFILTERS) do if k == B.memberFilter then B.memberFilter = MFILTERS[i % #MFILTERS + 1]; break end end
-		B.memberPage = 1; B.Refresh()
+	mfB:SetScript("OnClick", function(self)
+		local options = {}
+		for _, k in ipairs(MFILTERS) do options[#options + 1] = { value = k, label = L["MEMBERS_FILTER_" .. k:upper()] } end
+		W.PickMenu(self, L.BTN_SHOW_TITLE, options, B.memberFilter, function(v) B.memberFilter = v; B.memberPage = 1; B.Refresh() end)
 	end)
 	B.memberFilterButton = mfB
 	-- "My role: Tank Healer Damage" (bottom left of the Groups tab)
@@ -672,7 +680,12 @@ local function Build()
 	B.recruitViewButton = view
 	local days = ns.Skin.Button(f)
 	days:SetSize(120, 20); days:SetPoint("BOTTOMRIGHT", -12, 3)
-	days:SetScript("OnClick", function() ns.char.inactiveDays = (ns.char.inactiveDays or 14) == 14 and 30 or 14; B.recruitPage = 1; B.Refresh() end)
+	B.INACTIVE_CHOICES = { 14, 30, 60, 90 }
+	days:SetScript("OnClick", function(self)
+		local options = {}
+		for _, n in ipairs(B.INACTIVE_CHOICES) do options[#options + 1] = { value = n, label = string.format(L.INACTIVE_DAYS, n) } end
+		W.PickMenu(self, L.BTN_INACTIVE, options, ns.char.inactiveDays or 14, function(n) ns.char.inactiveDays = n; B.recruitPage = 1; B.Refresh() end)
+	end)
 	B.recruitDaysButton = days
 
 	-- active help requests, above the help button; "On my way" whispers only from its click
@@ -718,11 +731,21 @@ local function RefreshHelp(skip)
 end
 
 local NEAR_RANGE = 5
+-- One of the game's UI sounds (the spellbook's, the character sheet's tabs), by its SOUNDKIT name.
+function B.Sound(key)
+	local id = SOUNDKIT and SOUNDKIT[key]
+	if id and PlaySound then pcall(PlaySound, id) end
+end
+-- Back to the middle of the screen (Options: "reset position"), for a book dragged off a now-smaller screen.
+function B.ResetPosition()
+	ns.char.board = nil
+	if B.frame then B.frame:ClearAllPoints(); B.frame:SetPoint("CENTER") end
+end
 -- "LevelMates - <guild> (3)": the addon, the guild it is showing, and how many mates are online.
 function B.TitleString()
 	local guild = GetGuildInfo and GetGuildInfo("player")
 	local base = (guild and guild ~= "") and (L.BOARD_TITLE .. " - " .. guild) or L.BOARD_TITLE
-	return string.format("%s (%d)", base, #R.List() + 1)   -- online with LevelMates, me included
+	return string.format("%s (%d)", base, R.OnlineCount())   -- everyone online, with the addon or without (as the pill)
 end
 
 -- The pills follow what they count; each hides when it has nothing to say.
@@ -2152,14 +2175,14 @@ local function RefreshTabs()
 	for k, chip in pairs(B.catalogChips) do chip:SetShown(catalogView); chip:SetChecked(k == (ns.char.catalogKind or "d")) end
 	B.togetherButton:SetShown(lfg)
 	B.togetherButton:SetText(B.lfgTogether and L.BTN_CARDS or L.BTN_TOGETHER)
-	B.memberViewButton:SetShown(B.tab == "members"); B.memberViewButton:SetText(L["MEMBERS_VIEW_" .. B.membersView:upper()])
-	B.memberFilterButton:SetShown(B.tab == "members" and B.membersView == "list"); B.memberFilterButton:SetText(L["MEMBERS_FILTER_" .. B.memberFilter:upper()])
+	B.memberViewButton:SetShown(B.tab == "members"); B.memberViewButton:SetText(string.format(L.BTN_VIEW_FMT, L["MEMBERS_VIEW_" .. B.membersView:upper()]))
+	B.memberFilterButton:SetShown(B.tab == "members" and B.membersView == "list"); B.memberFilterButton:SetText(string.format(L.BTN_SHOW_FMT, L["MEMBERS_FILTER_" .. B.memberFilter:upper()]))
 	B.questsButton:SetShown(lfg)
 	B.questsButton:SetText(B.lfgQuests and L.BTN_CARDS or L.BTN_QUESTS)
 	B.roleLine:SetShown(false)   -- my role is chosen in the form
 	B.questFilterButton:SetShown(lfg and B.lfgQuests); B.questPostButton:SetShown(lfg and B.lfgQuests)
-	B.questFilterButton:SetText(L["QH_FILTER_" .. B.questFilter:upper()])
-	for role, b in pairs(B.roleButtons) do b:SetEnabled(role ~= ns.Roles.Mine()) end   -- mine is pressed in
+	B.questFilterButton:SetText(string.format(L.BTN_SHOW_FMT, L["QH_FILTER_" .. B.questFilter:upper()]))
+	for role, b in pairs(B.roleButtons) do if role == ns.Roles.Mine() then b:LockHighlight() else b:UnlockHighlight() end end   -- mine is lit
 	B.lfgButton:SetText(ns.LFG.mine and L.BTN_LFG_CANCEL or L.BTN_LFG)
 	B.journalClear:SetShown(journal and B.journalView ~= "ach"); B.journalFilterButton:SetShown(journal and B.journalView ~= "ach")
 	B.journalAchButton:SetShown(journal); B.journalAchButton:SetText(B.journalView == "ach" and L.BTN_JOURNAL or L.BTN_ACH)
@@ -2171,7 +2194,7 @@ local function RefreshTabs()
 	B.lootReserveButton:SetShown(B.tab == "loot" and B.lootView == "reserves" and ns.Loot.ReservesOpen())
 	B.lootRulesButton:SetShown(lootOfficer); B.lootCopyButton:SetShown(B.tab == "loot")
 	if B.tab == "loot" then B.lootCopyButton:ClearAllPoints(); if lootOfficer then B.lootCopyButton:SetPoint("LEFT", B.lootRulesButton, "RIGHT", 6, 0) else B.lootCopyButton:SetPoint("BOTTOMLEFT", 12, 3) end end
-	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or B.lootView == "history" and L.BTN_LOOT_RESERVES or B.lootView == "reserves" and L.BTN_LOOT_STANDINGS or L.BTN_LOOT_HISTORY)
+	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or string.format(L.BTN_VIEW_FMT, B.lootView == "history" and L.BTN_LOOT_HISTORY or B.lootView == "reserves" and L.BTN_LOOT_RESERVES or L.BTN_LOOT_STANDINGS))
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
@@ -2330,6 +2353,7 @@ function B.SetTab(key)
 	ResetBars()
 	B.recipesOf = nil   -- someone's recipes are a look inside the Crafts tab, not a place to come back to
 	key = KnownTab(Resolve(key))
+	if key ~= B.tab then B.Sound("IG_CHARACTER_INFO_TAB") end
 	if B.MainOf(key) == "guild" and (key ~= "recruit" or R.IAmOfficer()) then ns.char.guildSub = key end
 	ns.char.boardTab, B.tab, B.search = key, key, ""
 	if B.searchBox then B.searchBox:SetText("") end

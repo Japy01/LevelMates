@@ -129,11 +129,26 @@ function W.Pill(parent, light)
 	return p
 end
 
+-- A picker: a dropdown under a button with one radio per option and the current one marked; options are
+-- { value, label }; onPick(value) runs from the click. The button itself should read "View: <current>".
+function W.PickMenu(owner, title, options, current, onPick)
+	MenuUtil.CreateContextMenu(owner, function(_, root)
+		if title and title ~= "" then root:CreateTitle(title) end
+		for _, o in ipairs(options) do
+			if root.CreateRadio then
+				root:CreateRadio(o.label, function(v) return v == current end, function(v) onPick(v) end, o.value)
+			else
+				root:CreateButton((o.value == current and "|cffffd100> |r" or "") .. o.label, function() onPick(o.value) end)
+			end
+		end
+	end)
+end
+
 -- A chip: a small toggle button that stays marked (sub-tabs, filters, days).
 function W.Chip(parent, text)
 	local c = SK.Button(parent)
 	c:SetSize(70, 20); c:SetText(text or "")
-	function c:SetChecked(on) self.checked = on and true or false; self:SetEnabled(not self.checked) end   -- the marked one is pressed in
+	function c:SetChecked(on) self.checked = on and true or false; if self.checked then self:LockHighlight() else self:UnlockHighlight() end end   -- the marked one is lit (greyed would read as "not available")
 	return c
 end
 

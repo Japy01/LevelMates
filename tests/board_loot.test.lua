@@ -10,7 +10,7 @@ STUB.items[9001] = "|cffa335ee|Hitem:9001::::::::60:::::::|h[Casco de Lucifron]|
 local entries
 MenuUtil.CreateContextMenu = function(owner, fn)
 	entries = {}
-	local root = { CreateTitle = function() end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
+	local root = { CreateTitle = function() end, CreateRadio = function(_, text, isSel, setSel, data) entries[#entries + 1] = { text = text, radio = true, selected = isSel(data) and true or false, cb = function() setSel(data) end } end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
 	fn(owner, root)
 end
 local function pick(text) for _, e in ipairs(entries or {}) do if e.text == text then return e end end end
@@ -40,8 +40,8 @@ B.lootViewButton.scripts.OnClick(B.lootViewButton)
 assert(B.lootView == "standings", "back to standings")
 -- the history view: awards with item, who, boss, state
 local aw = LT.Award(9001, "Luis", { boss = "Lucifron", proof = "ml", cost = 5 })
-B.lootViewButton.scripts.OnClick(B.lootViewButton)
-assert(B.lootView == "history" and B.lootViewButton.text == L.BTN_LOOT_RESERVES, "history view (the button offers the next view: reserves)")
+B.lootViewButton.scripts.OnClick(B.lootViewButton); pick(L.BTN_LOOT_HISTORY).cb()   -- a dropdown of the views (2026-10-17)
+assert(B.lootView == "history" and B.lootViewButton.text == string.format(L.BTN_VIEW_FMT, L.BTN_LOOT_HISTORY), "history view, the button says so")
 rows = shownRows()
 assert(#rows == 1 and rows[1].name.text:find("Casco de Lucifron", 1, true) and rows[1].zone.text:find("Luis", 1, true) and rows[1].zone.text:find("Lucifron", 1, true) and rows[1].group.text == L.LOOT_STATE_aw, "the award row: " .. tostring(rows[1].group.text))
 assert(B.headText[3].text == L.COL_FOR and B.headText[4].text == L.COL_STATE, "history headers")

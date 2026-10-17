@@ -70,6 +70,7 @@ function ns.GuildKey()
 	return type(g) == "string" and g ~= "" and g or "?"
 end
 -- Chat from a click, when the game allows it (not in a chat lockdown); a refused send is false, never an error.
+-- policy: click paths only (the chat boxes' Enter and buttons, Discord lines from the run actions)
 function ns.SendChat(text, kind, lang, target)
 	if InChatMessagingLockdown and InChatMessagingLockdown() then return false end
 	return pcall(SendChatMessage, text, kind, lang, target) == true

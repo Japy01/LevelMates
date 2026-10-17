@@ -1,8 +1,8 @@
 <Bindings>
-	<Binding name="LEVELMATES_TOGGLE" category="LevelMates">
+	<Binding name="LEVELMATES_TOGGLE" category="Forever Guild">
 		LevelMates_ToggleBoard()
 	</Binding>
-	<Binding name="LEVELMATES_PANIC" category="LevelMates">
+	<Binding name="LEVELMATES_PANIC" category="Forever Guild">
 		LevelMates_Panic()
 	</Binding>
 </Bindings>

@@ -52,9 +52,26 @@ function Region:SetWidth(w) self.w = w end
 function Region:SetHeight(h) self.h = h end
 function Region:GetWidth() return self.w or 0 end
 function Region:GetHeight() return self.h or 0 end
-function Region:Show() self.shown = true end
-function Region:Hide() self.shown = false end
-function Region:SetShown(v) self.shown = v and true or false end
+function Region:Show() local was = self.shown; self.shown = true; if not was and self.scripts and self.scripts.OnShow then self.scripts.OnShow(self) end end
+function Region:Hide() local was = self.shown; self.shown = false; if was and self.scripts and self.scripts.OnHide then self.scripts.OnHide(self) end end
+function Region:SetShown(v) if v then self:Show() else self:Hide() end end
+function Region:EnableMouseWheel(v) self.wheel = v and true or false end
+function Region:SetHyperlinksEnabled(v) self.hyperlinks = v and true or false end
+-- a ScrollingMessageFrame: its lines in .messages
+function Region:AddMessage(text, r, g, b) self.messages = self.messages or {}; self.messages[#self.messages + 1] = { text = text, r = r, g = g, b = b } end
+function Region:Clear() self.messages = {} end
+function Region:SetMaxLines(n) self.maxLines = n end
+function Region:SetFading(v) self.fading = v end
+function Region:SetInsertMode() end
+function Region:SetIndentedWordWrap() end
+function Region:SetTextCopyable() end
+function Region:ScrollUp() end
+function Region:ScrollDown() end
+function Region:ScrollToTop() end
+function Region:ScrollToBottom() end
+function Region:PageUp() end
+function Region:PageDown() end
+function Region:AtBottom() return true end
 function Region:IsShown() return self.shown == true end
 function Region:SetText(t) self.text = t end
 function Region:GetText() return self.text end
@@ -180,6 +197,7 @@ Settings = {
 		if tbl[key] == nil then tbl[key] = default end
 		local s = { name = name, key = key, tbl = tbl, default = default }
 		function s:SetValueChangedCallback(fn) self.cb = fn end
+		function s:NotifyUpdate() self.notified = (self.notified or 0) + 1 end
 		function s:GetValue() return self.tbl[self.key] end
 		function s:SetValue(v) self.tbl[self.key] = v; if self.cb then self.cb(self, v) end end
 		cat.settings[#cat.settings + 1] = s
@@ -188,6 +206,7 @@ Settings = {
 	RegisterProxySetting = function(cat, var, vtype, name, default, get, set)
 		local s = { name = name, get = get, set = set }
 		function s:SetValueChangedCallback(fn) self.cb = fn end
+		function s:NotifyUpdate() self.notified = (self.notified or 0) + 1 end
 		function s:GetValue() return self.get() end
 		function s:SetValue(v) self.set(v); if self.cb then self.cb(self, v) end end
 		cat.settings[#cat.settings + 1] = s
@@ -202,6 +221,7 @@ Settings = {
 }
 SettingsPanel = { GetLayout = function(_, cat) cat.layout = cat.layout or { inits = {} }; local l = cat.layout; function l:AddInitializer(i) self.inits[#self.inits + 1] = i end; return l end }
 function CreateSettingsListSectionHeaderInitializer(name) return { header = name } end
+function CreateSettingsButtonInitializer(name, buttonText, click, tooltip) return { button = name, buttonText = buttonText, click = click } end
 MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
 function strsplit(d, s, n) local out, i = {}, 1; for piece in (s .. d):gmatch("(.-)" .. d:gsub("%p", "%%%0")) do out[#out + 1] = piece end; return unpack(out) end
 function strtrim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
@@ -267,7 +287,19 @@ RAID_CLASS_COLORS = {}
 CLASS_ICON_TCOORDS = { WARRIOR = { 0, 0.25, 0, 0.25 }, MAGE = { 0.25, 0.49609375, 0, 0.25 }, ROGUE = { 0.49609375, 0.7421875, 0, 0.25 }, DRUID = { 0.7421875, 0.98828125, 0, 0.25 },
 	HUNTER = { 0, 0.25, 0.25, 0.5 }, SHAMAN = { 0.25, 0.49609375, 0.25, 0.5 }, PRIEST = { 0.49609375, 0.7421875, 0.25, 0.5 }, WARLOCK = { 0.7421875, 0.98828125, 0.25, 0.5 }, PALADIN = { 0, 0.25, 0.5, 0.75 } }
 C_Map.GetMapInfo = function(id) return { name = "Map " .. id, mapID = id } end
-MenuUtil = { CreateContextMenu = function(owner, fn) local root = { CreateTitle = function() end, CreateButton = function() end }; fn(owner, root) end }
+-- a context menu: recorded as STUB.lastMenu = { title, entries = { { text, cb, radio, selected } } }
+MenuUtil = { CreateContextMenu = function(owner, fn)
+	local m = { entries = {} }
+	local root = {
+		CreateTitle = function(_, text) m.title = text end,
+		CreateDivider = function() end,
+		CreateButton = function(_, text, cb) m.entries[#m.entries + 1] = { text = text, cb = cb } end,
+		CreateRadio = function(_, text, isSelected, setSelected, data) m.entries[#m.entries + 1] = { text = text, radio = true, selected = isSelected(data) and true or false, cb = function() setSelected(data) end } end,
+	}
+	STUB.lastMenu = m
+	fn(owner, root)
+end }
+function STUB.MenuEntry(text) for _, e in ipairs(STUB.lastMenu and STUB.lastMenu.entries or {}) do if e.text == text then return e end end end
 ChatFrameUtil = { SendTell = function(name) STUB.lastTell = name end }
 function Region:RegisterForClicks() end
 function Region:GetPoint() return "CENTER", nil, "CENTER", 0, 0 end
@@ -284,7 +316,9 @@ function StaticPopup_Show(which)
 	return dialog
 end
 OKAY = "Okay"; CANCEL = "Cancel"
-function PlaySound() end
+STUB.sounds = {}
+function PlaySound(id) STUB.sounds[#STUB.sounds + 1] = id end
+SOUNDKIT = { IG_SPELLBOOK_OPEN = 829, IG_SPELLBOOK_CLOSE = 830, IG_CHARACTER_INFO_TAB = 841, IG_QUEST_LOG_OPEN = 844, IG_MAINMENU_OPTION_CHECKBOX_ON = 856, RAID_WARNING = 8959 }
 function SendChatMessage(msg, chatType, lang, target) STUB.lastChat = { msg = msg, chatType = chatType or "SAY", lang = lang, target = target } end
 
 -- Minimap button support

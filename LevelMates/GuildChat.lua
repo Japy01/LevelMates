@@ -7,7 +7,7 @@ local _, ns = ...
 local GC = {}
 ns.GuildChat = GC
 local L, SK = ns.L, ns.Skin
-GC.MAX, GC.ROWS = 200, 16
+GC.MAX = 200
 local lines = {}
 function GC.Lines() return lines end
 
@@ -35,15 +35,21 @@ local function build()
 	if UISpecialFrames then table.insert(UISpecialFrames, "LevelMatesGuildChat") end
 	if f.TitleText then f.TitleText:SetText(L.GC_TITLE) end
 	GC.frame = f
-	GC.rows = {}
-	for i = 1, GC.ROWS do
-		local r = CreateFrame("Frame", nil, f)
-		r:SetHeight(20); r:SetPoint("TOPLEFT", 12, -28 - (i - 1) * 21); r:SetPoint("RIGHT", -12, 0)
-		r.text = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.text:SetAllPoints(); r.text:SetJustifyH("LEFT"); r.text:SetWordWrap(false)
-		r.text.lmKeep = true
-		r:Hide()
-		GC.rows[i] = r
-	end
+	-- the lines: the game's own chat frame kind, so long lines wrap, the wheel scrolls (Shift: a page) and item
+	-- links show their tooltip; written in ink, as the rest of the book
+	local msg = CreateFrame("ScrollingMessageFrame", nil, f)
+	msg:SetPoint("TOPLEFT", 12, -28); msg:SetPoint("BOTTOMRIGHT", -12, 40)
+	msg:SetFontObject(GameFontHighlightSmall or "GameFontHighlightSmall"); msg:SetJustifyH("LEFT")
+	msg:SetMaxLines(GC.MAX); msg:SetFading(false); msg:SetIndentedWordWrap(true)
+	if msg.SetInsertMode and ScrollingMessageFrameInsertMode then msg:SetInsertMode(ScrollingMessageFrameInsertMode.Bottom) end
+	msg.lmKeep = true
+	msg:EnableMouseWheel(true)
+	msg:SetScript("OnMouseWheel", function(self, delta)
+		if delta > 0 then if IsShiftKeyDown and IsShiftKeyDown() then self:PageUp() else self:ScrollUp() end
+		else if IsShiftKeyDown and IsShiftKeyDown() then self:PageDown() else self:ScrollDown() end end
+	end)
+	GC.Hyperlinks(msg)
+	GC.msg = msg
 	GC.input = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
 	GC.input:SetHeight(22); GC.input:SetPoint("BOTTOMLEFT", 16, 12); GC.input:SetPoint("RIGHT", -90, 0); GC.input:SetAutoFocus(false); GC.input:SetMaxLetters(255)
 	GC.input:SetScript("OnEnterPressed", function(self) if GC.Send(self:GetText()) then self:SetText("") end end)
@@ -73,13 +79,25 @@ function GC.Last(n)
 	for i = first, #lines do out[#out + 1] = lines[i] end
 	return out
 end
+-- Item links in a frame's text show their tooltip under the cursor and open on a click, as in the game's chat.
+function GC.Hyperlinks(f)
+	if not f.SetHyperlinksEnabled then return end
+	f:SetHyperlinksEnabled(true)
+	f:SetScript("OnHyperlinkEnter", function(self, link)
+		if not GameTooltip then return end
+		GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+		if not pcall(GameTooltip.SetHyperlink, GameTooltip, link) then GameTooltip:Hide(); return end
+		GameTooltip:Show()
+	end)
+	f:SetScript("OnHyperlinkLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+	f:SetScript("OnHyperlinkClick", function(_, link, text, button) if SetItemRef then pcall(SetItemRef, link, text, button) end end)
+end
 function GC.Refresh()
-	if not GC.frame or not GC.frame:IsShown() then return end
-	local last = GC.Last(GC.ROWS)
-	for i, r in ipairs(GC.rows) do
-		local e = last[i]
-		if e then r.text:SetText(GC.LineText(e)); r:Show() else r:Hide() end
-	end
+	if not GC.frame or not GC.frame:IsShown() or not GC.msg then return end
+	GC.msg:Clear()
+	local r, g, b = SK.Ink(1, 1, 1)
+	for _, e in ipairs(lines) do GC.msg:AddMessage(SK.InkText(GC.LineText(e)), r, g, b) end
+	if GC.msg.ScrollToBottom then GC.msg:ScrollToBottom() end
 end
 -- From a box's Enter or a button: to the guild; false (and a word) when a lockdown holds it, so the box keeps it.
 function GC.Send(text)

@@ -38,7 +38,7 @@ rows[1].button.scripts.OnLeave(rows[1].button)
 -- type filter from the game's menu
 local entries = {}
 MenuUtil.CreateContextMenu = function(owner, fn)
-	local root = { CreateTitle = function() end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
+	local root = { CreateTitle = function() end, CreateRadio = function(_, text, isSel, setSel, data) entries[#entries + 1] = { text = text, cb = function() setSel(data) end } end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
 	fn(owner, root)
 end
 B.journalFilterButton.scripts.OnClick(B.journalFilterButton)

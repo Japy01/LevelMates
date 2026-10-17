@@ -44,7 +44,7 @@ local rows = {}
 for _, r in ipairs(B.rows) do if r.button:IsShown() then rows[#rows + 1] = r end end
 assert(#rows == 4 and rows[1].name.text == "Old" and rows[1].zone.text == "Member", "rows with name and rank: " .. #rows)
 assert(B.recruitDaysButton:IsShown() and B.recruitDaysButton.text == string.format(L.INACTIVE_DAYS, 14), "14 days")
-B.recruitDaysButton.scripts.OnClick(B.recruitDaysButton)
+B.recruitDaysButton.scripts.OnClick(B.recruitDaysButton); STUB.MenuEntry(string.format(L.INACTIVE_DAYS, 30)).cb()   -- a dropdown of 14/30/60/90 (2026-10-17)
 rows = {}
 for _, r in ipairs(B.rows) do if r.button:IsShown() then rows[#rows + 1] = r end end
 assert(#rows == 2 and ns.char.inactiveDays == 30, "30 days")
