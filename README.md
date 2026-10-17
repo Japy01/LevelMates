@@ -14,7 +14,7 @@ The board opens on **Home**, a dashboard: the guild level, who is online, your i
 - What you do adds points: levels, dungeons with guildmates, quests, helps, gifts and meetups. Everyone's points make the **guild level**; a **weekly challenge** rotates ("25 dungeons in a group"), and the **top three** of the week in levels, dungeons and helps are shown, never who is last.
 
 ### Guildmates
-- **Board** (`/lm`, the minimap button or a key under Key Bindings → LevelMates): guildmates online with LevelMates, with class, level, zone and group state. Sort by level or zone, filter to players near your level, and right-click a row to invite, whisper or set a waypoint. The busiest zone is shown next to the heading.
+- **Board** (`/lm`, the minimap button or a key under Key Bindings → Forever Guild): guildmates online with LevelMates, with class, level, zone and group state. Sort by level or zone, filter to players near your level, and right-click a row to invite, whisper or set a waypoint. The busiest zone is shown next to the heading.
 - **Leveling partner**: tick "Looking for a partner" and guildmates within 3 levels who also ticked it appear at the top.
 - **Quest matching**: when you accept a quest, you are told which guildmate on your map has it too (with Questie: who could pick it up). Grouped with guildmates, their progress on the quests you share shows when you hover their name.
 - **Guild map**: guildmates who share their position appear on the world map, on their zone and on the continent, the same size at any zoom; four or more together become one pin with a count, and a click sets a route to them. Opening the map asks for fresh positions; pins older than five minutes go.
@@ -49,7 +49,7 @@ The board opens on **Home**, a dashboard: the guild level, who is online, your i
 - **Bank** (Guild tab): whoever opens the guild bank shares what they see when they close it, so everyone can search it (Options: "Share the guild bank when I open it").
 
 ### Help and notices
-- **Ask for help** with an elite: guildmates get a notice and a waypoint, and an "On my way" button. A **panic key** (Key Bindings → LevelMates, or `/lm panico`) asks at once.
+- **Ask for help** with an elite: guildmates get a notice and a waypoint, and an "On my way" button. A **panic key** (Key Bindings → Forever Guild, or `/lm panico`) asks at once.
 - **Rare sightings**: a rare you see is announced to guildmates in that zone, with a [Waypoint] link. Every route (from a card, the right-click menu or a sighting) is followed on screen and said in chat.
 - **Notices** for what matters, also in the middle of the screen; a [Congratulate] link when a guildmate levels up; a notice when a guildmate runs a newer LevelMates. **Quiet mode** (Options > Notices) keeps only help requests, groups and goals.
 - **Notices tray**: the last notices (two hours, 30 at most), each with Go to its tab; the minimap button counts the unread and Shift+click opens them (`/lm avisos`). A strip under the minimap shows the newest for 10 seconds (after combat, not during; quiet mode turns it off).
@@ -78,6 +78,14 @@ Turning "Appear on the board" off stops everything: you send nothing and see nob
 
 Addon messages only, to your own guild. No combat data, ever. Inviting, whispering, chatting, posting to public channels and to the guild's Discord channel happen only when you click, never on their own. Messages are small, validated and rate-limited, and nothing is sent while the game restricts addon chat.
 
+## The book
+
+- One window, the guild book: parchment pages, tabs across the top, the game's own sounds on open, close and tab. Drag it anywhere; the mouse wheel turns the pages of the long lists.
+- Column headers sort where sorting makes sense (Guildmates by level or zone; Members by name, level, rank or last seen), with the game's own arrow on the sorted column. Buttons that choose a view or a filter open a dropdown with the current choice marked.
+- Every list row carries a picture: the class for a guildmate, the item for a wish or a drop, the kind of entry on the wall, the journal and the goals.
+- Options > The book: size (slider, or the −/+ by the close button), how dark the text is, and "Reset position" if the book was dragged off a now-smaller screen. The minimap button follows square minimaps too.
+- Screenshots: on the CurseForge page.
+
 ## Install
 
 Copy the `LevelMates` folder into `Interface/AddOns` of your WoW Forever install and restart the game.
@@ -94,7 +102,7 @@ License: MIT.
 
 ---
 
-# LevelMates (es)
+# Forever Guild (es)
 
 Un compañero de hermandad para subir de nivel juntos en World of Warcraft: Forever. Ve qué hermanos están conectados y dónde, encuentra grupo para mazmorras, marca metas de hermandad, comparte listas de deseos y profesiones, y entérate de lo que pasa en la hermandad.
 
@@ -108,7 +116,7 @@ El tablón se abre en **Inicio**, un panel: el nivel de la hermandad, los conect
 - Lo que haces suma puntos: niveles, mazmorras con hermanos, misiones, ayudas, regalos y quedadas. Los puntos de todos hacen el **nivel de la hermandad**; un **reto semanal** va rotando ("25 mazmorras en grupo") y salen los **tres mejores** de la semana en niveles, mazmorras y ayudas, nunca quién va último.
 
 ### Hermanos
-- **Tablón** (`/lm`, el botón del minimapa o una tecla en Atajos de teclado → LevelMates): los hermanos conectados con LevelMates, con clase, nivel, zona y si están en grupo. Ordena por nivel o zona, filtra a los de tu nivel y haz clic derecho en una fila para invitar, susurrar o poner un punto de ruta. Junto al título sale la zona con más hermanos.
+- **Tablón** (`/lm`, el botón del minimapa o una tecla en Atajos de teclado → Forever Guild): los hermanos conectados con LevelMates, con clase, nivel, zona y si están en grupo. Ordena por nivel o zona, filtra a los de tu nivel y haz clic derecho en una fila para invitar, susurrar o poner un punto de ruta. Junto al título sale la zona con más hermanos.
 - **Compañero de subida**: marca "Busco compañero" y los hermanos a 3 niveles o menos que también lo marcan salen arriba.
 - **Misiones**: al aceptar una misión te dice qué hermano de tu mapa también la tiene (con Questie, quién podría cogerla). En grupo con hermanos, su progreso en las misiones que compartís sale al pasar el ratón por su nombre.
 - **Mapa de la hermandad**: los hermanos que comparten su posición salen en el mapa del mundo, en su zona y en el del continente, del mismo tamaño con cualquier zoom; cuatro o más juntos se ven como un solo marcador con el número, y un clic pone la ruta hacia ellos. Al abrir el mapa se piden posiciones frescas; los marcadores de más de cinco minutos desaparecen.
@@ -143,7 +151,7 @@ El tablón se abre en **Inicio**, un panel: el nivel de la hermandad, los conect
 - **Banco** (pestaña Hermandad): quien abre el banco de la hermandad comparte lo que ve al cerrarlo, para que todos puedan buscar en él (Opciones: "Compartir el banco de la hermandad al abrirlo").
 
 ### Ayuda y avisos
-- **Pedir ayuda** con un élite: los hermanos reciben un aviso y un punto de ruta, y un botón "Voy". Un **botón de pánico** (Atajos de teclado → LevelMates, o `/lm panico`) la pide al momento.
+- **Pedir ayuda** con un élite: los hermanos reciben un aviso y un punto de ruta, y un botón "Voy". Un **botón de pánico** (Atajos de teclado → Forever Guild, o `/lm panico`) la pide al momento.
 - **Avistamiento de raros**: un raro que ves se avisa a los hermanos de esa zona, con un enlace [Ruta].
 - **Avisos** de lo importante, también en el centro de la pantalla; un enlace [Felicitar] cuando un hermano sube de nivel; aviso cuando un hermano tiene una versión más nueva de LevelMates.
 - **Bandeja de avisos**: los últimos avisos (dos horas, 30 como mucho), cada uno con Ir a su pestaña; el botón del minimapa cuenta los no leídos y Mayús+clic los abre (`/lm avisos`). Una tira bajo el minimapa enseña el último 10 segundos (después del combate, no durante; el modo tranquilo la apaga).
@@ -171,6 +179,14 @@ Si apagas "Aparecer en el tablón", se detiene todo: no envías nada y no ves a 
 ## Política
 
 Solo mensajes de addon, a tu propia hermandad. Nada de combate, nunca. Invitar, susurrar, escribir en el chat y publicar en canales públicos o en el Discord de la hermandad ocurre solo cuando haces clic, nunca por su cuenta. Los mensajes son pequeños, validados y con límite de ritmo, y no se envía nada mientras el juego restringe el chat de addons.
+
+## El libro
+
+- Una sola ventana, el libro de la hermandad: páginas de pergamino, pestañas arriba, los sonidos del propio juego al abrir, cerrar y cambiar de pestaña. Se arrastra a donde quieras; la rueda del ratón pasa las páginas de las listas largas.
+- Las cabeceras ordenan donde tiene sentido (Hermanos por nivel o zona; Miembros por nombre, nivel, rango o última conexión), con la flecha del propio juego en la columna ordenada. Los botones que eligen una vista o un filtro abren un desplegable con la opción actual marcada.
+- Cada fila lleva su dibujo: la clase de un hermano, el objeto de un deseo o un botín, el tipo de apunte en el muro, el diario y las metas.
+- Opciones > El libro: tamaño (deslizador, o el −/+ junto al botón de cerrar), la oscuridad del texto y "Restablecer" la posición si el libro quedó fuera de una pantalla ahora más pequeña. El botón del minimapa sigue también los minimapas cuadrados.
+- Capturas: en la página de CurseForge.
 
 ## Instalación
 

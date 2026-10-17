@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.1
+
+- **The book feels like the game's own**: its sounds on open, close and tab; the mouse wheel turns pages; dropdowns with the current choice marked instead of buttons that cycled (loot view, quest filter, members view and filter, inactive days, journal filter), and the button names what is shown now; the game's sort arrow on sortable headers; **Members sorts** by name, level, rank or last seen from its headers and has its own headers.
+- **Rows with a picture**: the journal, the wall, the goals and the wishes carry an icon per entry; items show their own.
+- **One online count** everywhere (everyone online, with or without the addon); Home's stat says how many have the addon.
+- **Guild chat window** on the game's chat frame: long lines wrap, the wheel scrolls (Shift: a page), item links show their tooltip, written in ink; link tooltips on Home's chat too.
+- **Options > The book**: a slider for how dark the text is, "Reset position"; quiet mode redraws the switches it changes. The hidden addon channel is explained once, in chat, when first joined.
+- Fixed: the feedback line could sit under the page art; a marked chip or my role button looked disabled; the minimap button floated on square minimaps; Discord lines now respect chat lockdowns; key bindings listed under "Forever Guild"; the Chat button left the tab bar (the chat lives on Home; `/lm chat` opens the window).
+
 ## 0.6.0
 
 - **Raid loot** (Guild > Loot): a points book written by officers (balances are sums, refunds point back, never below zero), item awards with boss, proof and state, soft reserves (a round a night), the master looter's window (candidates with points, +1, wishes and what they wear; a cost and Give from the click), capture in raids (boss kills post points to everyone present, master loot becomes a delivered award, a trade or the loot line delivers, closing the raid posts attendance), **live sessions** over the group channel (a card to answer: main/minor/BiS/pass, a sealed bid, a roll), a hand-over reminder, and the standings to copy for Discord. Commands: /lm banda, /lm botinreglas, /lm botinmodo, /lm sondabanda.
