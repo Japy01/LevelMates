@@ -41,7 +41,7 @@ local function build()
 	msg:SetPoint("TOPLEFT", 12, -28); msg:SetPoint("BOTTOMRIGHT", -12, 40)
 	msg:SetFontObject(GameFontHighlightSmall or "GameFontHighlightSmall"); msg:SetJustifyH("LEFT")
 	msg:SetMaxLines(GC.MAX); msg:SetFading(false); msg:SetIndentedWordWrap(true)
-	if msg.SetInsertMode and ScrollingMessageFrameInsertMode then msg:SetInsertMode(ScrollingMessageFrameInsertMode.Bottom) end
+	if msg.SetInsertMode and SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM then msg:SetInsertMode(SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM) end
 	msg.lmKeep = true
 	msg:EnableMouseWheel(true)
 	msg:SetScript("OnMouseWheel", function(self, delta)
