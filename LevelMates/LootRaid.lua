@@ -187,9 +187,39 @@ local function onChatLoot(text, sender, ...)
 	if aw then LT.Confirm(aw, "chat") end
 end
 
+------------------------------------------------------------------ the hand-over reminder
+-- An award still "awarded" to someone else whose item sits in my bags: said once a session (a notice), so it is not
+-- forgotten in a bag. Checked a moment after the bags change.
+local reminded, bagCheck = {}, nil
+local function bagsHave()
+	local have = {}
+	if not (C_Container and C_Container.GetContainerNumSlots and C_Container.GetContainerItemInfo) then return have end
+	for bag = 0, 4 do
+		for slot = 1, ns.Plain(C_Container.GetContainerNumSlots(bag)) or 0 do
+			local info = ns.Plain(C_Container.GetContainerItemInfo(bag, slot))
+			local id = type(info) == "table" and ns.Plain(info.itemID)
+			if id then have[id] = true end
+		end
+	end
+	return have
+end
+function LR.CheckHandover()
+	local have
+	for _, a in ipairs(LT.History()) do
+		if a.s == "aw" and a.to ~= me() and not reminded[a.id] then
+			have = have or bagsHave()
+			if have[a.i] then reminded[a.id] = true; ns.Notice(L.LOOT_HANDOVER, ns.Recipes.Link(a.i), a.to) end
+		end
+	end
+end
+local function handoverSoon()
+	bagCheck = GetTime() + 1
+	C_Timer.After(1.05, function() if bagCheck and GetTime() >= bagCheck then bagCheck = nil; LR.CheckHandover() end end)
+end
+
 ------------------------------------------------------------------ events, commands
 local ev = CreateFrame("Frame")
-for _, e in ipairs({ "ENCOUNTER_END", "LOOT_OPENED", "LOOT_SLOT_CLEARED", "LOOT_CLOSED", "TRADE_SHOW", "TRADE_ACCEPT_UPDATE", "TRADE_CLOSED", "CHAT_MSG_LOOT", "GROUP_ROSTER_UPDATE" }) do ev:RegisterEvent(e) end
+for _, e in ipairs({ "ENCOUNTER_END", "LOOT_OPENED", "LOOT_SLOT_CLEARED", "LOOT_CLOSED", "TRADE_SHOW", "TRADE_ACCEPT_UPDATE", "TRADE_CLOSED", "CHAT_MSG_LOOT", "GROUP_ROSTER_UPDATE", "BAG_UPDATE_DELAYED" }) do ev:RegisterEvent(e) end
 ev:SetScript("OnEvent", function(_, event, ...)
 	if not ns.db then return end
 	if event == "ENCOUNTER_END" then onEncounterEnd(...)
@@ -200,6 +230,7 @@ ev:SetScript("OnEvent", function(_, event, ...)
 	elseif event == "TRADE_ACCEPT_UPDATE" then onTradeAccept(...)
 	elseif event == "TRADE_CLOSED" then trade = nil
 	elseif event == "CHAT_MSG_LOOT" then onChatLoot(...)
+	elseif event == "BAG_UPDATE_DELAYED" then handoverSoon()
 	elseif event == "GROUP_ROSTER_UPDATE" then   -- the group dissolved outside: the raid is over
 		if raid() and not inside() and (ns.Plain(GetNumGroupMembers and GetNumGroupMembers()) or 0) == 0 then LR.Stop() end
 	end
