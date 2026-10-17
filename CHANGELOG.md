@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+
+- **Raid loot** (Guild > Loot): a points book written by officers (balances are sums, refunds point back, never below zero), item awards with boss, proof and state, soft reserves (a round a night), the master looter's window (candidates with points, +1, wishes and what they wear; a cost and Give from the click), capture in raids (boss kills post points to everyone present, master loot becomes a delivered award, a trade or the loot line delivers, closing the raid posts attendance), **live sessions** over the group channel (a card to answer: main/minor/BiS/pass, a sealed bid, a roll), a hand-over reminder, and the standings to copy for Discord. Commands: /lm banda, /lm botinreglas, /lm botinmodo, /lm sondabanda.
+- **Everyone online shows**: Guildmates lists those without the addon under their own heading, Who is where counts their zones, the online pill counts all.
+- **Guild chat**: a Chat window (the session's guild, officer and Discord lines, a box to write) and the chat in the middle of Home; My character is off Home for now.
+- **Options** tidied: section headers, dropdowns for my role, the language and the transport, a slider for the book's size.
+- Fixed: an empty or hidden read of my gear no longer wipes it; it is read again later and the report says how it went.
+
 ## 0.5.7
 
 - **Book size**: Options (normal, big, very big), `/lm tamaño 80-150`, and - / + buttons by the close button.
