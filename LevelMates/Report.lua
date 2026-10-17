@@ -51,6 +51,8 @@ function RP.Text()
 	table.sort(changed)
 	add("%s: %s", L.REPORT_OPTIONS, #changed > 0 and table.concat(changed, ", ") or "-")
 	add("%s: %s", L.REPORT_PROBE, (ns.RaidProbe and ns.RaidProbe.Line()) or "-")
+	local g, lr = ns.Gear.Mine(), ns.Gear.lastRead
+	add("%s: %d/17 · %s", L.REPORT_GEAR, g and g.filled or 0, lr and string.format("%s %s%d/%d/%d", date("%H:%M", lr.t), L.REPORT_GEAR_SEEN, lr.seen, lr.secret, lr.parsed) .. (lr.kept and " " .. L.REPORT_GEAR_KEPT or "") or "-")
 	add("%s:", L.REPORT_BLOCKED)
 	local blocked = ns.db.blocked or {}
 	if #blocked == 0 then add("  -") else

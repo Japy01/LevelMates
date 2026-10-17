@@ -257,7 +257,7 @@ C_Club = {
 	GetClubMembers = function() local out = {}; for k in pairs(STUB.guildMembers) do out[#out + 1] = k end; return out end,
 	GetMemberInfo = function(_, id)
 		local x = STUB.memberInfo and STUB.memberInfo[id] or {}
-		return { name = id, level = x.level or 1, presence = x.presence or 1, role = STUB.guildRoles and STUB.guildRoles[id] or 4, guildRankOrder = x.rank or 4, classID = x.classID or 8 }
+		return { name = id, level = x.level or 1, presence = x.presence or 3, role = STUB.guildRoles and STUB.guildRoles[id] or 4, guildRankOrder = x.rank or 4, classID = x.classID or 8 }
 	end,
 }
 function UnitXP() return STUB.player.xp or 0 end

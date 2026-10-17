@@ -90,5 +90,6 @@ GoalDialog.lua
 WishDialog.lua
 DiscordCopy.lua
 Report.lua
+GuildChat.lua
 RaidProbe.lua
 Sim.lua

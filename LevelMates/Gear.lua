@@ -58,18 +58,33 @@ local function itemLevel(link)
 end
 function GE.Mine() return ns.char.gear end
 -- A unit's worn items: id, item level, enchant and suffix from each slot's link.
+-- Also how the read went: links seen, links hidden (secret values: Forever hides them at times), items parsed.
 local function slotsOf(unit)
-	local slots = {}
+	local slots, stats = {}, { seen = 0, secret = 0, parsed = 0 }
 	for slot = 1, 19 do
-		local link = GetInventoryItemLink(unit, slot)
+		local raw = GetInventoryItemLink(unit, slot)
+		if raw ~= nil then stats.seen = stats.seen + 1 end
+		local link = ns.Plain(raw)
+		if raw ~= nil and link == nil then stats.secret = stats.secret + 1 end
 		local id, en, sf = tostring(link or ""):match("item:(%d+):(%d*):?%-?%d*:?%-?%d*:?%-?%d*:?%-?%d*:?(%-?%d*)")
-		if id then slots[slot] = { id = tonumber(id), il = itemLevel(link), en = tonumber(en) or 0, sf = tonumber(sf) ~= 0 and tonumber(sf) or nil } end
+		if id then stats.parsed = stats.parsed + 1; slots[slot] = { id = tonumber(id), il = itemLevel(link), en = tonumber(en) or 0, sf = tonumber(sf) ~= 0 and tonumber(sf) or nil } end
 	end
-	return slots
+	return slots, stats
 end
+local retryRead, retries = nil, 0   -- the read again a little later (set below), a few times at most
+GE.RETRIES = 5
 function GE.Read()
-	local slots = slotsOf("player")
+	local slots, stats = slotsOf("player")
 	GE.reads = GE.reads + 1
+	GE.lastRead = { t = time(), seen = stats.seen, secret = stats.secret, parsed = stats.parsed }
+	local old = ns.char.gear
+	if stats.parsed == 0 and old and (old.filled or 0) > 0 then   -- nothing readable now (hidden links, a bad moment): keep what we had
+		GE.lastRead.kept = true
+		retries = retries + 1
+		if retries <= GE.RETRIES and retryRead then retryRead() end
+		return
+	end
+	retries = 0
 	local avg, filled = GE.Average(slots)
 	local race = ns.Plain(select(3, UnitRace("player")))   -- a secret number on Forever (measured by others): then none
 	local old = ns.char.gear
@@ -162,9 +177,12 @@ local function later()
 end
 local lastInfo = -math.huge
 local ev = CreateFrame("Frame")
-ev:RegisterEvent("PLAYER_EQUIPMENT_CHANGED"); ev:RegisterEvent("PLAYER_REGEN_ENABLED"); ev:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+ev:RegisterEvent("PLAYER_EQUIPMENT_CHANGED"); ev:RegisterEvent("PLAYER_REGEN_ENABLED"); ev:RegisterEvent("GET_ITEM_INFO_RECEIVED"); ev:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+retryRead = function() C_Timer.After(10, function() if not (InCombatLockdown and InCombatLockdown()) then GE.Read() end end) end
+GE.ReadSoon = later   -- for a page that finds no gear
 ev:SetScript("OnEvent", function(_, event)
 	if event == "PLAYER_REGEN_ENABLED" then if waitingCombat then waitingCombat = false; later() end; return end
+	if event == "ZONE_CHANGED_NEW_AREA" then later(); return end   -- out of an instance the links may be readable again
 	if event == "GET_ITEM_INFO_RECEIVED" then   -- an item of mine with an unknown level may have arrived: once in a while
 		local g = GE.Mine()
 		if not g or GetTime() - lastInfo < 2 then return end

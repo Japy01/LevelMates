@@ -126,6 +126,11 @@ local function Build()
 	discord:SetSize(80, 20); discord:SetPoint("RIGHT", search, "LEFT", -12, 0); discord:SetText(L.BTN_DISCORD)
 	discord:SetScript("OnClick", function() ns.Fire("LM_DISCORD_COPY", B.tab) end)
 	B.discordButton = discord
+	-- "Chat": the guild chat window (read and write)
+	local chat = ns.Skin.Button(f)
+	chat:SetSize(60, 20); chat:SetPoint("RIGHT", discord, "LEFT", -8, 0); chat:SetText(L.BTN_CHAT)
+	chat:SetScript("OnClick", function() ns.GuildChat.Toggle() end)
+	B.chatButton = chat
 	B.searchBox = search
 
 	local function Col(parent, w, justify, font) local fs = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight"); fs:SetWidth(w); fs:SetJustifyH(justify or "LEFT"); fs:SetWordWrap(false); return fs end
@@ -729,7 +734,7 @@ end
 function B.UpdatePills()
 	local p = B.pills
 	if not p then return end
-	p.online:Set(string.format(L.PILL_ONLINE, #R.List() + 1)); p.online:Show()
+	p.online:Set(string.format(L.PILL_ONLINE, R.OnlineCount())); p.online:Show()
 	if B.titleFs then   -- the title text is centred across its band: start right after where the text ends
 		local w = B.titleFs.GetStringWidth and B.titleFs:GetStringWidth() or 0
 		p.online:ClearAllPoints(); p.online:SetPoint("LEFT", B.titleFs, "CENTER", math.floor((w or 0) / 2) + 12, 0)
@@ -929,9 +934,31 @@ local function MatesVisible()
 	for _, e in ipairs(R.Seen()) do
 		if not ns.char.boardNear or math.abs((e.level or 0) - mine) <= NEAR_RANGE then seen[#seen + 1] = e end
 	end
-	if #seen == 0 then return out end
-	out[#out + 1] = { header = string.format("%s (%d)", L.SEEN_TODAY, #seen) }
-	for _, e in ipairs(seen) do out[#out + 1] = { seen = e } end
+	if #seen > 0 then
+		out[#out + 1] = { header = string.format("%s (%d)", L.SEEN_TODAY, #seen) }
+		for _, e in ipairs(seen) do out[#out + 1] = { seen = e } end
+	end
+	return out
+end
+-- The same page, with everyone online that has no addon under their own heading (the search and the level filter
+-- apply): the whole guild shows, as the game's roster does.
+local function EveryoneVisible()
+	local out = MatesVisible()
+	local mine, q = UnitLevel("player"), (B.search or ""):lower()
+	local others = {}
+	for _, e in ipairs(R.OnlineWithout()) do
+		local nearOk = not ns.char.boardNear or math.abs((e.level or 0) - mine) <= NEAR_RANGE
+		local searchOk = q == "" or e.name:lower():find(q, 1, true) ~= nil
+		if nearOk and searchOk then others[#others + 1] = e end
+	end
+	if #others == 0 then return out end
+	-- before "seen today": online now matters more than seen earlier
+	local seenAt
+	for i, x in ipairs(out) do if type(x) == "table" and x.header and x.header:find(L.SEEN_TODAY, 1, true) then seenAt = i; break end end
+	local block = { { header = string.format("%s (%d)", L.NO_ADDON_HEADER, #others) } }
+	for _, e in ipairs(others) do block[#block + 1] = { noaddon = e } end
+	local at = seenAt or (#out + 1)
+	for k, x in ipairs(block) do table.insert(out, at + k - 1, x) end
 	return out
 end
 
@@ -944,6 +971,16 @@ local function FillMates(list)
 		if type(name) == "table" and name.header then
 			r.icon:Hide(); r.name:SetText(name.header); r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")
 			r.button:Show(); SectionHeader(r)
+		elseif type(name) == "table" and name.noaddon then   -- online, without the addon: what the roster knows
+			local e = name.noaddon
+			r.button.mate = e.name
+			r.name:SetText(e.name); r.name:SetTextColor(ClassColor(e.class))
+			SetClassIcon(r.icon, e.class)
+			r.level:SetText(e.level or ""); r.level:SetTextColor(unpack(math.abs((e.level or 0) - mine) <= NEAR_RANGE and B.LEVEL_COLORS.near or B.LEVEL_COLORS.far))
+			r.zone:SetText(e.zone or ""); r.zone:SetTextColor(1, 1, 1)
+			r.group:SetText(L.NO_ADDON); r.group:SetTextColor(0.6, 0.6, 0.6)
+			r.xph:SetText("")
+			r.button:Show(); RowBg(r, i, false)
 		elseif type(name) == "table" then   -- seen today, offline now: grey, with when
 			local e = name.seen
 			r.button.mate = e.name
@@ -2201,7 +2238,7 @@ function B.Refresh()
 	else
 		if lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests then list = GridVisible()
 		elseif lfg and B.lfgCalendar then list = {}   -- the runs view draws it
-		else list, pages = Page(lfg and (B.lfgTogether and TogetherVisible() or B.lfgQuests and QuestsVisible() or CalendarVisible()) or MatesVisible()) end
+		else list, pages = Page(lfg and (B.lfgTogether and TogetherVisible() or B.lfgQuests and QuestsVisible() or CalendarVisible()) or EveryoneVisible()) end
 	end
 	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or home and B.HCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
 	SetHeaders()

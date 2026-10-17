@@ -206,6 +206,24 @@ function R.Seen(hours)
 	return out
 end
 
+-- Online guildmates without the addon (the roster knows them: level, zone, class), highest level first; and how
+-- many are online in all (the roster's count, never less than those with the addon).
+local CLASS_OF_ID = { [1] = "WARRIOR", [2] = "PALADIN", [3] = "HUNTER", [4] = "ROGUE", [5] = "PRIEST", [7] = "SHAMAN", [8] = "MAGE", [9] = "WARLOCK", [11] = "DRUID" }
+function R.ClassFileOf(m) return m.classFile or (m.classID and CLASS_OF_ID[m.classID]) end
+function R.OnlineWithout()
+	local out = {}
+	for _, m in ipairs(R.GuildMembers() or {}) do
+		if m.online and not R.mates[m.name] and m.name ~= ns.Me() then out[#out + 1] = { name = m.name, level = m.level or 0, zone = m.zone or "", class = R.ClassFileOf(m) } end
+	end
+	table.sort(out, function(a, b) if a.level ~= b.level then return a.level > b.level end; return a.name < b.name end)
+	return out
+end
+function R.OnlineCount()
+	local n = 0
+	for _, m in ipairs(R.GuildMembers() or {}) do if m.online then n = n + 1 end end
+	return math.max(n, #R.List() + 1)
+end
+
 function R.List()
 	local out = {}
 	for name in pairs(R.mates) do out[#out + 1] = name end

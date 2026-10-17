@@ -35,7 +35,7 @@ assert(n == 4, "all four members: " .. n)
 mario.button.scripts.OnClick(mario.button, "LeftButton")
 assert(opt(L.MENU_WHISPER) and opt(L.MENU_INVITE), "whisper and invite")
 assert(B.memberFilter == "all"); B.memberFilterButton.scripts.OnClick(B.memberFilterButton); assert(B.memberFilter == "online", "filter: online")
-B.memberFilter = "all"
+B.memberFilter = "all"; B.Refresh()   -- Ruling 2026-10-17: the stub's members are offline unless a test says otherwise, so the page is redrawn with every member
 -- my own row: write my note
 local mine
 for _, r in ipairs(B.rows) do if r.button:IsShown() and r.button.memberEntry and r.button.memberEntry.name == ns.Me() then mine = r end end

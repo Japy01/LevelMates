@@ -281,6 +281,7 @@ local function refreshMe()
 		p.xpFill:SetWidth(1); p.xpRested:SetWidth(1); p.xpText:SetText("")
 	end
 	local g = ns.Gear.Mine()
+	if not (g and (g.filled or 0) > 0) and ns.Gear.ReadSoon then ns.Gear.ReadSoon() end   -- no gear known: ask for a read
 	p.gearButton:SetEnabled(g ~= nil and g.slots ~= nil)   -- read after the first moments out of combat
 	p.gearLabel:SetText(g and g.avg and g.avg > 0 and string.format(L.GEAR_ILVL, g.avg) or L.DB_GEAR)
 	for _, sq in ipairs(p.gear) do
@@ -365,24 +366,25 @@ local function refreshQuests()
 	end)
 end
 
+-- Everyone online, by zone: those with the addon (their map) and those without (the roster's zone text).
 local function refreshWhere()
 	local zones, order = {}, {}
-	for _, name in ipairs(R.List()) do
-		local m = R.mates[name]
-		local id = m.mapId or 0
-		if not zones[id] then zones[id] = {}; order[#order + 1] = id end
-		table.insert(zones[id], name)
+	local function add(zone, who, class)
+		if zone == "" then zone = L.DB_SOMEWHERE end
+		if not zones[zone] then zones[zone] = { names = {}, classes = {} }; order[#order + 1] = zone end
+		table.insert(zones[zone].names, who); zones[zone].classes[who] = class
 	end
-	table.sort(order, function(a, b) if #zones[a] ~= #zones[b] then return #zones[a] > #zones[b] end; return zoneName(a) < zoneName(b) end)
+	for _, name in ipairs(R.List()) do local m = R.mates[name]; add(zoneName(m.mapId or 0), name, m.class) end
+	for _, e in ipairs(R.OnlineWithout()) do add(e.zone or "", e.name, e.class) end
+	table.sort(order, function(a, b) if #zones[a].names ~= #zones[b].names then return #zones[a].names > #zones[b].names end; return a < b end)
 	local list = {}
-	for i = 1, math.min(DB.ZONES, #order) do list[i] = { id = order[i], names = zones[order[i]] } end
-	DB.where:SetHint(#R.List() == 0 and L.HOME_ALONE or L.DB_HINT_WHERE)   -- alone: how to bring the guild in, the invite under it
+	for i = 1, math.min(DB.ZONES, #order) do list[i] = { zone = order[i], names = zones[order[i]].names, classes = zones[order[i]].classes } end
+	DB.where:SetHint(#order == 0 and L.HOME_ALONE or L.DB_HINT_WHERE)   -- alone: how to bring the guild in, the invite under it
 	fill(DB.where, list, function(it, z)
-		local zn = zoneName(z.id)
-		setItem(it, (zn ~= "" and zn or L.DB_SOMEWHERE) .. " (" .. #z.names .. ")", function() ns.Board.SetTab("mates") end)
+		setItem(it, z.zone .. " (" .. #z.names .. ")", function() ns.Board.SetTab("mates") end)
 		for k, t in ipairs(it.icons) do
 			local who = z.names[k]
-			local coords = who and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[classOf(who) or ""]
+			local coords = who and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[z.classes[who] or classOf(who) or ""]
 			if coords then t:SetTexture(CLASS_ICON); t:SetTexCoord(unpack(coords)); t:Show() else t:Hide() end
 		end
 		it.more:SetText(#z.names > 4 and ("+" .. (#z.names - 4)) or "")
