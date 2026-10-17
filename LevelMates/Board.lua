@@ -143,15 +143,19 @@ local function Build()
 	for i = 1, 5 do head[i]:SetTextColor(1, 0.82, 0) end
 	B.headText = head
 
-	-- Level and Zone headers sort when clicked; the active one is drawn white.
-	B.headers = {}
-	local function Header(key, fs)
+	-- Every header is a button (the sortable ones sort on a click: Guildmates by level or zone, Members by name,
+	-- level, rank or last seen); the sorted column shows the game's own arrow, pointing down for high-to-low.
+	B.headers, B.headArrows = {}, {}
+	for i = 1, 5 do
 		local b = CreateFrame("Button", nil, f)
-		b:SetPoint("TOPLEFT", fs, "TOPLEFT", -2, 2); b:SetPoint("BOTTOMRIGHT", fs, "BOTTOMRIGHT", 2, -2)
-		b:SetScript("OnClick", function() B.SetSort(key) end)
-		B.headers[key] = b
+		b:SetPoint("TOPLEFT", head[i], "TOPLEFT", -2, 2); b:SetPoint("BOTTOMRIGHT", head[i], "BOTTOMRIGHT", 2, -2)
+		b:SetScript("OnClick", function() B.HeaderClick(i) end)
+		local arrow = b:CreateTexture(nil, "OVERLAY")
+		arrow:SetTexture("Interface\\Buttons\\UI-SortArrow"); arrow:SetSize(9, 8); arrow:SetTexCoord(0, 0.5625, 0, 1)
+		arrow:Hide()
+		B.headers[i], B.headArrows[i] = b, arrow
 	end
-	Header("level", head[2]); Header("zone", head[3])
+	B.headers.level, B.headers.zone = B.headers[2], B.headers[3]   -- the old names
 
 	-- "Near my level (±5)" filter, bottom right.
 	local near = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")   -- the template draws the box; a bare CheckButton is invisible
@@ -730,6 +734,39 @@ local function RefreshHelp(skip)
 	B.helpButton:SetText(H and H.mine and L.BTN_HELP_CANCEL or L.BTN_HELP)
 end
 
+-- Which columns sort on which tab, and how a click on a header is read.
+local SORT_COLS = { mates = { [2] = "level", [3] = "zone" }, members = { [1] = "name", [2] = "level", [4] = "rank", [5] = "seen" } }
+function B.HeaderClick(i)
+	local cols = SORT_COLS[B.tab]
+	local mode = cols and cols[i]
+	if not mode then return end
+	if B.tab == "mates" then B.SetSort(mode)
+	elseif B.membersView == "list" then B.SetMemberSort(mode) end
+end
+function B.SetMemberSort(mode)
+	local s = ns.char.memberSort
+	if s and s.mode == mode then s.desc = not s.desc else s = { mode = mode, desc = mode == "level" } end   -- level starts high-to-low, the rest a-to-z
+	ns.char.memberSort = s
+	B.memberPage = 1; B.Refresh()
+end
+-- The sort arrow on column i (down for high-to-low / z-to-a, up for the other way), right after the header's text;
+-- every other arrow hidden. nil hides them all.
+local HEAD_JUSTIFY = { "LEFT", "CENTER", "LEFT", "CENTER", "RIGHT" }
+function B.ShowSortArrow(i, desc)
+	for j, a in ipairs(B.headArrows) do
+		if j == i then
+			local fs = B.headText[j]
+			local w = fs.GetStringWidth and fs:GetStringWidth() or 0
+			local col = fs.GetWidth and fs:GetWidth() or 0
+			a:ClearAllPoints()
+			if HEAD_JUSTIFY[j] == "LEFT" then a:SetPoint("LEFT", fs, "LEFT", w + 4, 0)
+			elseif HEAD_JUSTIFY[j] == "CENTER" then a:SetPoint("LEFT", fs, "LEFT", (col + w) / 2 + 3, 0)
+			else a:SetPoint("RIGHT", fs, "RIGHT", -(w + 4), 0) end
+			if desc then a:SetTexCoord(0, 0.5625, 0, 1) else a:SetTexCoord(0, 0.5625, 1, 0) end
+			a:Show()
+		else a:Hide() end
+	end
+end
 local NEAR_RANGE = 5
 -- One of the game's UI sounds (the spellbook's, the character sheet's tabs), by its SOUNDKIT name.
 function B.Sound(key)
@@ -829,7 +866,22 @@ end
 
 -- Header texts and colours for the active tab; only the guildmates tab sorts.
 local function SetHeaders()
+	B.ShowSortArrow(nil)
 	local lfg = B.tab == "lfg"
+	if B.tab == "members" then
+		if B.membersView == "list" then
+			B.headText[1]:SetText(L.COL_NAME); B.headText[2]:SetText(L.COL_LEVEL); B.headText[3]:SetText(L.COL_NOTE)
+			B.headText[4]:SetText(L.COL_RANK_GUILD); B.headText[5]:SetText(L.COL_SEEN)
+			local s = ns.char.memberSort
+			for i = 1, 5 do B.headText[i]:SetTextColor(1, 0.82, 0) end
+			if s then
+				for i, mode in pairs(SORT_COLS.members) do if mode == s.mode then B.headText[i]:SetTextColor(1, 1, 1); B.ShowSortArrow(i, s.desc) end end
+			end
+		else
+			for i = 1, 5 do B.headText[i]:SetText("") end
+		end
+		return
+	end
 	if lfg then for i = 1, 5 do B.headText[i]:SetText("") end; return end   -- the grid has no columns
 	if B.tab == "home" then for i = 1, 5 do B.headText[i]:SetText("") end; return end
 	if B.tab == "recruit" then
@@ -893,11 +945,29 @@ local function SetHeaders()
 	for key, fs in pairs({ level = B.headText[2], zone = B.headText[3] }) do
 		if sorted and key == sort.mode then fs:SetTextColor(1, 1, 1) else fs:SetTextColor(1, 0.82, 0) end
 	end
-	-- the sorted header carries its direction: v = high to low / z to a, ^ = low to high / a to z
-	B.headText[2]:SetText(L.COL_LEVEL .. (sorted and sort.mode == "level" and (sort.desc and " v" or " ^") or ""))
-	B.headText[3]:SetText((lfg and L.COL_DUNGEON or L.COL_ZONE) .. (sorted and sort.mode == "zone" and (sort.desc and " v" or " ^") or ""))
+	-- the sorted header carries the arrow: down = high to low / z to a, up = low to high / a to z
+	B.headText[2]:SetText(L.COL_LEVEL)
+	B.headText[3]:SetText(lfg and L.COL_DUNGEON or L.COL_ZONE)
+	if sorted then B.ShowSortArrow(sort.mode == "level" and 2 or 3, sort.desc) end
 end
 
+-- A row's picture: an icon file (its border trimmed, as the game's lists draw them), or none.
+local I = "Interface\\Icons\\"
+local JOURNAL_ICONS = { level = I .. "Spell_ChargePositive", quest = I .. "INV_Misc_Note_01", dungeon = I .. "INV_Misc_Key_03", group = I .. "Ability_Warrior_RallyingCry",
+	item = I .. "INV_Misc_Bag_10", skill = I .. "INV_Misc_Book_11", death = I .. "Ability_Rogue_FeignDeath" }
+local GOAL_ICONS = { lvl = I .. "Spell_ChargePositive", dun = I .. "INV_Misc_Key_03", cnt = I .. "INV_Misc_Note_01" }
+B.PERSONAL_GOAL_ICON = I .. "INV_Misc_PocketWatch_01"
+local function RowIcon(r, tex)
+	if not tex then r.icon:Hide(); return end
+	r.icon:SetTexture(tex); r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92); r.icon:SetDesaturated(false); r.icon:Show()
+end
+-- An item's own icon (by id or link), or nil when the game has none yet.
+local function ItemIcon(item)
+	if not item or not C_Item or not C_Item.GetItemIconByID then return nil end
+	local ok, tex = pcall(C_Item.GetItemIconByID, item)
+	return ok and ns.Plain(tex) or nil
+end
+B.ItemIcon = ItemIcon
 local function ClearRow(r) r.icon:Hide(); r.name:SetText(""); r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText(""); r.button:Hide() end
 
 B.PAL_TINT = { 0.2, 0.8, 0.3, 0.15 }
@@ -1052,7 +1122,7 @@ local function FillJournal(list)
 		local r, e = B.rows[i], list[i]
 		r.button.mate, r.button.adId, r.button.entry = nil, nil, e
 		if e then
-			r.icon:Hide()
+			RowIcon(r, (e.k == "item" and ItemIcon(e.link)) or JOURNAL_ICONS[e.k])
 			r.name:SetText(ns.Journal.When(e)); r.name:SetTextColor(0.7, 0.7, 0.7)
 			r.level:SetText("")
 			r.zone:SetText(ns.Journal.Text(e)); r.zone:SetTextColor(unpack(ns.Journal.Color(e)))
@@ -1074,7 +1144,7 @@ local function FillGoals(list)
 		r.button.personalMine = g and g.mine or nil
 		if g and g.name then   -- personal goal
 			local P = ns.Personal
-			r.icon:Hide()
+			RowIcon(r, B.PERSONAL_GOAL_ICON)
 			r.name:SetText(g.name); if g.mine then r.name:SetTextColor(ClassColor(MyClass())) else r.name:SetTextColor(1, 1, 1) end
 			r.level:SetText("")
 			r.zone:SetText(P.Text(g)); r.zone:SetTextColor(0.6, 0.8, 1)
@@ -1083,7 +1153,7 @@ local function FillGoals(list)
 			r.button:Show()
 			RowBg(r, i, false)
 		elseif g then
-			r.icon:Hide()
+			RowIcon(r, GOAL_ICONS[g.ty] or GOAL_ICONS.cnt)
 			r.name:SetText(g.by or ""); r.name:SetTextColor(0.7, 0.7, 0.7)
 			r.level:SetText("")
 			r.zone:SetText(ns.Goals.Text(g)); r.zone:SetTextColor(1, 0.82, 0)
@@ -1114,7 +1184,7 @@ local function FillFeed(list)
 		r.button.feedItem = e and e.k == "itm" and e.a or nil
 		if e then
 			local m = R.mates[e.who]
-			r.icon:Hide()
+			RowIcon(r, (e.k == "itm" and ItemIcon(e.a)) or ns.Dashboard.WallIcon(e.k))
 			r.name:SetText(ns.Feed.Who(e))
 			if e.k == "gol" then r.name:SetTextColor(1, 0.82, 0)
 			elseif e.who == ns.Me() then r.name:SetTextColor(ClassColor(MyClass()))
@@ -1232,7 +1302,7 @@ local function FillWishes(list)
 		r.button.mate, r.button.adId, r.button.entry, r.button.goalId, r.button.personalMine = nil, nil, nil, nil, nil
 		r.button.wishId, r.button.wishMine, r.button.wishKind, r.button.wishName = w and w.id or nil, w and w.mine or nil, w and w.kind or nil, w and w.name or nil
 		if w then
-			r.icon:Hide()
+			RowIcon(r, ItemIcon(w.id) or I .. "INV_Misc_Bag_10")
 			r.name:SetText(w.name); if w.mine then r.name:SetTextColor(ClassColor(MyClass())) else r.name:SetTextColor(0.7, 0.7, 0.7) end
 			r.level:SetText("")
 			local item = ns.Wishlist.Link(w.id) or string.format(L.WISH_UNKNOWN, w.id)
@@ -1684,7 +1754,7 @@ local function MembersVisible()
 		return out
 	end
 	local out = {}
-	for _, e in ipairs(ns.Members.List(B.memberFilter, B.search)) do out[#out + 1] = { member = e } end
+	for _, e in ipairs(ns.Members.List(B.memberFilter, B.search, ns.char.memberSort)) do out[#out + 1] = { member = e } end
 	return out
 end
 local function FillMembers(list)

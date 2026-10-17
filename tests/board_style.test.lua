@@ -14,11 +14,11 @@ B.Toggle(); B.ShowTab("mates")   -- the board opens on Home; this test is about 
 local function same(a, b) if not (a and b) then return false end; local r, g, bl = ns.Skin.Ink(b[1], b[2], b[3]); return math.abs(a[1] - r) < 1e-9 and math.abs(a[2] - g) < 1e-9 and math.abs(a[3] - bl) < 1e-9 end   -- written in ink on the page
 assert(B.frame:GetHeight() == B.CHROME + (B.ROWS + 3) * B.ROW_H + B.HEAD_ROOM, "one size, few mates or many: " .. tostring(B.frame:GetHeight()))
 assert(B.frame.TitleText.text == L.BOARD_TITLE .. " - Test Guild (4)", "title counts mates and me: " .. tostring(B.frame.TitleText.text))
-assert(B.headText[2].text == L.COL_LEVEL .. " v" and B.headText[3].text == L.COL_ZONE, "level header shows high-to-low: " .. tostring(B.headText[2].text))
+assert(B.headText[2].text == L.COL_LEVEL and B.headArrows[2]:IsShown() and B.headArrows[2].texcoord[3] == 0, "level header shows high-to-low (the arrow texture, since 2026-10-17): " .. tostring(B.headText[2].text))
 B.headers.level.scripts.OnClick(B.headers.level)
-assert(B.headText[2].text == L.COL_LEVEL .. " ^", "ascending marker: " .. tostring(B.headText[2].text))
+assert(B.headArrows[2].texcoord[3] == 1, "ascending marker: flipped")
 B.headers.zone.scripts.OnClick(B.headers.zone)
-assert(B.headText[3].text == L.COL_ZONE .. " ^" and B.headText[2].text == L.COL_LEVEL, "marker moves to zone: " .. tostring(B.headText[3].text))
+assert(B.headArrows[3]:IsShown() and not B.headArrows[2]:IsShown() and B.headText[2].text == L.COL_LEVEL, "marker moves to zone")
 B.headers.level.scripts.OnClick(B.headers.level)   -- back to level, high to low: Mario, Luis, Ana
 assert(B.rows[2].name.text == "Mario" and B.rows[3].name.text == "Luis" and B.rows[4].name.text == "Ana", "order for the colour checks")
 assert(same(B.rows[2].group.color, B.GROUP_COLORS.open), "slot free is green")

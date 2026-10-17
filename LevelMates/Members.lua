@@ -18,8 +18,9 @@ end
 function MB.Invalidate() cache = nil end
 ns.On("LM_HISTORY_CHANGED", MB.Invalidate)
 
--- filter: "all", "online", "officers" (guild master and officers), "nonote"; search: name or note.
-function MB.List(filter, search)
+-- filter: "all", "online", "officers" (guild master and officers), "nonote"; search: name or note; sort: { mode, desc }
+-- from the headers (name, level, rank, seen), or nil for the usual order (online first, rank, level, name).
+function MB.List(filter, search, sort)
 	local q, out = strtrim(tostring(search or "")):lower(), {}
 	for _, m in ipairs(roster()) do
 		local note = ns.GuildNotes.Note(m.name)
@@ -32,11 +33,24 @@ function MB.List(filter, search)
 			out[#out + 1] = e
 		end
 	end
-	table.sort(out, function(a, b)
+	local function usual(a, b)
 		if a.online ~= b.online then return a.online end
 		if a.rank ~= b.rank then return a.rank < b.rank end
 		if a.level ~= b.level then return a.level > b.level end
 		return a.name < b.name
+	end
+	local mode = sort and sort.mode
+	if not mode then table.sort(out, usual); return out end
+	local function key(m)
+		if mode == "level" then return m.level or 0 end
+		if mode == "rank" then return m.rank or 0 end
+		if mode == "seen" then return m.online and -1 or (m.days or 9999) end   -- online first, then the fewest days away
+		return m.name:lower()
+	end
+	table.sort(out, function(a, b)
+		local ka, kb = key(a), key(b)
+		if ka ~= kb then if sort.desc then return ka > kb end; return ka < kb end
+		return usual(a, b)
 	end)
 	return out
 end

@@ -20,6 +20,7 @@ local ICONS = { online = I .. "Spell_Holy_PrayerOfFortitude", ilvl = I .. "INV_C
 local WALL_ICONS = { lvl = I .. "Spell_ChargePositive", dth = I .. "Ability_Rogue_FeignDeath", dun = I .. "INV_Misc_Key_03",
 	itm = I .. "INV_Misc_Bag_10", pgl = I .. "INV_Misc_Map_01", gol = I .. "INV_Misc_Map_01", join = I .. "INV_Letter_15",
 	leave = I .. "Ability_Rogue_Sprint", r60 = I .. "INV_Misc_Coin_01", ach = I .. "INV_Misc_Book_09" }
+function DB.WallIcon(k) return WALL_ICONS[k] or ICONS.wall end   -- the Wall tab draws the same pictures
 -- a slot's picture when it is empty (the paper doll's own)
 local EMPTY_SLOT = { [1] = "Head", [2] = "Neck", [3] = "Shoulder", [5] = "Chest", [6] = "Waist", [7] = "Legs", [8] = "Feet", [9] = "Wrists",
 	[10] = "Hands", [11] = "Finger", [12] = "Finger", [13] = "Trinket", [14] = "Trinket", [15] = "Chest", [16] = "MainHand", [17] = "SecondaryHand", [18] = "Ranged" }
