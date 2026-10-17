@@ -34,6 +34,10 @@ Proyecto 8. Fecha: 2026-10-16. Pedido por el usuario: "vayamos con la fase de DK
 - `lk` (board, oficiales, vida 365 d): un apunte del libro. `la` (board, 180 d): una asignación del historial, con sus cambios de estado como apuntes propios. `lr` (board, 8 h): una reserva. Todos por hermandad, con retención dentro de instancias.
 - Sesión en vivo (solo si la sonda lo permite): `ls` abrir/cerrar, `li` objeto, `lb` respuesta de un jugador (por susurro al maestro), `lw` asignación; por banda/grupo, con comprobación de bloqueo antes de cada envío y reintento a los 30 s con código 11; caducan a los 10 minutos.
 
+## Medido el 2026-10-16 (sonda)
+
+Dentro de una mazmorra, en grupo y fuera de combate: los mensajes de addon por PARTY y por susurro vuelven con código 0 y el eco llega; el cliente no informa bloqueo. Solo el canal de hermandad está bloqueado (11). Decisión 5 resuelta: las sesiones van en vivo por el canal de grupo (ls/lb/lw/lc en LootSession.lua), con retención y reintento ante el código 11, y la tarjeta de respuesta (LootCard.lua). En combate de jefe se pierden, como ya se sabía: el botín llega después.
+
 ## Fuera de alcance
 
 Planes de banda, avisos por voz, estadísticas de botín (más adelante), DKP por "main" (los alts se agrupan solo para el +1).
