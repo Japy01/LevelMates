@@ -9,10 +9,6 @@ local LW = {}
 ns.LootWindow = LW
 local L, R, LT, LR, SK = ns.L, ns.Roster, ns.Loot, ns.LootRaid, ns.Skin
 LW.ROWS, LW.ITEMS = 12, 8
-local INV_SLOT = { INVTYPE_HEAD = 1, INVTYPE_NECK = 2, INVTYPE_SHOULDER = 3, INVTYPE_BODY = 4, INVTYPE_CHEST = 5, INVTYPE_ROBE = 5, INVTYPE_WAIST = 6,
-	INVTYPE_LEGS = 7, INVTYPE_FEET = 8, INVTYPE_WRIST = 9, INVTYPE_HAND = 10, INVTYPE_FINGER = 11, INVTYPE_TRINKET = 13, INVTYPE_CLOAK = 15,
-	INVTYPE_WEAPON = 16, INVTYPE_2HWEAPON = 16, INVTYPE_WEAPONMAINHAND = 16, INVTYPE_SHIELD = 17, INVTYPE_WEAPONOFFHAND = 17, INVTYPE_HOLDABLE = 17,
-	INVTYPE_RANGED = 18, INVTYPE_RANGEDRIGHT = 18, INVTYPE_THROWN = 18, INVTYPE_RELIC = 18, INVTYPE_TABARD = 19 }
 
 local function officer() return R.IAmOfficer() or R.IsOfficer(ns.Me()) end
 local function itemOf(link) return link and tonumber(tostring(link):match("item:(%d+)")) end
@@ -59,7 +55,7 @@ end
 ------------------------------------------------------------------ the window
 local function build()
 	local f = SK.Window("LevelMatesLootWindow", UIParent)
-	f:SetSize(620, 400); f:SetPoint("CENTER", 0, 60); f:SetFrameStrata("DIALOG")
+	f:SetSize(700, 400); f:SetPoint("CENTER", 0, 60); f:SetFrameStrata("DIALOG")
 	f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
 	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
 	if UISpecialFrames then table.insert(UISpecialFrames, "LevelMatesLootWindow") end
@@ -82,17 +78,19 @@ local function build()
 	-- the candidates, right: name, points, +1, wants it, worn item level, a cost and Give
 	LW.head = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	LW.head:SetPoint("TOPLEFT", 230, -30); LW.head:SetText(L.LW_HEAD)
+	LW.head:SetWidth(450); LW.head:SetJustifyH("LEFT")
 	LW.rows = {}
 	for i = 1, LW.ROWS do
 		local r = CreateFrame("Frame", nil, f)
-		r:SetSize(370, 22); r:SetPoint("TOPLEFT", 230, -46 - (i - 1) * 24)
-		r.name = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.name:SetPoint("LEFT"); r.name:SetWidth(96); r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
-		r.points = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.points:SetPoint("LEFT", 100, 0); r.points:SetWidth(40); r.points:SetJustifyH("RIGHT")
-		r.plus = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.plus:SetPoint("LEFT", 146, 0); r.plus:SetWidth(24); r.plus:SetJustifyH("RIGHT")
-		r.wish = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.wish:SetPoint("LEFT", 176, 0); r.wish:SetWidth(44); r.wish:SetJustifyH("LEFT")
-		r.worn = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.worn:SetPoint("LEFT", 222, 0); r.worn:SetWidth(34); r.worn:SetJustifyH("RIGHT")
+		r:SetSize(450, 22); r:SetPoint("TOPLEFT", 230, -46 - (i - 1) * 24)
+		r.name = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.name:SetPoint("LEFT"); r.name:SetWidth(84); r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
+		r.points = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.points:SetPoint("LEFT", 86, 0); r.points:SetWidth(36); r.points:SetJustifyH("RIGHT")
+		r.plus = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.plus:SetPoint("LEFT", 126, 0); r.plus:SetWidth(20); r.plus:SetJustifyH("RIGHT")
+		r.wish = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.wish:SetPoint("LEFT", 150, 0); r.wish:SetWidth(42); r.wish:SetJustifyH("LEFT")
+		r.worn = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.worn:SetPoint("LEFT", 194, 0); r.worn:SetWidth(28); r.worn:SetJustifyH("RIGHT")
+		r.resp = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.resp:SetPoint("LEFT", 226, 0); r.resp:SetWidth(110); r.resp:SetJustifyH("LEFT"); r.resp:SetWordWrap(false)
 		r.cost = CreateFrame("EditBox", nil, r, "InputBoxTemplate")
-		r.cost:SetSize(40, 20); r.cost:SetPoint("LEFT", 266, 0); r.cost:SetAutoFocus(false); r.cost:SetMaxLetters(5)
+		r.cost:SetSize(40, 20); r.cost:SetPoint("LEFT", 340, 0); r.cost:SetAutoFocus(false); r.cost:SetMaxLetters(5)
 		if r.cost.SetNumeric then r.cost:SetNumeric(true) end
 		r.give = SK.Button(r)
 		r.give:SetSize(60, 20); r.give:SetPoint("LEFT", r.cost, "RIGHT", 6, 0); r.give:SetText(L.LW_GIVE)
@@ -110,8 +108,7 @@ function LW.Select(i)
 	LW.Refresh()
 end
 local function wornLevel(name, itemId)
-	local invType = select(9, ns.ItemInfo(itemId))
-	local slot = invType and INV_SLOT[invType]
+	local slot = LT.SlotOf(itemId)
 	local g = slot and ns.Gear.Of(name)
 	local s = g and g.slots and g.slots[slot]
 	return s and s.il
@@ -147,6 +144,7 @@ function LW.Refresh()
 			r.wish:SetText(reserved[c.name] and L.LW_RESERVED or wanted[c.name] and L.LW_WANTS or "")
 			local il = wornLevel(c.name, it.id)
 			r.worn:SetText(il and tostring(il) or "")
+			r.resp:SetText(ns.LootSession and ns.LootSession.ResponseText(it.id, c.name) or "")
 			r:Show()
 		else
 			r.candidate, r.item = nil, nil
@@ -172,6 +170,7 @@ function LW.Give(r)
 	local raid = LR.raid
 	local id = LT.Award(it.id, c.name, { cost = cost, boss = boss and boss.name, enc = boss and boss.id, proof = "manual", raid = raid and raid.id })
 	if id then
+		if ns.LootSession then ns.LootSession.Awarded(it.id, c.name, cost) end
 		for k, x in ipairs(LW.items) do if x == it then table.remove(LW.items, k); break end end
 		LW.current = 1
 		if #LW.items == 0 then LW.frame:Hide() else LW.Refresh() end
@@ -192,7 +191,7 @@ ev:SetScript("OnEvent", function(_, event, slot)
 	if event == "LOOT_OPENED" then
 		if not officer() or masterLoot() == false then return end
 		readLoot()
-		if #LW.items > 0 then LW.Open() end
+		if #LW.items > 0 then LW.Open(); if ns.LootSession then ns.LootSession.Open(LW.items) end end
 	elseif event == "LOOT_SLOT_CLEARED" then
 		slot = ns.Plain(slot)
 		for k, it in ipairs(LW.items) do if it.slot == slot then table.remove(LW.items, k); break end end
@@ -203,6 +202,8 @@ ev:SetScript("OnEvent", function(_, event, slot)
 	elseif event == "LOOT_CLOSED" then
 		LW.items = {}
 		if LW.frame then LW.frame:Hide() end
+		if ns.LootSession then ns.LootSession.Close() end
 	end
 end)
 ns.On("LM_LOOT_CHANGED", function() LW.Refresh() end)
+ns.On("LM_LOOT_SESSION", function() LW.Refresh() end)

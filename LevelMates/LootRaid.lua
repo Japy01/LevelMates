@@ -18,7 +18,7 @@ local function itemOf(link) return link and tonumber(tostring(link):match("item:
 
 ------------------------------------------------------------------ the rules
 S.Define("lru", { class = "board", life = 365 * 86400, writerOwns = true,
-	fields = { bp = C.V.int(0, 1000), ap = C.V.int(0, 1000), mq = C.V.int(0, 6), mb = C.V.int(0, 100000), rl = C.V.int(0, 10) },
+	fields = { bp = C.V.int(0, 1000), ap = C.V.int(0, 1000), mq = C.V.int(0, 6), mb = C.V.int(0, 100000), rl = C.V.int(0, 10), md = C.V.oneOf("council", "dkp", "roll") },
 	accept = function(f, owner) return R.IsOfficer(owner) end,
 	may = function(rec, who) return R.IsOfficer(who) or (who == me() and officer()) end,
 	onChange = function() ns.Fire("LM_LOOT_CHANGED") end })
@@ -26,13 +26,16 @@ S.Define("lru", { class = "board", life = 365 * 86400, writerOwns = true,
 function LR.Rules()
 	local rec = S.Get("lru", "rules")
 	local d = rec and rec.d or {}
-	return { boss = d.bp or 0, att = d.ap or 0, quality = d.mq or 3, minBid = d.mb or 1, reserves = d.rl or 2 }
+	return { boss = d.bp or 0, att = d.ap or 0, quality = d.mq or 3, minBid = d.mb or 1, reserves = d.rl or 2, mode = d.md or "council" }
 end
 function LR.SetRules(r)
 	if not officer() then ns.Say(L.LOOT_NOT_OFFICER); return false end
 	local cur = LR.Rules()
-	for k, v in pairs(r or {}) do if cur[k] ~= nil and tonumber(v) then cur[k] = math.floor(tonumber(v)) end end
-	return S.Put("lru", "rules", { bp = cur.boss, ap = cur.att, mq = cur.quality, mb = cur.minBid, rl = cur.reserves }) and true or false
+	for k, v in pairs(r or {}) do
+		if k == "mode" then if v == "council" or v == "dkp" or v == "roll" then cur.mode = v end
+		elseif cur[k] ~= nil and tonumber(v) then cur[k] = math.floor(tonumber(v)) end
+	end
+	return S.Put("lru", "rules", { bp = cur.boss, ap = cur.att, mq = cur.quality, mb = cur.minBid, rl = cur.reserves, md = cur.mode }) and true or false
 end
 
 ------------------------------------------------------------------ the raid
@@ -139,7 +142,7 @@ local function onSlotCleared(slot)
 	local r = raid()
 	local cost = nextCost[slot]; nextCost[slot] = nil
 	local id = LT.Award(s.id, ns.ShortName(to), { boss = boss and boss.name, enc = boss and boss.id, proof = "ml", cost = cost, raid = r and r.id })
-	if id then LT.Confirm(id, "ml") end
+	if id then LT.Confirm(id, "ml"); if ns.LootSession then ns.LootSession.Awarded(s.id, ns.ShortName(to), cost) end end
 end
 
 ------------------------------------------------------------------ a trade, the chat line
@@ -206,6 +209,12 @@ ns.On("LM_LOADED", sync)
 ns.Slash("banda", function()
 	if not officer() then ns.Chat(L.LOOT_NOT_OFFICER); return end
 	if raid() then LR.Stop(); ns.Chat(L.LOOT_RAID_STOPPED) else LR.Start(); ns.Chat(L.LOOT_RAID_STARTED, raid().name) end
+end)
+-- /lm botinmodo council|dkp|roll: how the live session asks.
+ns.Slash("botinmodo", function(rest)
+	local m = strtrim(tostring(rest or "")):lower()
+	if m ~= "council" and m ~= "dkp" and m ~= "roll" then ns.Chat(L.LOOT_MODE_HELP, LR.Rules().mode); return end
+	if LR.SetRules({ mode = m }) then ns.Chat(L.LOOT_MODE_SET, m) end
 end)
 -- /lm botinreglas <jefe> <asistencia> [calidad]: the points.
 ns.Slash("botinreglas", function(rest)

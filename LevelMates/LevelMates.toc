@@ -78,7 +78,9 @@ Achievements.lua
 GuildFirsts.lua
 Loot.lua
 LootRaid.lua
+LootSession.lua
 LootWindow.lua
+LootCard.lua
 TalentView.lua
 MateCard.lua
 GearWindow.lua
