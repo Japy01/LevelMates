@@ -14,10 +14,9 @@ local lines = GC.Lines()
 assert(#lines == 3 and lines[1].name == "Mario" and lines[1].text == "hola a todos" and lines[1].kind == "guild", "the guild line kept: " .. #lines)
 assert(lines[2].kind == "officer" and lines[2].text == "reunión mañana", "the officer line")
 assert(lines[3].kind == "discord" and lines[3].name == "Pepe" and lines[3].text == nil, "a Discord line: the sender only")
--- the window: a Chat button on the book opens it; the lines drawn newest at the bottom
+-- the window: /lm chat opens it (the book has the chat on Home; no button, asked 2026-10-17); the lines newest at the bottom
 B.Toggle()
-assert(B.chatButton and B.chatButton:IsShown(), "a Chat button")
-B.chatButton.scripts.OnClick(B.chatButton)
+SlashCmdList["LEVELMATES"]("chat")
 assert(GC.frame and GC.frame:IsShown(), "the window")
 local shown = {}
 for _, r in ipairs(GC.rows) do if r:IsShown() then shown[#shown + 1] = r.text.text end end

@@ -126,11 +126,6 @@ local function Build()
 	discord:SetSize(80, 20); discord:SetPoint("RIGHT", search, "LEFT", -12, 0); discord:SetText(L.BTN_DISCORD)
 	discord:SetScript("OnClick", function() ns.Fire("LM_DISCORD_COPY", B.tab) end)
 	B.discordButton = discord
-	-- "Chat": the guild chat window (read and write)
-	local chat = ns.Skin.Button(f)
-	chat:SetSize(60, 20); chat:SetPoint("RIGHT", discord, "LEFT", -8, 0); chat:SetText(L.BTN_CHAT)
-	chat:SetScript("OnClick", function() ns.GuildChat.Toggle() end)
-	B.chatButton = chat
 	B.searchBox = search
 
 	local function Col(parent, w, justify, font) local fs = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight"); fs:SetWidth(w); fs:SetJustifyH(justify or "LEFT"); fs:SetWordWrap(false); return fs end
