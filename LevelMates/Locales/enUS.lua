@@ -362,3 +362,4 @@ L.LW_HEAD = "Candidate · points · +1 · wish · wears · answer"; L.LS_R_bis =
 L.LOOT_HANDOVER = "You carry %s and it is awarded to %s: hand it over."
 L.NO_ADDON_HEADER = "Online without the addon"; L.NO_ADDON = "without the addon"; L.BTN_CHAT = "Chat"; L.GC_TITLE = "Guild chat"; L.GC_SEND = "Send"; L.GC_OFFICER = "[Officers]"; L.GC_DISCORD = "(Discord)"; L.GC_HELD = "The game does not allow chat right now (a chat lockdown): try again in a moment."
 L.REPORT_GEAR = "Gear read"; L.REPORT_GEAR_SEEN = "links/hidden/parsed "; L.REPORT_GEAR_KEPT = "(the earlier one kept)"
+L.DB_CHAT = "Guild chat"; L.DB_HINT_CHAT = "What is said in the guild chat since you logged in shows here. Write below to talk to everyone."

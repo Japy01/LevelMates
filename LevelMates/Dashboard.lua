@@ -7,14 +7,14 @@ local DB = {}
 ns.Dashboard = DB
 local L, R = ns.L, ns.Roster
 local unpack = unpack or table.unpack
-DB.NOW, DB.RUNS, DB.QUESTS, DB.ZONES, DB.WALL = 3, 2, 3, 5, 6
+DB.NOW, DB.RUNS, DB.QUESTS, DB.ZONES, DB.WALL, DB.CHAT = 2, 2, 2, 5, 6, 14
 local GEAR_SLOTS = { 1, 2, 3, 15, 5, 9, 10, 6, 7, 8, 11, 12, 13, 14, 16, 17, 18 }   -- the 17 that count (no shirt, no tabard)
 local CLASS_ICON = "Interface\\TargetingFrame\\UI-Classes-Circles"
 local ITEM_H, ITEM_H2, PAD = 18, 30, 6   -- a line; a two-line entry (the wall)
 local I = "Interface\\Icons\\"
 local ICONS = { online = I .. "Spell_Holy_PrayerOfFortitude", ilvl = I .. "INV_Chest_Plate01", challenge = I .. "INV_Misc_Map_01",
 	now = I .. "INV_Misc_PocketWatch_01", groups = I .. "INV_Misc_Key_03", quests = I .. "INV_Misc_Note_01",
-	where = I .. "INV_Misc_Map02", wall = I .. "INV_Misc_Book_09",
+	where = I .. "INV_Misc_Map02", wall = I .. "INV_Misc_Book_09", chat = I .. "INV_Letter_11",
 	help = I .. "Spell_Holy_Heal", gift = I .. "INV_Misc_Bag_10", trainer = I .. "INV_Misc_Book_09" }
 -- the wall: an icon per kind of entry
 local WALL_ICONS = { lvl = I .. "Spell_ChargePositive", dth = I .. "Ability_Rogue_FeignDeath", dun = I .. "INV_Misc_Key_03",
@@ -214,6 +214,17 @@ function DB.Build(parent)
 	DB.where:SetEmptyArt(ICONS.where, L.DB_INVITE, function() ns.DiscordCopy.OpenText(ns.Home.InviteText()) end)   -- alone: the invite to copy
 	DB.invite = DB.where.emptyButton
 	DB.wall = W.Panel(f, L.DB_WALL, ICONS.wall); DB.wall:SetHint(L.DB_HINT_WALL); items(DB.wall, DB.WALL, false, true, true)
+	-- the guild chat, in the middle: the session's lines and a box to write (the whole guild, with or without the addon)
+	DB.chat = W.Panel(f, L.DB_CHAT, ICONS.chat); DB.chat:SetHint(L.DB_HINT_CHAT); items(DB.chat, DB.CHAT, false)
+	for _, it in ipairs(DB.chat.items) do it.text.lmKeep = true; it:SetScript("OnClick", nil) end   -- the lines keep their class colours
+	DB.chatInput = CreateFrame("EditBox", nil, DB.chat, "InputBoxTemplate")
+	DB.chatInput:SetHeight(20); DB.chatInput:SetPoint("BOTTOMLEFT", PAD + 6, 6); DB.chatInput:SetPoint("RIGHT", -PAD - 66, 0); DB.chatInput:SetAutoFocus(false); DB.chatInput:SetMaxLetters(255)
+	DB.chatInput:SetScript("OnEnterPressed", function(self) if ns.GuildChat.Send(self:GetText()) then self:SetText("") end end)
+	DB.chatInput:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	DB.chatSend = ns.Skin.Button(DB.chat)
+	DB.chatSend:SetSize(60, 20); DB.chatSend:SetPoint("LEFT", DB.chatInput, "RIGHT", 4, 0); DB.chatSend:SetText(L.GC_SEND)
+	DB.chatSend:SetScript("OnClick", function() if ns.GuildChat.Send(DB.chatInput:GetText()) then DB.chatInput:SetText("") end end)
+	DB.me:Hide()   -- my character: not on Home for now (asked 2026-10-17); still built and refreshed for the card
 	DB.wall:SetEmptyArt(ICONS.wall)
 	DB.Layout()
 	f:Hide()
@@ -221,7 +232,7 @@ function DB.Build(parent)
 end
 
 -- Three columns under the numbers and the strip; the middle one the widest.
-DB.LEFT_W, DB.RIGHT_W, DB.COL_GAP = 0.27, 0.28, 12
+DB.LEFT_W, DB.RIGHT_W, DB.COL_GAP = 0.30, 0.28, 12
 function DB.Layout()
 	local f = DB.frame
 	local w = f:GetWidth()
@@ -239,10 +250,12 @@ function DB.Layout()
 	local cx, rx = lw + DB.COL_GAP, lw + cw + 2 * DB.COL_GAP
 	local avail = h + top
 	DB.me:ClearAllPoints(); DB.me:SetPoint("TOPLEFT", 0, top); DB.me:SetSize(lw, avail)
+	-- left: Now, Groups (compact), Quests; middle: the chat, the whole height
 	local nowH, runsH = 26 + DB.NOW * (ITEM_H + 2) + 8, 26 + DB.RUNS * 68
-	DB.now:ClearAllPoints(); DB.now:SetPoint("TOPLEFT", cx, top); DB.now:SetSize(cw, nowH)
-	DB.runs:ClearAllPoints(); DB.runs:SetPoint("TOPLEFT", cx, top - nowH - 8); DB.runs:SetSize(cw, runsH)
-	DB.quests:ClearAllPoints(); DB.quests:SetPoint("TOPLEFT", cx, top - nowH - runsH - 16); DB.quests:SetSize(cw, math.max(60, avail - nowH - runsH - 16))
+	DB.now:ClearAllPoints(); DB.now:SetPoint("TOPLEFT", 0, top); DB.now:SetSize(lw, nowH)
+	DB.runs:ClearAllPoints(); DB.runs:SetPoint("TOPLEFT", 0, top - nowH - 8); DB.runs:SetSize(lw, runsH)
+	DB.quests:ClearAllPoints(); DB.quests:SetPoint("TOPLEFT", 0, top - nowH - runsH - 16); DB.quests:SetSize(lw, math.max(60, avail - nowH - runsH - 16))
+	DB.chat:ClearAllPoints(); DB.chat:SetPoint("TOPLEFT", cx, top); DB.chat:SetSize(cw, avail)
 	local whereH = 26 + DB.ZONES * (ITEM_H + 2) + 6
 	DB.where:ClearAllPoints(); DB.where:SetPoint("TOPLEFT", rx, top); DB.where:SetSize(rw, whereH)
 	DB.wall:ClearAllPoints(); DB.wall:SetPoint("TOPLEFT", rx, top - whereH - 8); DB.wall:SetSize(rw, math.max(60, avail - whereH - 8))
@@ -403,6 +416,12 @@ local function refreshWall()
 	end)
 end
 
+local function refreshChat()
+	local GC = ns.GuildChat
+	local list = GC and GC.Last(DB.CHAT) or {}
+	fill(DB.chat, list, function(it, e) setItem(it, GC.LineText(e)) end)
+end
+
 function DB.Refresh()
 	if not DB.frame or not DB.frame:IsShown() then return end
 	DB.Layout()
@@ -410,6 +429,7 @@ function DB.Refresh()
 	local motd, by = ns.GuildNotes.Motd()
 	if motd then DB.motd.text:SetText((by and (by .. ": ") or "") .. motd) end
 	DB.motd:SetShown(motd ~= nil)
-	refreshMe(); refreshMine(); refreshNow(); refreshRuns(); refreshQuests(); refreshWhere(); refreshWall()
+	refreshMe(); refreshMine(); refreshNow(); refreshRuns(); refreshQuests(); refreshWhere(); refreshWall(); refreshChat()
 	ns.Skin.InkPass()
 end
+ns.On("LM_GUILD_CHAT", function() ns.Dirty("board") end)

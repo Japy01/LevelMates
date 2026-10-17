@@ -363,3 +363,4 @@ L.LW_HEAD = "Candidato · puntos · +1 · deseo · lleva · respuesta"; L.LS_R_b
 L.LOOT_HANDOVER = "Llevas %s en las bolsas y está asignado a %s: entrégaselo."
 L.NO_ADDON_HEADER = "Conectados sin el addon"; L.NO_ADDON = "sin el addon"; L.BTN_CHAT = "Chat"; L.GC_TITLE = "Chat de hermandad"; L.GC_SEND = "Enviar"; L.GC_OFFICER = "[Oficiales]"; L.GC_DISCORD = "(Discord)"; L.GC_HELD = "El juego no deja escribir ahora (bloqueo de chat): inténtalo en un momento."
 L.REPORT_GEAR = "Equipo leído"; L.REPORT_GEAR_SEEN = "enlaces/ocultos/leídos "; L.REPORT_GEAR_KEPT = "(se mantuvo el anterior)"
+L.DB_CHAT = "Chat de hermandad"; L.DB_HINT_CHAT = "Lo que se diga en el chat de hermandad desde que entraste sale aquí. Escribe abajo para hablar con todos."

@@ -46,11 +46,11 @@ local function build()
 	end
 	GC.input = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
 	GC.input:SetHeight(22); GC.input:SetPoint("BOTTOMLEFT", 16, 12); GC.input:SetPoint("RIGHT", -90, 0); GC.input:SetAutoFocus(false); GC.input:SetMaxLetters(255)
-	GC.input:SetScript("OnEnterPressed", function(self) GC.Send(self:GetText()) end)
+	GC.input:SetScript("OnEnterPressed", function(self) if GC.Send(self:GetText()) then self:SetText("") end end)
 	GC.input:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
 	GC.send = SK.Button(f)
 	GC.send:SetSize(70, 22); GC.send:SetPoint("LEFT", GC.input, "RIGHT", 6, 0); GC.send:SetText(L.GC_SEND)
-	GC.send:SetScript("OnClick", function() GC.Send(GC.input:GetText()) end)
+	GC.send:SetScript("OnClick", function() if GC.Send(GC.input:GetText()) then GC.input:SetText("") end end)
 end
 local function classColour(name)
 	local m = ns.Roster.mates[name]
@@ -58,29 +58,34 @@ local function classColour(name)
 	if c then return string.format("|cff%02x%02x%02x%s|r", c.r * 255, c.g * 255, c.b * 255, name) end
 	return name
 end
+-- A line as text: the hour, the name in its class colour, the words (or that Discord hides them).
+function GC.LineText(e)
+	local when = date("%H:%M", e.at)
+	local body
+	if e.kind == "discord" then body = classColour(e.name) .. " " .. L.GC_DISCORD .. ": " .. L.DT_PROTECTED
+	elseif e.kind == "officer" then body = L.GC_OFFICER .. " " .. classColour(e.name) .. ": " .. e.text
+	else body = classColour(e.name) .. ": " .. e.text end
+	return "|cff888888" .. when .. "|r " .. body
+end
+-- The last n lines, oldest first.
+function GC.Last(n)
+	local out, first = {}, math.max(1, #lines - n + 1)
+	for i = first, #lines do out[#out + 1] = lines[i] end
+	return out
+end
 function GC.Refresh()
 	if not GC.frame or not GC.frame:IsShown() then return end
-	local n = #lines
-	local first = math.max(1, n - GC.ROWS + 1)
+	local last = GC.Last(GC.ROWS)
 	for i, r in ipairs(GC.rows) do
-		local e = lines[first + i - 1]
-		if e then
-			local when = date("%H:%M", e.at)
-			local body
-			if e.kind == "discord" then body = classColour(e.name) .. " " .. L.GC_DISCORD .. ": " .. L.DT_PROTECTED
-			elseif e.kind == "officer" then body = L.GC_OFFICER .. " " .. classColour(e.name) .. ": " .. e.text
-			else body = classColour(e.name) .. ": " .. e.text end
-			r.text:SetText("|cff888888" .. when .. "|r " .. body)
-			r:Show()
-		else r:Hide() end
+		local e = last[i]
+		if e then r.text:SetText(GC.LineText(e)); r:Show() else r:Hide() end
 	end
 end
--- From the box's Enter or the button: to the guild; a lockdown keeps the text where it is.
+-- From a box's Enter or a button: to the guild; false (and a word) when a lockdown holds it, so the box keeps it.
 function GC.Send(text)
 	text = strtrim(tostring(text or ""))
 	if text == "" then return false end
 	if not ns.SendChat(text, "GUILD") then ns.Say(L.GC_HELD); return false end
-	GC.input:SetText("")
 	return true
 end
 function GC.Open()
