@@ -67,10 +67,30 @@ function LS.Open(items)
 	local ids = {}
 	for _, it in ipairs(items) do ids[#ids + 1] = tostring(it.id) end
 	local id = string.format("s%x%x", time() % 1000000, math.random(0, 4095))
-	LS.session = { id = id, mode = rules.mode, minBid = rules.minBid, items = ids, responses = {} }
+	LS.session = { id = id, mode = rules.mode, minBid = rules.minBid, items = ids, responses = {}, openedAt = GetTime() }
 	send("ls", { s = id, m = rules.mode, i = table.concat(ids, ","), b = rules.minBid })
+	ns.Fire("LM_LOOT_SESSION")
 	return id
 end
+-- How a candidate's answer ranks for the window: BiS, main, minor, bids (high first), rolls (high first), the
+-- silent, passes last. Returns the rank and the number (bid or roll) for ties.
+local RANK = { bis = 1, main = 2, minor = 3, bid = 4, roll = 5, pass = 7 }
+LS.SILENT_RANK = 6
+function LS.Rank(item, name)
+	local s = LS.session
+	local r = s and s.responses[item] and s.responses[item][name]
+	if not r then return LS.SILENT_RANK, 0 end
+	return RANK[r.r] or LS.SILENT_RANK, r.v or 0
+end
+-- How many of the names answered for the item.
+function LS.Answered(item, names)
+	local s, n = LS.session, 0
+	local got = s and s.responses[item]
+	if got then for _, name in ipairs(names) do if got[name] then n = n + 1 end end end
+	return n
+end
+-- Seconds since the session opened, or nil.
+function LS.Elapsed() return LS.session and LS.session.openedAt and math.max(0, GetTime() - LS.session.openedAt) or nil end
 -- An answer's words for the window: "main · para tanquear", "puja 25", "tira 100".
 function LS.ResponseText(item, name)
 	local s = LS.session

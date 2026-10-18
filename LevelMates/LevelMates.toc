@@ -91,5 +91,6 @@ WishDialog.lua
 DiscordCopy.lua
 Report.lua
 GuildChat.lua
+WhatsNew.lua
 RaidProbe.lua
 Sim.lua

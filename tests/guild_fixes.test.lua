@@ -26,6 +26,7 @@ assert(hit, "the question in the tooltip")
 local members = {}
 ns.db.joined = nil   -- as on a first login
 C_Club.GetClubMembers = function() return members end
+ns.Roster.InvalidateGuildRoster()   -- the roster is read once per change (2026-10-17): the swapped game function is a change
 I.Scan()
 assert(ns.db.joined == nil or ns.db.joined[GetGuildInfo("player")] == nil or ns.db.joined[GetGuildInfo("player")].since == nil, "no members yet: nothing noted")
 members = { "Mario" }

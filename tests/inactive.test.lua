@@ -56,7 +56,7 @@ assert(B.recruitPanel:IsShown() and not B.recruitDaysButton:IsShown(), "back to 
 local reads = 0
 local realMembers = C_Club.GetClubMembers
 C_Club.GetClubMembers = function(...) reads = reads + 1; return realMembers(...) end
-ns.Inactive.Invalidate()
+ns.Inactive.Invalidate(); ns.Roster.InvalidateGuildRoster()   -- the roster cache (2026-10-17) forgets too
 for _ = 1, 10 do I.List(14) end
 assert(reads == 1, "one read for ten lists: " .. reads)
 STUB.Fire("GUILD_ROSTER_UPDATE")

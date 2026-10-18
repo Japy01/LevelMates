@@ -79,6 +79,12 @@ local function build()
 	LW.head = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	LW.head:SetPoint("TOPLEFT", 230, -30); LW.head:SetText(L.LW_HEAD)
 	LW.head:SetWidth(450); LW.head:SetJustifyH("LEFT")
+	-- the session's clock and how many answered, top right
+	LW.timer = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	LW.timer:SetPoint("TOPRIGHT", -34, -14)
+	LW.answered = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	LW.answered:SetPoint("RIGHT", LW.timer, "LEFT", -12, 0)
+	f:HookScript("OnHide", function() ns.Cancel("lootClock") end)
 	LW.rows = {}
 	for i = 1, LW.ROWS do
 		local r = CreateFrame("Frame", nil, f)
@@ -127,6 +133,22 @@ function LW.Refresh()
 	end
 	local it = LW.items[LW.current or 1]
 	local list = it and candidates(it.slot) or {}
+	local LS = ns.LootSession
+	if LS and LS.session and it then   -- answered first, by what they said; the silent next; passes last
+		table.sort(list, function(a, b)
+			local ra, va = LS.Rank(it.id, a.name)
+			local rb, vb = LS.Rank(it.id, b.name)
+			if ra ~= rb then return ra < rb end
+			if va ~= vb then return va > vb end
+			return a.name < b.name
+		end)
+	end
+	LW.UpdateClock()
+	if LS and LS.session and it then
+		local names = {}
+		for _, c in ipairs(list) do names[#names + 1] = c.name end
+		LW.answered:SetText(string.format(L.LW_ANSWERED, LS.Answered(it.id, names), #names)); LW.answered:Show()
+	else LW.answered:SetText(""); LW.answered:Hide() end
 	local wanted, reserved = {}, {}
 	if it then
 		for _, n in ipairs(ns.Wishlist.WantedBy(it.id)) do wanted[n] = true end
@@ -138,7 +160,7 @@ function LW.Refresh()
 			r.candidate, r.item = c, it
 			r.name:SetText(c.name)
 			local col = RAID_CLASS_COLORS and R.mates[c.name] and RAID_CLASS_COLORS[R.mates[c.name].class or ""]
-			if col then r.name:SetTextColor(col.r, col.g, col.b) else r.name:SetTextColor(1, 1, 1) end
+			if col then r.name:SetTextColor(SK.Ink(col.r, col.g, col.b)) else r.name:SetTextColor(SK.Ink(1, 1, 1)) end   -- in ink: the page is parchment
 			r.points:SetText(LT.Balance(c.name))
 			r.plus:SetText(LT.PlusOne(c.name))
 			r.wish:SetText(reserved[c.name] and L.LW_RESERVED or wanted[c.name] and L.LW_WANTS or "")
@@ -178,11 +200,20 @@ function LW.Give(r)
 	return id and true or false
 end
 
+-- The clock: "m:ss" since the session opened; blank without one. Ticks once a second while the window shows.
+function LW.UpdateClock()
+	if not LW.timer then return end
+	local LS = ns.LootSession
+	local secs = LS and LS.Elapsed()
+	if not secs then LW.timer:SetText(""); LW.timer:Hide(); return end
+	LW.timer:SetText(string.format(L.LW_ELAPSED, string.format("%d:%02d", math.floor(secs / 60), math.floor(secs % 60)))); LW.timer:Show()
+end
 function LW.Open()
 	if not LW.frame then build() end
 	LW.current = 1
 	LW.frame:Show()
 	LW.Refresh()
+	ns.Every("lootClock", 1, function() if LW.frame and LW.frame:IsShown() then LW.UpdateClock() else ns.Cancel("lootClock") end end)
 end
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("LOOT_OPENED"); ev:RegisterEvent("LOOT_SLOT_CLEARED"); ev:RegisterEvent("LOOT_CLOSED")

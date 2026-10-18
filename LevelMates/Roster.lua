@@ -18,7 +18,11 @@ local xpWindow = {}   -- { t, xp } samples for XP/h over the last hour
 local function secret(v) return issecretvalue ~= nil and issecretvalue(v) end
 local function plain(v) if secret(v) then return nil end; return v end
 local OFFLINE = 3   -- Enum.ClubMemberPresence.Offline
-function R.GuildMembers()
+-- Read once per change: the game says when the list changes (GUILD_ROSTER_UPDATE, the club's member events), and
+-- a short TTL covers whatever it does not say; the book asks many times a redraw.
+local membersCache, membersAt = nil, -math.huge
+R.MEMBERS_TTL = 60
+local function readGuildMembers()
 	local out = {}
 	local club = plain(C_Club and C_Club.GetGuildClubId and C_Club.GetGuildClubId())
 	local okIds, ids = pcall(function() return club and C_Club.GetClubMembers(club) end)
@@ -62,6 +66,11 @@ function R.GuildMembers()
 	if #out == 0 then return nil end
 	return out
 end
+function R.GuildMembers()
+	if membersCache and GetTime() - membersAt < R.MEMBERS_TTL then return membersCache end
+	membersCache, membersAt = readGuildMembers(), GetTime()
+	return membersCache
+end
 
 -- Guild roster as a name set, cached: the hidden channel is open to anyone, so the roster is the whitelist.
 local guildSet, guildSetAt = nil, -math.huge
@@ -71,7 +80,7 @@ local function buildGuildSet()
 	for _, m in ipairs(R.GuildMembers() or {}) do set[m.name] = m.role or 4 end
 	return set
 end
-function R.InvalidateGuildRoster() guildSet = nil end
+function R.InvalidateGuildRoster() guildSet = nil; membersCache = nil end
 -- The guild list has arrived from the server (I am on it): until then nobody can be told apart from a stranger.
 function R.RosterLoaded() return R.IsGuildmate(ns.Me()) end
 function R.IsGuildmate(name)
@@ -278,13 +287,14 @@ end)
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("PLAYER_LEVEL_UP"); ev:RegisterEvent("ZONE_CHANGED_NEW_AREA"); ev:RegisterEvent("GROUP_ROSTER_UPDATE"); ev:RegisterEvent("QUEST_LOG_UPDATE")
 ev:RegisterEvent("GUILD_ROSTER_UPDATE"); ev:RegisterEvent("CLUB_MEMBER_ADDED"); ev:RegisterEvent("CLUB_MEMBER_REMOVED")
+ev:RegisterEvent("CLUB_MEMBER_PRESENCE_UPDATED"); ev:RegisterEvent("CLUB_MEMBER_UPDATED")   -- someone came, went or changed
 local questDebounce = false
 ev:SetScript("OnEvent", function(_, event)
 	if event == "QUEST_LOG_UPDATE" then
 		if questDebounce then return end
 		questDebounce = true
 		C_Timer.After(2, function() questDebounce = false; R.SendQuests() end)
-	elseif event == "GUILD_ROSTER_UPDATE" or event == "CLUB_MEMBER_ADDED" or event == "CLUB_MEMBER_REMOVED" then
+	elseif event == "GUILD_ROSTER_UPDATE" or event == "CLUB_MEMBER_ADDED" or event == "CLUB_MEMBER_REMOVED" or event == "CLUB_MEMBER_PRESENCE_UPDATED" or event == "CLUB_MEMBER_UPDATED" then
 		R.InvalidateGuildRoster()
 		ns.Fire("LM_GUILD_ROSTER")   -- what waited for the list (catch-up arriving at login) is looked at again
 	else

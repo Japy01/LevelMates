@@ -18,6 +18,12 @@ local function build()
 	if f.TitleText then f.TitleText:SetText(L.LC_TITLE) end
 	LC.frame = f
 	LC.from = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); LC.from:SetPoint("TOPLEFT", 12, -26)
+	-- shrink to the title line (the items stay, out of the way of the fight) and back
+	LC.minButton = SK.Button(f)
+	LC.minButton:SetSize(22, 20); LC.minButton:SetText("-")
+	if f.CloseButton then LC.minButton:SetPoint("RIGHT", f.CloseButton, "LEFT", -2, 0) else LC.minButton:SetPoint("TOPRIGHT", -30, -4) end
+	if LC.minButton.SetFrameLevel then LC.minButton:SetFrameLevel(((f.CloseButton and f.CloseButton.GetFrameLevel and f.CloseButton:GetFrameLevel()) or f:GetFrameLevel()) + 1) end
+	LC.minButton:SetScript("OnClick", function() LC.minimized = not LC.minimized; LC.Refresh() end)
 	LC.rows = {}
 	for i = 1, LC.MAX do
 		local r = CreateFrame("Frame", nil, f)
@@ -77,12 +83,13 @@ function LC.Refresh()
 	if not o then if LC.frame then LC.frame:Hide() end; return end
 	if not LC.frame then build() end
 	local f = LC.frame
-	LC.from:SetText(string.format(L.LC_FROM, o.from, L["LC_MODE_" .. o.mode] or o.mode))
-	local n = math.min(#o.items, LC.MAX)
+	LC.from:SetText(string.format(L.LC_FROM, o.from, L["LC_MODE_" .. o.mode] or o.mode) .. (LC.minimized and string.format(L.LC_SHRUNK, #o.items) or ""))
+	LC.minButton:SetText(LC.minimized and "+" or "-")
+	local n = LC.minimized and 0 or math.min(#o.items, LC.MAX)
 	f:SetSize(460, 50 + n * (ROW_H + 4))
 	for i, r in ipairs(LC.rows) do
 		local item = o.items[i]
-		if item and i <= LC.MAX then
+		if item and i <= LC.MAX and not LC.minimized then
 			r.item = item
 			local name, link = ns.ItemInfo(item)
 			r.itemLink = link
