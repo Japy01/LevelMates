@@ -6,7 +6,10 @@ local _, ns = ...
 local RC = {}
 ns.Recruit = RC
 local L, C, R = ns.L, ns.Comm, ns.Roster
-RC.GAP, RC.MAX_LEN = 600, 200
+RC.GAP, RC.MAX_LEN = 600, 200   -- the default wait between posts (10 min); the tab lets each officer choose
+RC.EVERY_CHOICES = { 5, 10, 15, 20, 30, 60 }
+function RC.Every() local n = ns.char and ns.char.recruitEvery; return type(n) == "number" and n >= 1 and n or 10 end   -- minutes
+function RC.Gap() return RC.Every() * 60 end
 
 local function me() return ns.Me() end
 -- The server's clock (seconds): every officer counts the shared wait the same way, whatever their PC's clock says.
@@ -22,11 +25,50 @@ function RC.Last() return store().last end   -- { at = seconds, by = name }
 function RC.Wait()
 	local l = store().last
 	if not l then return 0 end
-	return math.max(0, RC.GAP - (now() - l.at))
+	return math.max(0, RC.Gap() - (now() - l.at))
 end
 
 local function plain(v) return (tostring(v):gsub("%%", "%%%%")) end
--- {hermandad}/{guild}, {conectados}/{online}, {nivel}/{level}; at most 255 bytes once filled in.
+
+-- The invite link of a community I belong to (a guild has none on Forever: its finder is off): the game's own
+-- "[Join: Name]" link from a ticket that still has uses. The tickets come from the server on request
+-- (RC.RequestLinks, at login and when the Recruit tab opens), so the first look may find none yet.
+local GUILD_CLUB = 2   -- Enum.ClubType.Guild
+local function communities()
+	if not (C_Club and C_Club.GetSubscribedClubs) then return {} end
+	local ok, clubs = pcall(C_Club.GetSubscribedClubs)
+	local out = {}
+	for _, club in ipairs(ok and ns.List(clubs) or {}) do
+		local kind = ns.Plain(club.clubType)
+		if kind ~= nil and kind ~= (Enum and Enum.ClubType and Enum.ClubType.Guild or GUILD_CLUB) and ns.Plain(club.clubId) then out[#out + 1] = club end
+	end
+	return out
+end
+function RC.RequestLinks()
+	if not (C_Club and C_Club.RequestTickets) then return end
+	for _, club in ipairs(communities()) do pcall(C_Club.RequestTickets, club.clubId) end
+end
+function RC.CommunityLink()
+	if not (C_Club and C_Club.GetTickets) then return nil end
+	for _, club in ipairs(communities()) do
+		local ok, tickets = pcall(C_Club.GetTickets, club.clubId)
+		for _, t in ipairs(ok and ns.List(tickets) or {}) do
+			local id, allowed, used = ns.Plain(t.ticketId), ns.Plain(t.allowedRedeemCount) or 0, ns.Plain(t.currentRedeemCount) or 0
+			if id and (allowed == 0 or used < allowed) then   -- 0 uses allowed means unlimited
+				local name = ns.Plain(club.name) or ""
+				if GetClubTicketLink then
+					local okL, link = pcall(GetClubTicketLink, id, name, ns.Plain(club.clubType))
+					if okL and type(link) == "string" then return link end
+				end
+				return string.format("|HclubTicket:%s|h[%s]|h", id, string.format(CLUB_INVITE_HYPERLINK_TEXT or "%s", name))
+			end
+		end
+	end
+	return nil
+end
+
+-- {hermandad}/{guild}, {conectados}/{online}, {nivel}/{level}, {enlace}/{link}; at most 255 bytes once filled in.
+-- The link is put in last and kept whole: the words give way, a cut link would be dead.
 function RC.Expand(text)
 	local guild = plain(ns.Plain(GetGuildInfo("player")) or "")
 	local online = plain(ns.Plain(select(3, GetNumGuildMembers())) or 0)
@@ -37,7 +79,15 @@ function RC.Expand(text)
 	out = out:gsub("{hermandad}", guild):gsub("{guild}", guild)
 	out = out:gsub("{conectados}", online):gsub("{online}", online)
 	out = out:gsub("{nivel}", level):gsub("{level}", level)
-	return ns.CutUtf8(out, 255)
+	local link = (out:find("{enlace}", 1, true) or out:find("{link}", 1, true)) and RC.CommunityLink() or nil
+	if not link then return ns.CutUtf8((out:gsub("{enlace}", ""):gsub("{link}", "")), 255) end
+	local MARK = string.char(1)
+	out = out:gsub("{enlace}", MARK):gsub("{link}", MARK)
+	local first = out:find(MARK, 1, true)
+	local before, after = out:sub(1, first - 1), (out:sub(first + 1):gsub(MARK, ""))
+	local room = 255 - #link - #after
+	if room < 0 then after = ""; room = 255 - #link end
+	return ns.CutUtf8(before, math.max(0, room)) .. link .. after
 end
 
 -- In that public channel: the slot is taken, and not by our own hidden channel ("LM" and 8 hex digits).
@@ -46,11 +96,12 @@ function RC.InChannel(channel)
 	return (id or 0) ~= 0 and name ~= nil and not tostring(name):find("^LM%x%x%x%x%x%x%x%x$")
 end
 
--- Called from the Publish click: the text and channel to post, or nil after saying why.
-function RC.Prepare(index, channel)
+-- Called from the Publish click: the text and channel to post, or nil after saying why. force: post although the
+-- wait holds (the button said "post anyway"; the officer's call).
+function RC.Prepare(index, channel, force)
 	if not R.IAmOfficer() then ns.Say(L.GOAL_NOT_OFFICER); return nil end
 	local wait = RC.Wait()
-	if wait > 0 then ns.Say(L.RECRUIT_WAIT, math.ceil(wait / 60)); return nil end
+	if wait > 0 and not force then ns.Say(L.RECRUIT_WAIT, math.ceil(wait / 60)); return nil end
 	local text = RC.Expand(RC.Templates()[index] or "")
 	if strtrim(text) == "" then ns.Say(L.RECRUIT_EMPTY); return nil end
 	if not RC.InChannel(channel) then ns.Say(L.RECRUIT_NO_CHANNEL, channel); return nil end
@@ -102,13 +153,13 @@ ns.On("LM_HELLO_ANSWERED", function()
 	s.versions = s.versions or {}
 	for i, x in ipairs(s.templates) do if x ~= "" and (s.versions[i] or 0) > 0 then C.Send("rt", { i = i, x = x, v = s.versions[i] }) end end
 	local l = s.last
-	if l and now() - l.at < RC.GAP then C.Send("rc", { t = l.at }) end
+	if l and now() - l.at < RC.Gap() then C.Send("rc", { t = l.at }) end
 end)
 
 
 -- The reminder: every 10 minutes (when the shared wait is over) a small prompt offers Publish; it never posts by itself.
 local snoozeUntil = 0
-function RC.Snooze() snoozeUntil = now() + RC.GAP; if RC.prompt then RC.prompt:Hide() end end
+function RC.Snooze() snoozeUntil = now() + RC.Gap(); if RC.prompt then RC.prompt:Hide() end end
 
 function RC.ShowPrompt()
 	if not RC.prompt then
@@ -127,7 +178,7 @@ function RC.ShowPrompt()
 		local later = ns.Skin.Button(p)
 		later:SetSize(130, 22); later:SetPoint("BOTTOMRIGHT", -16, 12); later:SetText(L.RECRUIT_LATER)
 		later:SetScript("OnClick", function() RC.Snooze() end)
-		p:SetScript("OnHide", function() snoozeUntil = math.max(snoozeUntil, now() + RC.GAP) end)   -- closed any way: not again for 10 min
+		p:SetScript("OnHide", function() snoozeUntil = math.max(snoozeUntil, now() + RC.Gap()) end)   -- closed any way: not again until the interval passes
 		tinsert(UISpecialFrames, "LevelMatesRecruitPrompt")
 		RC.prompt, RC.promptPost, RC.promptLater = p, post, later
 	end
@@ -143,4 +194,4 @@ function RC.Tick()
 	if RC.prompt and RC.prompt:IsShown() then return end
 	RC.ShowPrompt()
 end
-ns.On("LM_WORLD", function() if not RC.ticker then RC.ticker = C_Timer.NewTicker(30, RC.Tick) end end)
+ns.On("LM_WORLD", function() if not RC.ticker then RC.ticker = C_Timer.NewTicker(30, RC.Tick) end; RC.RequestLinks() end)

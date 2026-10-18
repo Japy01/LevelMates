@@ -137,9 +137,9 @@ L.RARE_SEEN = "%s ha visto a %s en %s"; L.WAYPOINT = "Ruta"; L.OPT_RARE = "Avist
 L.QUEST_SHARED = "Misiones en común:"; L.QUEST_DONE = "%s ya tiene completa: %s"
 L.ZONE_BUSY = "%d hermanos en %s"; L.OPT_MAP = "Hermanos en el mapa"; L.OPT_MAP_TT = "Los hermanos que comparten su posición salen en el mapa del mundo."
 L.PANIC_TEXT = "¡Ayuda! Me están matando"; L.PANIC_WAIT = "Ya has pedido ayuda; espera unos segundos."; L.BINDING_PANIC = "Pedir ayuda ya"
-L.TAB_RECRUIT = "Reclutar"; L.HEAD_RECRUIT = "Reclutamiento"; L.SUB_RECRUIT = "Solo oficiales. Comodines: {hermandad}, {conectados}, {nivel}."; L.SEARCH_RECRUIT = "Buscar..."
+L.TAB_RECRUIT = "Reclutar"; L.HEAD_RECRUIT = "Reclutamiento"; L.SUB_RECRUIT = "Solo oficiales. Comodines: {hermandad}, {conectados}, {nivel}, {enlace} (el enlace de invitación de tu comunidad)."; L.SEARCH_RECRUIT = "Buscar..."
 L.RECRUIT_DEFAULT = "¡<{hermandad}> recluta! Hermandad tranquila para subir de nivel juntos: grupos de mazmorra, metas y buen rollo. ¡Susúrrame!"
-L.RECRUIT_CHANNEL_2 = "Canal 2 (Comercio)"; L.RECRUIT_CHANNEL_1 = "Canal 1 (General)"; L.RECRUIT_POST = "Publicar"; L.RECRUIT_REMIND = "Recordatorio cada 10 min"
+L.RECRUIT_CHANNEL_2 = "Canal 2 (Comercio)"; L.RECRUIT_CHANNEL_1 = "Canal 1 (General)"; L.RECRUIT_POST = "Publicar"; L.RECRUIT_REMIND = "Recordatorio"
 L.RECRUIT_LAST = "Último anuncio: hace %s (%s)"; L.RECRUIT_NONE = "Nadie ha publicado todavía."; L.RECRUIT_WAIT = "Espera %d min para volver a publicar (compartido entre oficiales)."
 L.RECRUIT_READY = "Ya puedes publicar."; L.RECRUIT_EMPTY = "Esa plantilla está vacía."; L.RECRUIT_NO_CHANNEL = "No estás en el canal %d (el de Comercio solo está en las ciudades)."
 L.RECRUIT_PROMPT = "Toca publicar el reclutamiento de la hermandad."; L.RECRUIT_LATER = "Ahora no"
@@ -372,3 +372,4 @@ L.WN_TITLE = "%s %s: novedades"; L.WN_OPEN = "Abrir el libro"; L.WN_OPTIONS = "O
 L.WN_WELCOME = "Bienvenido a Forever Guild, el libro de tu hermandad. Verás quién está conectado y dónde, grupos para mazmorras, metas, deseos y regalos, oficios, el botín de banda y el chat de hermandad, todo en una ventana. Quien tenga el addon sale con más detalle; los demás salen igualmente. En Opciones eliges qué compartes."
 L.WN_NEWS = { "El libro suena y se mueve como el juego: sonidos al abrir, cerrar y cambiar de pestaña; la rueda del ratón pasa página.", "Desplegables con la opción marcada en vez de botones que rotaban; las cabeceras ordenan con la flecha del juego; Miembros ordena por nombre, nivel, rango o última conexión.", "Cada fila lleva su dibujo; los objetos muestran su icono.", "Un solo recuento de conectados (con y sin addon) y cuántos tienen el addon.", "La ventana de chat parte las líneas largas, se desplaza con la rueda y muestra el tooltip de los enlaces.", "Reparto de botín en vivo: reloj, cuántos han respondido, los que respondieron primero; la tarjeta se encoge con el botón -.", "Opciones > El libro: oscuridad del texto y restablecer posición." }
 L.GC_DISCORD_LINE = "%s |cff888888escribió desde Discord (el texto solo sale en el chat del juego)|r"
+L.RECRUIT_EVERY = "cada %d min"; L.RECRUIT_EVERY_TITLE = "Cada cuánto"; L.RECRUIT_POST_ANYWAY = "Publicar igualmente"

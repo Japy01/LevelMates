@@ -136,9 +136,9 @@ L.RARE_SEEN = "%s spotted %s in %s"; L.WAYPOINT = "Waypoint"; L.OPT_RARE = "Rare
 L.QUEST_SHARED = "Quests in common:"; L.QUEST_DONE = "%s has completed: %s"
 L.ZONE_BUSY = "%d guildmates in %s"; L.OPT_MAP = "Guildmates on the map"; L.OPT_MAP_TT = "Guildmates who share their position appear on the world map."
 L.PANIC_TEXT = "Help! I'm being killed"; L.PANIC_WAIT = "Help already asked; wait a few seconds."; L.BINDING_PANIC = "Ask for help now"
-L.TAB_RECRUIT = "Recruit"; L.HEAD_RECRUIT = "Recruitment"; L.SUB_RECRUIT = "Officers only. Placeholders: {guild}, {online}, {level}."; L.SEARCH_RECRUIT = "Search..."
+L.TAB_RECRUIT = "Recruit"; L.HEAD_RECRUIT = "Recruitment"; L.SUB_RECRUIT = "Officers only. Placeholders: {guild}, {online}, {level}, {link} (your community's invite link)."; L.SEARCH_RECRUIT = "Search..."
 L.RECRUIT_DEFAULT = "<{guild}> is recruiting! A friendly guild to level up together: dungeon groups, goals and good company. Whisper me!"
-L.RECRUIT_CHANNEL_2 = "Channel 2 (Trade)"; L.RECRUIT_CHANNEL_1 = "Channel 1 (General)"; L.RECRUIT_POST = "Post"; L.RECRUIT_REMIND = "Reminder every 10 min"
+L.RECRUIT_CHANNEL_2 = "Channel 2 (Trade)"; L.RECRUIT_CHANNEL_1 = "Channel 1 (General)"; L.RECRUIT_POST = "Post"; L.RECRUIT_REMIND = "Reminder"
 L.RECRUIT_LAST = "Last post: %s ago (%s)"; L.RECRUIT_NONE = "Nobody has posted yet."; L.RECRUIT_WAIT = "Wait %d min before posting again (shared by all officers)."
 L.RECRUIT_READY = "You can post now."; L.RECRUIT_EMPTY = "That template is empty."; L.RECRUIT_NO_CHANNEL = "You are not in channel %d (Trade is only in cities)."
 L.RECRUIT_PROMPT = "Time to post the guild recruitment."; L.RECRUIT_LATER = "Not now"
@@ -371,3 +371,4 @@ L.WN_TITLE = "%s %s: what's new"; L.WN_OPEN = "Open the book"; L.WN_OPTIONS = "O
 L.WN_WELCOME = "Welcome to Forever Guild, your guild's book. See who is online and where, dungeon groups, goals, wishes and gifts, professions, raid loot and the guild chat, all in one window. Those with the addon show in more detail; everyone else shows too. Options chooses what you share."
 L.WN_NEWS = { "The book sounds and moves like the game: sounds on open, close and tab; the mouse wheel turns the page.", "Dropdowns with the choice marked instead of cycling buttons; headers sort with the game's arrow; Members sorts by name, level, rank or last seen.", "Every row carries a picture; items show their icon.", "One online count (with and without the addon) and how many have the addon.", "The chat window wraps long lines, scrolls with the wheel and shows link tooltips.", "Live loot: a clock, how many answered, those who answered first; the card shrinks with the - button.", "Options > The book: text darkness and reset position." }
 L.GC_DISCORD_LINE = "%s |cff888888wrote from Discord (the text shows only in the game's chat)|r"
+L.RECRUIT_EVERY = "every %d min"; L.RECRUIT_EVERY_TITLE = "How often"; L.RECRUIT_POST_ANYWAY = "Post anyway"

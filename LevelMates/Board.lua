@@ -666,7 +666,7 @@ local function Build()
 	post:SetSize(140, 24); post:SetPoint("TOPLEFT", 0, -226); post:SetText(L.RECRUIT_POST)
 	post:SetScript("OnClick", function()   -- the only place recruitment reaches a public channel: a click
 		for i = 1, 3 do ns.Recruit.SetTemplate(i, B.recruitEdit[i]:GetText()) end   -- what is typed, even without Enter
-		local text, ch = ns.Recruit.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2)
+		local text, ch = ns.Recruit.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2, ns.Recruit.Wait() > 0)   -- the button read "post anyway"
 		if text and ns.SendChat(text, "CHANNEL", nil, ch) then ns.Recruit.Posted() end
 	end)
 	B.recruitPost = post
@@ -677,6 +677,15 @@ local function Build()
 	table.insert(B.recruitLabels, remindLabel)
 	remindLabel:SetPoint("LEFT", remind, "RIGHT", 2, 0); remindLabel:SetText(L.RECRUIT_REMIND)
 	B.recruitRemind = remind
+	-- every how many minutes: the reminder's interval and the wait between posts (a dropdown)
+	local every = ns.Skin.Button(rp)
+	every:SetSize(120, 20); every:SetPoint("LEFT", remindLabel, "RIGHT", 8, 0)
+	every:SetScript("OnClick", function(self)
+		local options = {}
+		for _, n in ipairs(ns.Recruit.EVERY_CHOICES) do options[#options + 1] = { value = n, label = string.format(L.RECRUIT_EVERY, n) } end
+		W.PickMenu(self, L.RECRUIT_EVERY_TITLE, options, ns.Recruit.Every(), function(n) ns.char.recruitEvery = n; B.Refresh() end)
+	end)
+	B.recruitEvery = every
 	-- Recruit tab: "Inactive" (bottom left) swaps the templates for members who have not logged in; 14 or 30 days.
 	local view = ns.Skin.Button(f)
 	view:SetSize(120, 20); view:SetPoint("BOTTOMLEFT", 12, 3); view:SetText(L.BTN_INACTIVE)
@@ -2202,6 +2211,7 @@ end
 
 local function RefreshRecruit()
 	local RC, t = ns.Recruit, ns.Recruit.Templates()
+	RC.RequestLinks()   -- the community's invite link, for {enlace}
 	local use, ch = ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2
 	for i = 1, 3 do
 		if not B.recruitEdit[i]:HasFocus() then B.recruitEdit[i]:SetText(t[i] or "") end
@@ -2209,8 +2219,10 @@ local function RefreshRecruit()
 	end
 	for c, cb in pairs(B.recruitChannel) do cb:SetChecked(c == ch) end
 	B.recruitRemind:SetChecked(ns.char.recruitRemind == true)
+	B.recruitEvery:SetText(string.format(L.RECRUIT_EVERY, RC.Every()))
 	B.recruitPreview:SetText(RC.Expand(t[use] or ""))
 	local l, wait = RC.Last(), RC.Wait()
+	B.recruitPost:SetText(wait > 0 and L.RECRUIT_POST_ANYWAY or L.RECRUIT_POST)
 	local status = l and string.format(L.RECRUIT_LAST, ns.Journal.Duration(math.max(0, time() - l.at)), l.by) or L.RECRUIT_NONE
 	status = status .. "  ·  " .. (wait > 0 and string.format(L.RECRUIT_WAIT, math.ceil(wait / 60)) or L.RECRUIT_READY)
 	B.recruitStatus:SetText(status)

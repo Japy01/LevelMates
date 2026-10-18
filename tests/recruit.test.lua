@@ -40,9 +40,9 @@ assert(STUB.lastChat and STUB.lastChat.msg == "Somos Test Guild" and STUB.lastCh
 assert(last("rc") and RC.Last().by == "Tester", "the wait starts for everyone")
 
 -- the wait is shared
-STUB.lastChat = nil
-B.recruitPost.scripts.OnClick(B.recruitPost)
-assert(STUB.lastChat == nil and said(string.format(L.RECRUIT_WAIT, 10)), "wait 10 minutes")
+B.Refresh()
+assert(RC.Prepare(1, 2) == nil and said(string.format(L.RECRUIT_WAIT, 10)), "wait 10 minutes")
+assert(B.recruitPost.text == L.RECRUIT_POST_ANYWAY, "the button offers to post anyway (asked 2026-10-18); a plain Prepare still waits")
 STUB.Advance(RC.GAP + 1)
 STUB.Receive("LVLM2", C.Encode("rc", { t = time() }), "GUILD", "Jefa-Testrealm")
 assert(RC.Last().by == "Jefa" and RC.Wait() > 0, "Jefa just posted")
@@ -59,6 +59,7 @@ assert(RC.Templates()[3] == "Plantilla de Jefa" and B.recruitEdit[3]:GetText() =
 -- not in the channel: refused with the reason
 STUB.Advance(RC.GAP + 1)
 B.recruitChannel[1]:SetChecked(true); B.recruitChannel[1].scripts.OnClick(B.recruitChannel[1])
+STUB.lastChat = nil
 B.recruitPost.scripts.OnClick(B.recruitPost)
 assert(STUB.lastChat == nil and said(string.format(L.RECRUIT_NO_CHANNEL, 1)), "not in channel 1")
 
