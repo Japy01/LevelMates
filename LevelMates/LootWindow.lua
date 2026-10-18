@@ -93,7 +93,12 @@ local function build()
 		r.plus = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.plus:SetPoint("LEFT", 126, 0); r.plus:SetWidth(20); r.plus:SetJustifyH("RIGHT")
 		r.wish = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.wish:SetPoint("LEFT", 150, 0); r.wish:SetWidth(42); r.wish:SetJustifyH("LEFT")
 		r.worn = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.worn:SetPoint("LEFT", 194, 0); r.worn:SetWidth(28); r.worn:SetJustifyH("RIGHT")
-		r.resp = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.resp:SetPoint("LEFT", 226, 0); r.resp:SetWidth(110); r.resp:SetJustifyH("LEFT"); r.resp:SetWordWrap(false)
+		r.resp = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.resp:SetPoint("LEFT", 226, 0); r.resp:SetWidth(90); r.resp:SetJustifyH("LEFT"); r.resp:SetWordWrap(false)
+		r.votes = r:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"); r.votes:SetPoint("LEFT", 318, 0); r.votes:SetWidth(18); r.votes:SetJustifyH("RIGHT")
+		r.vote = SK.Button(r)
+		r.vote:SetSize(50, 18); r.vote:SetPoint("RIGHT", -2, 0); r.vote:SetText(L.LW_VOTE)
+		r.vote:SetScript("OnClick", function() LW.VoteFor(r) end)
+		r.vote:Hide()
 		r.cost = CreateFrame("EditBox", nil, r, "InputBoxTemplate")
 		r.cost:SetSize(40, 20); r.cost:SetPoint("LEFT", 340, 0); r.cost:SetAutoFocus(false); r.cost:SetMaxLetters(5)
 		if r.cost.SetNumeric then r.cost:SetNumeric(true) end
@@ -107,6 +112,8 @@ local function build()
 	LW.closeSession = SK.Button(f)
 	LW.closeSession:SetSize(130, 22); LW.closeSession:SetPoint("BOTTOMRIGHT", -12, 10); LW.closeSession:SetText(L.LW_CLOSE_SESSION)
 	LW.closeSession:SetScript("OnClick", function() if ns.LootSession then ns.LootSession.Close() end; LW.items = {}; f:Hide() end)
+	LW.voteNote = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	LW.voteNote:SetPoint("BOTTOMLEFT", 12, 34); LW.voteNote:SetText(""); LW.voteNote:Hide()
 	LW.note = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	LW.note:SetPoint("BOTTOMLEFT", 12, 10); LW.note:SetPoint("RIGHT", LW.closeSession, "LEFT", -8, 0); LW.note:SetJustifyH("LEFT"); LW.note:SetWordWrap(true)
 	LW.note:SetText(L.LW_NOTE)
@@ -116,6 +123,29 @@ function LW.Select(i)
 	LW.current = i
 	LW.Refresh()
 end
+-- My vote on a row: the master's goes into the session; a council member's is whispered.
+function LW.VoteFor(r)
+	local c, it = r.candidate, r.item
+	if not (c and it) then return end
+	local LS = ns.LootSession
+	if LW.mode == "council" then LS.CouncilVote(it.id, c.name) else LS.Vote(ns.ShortName(ns.Me()), it.id, c.name) end
+	LW.Refresh()
+end
+-- The council's view: the master's items as relayed, the group as candidates.
+function LW.OpenCouncil()
+	local LS = ns.LootSession
+	local c = LS.council
+	if not c then if LW.mode == "council" and LW.frame then LW.frame:Hide(); LW.mode = nil end; return end
+	if LS.session then return end   -- my own session takes the window
+	if not LW.frame then build() end
+	LW.mode = "council"
+	LW.items = {}
+	for _, id in ipairs(c.items) do local _, link = ns.ItemInfo(id); LW.items[#LW.items + 1] = { id = id, link = link } end
+	LW.current = LW.current or 1
+	LW.frame:Show()
+	LW.Refresh()
+end
+ns.On("LM_LOOT_COUNCIL", function() LW.OpenCouncil() end)
 local function wornLevel(name, itemId)
 	local slot = LT.SlotOf(itemId)
 	local g = slot and ns.Gear.Of(name)
@@ -135,17 +165,30 @@ function LW.Refresh()
 		else b:Hide() end
 	end
 	local it = LW.items[LW.current or 1]
-	local list = it and candidates(it.slot) or {}
 	local LS = ns.LootSession
-	if LS and LS.session and it then   -- answered first, by what they said; the silent next; passes last
+	local council = LW.mode == "council" and LS.council or nil
+	if LS.session then LW.mode = "master" end
+	local list = {}
+	if council then for _, n in ipairs(LR.GroupNames()) do list[#list + 1] = { name = n } end
+	elseif it then list = candidates(it.slot) end
+	local answerOf = function(name) if council then return it and council.answers[it.id] and council.answers[it.id][name] end; local s = LS.session; return s and it and s.responses[it.id] and s.responses[it.id][name] end
+	if it and (LS.session or council) then   -- answered first, by what they said; the silent next; passes last
 		table.sort(list, function(a, b)
-			local ra, va = LS.Rank(it.id, a.name)
-			local rb, vb = LS.Rank(it.id, b.name)
+			local ra, va = LS.RankOf(answerOf(a.name))
+			local rb, vb = LS.RankOf(answerOf(b.name))
 			if ra ~= rb then return ra < rb end
 			if va ~= vb then return va > vb end
 			return a.name < b.name
 		end)
 	end
+	-- the votes: the master's tally, or the one relayed to the council
+	local count, leaders, tied = {}, {}, false
+	if it and LS.session then count, leaders, tied = LS.Votes(it.id)
+	elseif it and council then count = council.votes[it.id] or {} end
+	local iVote = LS.session and LS.MayVote(ns.ShortName(ns.Me()), ns.ShortName(ns.Me())) or council ~= nil
+	local myVote = it and (LS.session and LS.session.votes and LS.session.votes[it.id] and LS.session.votes[it.id][ns.ShortName(ns.Me())] or council and council.mine[it.id]) or nil
+	if LW.voteNote then LW.voteNote:SetText(tied and L.LW_TIE or ""); LW.voteNote:SetShown(tied) end
+	if LW.closeSession then LW.closeSession:SetShown(LS.session ~= nil) end
 	LW.UpdateClock()
 	if LS and LS.session and it then
 		local names = {}
@@ -169,7 +212,12 @@ function LW.Refresh()
 			r.wish:SetText(reserved[c.name] and L.LW_RESERVED or wanted[c.name] and L.LW_WANTS or "")
 			local il = wornLevel(c.name, it.id)
 			r.worn:SetText(il and tostring(il) or "")
-			r.resp:SetText(ns.LootSession and ns.LootSession.ResponseText(it.id, c.name) or "")
+			r.resp:SetText(LS.WordsOf(answerOf(c.name)))
+			local votes = count[c.name] or 0
+			r.votes:SetText(votes > 0 and tostring(votes) or "")
+			r.vote:SetShown(iVote); r.vote:SetText(myVote == c.name and L.LW_VOTED or L.LW_VOTE)
+			r.cost:SetShown(not council); r.give:SetShown(not council)
+			r.give:SetEnabled(not tied)   -- a tie: the council has not decided
 			r:Show()
 		else
 			r.candidate, r.item = nil, nil
@@ -217,6 +265,7 @@ function LW.UpdateClock()
 end
 function LW.Open()
 	if not LW.frame then build() end
+	LW.mode = "master"
 	LW.current = 1
 	LW.frame:Show()
 	LW.Refresh()

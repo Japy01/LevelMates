@@ -44,9 +44,13 @@ local function build()
 		-- the buttons, right: made for every mode, shown by the mode
 		local function btn(text, w) local b = SK.Button(r); b:SetSize(w, 18); b:SetText(text); b:Hide(); return b end
 		r.bis, r.main, r.minor = btn(L.LC_BIS, 40), btn(L.LC_MAIN, 64), btn(L.LC_MINOR, 70)
+		r.os, r.tm = btn(L.LC_OS, 60), btn(L.LC_TM, 60)
 		r.pass = btn(L.LC_PASS, 50)
 		r.pass:SetPoint("TOPRIGHT", -4, -4)
-		r.minor:SetPoint("RIGHT", r.pass, "LEFT", -4, 0); r.main:SetPoint("RIGHT", r.minor, "LEFT", -4, 0); r.bis:SetPoint("RIGHT", r.main, "LEFT", -4, 0)
+		r.tm:SetPoint("RIGHT", r.pass, "LEFT", -4, 0); r.os:SetPoint("RIGHT", r.tm, "LEFT", -4, 0)
+		r.minor:SetPoint("RIGHT", r.os, "LEFT", -4, 0); r.main:SetPoint("RIGHT", r.minor, "LEFT", -4, 0); r.bis:SetPoint("RIGHT", r.main, "LEFT", -4, 0)
+		r.os:SetScript("OnClick", function() LC.Answer(r, "os") end)
+		r.tm:SetScript("OnClick", function() LC.Answer(r, "tm") end)
 		r.bidBox = CreateFrame("EditBox", nil, r, "InputBoxTemplate")
 		r.bidBox:SetSize(44, 18); r.bidBox:SetAutoFocus(false); r.bidBox:SetMaxLetters(5); r.bidBox:Hide()
 		if r.bidBox.SetNumeric then r.bidBox:SetNumeric(true) end
@@ -133,7 +137,7 @@ function LC.Refresh()
 			r.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(item)) or 134400)
 			r.link.text:SetText(link or name or ("#" .. item))
 			r.worn:SetText(wornText(item))
-			for _, b in ipairs({ r.bis, r.main, r.minor, r.pass, r.bid, r.roll100, r.roll50, r.roll25, r.withdraw }) do b:Hide() end
+			for _, b in ipairs({ r.bis, r.main, r.minor, r.os, r.tm, r.pass, r.bid, r.roll100, r.roll50, r.roll25, r.withdraw }) do b:Hide() end
 			r.bidBox:Hide()
 			local given, mine = o.given[item], o.mine[item]
 			local refused = mine and mine.r == "bid" and mine.ack and mine.ack.ok == 0
@@ -153,13 +157,16 @@ function LC.Refresh()
 			else
 				r.status:SetText("")
 			end
+			-- the council buttons sit right of each other, only the ones on: re-anchor the chain
+			local chain, prev = { r.tm, r.os, r.minor, r.main, r.bis }, r.pass
+			for _, b in ipairs(chain) do if b:IsShown() then b:ClearAllPoints(); b:SetPoint("RIGHT", prev, "LEFT", -4, 0); prev = b end end
 			if not given and mine and mine.r == "bid" and not refused then
 				r.withdraw:Show()   -- a standing bid: take it back (a pass goes in its place)
 			elseif not given then
 				r.pass:Show()
 				if o.mode == "dkp" then r.bidBox:Show(); r.bid:Show()
 				elseif o.mode == "roll" then r.roll100:Show(); r.roll50:Show(); r.roll25:Show()
-				else if rs.bis then r.bis:Show() end; if rs.main then r.main:Show() end; if rs.minor then r.minor:Show() end end
+				else if rs.bis then r.bis:Show() end; if rs.main then r.main:Show() end; if rs.minor then r.minor:Show() end; if rs.os then r.os:Show() end; if rs.tm then r.tm:Show() end end
 			end
 			r:Show()
 		else

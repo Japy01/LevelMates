@@ -12,7 +12,10 @@ LS.RETRY, LS.HOLD = 30, 600
 LS.MODES = { council = true, dkp = true, roll = true }
 
 C.SCHEMA.ls = { s = C.V.word(16), m = C.V.oneOf("council", "dkp", "roll"), i = C.V.idlist(80), b = C.V.int(0, 100000), t = C.V.int(0, 600) }; C.REQUIRED.ls = { "s", "m", "i" }
-C.SCHEMA.lb = { s = C.V.word(16), i = C.V.int(1, 999999), r = C.V.oneOf("bis", "main", "minor", "pass", "bid", "roll"), v = C.V.int(0, 100000), n = C.V.text(60), m = C.V.int(0, 100) }; C.REQUIRED.lb = { "s", "i", "r" }
+C.SCHEMA.lb = { s = C.V.word(16), i = C.V.int(1, 999999), r = C.V.oneOf("bis", "main", "minor", "os", "tm", "pass", "bid", "roll"), v = C.V.int(0, 100000), n = C.V.text(60), m = C.V.int(0, 100) }; C.REQUIRED.lb = { "s", "i", "r" }
+-- the council: a vote to the master (lv), and the master's relay of an item's answers and tally to the council (lq)
+C.SCHEMA.lv = { s = C.V.word(16), i = C.V.int(1, 999999), to = C.V.text(48) }; C.REQUIRED.lv = { "s", "i", "to" }
+C.SCHEMA.lq = { s = C.V.word(16), i = C.V.int(1, 999999), r = C.V.text(240), v = C.V.text(120) }; C.REQUIRED.lq = { "s", "i" }
 LS.KEEP = 4 * 3600   -- a session or an offer saved for a reload lives this long
 C.SCHEMA.lw = { s = C.V.word(16), i = C.V.int(1, 999999), to = C.V.text(48), c = C.V.int(0, 100000) }; C.REQUIRED.lw = { "s", "i", "to" }
 C.SCHEMA.lc = { s = C.V.word(16) }; C.REQUIRED.lc = { "s" }
@@ -129,14 +132,104 @@ end
 ns.On("LM_WORLD", function() LS.Restore() end)
 -- How a candidate's answer ranks for the window: BiS, main, minor, bids (high first), rolls (high first), the
 -- silent, passes last. Returns the rank and the number (bid or roll) for ties.
-local RANK = { bis = 1, main = 2, minor = 3, bid = 4, roll = 5, pass = 7 }
-LS.SILENT_RANK = 6
+local RANK = { bis = 1, main = 2, minor = 3, os = 4, tm = 5, bid = 6, roll = 7, pass = 9 }
+LS.SILENT_RANK = 8
+-- An answer record's rank and tie number (rolls: the range first, 100 beats 50, then the number).
+function LS.RankOf(r)
+	if not r then return LS.SILENT_RANK, 0 end
+	if r.r == "roll" then return RANK.roll, (r.m or 100) * 1000 + (r.v or 0) end
+	return RANK[r.r] or LS.SILENT_RANK, r.v or 0
+end
 function LS.Rank(item, name)
 	local s = LS.session
-	local r = s and s.responses[item] and s.responses[item][name]
-	if not r then return LS.SILENT_RANK, 0 end
-	if r.r == "roll" then return RANK.roll, (r.m or 100) * 1000 + (r.v or 0) end   -- the range first (100 beats 50), then the number
-	return RANK[r.r] or LS.SILENT_RANK, r.v or 0
+	return LS.RankOf(s and s.responses[item] and s.responses[item][name])
+end
+-- An answer's words from its record (the window, the master's or the council's).
+function LS.WordsOf(r)
+	if not r then return "" end
+	local text
+	if r.r == "bid" then text = string.format(L.LS_BID_OF, r.v or 0)
+	elseif r.r == "roll" then text = string.format(L.LS_ROLL_OF, r.v or 0, r.m or 100)
+	else text = L["LS_R_" .. r.r] or r.r end
+	if r.n and r.n ~= "" then text = text .. " · " .. r.n end
+	return text
+end
+
+------------------------------------------------------------------ the council
+-- Who may vote on a session (the rules): the officers in the group, the master alone, or everyone.
+function LS.MayVote(name, master)
+	local who = ns.LootRaid.Rules().voters
+	if who == "all" then return true end
+	if who == "master" then return name == master end
+	return R.IsOfficer(name)
+end
+-- The council members in my group, other than me, who hear the relay.
+function LS.CouncilNames()
+	local out = {}
+	for _, n in ipairs(ns.LootRaid.GroupNames()) do if n ~= me() and LS.MayVote(n, me()) then out[#out + 1] = n end end
+	return out
+end
+-- The tally of an item's votes: { [candidate] = count }, the leaders, and whether the top is tied.
+local function tally(votes)
+	local count, top = {}, 0
+	for _, to in pairs(votes or {}) do count[to] = (count[to] or 0) + 1; if count[to] > top then top = count[to] end end
+	local leaders = {}
+	for name, c in pairs(count) do if c == top and top > 0 then leaders[#leaders + 1] = name end end
+	table.sort(leaders)
+	return count, leaders, #leaders > 1
+end
+function LS.Votes(item)
+	local s = LS.session
+	return tally(s and s.votes and s.votes[item])
+end
+-- The master's relay of an item: the answers and the tally, a moment after they change, to each council member.
+local relayDue = {}
+local function flushRelay()
+	local s = LS.session
+	if not s then relayDue = {}; return end
+	local council = LS.CouncilNames()
+	for item in pairs(relayDue) do
+		if #council > 0 then
+			local parts = {}
+			for name, r in pairs(s.responses[item] or {}) do parts[#parts + 1] = string.format("%s:%s:%d:%d", name, r.r, r.v or 0, r.m or 0) end
+			table.sort(parts)
+			local count = tally(s.votes and s.votes[item])
+			local vparts = {}
+			for name, c in pairs(count) do vparts[#vparts + 1] = name .. ":" .. c end
+			table.sort(vparts)
+			local r = table.concat(parts, ";"):sub(1, 240)
+			local v = table.concat(vparts, ";"):sub(1, 120)
+			for _, n in ipairs(council) do send("lq", { s = s.id, i = item, r = r ~= "" and r or nil, v = v ~= "" and v or nil }, n) end
+		end
+	end
+	relayDue = {}
+end
+LS.RELAY_WAIT = 2
+local function scheduleRelay(item)
+	local first = next(relayDue) == nil
+	relayDue[item] = true
+	if first then C_Timer.After(LS.RELAY_WAIT, flushRelay) end
+end
+-- A vote on the master's session (mine, from the window's click; a council member's, from their whisper).
+function LS.Vote(voter, item, to)
+	local s = LS.session
+	if not s or not LS.MayVote(voter, me()) then return false end
+	s.votes = s.votes or {}
+	s.votes[item] = s.votes[item] or {}
+	s.votes[item][voter] = to
+	saveSession(); scheduleRelay(item)
+	ns.Fire("LM_LOOT_SESSION")
+	return true
+end
+-- The council's side: the master's session as relayed to me: { id, from, items, answers = { [item] = { [name] = r } }, votes = { [item] = { [name] = count } }, mine = { [item] = to } }
+LS.council = nil
+function LS.CouncilVote(item, to)
+	local c = LS.council
+	if not c then return false end
+	c.mine[item] = to
+	send("lv", { s = c.id, i = item, to = to }, c.from)
+	ns.Fire("LM_LOOT_SESSION")
+	return true
 end
 -- How many of the names answered for the item.
 function LS.Answered(item, names)
@@ -197,6 +290,14 @@ local function onSession(f, from)
 	local ids = {}
 	for id in tostring(f.i):gmatch("%d+") do ids[#ids + 1] = id end
 	LS.OfferFrom(f.s, from, f.m, tonumber(f.b) or 0, ids, f.t)
+	if f.m == "council" and LS.MayVote(me(), from) then   -- on the council: the master's window, read-only, to vote
+		local c = LS.council
+		if not (c and c.id == f.s) then c = { id = f.s, from = from, items = {}, answers = {}, votes = {}, mine = {} }; LS.council = c end
+		local have = {}
+		for _, i in ipairs(c.items) do have[i] = true end
+		for _, i in ipairs(ids) do local n = tonumber(i); if n and not have[n] then c.items[#c.items + 1] = n end end
+		ns.Fire("LM_LOOT_COUNCIL")
+	end
 end
 -- Seconds left to answer the offer on my screen, nil without a limit.
 function LS.OfferLeft() local o = LS.offer; if not (o and o.deadline) then return nil end; return o.deadline - nowS() end
@@ -220,7 +321,7 @@ function LS.Answer(item, r, v, note, max)
 		s.responses[item] = s.responses[item] or {}
 		s.responses[item][me()] = { r = r, v = v or 0, n = note, m = max, t = GetTime() }
 		if r == "bid" then tellOutbid(item, me()) end
-		saveSession()
+		saveSession(); scheduleRelay(item)
 	else
 		send("lb", { s = o.id, i = item, r = r, v = v or 0, n = note and note ~= "" and note:sub(1, 60) or nil, m = max }, o.from)
 	end
@@ -279,7 +380,7 @@ ev:SetScript("OnEvent", function(_, _, prefix, text, channel, sender)
 	if issecretvalue and (issecretvalue(text) or issecretvalue(channel) or issecretvalue(sender)) then return end
 	if channel ~= "PARTY" and channel ~= "RAID" and channel ~= "WHISPER" then return end
 	local kind, f = C.Decode(text)
-	if not kind or (kind ~= "ls" and kind ~= "lb" and kind ~= "lw" and kind ~= "lc" and kind ~= "ld") then return end
+	if not kind or (kind ~= "ls" and kind ~= "lb" and kind ~= "lw" and kind ~= "lc" and kind ~= "ld" and kind ~= "lv" and kind ~= "lq") then return end
 	local name = ns.ShortName(sender)
 	if name == me() then return end
 	local inGroup = false
@@ -299,8 +400,20 @@ ev:SetScript("OnEvent", function(_, _, prefix, text, channel, sender)
 		s.responses[f.i] = s.responses[f.i] or {}
 		s.responses[f.i][name] = { r = f.r, v = tonumber(f.v) or 0, n = f.n, m = tonumber(f.m), t = GetTime() }
 		if f.r == "bid" then send("ld", { s = s.id, i = f.i, ok = 1 }, name); tellOutbid(f.i, name) end
-		saveSession()
+		saveSession(); scheduleRelay(f.i)
 		ns.Fire("LM_LOOT_SESSION")
+	elseif kind == "lv" then   -- a council member's vote on my session
+		local s = LS.session
+		if s and f.s == s.id then LS.Vote(name, f.i, ns.ShortName(f.to)) end
+	elseif kind == "lq" then   -- the master's relay: the answers and the tally of an item
+		local c = LS.council
+		if c and f.s == c.id then
+			local answers, votes = {}, {}
+			for who, r, v, m in tostring(f.r or ""):gmatch("([^:;]+):([^:;]+):([^:;]+):([^:;]+)") do answers[who] = { r = r, v = tonumber(v) or 0, m = tonumber(m) or 0 } end
+			for who, cnt in tostring(f.v or ""):gmatch("([^:;]+):(%d+)") do votes[who] = tonumber(cnt) end
+			c.answers[f.i], c.votes[f.i] = answers, votes
+			ns.Fire("LM_LOOT_SESSION")
+		end
 	elseif kind == "ld" then   -- the master's word on my bid
 		local o = LS.offer
 		if o and f.s == o.id and o.mine[f.i] then o.mine[f.i].ack = { ok = tonumber(f.ok) or 0, y = f.y }; saveOffer(); ns.Fire("LM_LOOT_SESSION") end
@@ -311,5 +424,6 @@ ev:SetScript("OnEvent", function(_, _, prefix, text, channel, sender)
 	elseif kind == "lc" then
 		local o = LS.offer
 		if o and f.s == o.id then LS.offer = nil; saveOffer(); ns.Fire("LM_LOOT_SESSION") end
+		if LS.council and LS.council.id == f.s then LS.council = nil; ns.Fire("LM_LOOT_COUNCIL") end
 	end
 end)

@@ -690,19 +690,25 @@ local function Build()
 		P.scope = pick(150, -156, 160, function(self)
 			W.PickMenu(self, L.LOOT_RULE_L_SCOPE, { { value = "guild", label = L.LOOT_SCOPE_GUILD }, { value = "raid", label = L.LOOT_SCOPE_RAID } }, P.draft.scope, function(v) P.draft.scope = v; B.RefreshLootRules() end)
 		end)
+		label(L.LOOT_RULE_L_VOTERS, 4, -186)
+		P.voters = pick(150, -182, 160, function(self)
+			local options = {}
+			for _, v in ipairs(ns.LootRaid.VOTERS) do options[#options + 1] = { value = v, label = L["LOOT_VOTERS_" .. v] } end
+			W.PickMenu(self, L.LOOT_RULE_L_VOTERS, options, P.draft.voters, function(v) P.draft.voters = v; B.RefreshLootRules() end)
+		end)
 		P.save = ns.Skin.Button(rp)
-		P.save:SetSize(120, 22); P.save:SetPoint("TOPLEFT", 4, -190); P.save:SetText(L.LOOT_RULE_SAVE)
+		P.save:SetSize(120, 22); P.save:SetPoint("TOPLEFT", 4, -216); P.save:SetText(L.LOOT_RULE_SAVE)
 		P.save:SetScript("OnClick", function()
-			ns.LootRaid.SetRules({ mode = P.draft.mode, quality = P.draft.quality, timer = P.draft.timer, scope = P.draft.scope, responses = P.draft.responses,
+			ns.LootRaid.SetRules({ mode = P.draft.mode, quality = P.draft.quality, timer = P.draft.timer, scope = P.draft.scope, responses = P.draft.responses, voters = P.draft.voters,
 				boss = tonumber(P.boss:GetText()), att = tonumber(P.att:GetText()), minBid = tonumber(P.minBid:GetText()), reserves = tonumber(P.reserves:GetText()) })
 			P.draft.loaded = nil
 			ns.Say(L.LOOT_RULE_SAVED)
 			B.Refresh()
 		end)
 		table.insert(P.controls, P.save)
-		P.summaryHead = rp:CreateFontString(nil, "OVERLAY", "GameFontNormal"); P.summaryHead:SetPoint("TOPLEFT", 4, -226); P.summaryHead:SetText(L.LOOT_RULE_SUMMARY)
+		P.summaryHead = rp:CreateFontString(nil, "OVERLAY", "GameFontNormal"); P.summaryHead:SetPoint("TOPLEFT", 4, -250); P.summaryHead:SetText(L.LOOT_RULE_SUMMARY)
 		P.summary = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		P.summary:SetPoint("TOPLEFT", 4, -246); P.summary:SetWidth(B.WIDTH - 2 * B.MARGIN - 8); P.summary:SetJustifyH("LEFT"); P.summary:SetWordWrap(true)
+		P.summary:SetPoint("TOPLEFT", 4, -270); P.summary:SetWidth(B.WIDTH - 2 * B.MARGIN - 8); P.summary:SetJustifyH("LEFT"); P.summary:SetWordWrap(true)
 		if P.summary.SetSpacing then P.summary:SetSpacing(2) end
 	end
 
@@ -2338,7 +2344,7 @@ function B.RefreshLootRules()
 	local officer = R.IAmOfficer() or R.IsOfficer(ns.Me())
 	local r = LR.Rules()
 	if not P.draft.loaded then
-		P.draft = { loaded = true, mode = r.mode, quality = r.quality, timer = r.timer, scope = r.scope, responses = { bis = r.responses.bis, main = r.responses.main, minor = r.responses.minor } }
+		P.draft = { loaded = true, mode = r.mode, quality = r.quality, timer = r.timer, scope = r.scope, voters = r.voters, responses = { bis = r.responses.bis, main = r.responses.main, minor = r.responses.minor, os = r.responses.os, tm = r.responses.tm } }
 		P.boss:SetText(tostring(r.boss)); P.att:SetText(tostring(r.att)); P.minBid:SetText(tostring(r.minBid)); P.reserves:SetText(tostring(r.reserves))
 	end
 	local d = P.draft
@@ -2346,12 +2352,14 @@ function B.RefreshLootRules()
 	P.quality:SetText(L["LOOT_QUALITY_" .. d.quality] or tostring(d.quality))
 	P.timer:SetText(d.timer == 0 and L.LOOT_TIMER_NONE or string.format(L.LOOT_TIMER_N, d.timer))
 	P.scope:SetText(d.scope == "raid" and L.LOOT_SCOPE_RAID or L.LOOT_SCOPE_GUILD)
+	P.voters:SetText(L["LOOT_VOTERS_" .. (d.voters or "officers")] or "")
+	P.voters:SetShown(officer and d.mode == "council")
 	for w, chip in pairs(P.rs) do chip:SetChecked(d.responses[w] == true); chip:SetShown(officer and d.mode == "council") end
 	for _, c in ipairs(P.controls) do c:SetShown(officer) end
 	for _, fs in ipairs(P.labels) do fs:SetShown(officer) end
 	P.save:SetShown(officer)
 	P.summary:SetText(LR.RulesSummary())
-	if officer then P.summaryHead:ClearAllPoints(); P.summaryHead:SetPoint("TOPLEFT", 4, -226); P.summary:ClearAllPoints(); P.summary:SetPoint("TOPLEFT", 4, -246)
+	if officer then P.summaryHead:ClearAllPoints(); P.summaryHead:SetPoint("TOPLEFT", 4, -250); P.summary:ClearAllPoints(); P.summary:SetPoint("TOPLEFT", 4, -270)
 	else P.summaryHead:ClearAllPoints(); P.summaryHead:SetPoint("TOPLEFT", 4, -4); P.summary:ClearAllPoints(); P.summary:SetPoint("TOPLEFT", 4, -24) end
 	P.summary:SetWidth(B.WIDTH - 2 * B.MARGIN - 8)
 end
