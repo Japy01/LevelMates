@@ -176,6 +176,37 @@ function LT.Refund(entryId, reason)
 end
 
 -- The standings as plain text (for Discord): one line each.
+-- The awards of one raid (tonight's), newest last, as lines for Discord: "item: who (cost)".
+function LT.NightText(raidId)
+	local lines = { string.format(L.LOOT_NIGHT_TITLE, date("%d/%m/%Y")) }
+	local list = {}
+	for _, a in ipairs(LT.History()) do if (not raidId or a.g == raidId) and a.s ~= "x" and a.s ~= "c" then list[#list + 1] = a end end
+	for i = #list, 1, -1 do
+		local a = list[i]
+		lines[#lines + 1] = string.format("%s: %s%s%s", ns.ItemInfo(a.i) or ("#" .. a.i), a.to, (a.c or 0) > 0 and (" (" .. a.c .. " " .. L.LOOT_PTS .. ")") or "", a.b and (" · " .. a.b) or "")
+	end
+	if #lines == 1 then lines[2] = L.LOOT_HISTORY_EMPTY end
+	return table.concat(lines, "\n")
+end
+-- The raid tonight's text is about: the open one, else the most recent award's.
+function LT.LastRaidId()
+	if ns.LootRaid and ns.LootRaid.raid then return ns.LootRaid.raid.id end
+	for _, a in ipairs(LT.History()) do if a.g then return a.g end end
+	return nil
+end
+-- Who got an item last (a live award), and when.
+function LT.LastAwardOf(itemId)
+	for _, a in ipairs(LT.History()) do if a.i == itemId and a.s ~= "x" and a.s ~= "c" then return a end end
+	return nil
+end
+-- Item tooltips anywhere in the game: who got it last.
+if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
+	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)
+		if not ns.db or (tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip) or type(data) ~= "table" or not data.id then return end
+		local a = LT.LastAwardOf(data.id)
+		if a then tooltip:AddLine(string.format(L.LOOT_TOOLTIP_LAST, a.to, a.at and ns.Journal.Short(math.max(0, GetServerTime() - a.at)) or "?"), 1, 0.82, 0) end
+	end)
+end
 function LT.StandingsText()
 	local lines = { string.format(L.LOOT_COPY_TITLE, date("%d/%m/%Y")) }
 	for _, s in ipairs(LT.Standings()) do lines[#lines + 1] = string.format("%s: %d (%s)", s.name, s.total, string.format(L.LOOT_EARNED_SPENT, s.earned, s.spent)) end

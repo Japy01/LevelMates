@@ -43,13 +43,13 @@ local aw = LT.Award(9001, "Luis", { boss = "Lucifron", proof = "ml", cost = 5 })
 B.lootViewButton.scripts.OnClick(B.lootViewButton); pick(L.BTN_LOOT_HISTORY).cb()   -- a dropdown of the views (2026-10-17)
 assert(B.lootView == "history" and B.lootViewButton.text == string.format(L.BTN_VIEW_FMT, L.BTN_LOOT_HISTORY), "history view, the button says so")
 rows = shownRows()
-assert(#rows == 1 and rows[1].name.text:find("Casco de Lucifron", 1, true) and rows[1].zone.text:find("Luis", 1, true) and rows[1].zone.text:find("Lucifron", 1, true) and rows[1].group.text == L.LOOT_STATE_aw, "the award row: " .. tostring(rows[1].group.text))
+assert(#rows == 1 and rows[1].name.text:find("Casco de Lucifron", 1, true) and rows[1].zone.text:find("Luis", 1, true) and rows[1].zone.text:find("Lucifron", 1, true) and rows[1].group.text:find(L.LOOT_STATE_aw, 1, true), "the award row: " .. tostring(rows[1].group.text))
 assert(B.headText[3].text == L.COL_FOR and B.headText[4].text == L.COL_STATE, "history headers")
 -- an officer marks it delivered, then cancels another
 rows[1].button.scripts.OnClick(rows[1].button, "LeftButton")
 assert(pick(L.LOOT_MENU_CONFIRM) and pick(L.LOOT_MENU_CANCEL), "officer's award menu")
 pick(L.LOOT_MENU_CONFIRM).cb(); STUB.Advance(1)   -- the page redraws a moment later
-assert(LT.History()[1].s == "rc" and shownRows()[1].group.text == L.LOOT_STATE_rc, "delivered")
+assert(LT.History()[1].s == "rc" and shownRows()[1].group.text:find(L.LOOT_STATE_rc, 1, true), "delivered")
 -- posting points from text: "10 Lucifron", "-15 Casco"; rubbish refused
 local p, r = B.ParseLootEntry("10 Lucifron")
 assert(p == 10 and r == "Lucifron", "parsed")

@@ -438,12 +438,20 @@ local function Build()
 	B.lootRulesButton = lootRules
 	local lootCopy = ns.Skin.Button(f)
 	lootCopy:SetSize(130, 20); lootCopy:SetPoint("LEFT", lootRules, "RIGHT", 6, 0); lootCopy:SetText(L.BTN_LOOT_COPY)
-	lootCopy:SetScript("OnClick", function() ns.DiscordCopy.OpenText(ns.Loot.StandingsText()) end)
+	lootCopy:SetScript("OnClick", function() ns.DiscordCopy.OpenText(B.lootView == "history" and ns.Loot.NightText(ns.Loot.LastRaidId()) or ns.Loot.StandingsText()) end)
 	B.lootCopyButton = lootCopy
 	local lootReserve = ns.Skin.Button(f)
 	lootReserve:SetSize(110, 20); lootReserve:SetPoint("LEFT", lootCopy, "RIGHT", 6, 0); lootReserve:SetText(L.BTN_LOOT_RESERVE)
 	lootReserve:SetScript("OnClick", function() B.AskLootReserve() end)
 	B.lootReserveButton = lootReserve
+	-- the history's filter: everything, open awards, tonight
+	B.lootHistFilter = "all"
+	B.LOOT_HIST_FILTERS = { { value = "all", label = L.LOOT_HIST_ALL }, { value = "open", label = L.LOOT_HIST_OPEN }, { value = "night", label = L.LOOT_HIST_NIGHT } }
+	local lootHist = ns.Skin.Button(f)
+	lootHist:SetSize(130, 20); lootHist:SetPoint("LEFT", lootCopy, "RIGHT", 6, 0)
+	lootHist:SetScript("OnClick", function(self) W.PickMenu(self, L.BTN_SHOW_TITLE, B.LOOT_HIST_FILTERS, B.lootHistFilter, function(v) B.lootHistFilter = v; B.lootPage = 1; B.Refresh() end) end)
+	B.lootHistButton = lootHist
+	lootHist:Hide()
 	-- the live session: the master's window, or my card, while one runs
 	local lootLive = ns.Skin.Button(f)
 	lootLive:SetSize(130, 20); lootLive:SetPoint("RIGHT", lootView, "LEFT", -8, 0)
@@ -1930,7 +1938,10 @@ local function LootVisible()
 	elseif B.lootView == "reserves" then
 		for _, r in ipairs(LT.Reserves()) do out[#out + 1] = { reserve = r } end
 	elseif B.lootView == "history" then
-		for _, a in ipairs(LT.History(B.search)) do out[#out + 1] = { award = a } end
+		local filter, night = B.lootHistFilter or "all", LT.LastRaidId()
+		for _, a in ipairs(LT.History(B.search)) do
+			if filter == "all" or (filter == "open" and a.s == "aw") or (filter == "night" and night and a.g == night) then out[#out + 1] = { award = a } end
+		end
 	else
 		local q = (B.search or ""):lower()
 		for _, s in ipairs(LT.Standings()) do if q == "" or s.name:lower():find(q, 1, true) then out[#out + 1] = { standing = s } end end
@@ -1973,7 +1984,7 @@ local function FillLoot(list)
 			r.name:SetText(ns.Recipes.Link(a.i)); r.name:SetTextColor(1, 1, 1)
 			r.level:SetText("")
 			r.zone:SetText(a.to .. (a.b and ("  ·  " .. a.b) or "") .. ((a.c or 0) > 0 and ("  ·  " .. a.c .. " " .. L.LOOT_PTS) or "")); r.zone:SetTextColor(0.9, 0.9, 0.9)
-			r.group:SetText(L["LOOT_STATE_" .. a.s] or a.s); r.group:SetTextColor(unpack(a.s == "x" or a.s == "c" and { 0.6, 0.6, 0.6 } or a.s == "aw" and { 1, 0.82, 0 } or { 0.4, 1, 0.4 }))
+			r.group:SetText((L["LOOT_STATE_" .. a.s] or a.s) .. (a.pf and L["LOOT_PROOF_" .. a.pf] and (" · " .. L["LOOT_PROOF_" .. a.pf]) or "")); r.group:SetTextColor(unpack(a.s == "x" or a.s == "c" and { 0.6, 0.6, 0.6 } or a.s == "aw" and { 1, 0.82, 0 } or { 0.4, 1, 0.4 }))
 			r.xph:SetText(ago(a.at)); r.xph:SetTextColor(0.7, 0.7, 0.7)
 			r.button:Show(); RowBg(r, i, false)
 		else
@@ -2005,6 +2016,47 @@ function B.AskLootEntry(name)
 		end,
 	}
 	StaticPopup_Show("LEVELMATES_LOOT_ENTRY", name, nil, name)
+end
+-- Reassign an award to someone else: the old one is corrected, its cost comes back, the new receiver pays.
+function B.ReassignLoot(id, name)
+	name = strtrim(tostring(name or ""))
+	if name == "" then return false end
+	local n = ns.Loot.Correct(id, ns.ShortName(name), L.LOOT_REASSIGNED)
+	if n then ns.Say(L.LOOT_REASSIGNED_TO, name) end
+	return n and true or false
+end
+function B.AskLootReassign(id)
+	StaticPopupDialogs["LEVELMATES_LOOT_REASSIGN"] = StaticPopupDialogs["LEVELMATES_LOOT_REASSIGN"] or {
+		text = L.LOOT_REASSIGN_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 48, timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function(self, data) local eb = self.GetEditBox and self:GetEditBox() or self.EditBox; B.ReassignLoot(data, eb and eb:GetText()) end,
+		EditBoxOnEnterPressed = function(self) local dialog = self:GetParent(); B.ReassignLoot(dialog.data, self:GetText()); dialog:Hide() end,
+	}
+	StaticPopup_Show("LEVELMATES_LOOT_REASSIGN", nil, nil, id)
+end
+-- Points to everyone present in the raid (the open one's list, else my group), with a reason.
+function B.PostLootAll(points, reason)
+	local names = {}
+	local raid = ns.LootRaid.raid
+	if raid and raid.present and next(raid.present) then for n in pairs(raid.present) do names[#names + 1] = n end
+	else for _, n in ipairs(ns.LootRaid.GroupNames()) do names[#names + 1] = n end end
+	table.sort(names)
+	return ns.Loot.PostAll(names, points, "adj", reason)
+end
+function B.AskLootEntryAll()
+	StaticPopupDialogs["LEVELMATES_LOOT_ENTRY_ALL"] = StaticPopupDialogs["LEVELMATES_LOOT_ENTRY_ALL"] or {
+		text = L.LOOT_ADD_ALL_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 90, timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function(self)
+			local eb = self.GetEditBox and self:GetEditBox() or self.EditBox
+			local p, reason = B.ParseLootEntry(eb and eb:GetText())
+			if p then ns.Say(L.LOOT_ADD_ALL_DONE, B.PostLootAll(p, reason)) else ns.Say(L.LOOT_ADD_BAD) end
+		end,
+		EditBoxOnEnterPressed = function(self)
+			local p, reason = B.ParseLootEntry(self:GetText())
+			if p then ns.Say(L.LOOT_ADD_ALL_DONE, B.PostLootAll(p, reason)) else ns.Say(L.LOOT_ADD_BAD) end
+			self:GetParent():Hide()
+		end,
+	}
+	StaticPopup_Show("LEVELMATES_LOOT_ENTRY_ALL")
 end
 -- The reserve box: an item link or number.
 function B.AskLootReserve()
@@ -2049,6 +2101,7 @@ function B.OpenLootMenu(c)
 			root:CreateTitle(c.standing.name)
 			root:CreateButton(L.LOOT_MENU_LEDGER, function() B.lootView, B.lootPerson, B.lootPage = "ledger", c.standing.name, 1; B.Refresh() end)
 			if officer then root:CreateButton(L.LOOT_MENU_ADD, function() B.AskLootEntry(c.standing.name) end) end
+			if officer then root:CreateButton(L.LOOT_MENU_ADD_ALL, function() B.AskLootEntryAll() end) end
 			if R.mates[c.standing.name] or c.standing.name == ns.Me() then root:CreateButton(L.MEMBER_CARD, function() ns.MateCard.Show(c.standing.name) end) end
 		elseif c.entry then
 			root:CreateTitle(c.entry.r)
@@ -2062,6 +2115,7 @@ function B.OpenLootMenu(c)
 			root:CreateTitle((ns.ItemInfo(a.i) or ("#" .. a.i)) .. " → " .. a.to)
 			if officer and (a.s == "aw") then root:CreateButton(L.LOOT_MENU_CONFIRM, function() ns.Loot.Confirm(a.id, "manual") end) end
 			if officer and (a.s == "aw" or a.s == "rc") then root:CreateButton(L.LOOT_MENU_CANCEL, function() ns.Confirm(L.LOOT_CANCEL_CONFIRM, function() ns.Loot.Cancel(a.id, L.LOOT_CANCELLED) end) end) end
+			if officer and (a.s == "aw" or a.s == "rc") then root:CreateButton(L.LOOT_MENU_REASSIGN, function() B.AskLootReassign(a.id) end) end
 			if R.mates[a.to] then root:CreateButton(L.MEMBER_CARD, function() ns.MateCard.Show(a.to) end) end
 		end
 	end)
@@ -2368,6 +2422,13 @@ local function RefreshTabs()
 	else B.lootRaidButton:SetText(ns.LootRaid.raid and L.BTN_LOOT_RAID_CLOSE or L.BTN_LOOT_RAID_OPEN) end
 	B.lootReserveButton:SetShown(B.tab == "loot" and B.lootView == "reserves" and ns.Loot.ReservesOpen())
 	B.lootRulesButton:SetShown(lootOfficer); B.lootCopyButton:SetShown(B.tab == "loot")
+	B.lootHistButton:SetShown(B.tab == "loot" and B.lootView == "history")
+	if B.tab == "loot" then
+		local labels = {}
+		for _, o in ipairs(B.LOOT_HIST_FILTERS) do labels[o.value] = o.label end
+		B.lootHistButton:SetText(string.format(L.BTN_SHOW_FMT, labels[B.lootHistFilter or "all"] or ""))
+		B.lootCopyButton:SetText(B.lootView == "history" and L.BTN_LOOT_COPY_NIGHT or L.BTN_LOOT_COPY)
+	end
 	local live = B.tab == "loot" and (ns.LootSession.session or ns.LootSession.offer)
 	B.lootLiveButton:SetShown(live and true or false)
 	if live then B.lootLiveButton:SetText(ns.LootSession.session and L.BTN_LOOT_SESSION or L.BTN_LOOT_CARD) end

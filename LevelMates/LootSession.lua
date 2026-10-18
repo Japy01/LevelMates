@@ -16,6 +16,8 @@ C.SCHEMA.lb = { s = C.V.word(16), i = C.V.int(1, 999999), r = C.V.oneOf("bis", "
 LS.KEEP = 4 * 3600   -- a session or an offer saved for a reload lives this long
 C.SCHEMA.lw = { s = C.V.word(16), i = C.V.int(1, 999999), to = C.V.text(48), c = C.V.int(0, 100000) }; C.REQUIRED.lw = { "s", "i", "to" }
 C.SCHEMA.lc = { s = C.V.word(16) }; C.REQUIRED.lc = { "s" }
+-- the master's answer to a bid: accepted (ok 1) or refused with why; "outbid" rides on an accepted bid later
+C.SCHEMA.ld = { s = C.V.word(16), i = C.V.int(1, 999999), ok = C.V.int(0, 1), y = C.V.oneOf("min", "balance", "late", "outbid") }; C.REQUIRED.ld = { "s", "i", "ok" }
 
 local function me() return ns.Me() end
 local function groupChannel() if IsInRaid and IsInRaid() then return "RAID" elseif IsInGroup and IsInGroup() then return "PARTY" end end
@@ -84,6 +86,35 @@ function LS.Open(items)
 	saveSession()
 	ns.Fire("LM_LOOT_SESSION")
 	return s.id
+end
+-- A bid, judged by the master: at least the minimum, and within the bidder's balance minus what they already bid
+-- on the session's other items (a bid stands until withdrawn). Returns true, or false and why.
+function LS.JudgeBid(name, item, v)
+	local s = LS.session
+	if not s then return false, "late" end
+	v = tonumber(v) or 0
+	if v < (s.minBid or 0) then return false, "min" end
+	local committed = 0
+	for other, byName in pairs(s.responses) do
+		local r = byName[name]
+		if other ~= item and r and r.r == "bid" then committed = committed + (r.v or 0) end
+	end
+	if ns.Loot.Balance(name) - committed < v then return false, "balance" end
+	return true
+end
+-- A bid taken: whoever stood higher than the rest and is now below hears "outbid" (never the figure).
+local function tellOutbid(item, winner)
+	local s = LS.session
+	local byName = s and s.responses[item]
+	if not byName then return end
+	local top = byName[winner] and byName[winner].v or 0
+	for name, r in pairs(byName) do
+		if name ~= winner and r.r == "bid" and (r.v or 0) < top and not r.told then
+			r.told = true
+			if name == me() then if LS.offer and LS.offer.mine[item] then LS.offer.mine[item].ack = { ok = 1, y = "outbid" } end
+			else send("ld", { s = s.id, i = item, ok = 1, y = "outbid" }, name) end
+		end
+	end
 end
 -- Seconds left to answer (the master's session), nil without a limit.
 function LS.Left() local s = LS.session; if not (s and s.deadline) then return nil end; return s.deadline - nowS() end
@@ -181,8 +212,14 @@ function LS.Answer(item, r, v, note, max)
 	o.mine[item] = { r = r, v = v, n = note, m = max }
 	local s = LS.session
 	if o.from == me() and s and s.id == o.id then
+		if r == "bid" then
+			local ok, why = LS.JudgeBid(me(), item, v)
+			o.mine[item].ack = { ok = ok and 1 or 0, y = why }
+			if not ok then saveOffer(); ns.Fire("LM_LOOT_SESSION"); return false, why end
+		end
 		s.responses[item] = s.responses[item] or {}
 		s.responses[item][me()] = { r = r, v = v or 0, n = note, m = max, t = GetTime() }
+		if r == "bid" then tellOutbid(item, me()) end
 		saveSession()
 	else
 		send("lb", { s = o.id, i = item, r = r, v = v or 0, n = note and note ~= "" and note:sub(1, 60) or nil, m = max }, o.from)
@@ -191,6 +228,8 @@ function LS.Answer(item, r, v, note, max)
 	ns.Fire("LM_LOOT_SESSION")
 	return true
 end
+-- Take back my bid on an item: a pass goes in its place, and the points are free again for other items.
+function LS.Withdraw(item) return LS.Answer(item, "pass") end
 -- Pass on every item I have not answered yet.
 function LS.PassRest()
 	local o = LS.offer
@@ -240,7 +279,7 @@ ev:SetScript("OnEvent", function(_, _, prefix, text, channel, sender)
 	if issecretvalue and (issecretvalue(text) or issecretvalue(channel) or issecretvalue(sender)) then return end
 	if channel ~= "PARTY" and channel ~= "RAID" and channel ~= "WHISPER" then return end
 	local kind, f = C.Decode(text)
-	if not kind or (kind ~= "ls" and kind ~= "lb" and kind ~= "lw" and kind ~= "lc") then return end
+	if not kind or (kind ~= "ls" and kind ~= "lb" and kind ~= "lw" and kind ~= "lc" and kind ~= "ld") then return end
 	local name = ns.ShortName(sender)
 	if name == me() then return end
 	local inGroup = false
@@ -249,11 +288,22 @@ ev:SetScript("OnEvent", function(_, _, prefix, text, channel, sender)
 	if kind == "lb" then   -- an answer to my session
 		local s = LS.session
 		if not s or f.s ~= s.id then return end
-		if s.deadline and nowS() > s.deadline + 3 then return end   -- late: not counted (the rules said so)
+		if s.deadline and nowS() > s.deadline + 3 then
+			if f.r == "bid" then send("ld", { s = s.id, i = f.i, ok = 0, y = "late" }, name) end
+			return   -- late: not counted (the rules said so)
+		end
+		if f.r == "bid" then
+			local ok, why = LS.JudgeBid(name, f.i, f.v)
+			if not ok then send("ld", { s = s.id, i = f.i, ok = 0, y = why }, name); return end
+		end
 		s.responses[f.i] = s.responses[f.i] or {}
 		s.responses[f.i][name] = { r = f.r, v = tonumber(f.v) or 0, n = f.n, m = tonumber(f.m), t = GetTime() }
+		if f.r == "bid" then send("ld", { s = s.id, i = f.i, ok = 1 }, name); tellOutbid(f.i, name) end
 		saveSession()
 		ns.Fire("LM_LOOT_SESSION")
+	elseif kind == "ld" then   -- the master's word on my bid
+		local o = LS.offer
+		if o and f.s == o.id and o.mine[f.i] then o.mine[f.i].ack = { ok = tonumber(f.ok) or 0, y = f.y }; saveOffer(); ns.Fire("LM_LOOT_SESSION") end
 	elseif kind == "ls" then onSession(f, name)
 	elseif kind == "lw" then
 		local o = LS.offer

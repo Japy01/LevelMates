@@ -51,6 +51,8 @@ local function build()
 		r.bidBox:SetSize(44, 18); r.bidBox:SetAutoFocus(false); r.bidBox:SetMaxLetters(5); r.bidBox:Hide()
 		if r.bidBox.SetNumeric then r.bidBox:SetNumeric(true) end
 		r.bid = btn(L.LC_BID, 54); r.bid:SetPoint("RIGHT", r.pass, "LEFT", -4, 0); r.bidBox:SetPoint("RIGHT", r.bid, "LEFT", -4, 0)
+		r.withdraw = btn(L.LC_WITHDRAW, 90); r.withdraw:SetPoint("RIGHT", r.pass, "LEFT", -4, 0)
+		r.withdraw:SetScript("OnClick", function() if r.item then LS.Withdraw(r.item) end end)
 		r.roll25 = btn(string.format(L.LC_ROLL_N, 25), 56); r.roll25:SetPoint("RIGHT", r.pass, "LEFT", -4, 0)
 		r.roll50 = btn(string.format(L.LC_ROLL_N, 50), 56); r.roll50:SetPoint("RIGHT", r.roll25, "LEFT", -4, 0)
 		r.roll100 = btn(string.format(L.LC_ROLL_N, 100), 60); r.roll100:SetPoint("RIGHT", r.roll50, "LEFT", -4, 0)
@@ -96,10 +98,16 @@ function LC.UpdateClock()
 	LC.from:SetText(text)
 end
 -- The items on the card: the ones still to answer first, then the rest; at most LC.MAX rows (more wait their turn).
+local function answered(o, item)
+	local m = o.mine[item]
+	if o.given[item] then return true end
+	if not m then return false end
+	return not (m.r == "bid" and m.ack and m.ack.ok == 0)   -- a refused bid is still to answer
+end
 local function ordered(o)
 	local out = {}
-	for _, item in ipairs(o.items) do if not o.mine[item] and not o.given[item] then out[#out + 1] = item end end
-	for _, item in ipairs(o.items) do if o.mine[item] or o.given[item] then out[#out + 1] = item end end
+	for _, item in ipairs(o.items) do if not answered(o, item) then out[#out + 1] = item end end
+	for _, item in ipairs(o.items) do if answered(o, item) then out[#out + 1] = item end end
 	return out
 end
 function LC.Refresh()
@@ -111,7 +119,7 @@ function LC.Refresh()
 	LC.minButton:SetText(LC.minimized and "+" or "-")
 	local list = ordered(o)
 	local open = 0
-	for _, item in ipairs(o.items) do if not o.mine[item] and not o.given[item] then open = open + 1 end end
+	for _, item in ipairs(o.items) do if not answered(o, item) then open = open + 1 end end
 	LC.passRest:SetShown(open > 1 and not LC.minimized)
 	local n = LC.minimized and 0 or math.min(#list, LC.MAX)
 	f:SetSize(460, 50 + n * (ROW_H + 4))
@@ -125,19 +133,29 @@ function LC.Refresh()
 			r.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(item)) or 134400)
 			r.link.text:SetText(link or name or ("#" .. item))
 			r.worn:SetText(wornText(item))
-			for _, b in ipairs({ r.bis, r.main, r.minor, r.pass, r.bid, r.roll100, r.roll50, r.roll25 }) do b:Hide() end
+			for _, b in ipairs({ r.bis, r.main, r.minor, r.pass, r.bid, r.roll100, r.roll50, r.roll25, r.withdraw }) do b:Hide() end
 			r.bidBox:Hide()
 			local given, mine = o.given[item], o.mine[item]
+			local refused = mine and mine.r == "bid" and mine.ack and mine.ack.ok == 0
 			if given then
 				r.status:SetText(string.format(L.LC_GIVEN, given))
+			elseif refused then
+				r.status:SetText(string.format(L.LC_REFUSED, L["LS_ACK_" .. (mine.ack.y or "late")] or mine.ack.y or "?"))
+			elseif mine and mine.r == "bid" then
+				local words = string.format(L.LS_BID_OF, mine.v or 0)
+				if mine.ack and mine.ack.y == "outbid" then words = words .. " · " .. L.LS_ACK_outbid
+				elseif mine.ack and mine.ack.ok == 1 then words = words .. " · " .. L.LS_ACK_OK end
+				r.status:SetText(string.format(L.LC_SENT, words))
 			elseif mine then
-				r.status:SetText(string.format(L.LC_SENT, mine.r == "bid" and string.format(L.LS_BID_OF, mine.v or 0) or mine.r == "roll" and string.format(L.LS_ROLL_OF, mine.v or 0, mine.m or 100) or L["LS_R_" .. mine.r] or mine.r))
+				r.status:SetText(string.format(L.LC_SENT, mine.r == "roll" and string.format(L.LS_ROLL_OF, mine.v or 0, mine.m or 100) or L["LS_R_" .. mine.r] or mine.r))
 			elseif LS.RollPending(item) then
 				r.status:SetText(L.LC_ROLLING)
 			else
 				r.status:SetText("")
 			end
-			if not given then
+			if not given and mine and mine.r == "bid" and not refused then
+				r.withdraw:Show()   -- a standing bid: take it back (a pass goes in its place)
+			elseif not given then
 				r.pass:Show()
 				if o.mode == "dkp" then r.bidBox:Show(); r.bid:Show()
 				elseif o.mode == "roll" then r.roll100:Show(); r.roll50:Show(); r.roll25:Show()
