@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.2
+
+- **Loot rules as a page** (Guild > Loot > Rules): mode, council answers (BiS, main, minor, off-spec, transmog), points per boss and attendance, lowest quality, minimum bid, reserves per person, time to answer, who answers, who votes; everyone reads the summary.
+- **Live sessions** outlive the corpse and a /reload, close by hand or once everything is handed out, take new drops into the same session; a time limit with a countdown on both sides, late answers refused; the master answers for their own drops; **real rolls** (100/50/25) from the game's own roll line; the card queues beyond six items, "pass the rest", reopens (`/lm tarjeta`).
+- **DKP**: the master judges every bid (minimum, balance minus other bids) and answers; "you were outbid"; withdraw a bid; reassign an award; points to everyone present; the history paints the proof and filters; "Copy tonight"; an item's tooltip names its last receiver.
+- **Council**: officers in the raid see the master's window read-only and vote; a tie disables Give; the master votes too.
+- **Reserves**: an officer pastes the list; disputed and over-limit reserves visible to all; the card names who reserved an item. **+1** counts alts and takes adjustments. **Wish priorities** (1 to 3). "Equipped" seen from shared gear. An awarded item in your bags goes into the trade with its receiver. `/lm sim botin`.
+- **Chat**: the game's own history for the guild and officer streams, saved across sessions, a date line where the day changes, plain letters, exact class colours on a dark band, chips for all or officers.
+- **Recruit**: `{enlace}` puts your community's invite link in the announcement; the reminder's interval on the tab; "post anyway".
+- Smaller: `/lm help` lists the commands; Members shows the rank's name and "today"; windows remember their place; Tab between a form's boxes; the addon compartment entry whatever the minimap option; toc category Guild.
+
 ## 0.6.1
 
 - **The book feels like the game's own**: its sounds on open, close and tab; the mouse wheel turns pages; dropdowns with the current choice marked instead of buttons that cycled (loot view, quest filter, members view and filter, inactive days, journal filter), and the button names what is shown now; the game's sort arrow on sortable headers; **Members sorts** by name, level, rank or last seen from its headers and has its own headers.
