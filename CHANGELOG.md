@@ -7,6 +7,11 @@
 - **One online count** everywhere (everyone online, with or without the addon); Home's stat says how many have the addon.
 - **Guild chat window** on the game's chat frame: long lines wrap, the wheel scrolls (Shift: a page), item links show their tooltip, written in ink; link tooltips on Home's chat too.
 - **Options > The book**: a slider for how dark the text is, "Reset position"; quiet mode redraws the switches it changes. The hidden addon channel is explained once, in chat, when first joined.
+- **Welcome and what's new**: a small window the first time and after an update (`/lm novedades` brings it back).
+- **Live loot**: the master's window shows a clock and how many answered, lists those who answered first (BiS, main, minor, bids, rolls, the silent, passes last), names in ink; the candidate's card shrinks to its title line.
+- **Home**: the chat panel wraps long lines and scrolls; guildmates without the addon get their class colour from the guild list; a Discord line reads as a sentence; a group card's title no longer runs under its button.
+- **Recruit**: `{enlace}`/`{link}` puts your community's invite link in the announcement (kept whole); the reminder's interval is chosen on the tab (5 to 60 min, also the wait between posts); "Post anyway" while the wait holds.
+- The guild list is read once per change (roster events, 60 s at most); tests run on every push (CI).
 - Fixed: the feedback line could sit under the page art; a marked chip or my role button looked disabled; the minimap button floated on square minimaps; Discord lines now respect chat lockdowns; key bindings listed under "Forever Guild"; the Chat button left the tab bar (the chat lives on Home; `/lm chat` opens the window).
 
 ## 0.6.0
