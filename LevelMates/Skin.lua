@@ -45,6 +45,16 @@ function SK.InkText(s)
 		return string.format("|c%s%02x%02x%02x", a, math.floor(ir * 255 + 0.5), math.floor(ig * 255 + 0.5), math.floor(ib * 255 + 0.5))
 	end))
 end
+-- Colour codes kept as they are (class colours, item links) but toned so they read on parchment: a touch darker,
+-- and a near-white (a priest, a common item) becomes a soft dark grey instead of vanishing on the paper.
+function SK.ToneText(s)
+	if type(s) ~= "string" then return s end
+	return (s:gsub("|c(%x%x)(%x%x)(%x%x)(%x%x)", function(a, r, g, b)
+		local R, G, B = tonumber(r, 16) / 255, tonumber(g, 16) / 255, tonumber(b, 16) / 255
+		if (R + G + B) / 3 > 0.72 then R, G, B = 0.36, 0.30, 0.22 else R, G, B = R * 0.78, G * 0.78, B * 0.78 end
+		return string.format("|c%s%02x%02x%02x", a, math.floor(R * 255 + 0.5), math.floor(G * 255 + 0.5), math.floor(B * 255 + 0.5))
+	end))
+end
 -- A font string written on the page: no shadow (it blurs on paper), and listed for the ink pass.
 SK.inkList = {}
 function SK.InkFont(fs)

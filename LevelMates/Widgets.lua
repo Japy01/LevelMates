@@ -263,7 +263,7 @@ end
 -- as slots, more as counters per role ("2/5" with a bar, or "12/40" without roles); and, withButtons, what I can do:
 -- Invite all and Withdraw/Cancel on mine, Leave on one I joined, Join otherwise (a menu of the free roles, or straight
 -- in as "any"). Withdraw and Cancel ask first; a redraw of the same group keeps the question. :Set(nil) hides it.
-W.GROUPCARD_H = 64
+W.GROUPCARD_H, W.GROUPCARD_H_COMPACT = 64, 86   -- compact (Home): the button on a row of its own under the slots
 local SLOT_ROLES = { "T", "H", "D", "A" }
 local function counterRow(parent, i)
 	local r = CreateFrame("Frame", nil, parent)
@@ -282,7 +282,7 @@ end
 function W.GroupCard(parent, withButtons, compact)
 	local step = compact and 54 or 68
 	local c = CreateFrame("Button", nil, parent)
-	c:SetHeight(W.GROUPCARD_H)
+	c:SetHeight(compact and W.GROUPCARD_H_COMPACT or W.GROUPCARD_H)
 	c.text = ink(c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 	c.text:SetPoint("TOPLEFT"); c.text:SetWidth(5 * step - 4); c.text:SetJustifyH("LEFT"); c.text:SetWordWrap(false)
 	c.slots = {}
@@ -301,7 +301,8 @@ function W.GroupCard(parent, withButtons, compact)
 	c.buttons = {}
 	if withButtons then
 		for i = 1, (compact and 1 or 3) do c.buttons[i] = cardButton(c, i); if compact then c.buttons[i]:SetWidth(76) end end
-		c.text:SetWidth(0); c.text:SetPoint("RIGHT", c.buttons[1], "LEFT", -6, 0)   -- the title ends where the button starts
+		if compact then c.buttons[1]:ClearAllPoints(); c.buttons[1]:SetPoint("BOTTOMRIGHT", 0, 0)   -- under the slots, right; the title keeps the whole row
+		else c.text:SetWidth(0); c.text:SetPoint("RIGHT", c.buttons[1], "LEFT", -6, 0) end   -- the title ends where the buttons start
 	end
 	c:SetScript("OnClick", function(self) if self.group and ns.Board.OpenGroupMembers then ns.Board.OpenGroupMembers(self.group) end end)
 	function c:Set(g)

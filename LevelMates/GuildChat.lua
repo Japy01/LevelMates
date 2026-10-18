@@ -88,7 +88,7 @@ function GC.FillMessages(msg, list)
 	if not msg then return end
 	msg:Clear()
 	local r, g, b = SK.Ink(1, 1, 1)
-	for _, e in ipairs(list) do msg:AddMessage(SK.InkText(GC.LineText(e)), r, g, b) end
+	for _, e in ipairs(list) do msg:AddMessage(SK.ToneText(GC.LineText(e)), r, g, b) end   -- names keep their class colour
 	if msg.ScrollToBottom then msg:ScrollToBottom() end
 end
 -- Item links in a frame's text show their tooltip under the cursor and open on a click, as in the game's chat.

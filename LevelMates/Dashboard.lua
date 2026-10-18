@@ -159,7 +159,7 @@ local function buildRuns(p)
 	p.cards = {}
 	for i = 1, DB.RUNS do
 		local c = ns.Widgets.GroupCard(p, true, true)
-		c:SetPoint("TOPLEFT", PAD, -26 - (i - 1) * 68); c:SetPoint("RIGHT", -PAD, 0)
+		c:SetPoint("TOPLEFT", PAD, -26 - (i - 1) * (ns.Widgets.GROUPCARD_H_COMPACT + 4)); c:SetPoint("RIGHT", -PAD, 0)
 		p.cards[i] = c
 	end
 end
@@ -253,7 +253,7 @@ function DB.Layout()
 	local avail = h + top
 	DB.me:ClearAllPoints(); DB.me:SetPoint("TOPLEFT", 0, top); DB.me:SetSize(lw, avail)
 	-- left: Now, Groups (compact), Quests; middle: the chat, the whole height
-	local nowH, runsH = 26 + DB.NOW * (ITEM_H + 2) + 8, 26 + DB.RUNS * 68
+	local nowH, runsH = 26 + DB.NOW * (ITEM_H + 2) + 8, 26 + DB.RUNS * (ns.Widgets.GROUPCARD_H_COMPACT + 4)
 	DB.now:ClearAllPoints(); DB.now:SetPoint("TOPLEFT", 0, top); DB.now:SetSize(lw, nowH)
 	DB.runs:ClearAllPoints(); DB.runs:SetPoint("TOPLEFT", 0, top - nowH - 8); DB.runs:SetSize(lw, runsH)
 	DB.quests:ClearAllPoints(); DB.quests:SetPoint("TOPLEFT", 0, top - nowH - runsH - 16); DB.quests:SetSize(lw, math.max(60, avail - nowH - runsH - 16))

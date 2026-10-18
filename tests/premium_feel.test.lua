@@ -35,7 +35,7 @@ STUB.Fire("CHAT_MSG_GUILD", "mira |cffa335ee|Hitem:9001::::::::60:::::::|h[Casco
 GC.Open()
 assert(GC.msg and GC.msg.kind == "ScrollingMessageFrame", "a scrolling message frame")
 assert(#GC.msg.messages == 1 and GC.msg.messages[1].text:find("Mario", 1, true) and GC.msg.messages[1].text:find("|Hitem:9001", 1, true), "the line, link kept")
-assert(not GC.msg.messages[1].text:find("|cffa335ee", 1, true), "the link's colour in ink")
+assert(not GC.msg.messages[1].text:find("|cffa335ee", 1, true), "the link's colour toned for the page")
 assert(GC.msg.wheel and GC.msg.hyperlinks and GC.msg.scripts.OnHyperlinkEnter and GC.msg.scripts.OnHyperlinkLeave, "wheel and hyperlink tooltips")
 assert(GC.msg.wordWrap ~= false, "lines wrap")
 assert(ns.Dashboard.chatMsg.hyperlinks and ns.Dashboard.chatMsg.scripts.OnHyperlinkEnter, "Home's chat panel shows link tooltips too")
