@@ -45,6 +45,21 @@ function SK.InkText(s)
 		return string.format("|c%s%02x%02x%02x", a, math.floor(ir * 255 + 0.5), math.floor(ig * 255 + 0.5), math.floor(ib * 255 + 0.5))
 	end))
 end
+-- A secondary window (chat, loot, card…) that never leaves the screen and comes back where it was dragged; the
+-- place is saved per key, account-wide. The default point applies when nothing was saved.
+function SK.Remember(f, key, point, x, y)
+	f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
+	if f.SetClampedToScreen then f:SetClampedToScreen(true) end
+	f:SetScript("OnDragStart", f.StartMoving)
+	f:SetScript("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+		local p, _, rp, px, py = self:GetPoint()
+		if ns.db and p then ns.db.windows = ns.db.windows or {}; ns.db.windows[key] = { p, rp, px, py } end
+	end)
+	local saved = ns.db and ns.db.windows and ns.db.windows[key]
+	f:ClearAllPoints()
+	if saved then f:SetPoint(saved[1], UIParent, saved[2], saved[3], saved[4]) else f:SetPoint(point or "CENTER", x or 0, y or 0) end
+end
 -- Colour codes kept as they are (class colours, item links) but toned so they read on parchment: a touch darker,
 -- and a near-white (a priest, a common item) becomes a soft dark grey instead of vanishing on the paper.
 function SK.ToneText(s)

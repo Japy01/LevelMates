@@ -11,7 +11,7 @@ local function roster()
 	if cache and GetTime() - cachedAt < 30 then return cache end
 	cache, cachedAt = {}, GetTime()
 	for _, m in ipairs(ns.Roster.GuildMembers() or {}) do   -- whatever API the client allows (the community list can be secret)
-		cache[#cache + 1] = { name = m.name, level = m.level or 0, rank = m.rank or 0, role = m.role, online = m.online, zone = m.zone, days = m.days }
+		cache[#cache + 1] = { name = m.name, level = m.level or 0, rank = m.rank or 0, rankName = m.rankName, role = m.role, online = m.online, zone = m.zone, days = m.days }
 	end
 	return cache
 end
@@ -29,7 +29,7 @@ function MB.List(filter, search, sort)
 			or (filter == "officers" and (m.role == 1 or m.role == 2))
 			or (filter == "nonote" and not note)
 		if keep and (q == "" or m.name:lower():find(q, 1, true) or (note and note:lower():find(q, 1, true))) then
-			local e = { name = m.name, level = m.level, rank = m.rank, role = m.role, online = m.online, zone = m.zone, days = m.days, note = note }
+			local e = { name = m.name, level = m.level, rank = m.rank, rankName = m.rankName, role = m.role, online = m.online, zone = m.zone, days = m.days, note = note }
 			out[#out + 1] = e
 		end
 	end

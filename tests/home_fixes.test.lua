@@ -17,7 +17,7 @@ assert(GC.LineText(lines[1]):find("|cff", 1, true) and GC.LineText(lines[1]):fin
 assert(GC.LineText(lines[2]):find("Santo", 1, true) and GC.LineText(lines[2]):find("Discord", 1, true) and not GC.LineText(lines[2]):find(L.DT_PROTECTED, 1, true), "a Discord line as a sentence: " .. GC.LineText(lines[2]))
 B.Toggle(); B.ShowTab("home")
 assert(DB.chatMsg and DB.chatMsg.kind == "ScrollingMessageFrame" and DB.chatMsg.wordWrap ~= false, "Home's chat on a scrolling message frame")
-assert(#DB.chatMsg.messages == 2 and DB.chatMsg.messages[1].text:find("se parte en dos", 1, true), "the whole line kept")
+assert(#DB.chatMsg.messages == 3 and DB.chatMsg.messages[2].text:find("se parte en dos", 1, true), "the whole line kept")
 assert(DB.chatMsg.hyperlinks and DB.chatMsg.wheel, "links and the wheel")
 -- a group card: the title stops where the button starts
 local c = W.GroupCard(DB.frame, true, true)
@@ -30,8 +30,8 @@ assert(p and p[1] == "RIGHT" and p[2] == wide.buttons[1] and p[3] == "LEFT", "wi
 -- the class colour survives on the page: toned, never turned into ink
 local hunter = string.format("%02x%02x%02x", 171, 212, 115)
 assert(GC.LineText(lines[1]):find("|cff" .. hunter, 1, true), "the hunter colour in the line")
-assert(not DB.chatMsg.messages[1].text:find("|cff" .. hunter, 1, true) and DB.chatMsg.messages[1].text:find("|cff", 1, true), "toned on the page, still a colour")
+assert(not DB.chatMsg.messages[2].text:find("|cff" .. hunter, 1, true) and DB.chatMsg.messages[2].text:find("|cff", 1, true), "toned on the page, still a colour")
 local ir, ig, ib = ns.Skin.Ink(0.67, 0.83, 0.45)
 local ink = string.format("%02x%02x%02x", math.floor(ir * 255 + 0.5), math.floor(ig * 255 + 0.5), math.floor(ib * 255 + 0.5))
-assert(not DB.chatMsg.messages[1].text:find("|cff" .. ink, 1, true), "not ink")
+assert(not DB.chatMsg.messages[2].text:find("|cff" .. ink, 1, true), "not ink")
 print("ok")

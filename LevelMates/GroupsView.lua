@@ -172,6 +172,7 @@ local function buildForm(p)
 	f.note = CreateFrame("EditBox", nil, p, "InputBoxTemplate")
 	f.note:SetSize(300, 20); f.note:SetPoint("TOPLEFT", PAD + 6, y - 14); f.note:SetAutoFocus(false); f.note:SetMaxLetters(40)
 	f.note:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	ns.TabOrder({ f.name, f.note })
 	y = y - 40
 	f.roleLabel = ink(p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 	f.roleLabel:SetPoint("TOPLEFT", PAD, y - 4); f.roleLabel:SetText(L.RUN_MY_ROLE)

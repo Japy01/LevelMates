@@ -141,11 +141,29 @@ end
 local subs = {}
 function ns.Slash(sub, fn) subs[sub] = fn end
 SLASH_LEVELMATES1 = "/lm"; SLASH_LEVELMATES2 = "/levelmates"; SLASH_LEVELMATES3 = "/foreverguild"; SLASH_LEVELMATES4 = "/guildcompanion"
+-- The commands, one line each, in chat (/lm help, /lm ?, or any command that does not exist).
+function ns.ListCommands()
+	ns.Chat(ns.L.CMD_TITLE)
+	for _, c in ipairs(ns.L.CMD_LIST or {}) do print("  |cffffd100/lm " .. c[1] .. "|r  " .. c[2]) end
+end
 SlashCmdList["LEVELMATES"] = function(msg)
 	msg = strtrim(msg or "")
+	if msg == "" then ns.Fire("LM_TOGGLE_BOARD"); return end
 	local sub, rest = msg:match("^(%S+)%s*(.-)$")
 	local fn = subs[sub and sub:lower() or ""]
-	if fn then fn(rest) else ns.Fire("LM_TOGGLE_BOARD") end
+	if fn then fn(rest)
+	elseif sub == "?" or sub:lower() == "help" or sub:lower() == "comandos" or sub:lower() == "commands" then ns.ListCommands()
+	else ns.Chat(ns.L.CMD_UNKNOWN, sub); ns.ListCommands() end
+end
+-- Tab moves the focus along a form's boxes (Shift+Tab back), as the game's own forms do.
+function ns.TabOrder(boxes)
+	for i, box in ipairs(boxes) do
+		box:SetScript("OnTabPressed", function()
+			local step = (IsShiftKeyDown and IsShiftKeyDown()) and -1 or 1
+			local nextBox = boxes[(i - 1 + step) % #boxes + 1]
+			nextBox:SetFocus()
+		end)
+	end
 end
 
 local f = CreateFrame("Frame")

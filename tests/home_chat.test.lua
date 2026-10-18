@@ -10,12 +10,12 @@ assert(DB.chat and DB.chat:IsShown(), "the chat panel")
 assert(not DB.me:IsShown(), "my character hidden for now")
 assert(DB.now:IsShown() and DB.runs:IsShown() and DB.quests:IsShown() and DB.where:IsShown() and DB.wall:IsShown(), "the other panels")
 local shown = {}
-for _, m in ipairs(DB.chatMsg.messages) do shown[#shown + 1] = m.text end   -- a scrolling message frame since 2026-10-18
+for _, m in ipairs(DB.chatMsg.messages) do if not m.text:find("· · ·", 1, true) then shown[#shown + 1] = m.text end end   -- a scrolling message frame since 2026-10-18
 assert(#shown == 1 and shown[1]:find("Mario", 1, true) and shown[1]:find("hola a todos", 1, true), "the line in the panel: " .. table.concat(shown, " | "))
 -- a new line arrives: drawn
 STUB.Fire("CHAT_MSG_GUILD", "buenas", "Ana-Testrealm", "", "", "", "", 0, 0, "", 0, 2, "Player-1-ANA"); STUB.Advance(1)
 shown = {}
-for _, m in ipairs(DB.chatMsg.messages) do shown[#shown + 1] = m.text end
+for _, m in ipairs(DB.chatMsg.messages) do if not m.text:find("· · ·", 1, true) then shown[#shown + 1] = m.text end end
 assert(#shown == 2 and shown[2]:find("Ana", 1, true), "the new line at the bottom")
 -- writing from Home
 STUB.lastChat = nil

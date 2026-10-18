@@ -9,9 +9,8 @@ WN.DELAY = 6   -- seconds after entering the world: the loading screen and the g
 
 local function build()
 	local f = SK.Window("LevelMatesWhatsNew", UIParent)
-	f:SetSize(540, 380); f:SetPoint("CENTER", 0, 80); f:SetFrameStrata("DIALOG")
-	f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	f:SetSize(540, 380); f:SetFrameStrata("DIALOG")
+	SK.Remember(f, "whatsNew", "CENTER", 0, 80)
 	if UISpecialFrames then table.insert(UISpecialFrames, "LevelMatesWhatsNew") end
 	WN.frame = f
 	WN.body = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")

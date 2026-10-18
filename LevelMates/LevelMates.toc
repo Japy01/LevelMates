@@ -1,12 +1,14 @@
 ## Interface: 16001
 ## Title: Forever Guild
-## Notes: Level up together with your guild: guildmates online, dungeon groups and meetups, builds and macros for your class, guild goals, wishlist and giveaways, professions, a guild wall, rares and help.|nAddon messages to your guild only. Nothing from combat.
-## Notes-esES: Sube de nivel con tu hermandad: hermanos conectados, grupos y quedadas de mazmorra, builds y macros de tu clase, metas, deseos y regalos, oficios, muro de la hermandad, raros y ayuda.|nSolo mensajes de addon a tu hermandad. Nada de combate.
+## Notes: Your guild in one book: who is online and where, dungeon groups and meetups, guild chat with history, raid loot (points, awards, live sessions), builds and macros for your class, goals, wishlist and giveaways, professions, a guild wall, rares and help.|nAddon messages to your guild only. Nothing from combat.
+## Notes-esES: Tu hermandad en un libro: quién está conectado y dónde, grupos y quedadas de mazmorra, chat de hermandad con historial, botín de banda (puntos, asignaciones, sesiones en vivo), builds y macros de tu clase, metas, deseos y regalos, oficios, muro, raros y ayuda.|nSolo mensajes de addon a tu hermandad. Nada de combate.
 ## Author: Diego and contributors
 ## Version: @project-version@
 ## SavedVariables: LevelMatesDB
 ## OptionalDeps: Questie
 ## IconTexture: Interface\AddOns\LevelMates\Media\icon
+## Category: Guild
+## Category-esES: Hermandad
 ## AllowLoadGameType: camelot
 ## X-License: MIT
 ## X-Website: https://github.com/Japy01/LevelMates

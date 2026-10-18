@@ -11,9 +11,8 @@ local ROW_H = 50
 
 local function build()
 	local f = SK.Window("LevelMatesLootCard", UIParent)
-	f:SetSize(460, 80); f:SetPoint("CENTER", 0, 120); f:SetFrameStrata("DIALOG")
-	f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	f:SetSize(460, 80); f:SetFrameStrata("DIALOG")
+	SK.Remember(f, "lootCard", "CENTER", 0, 120)
 	if UISpecialFrames then table.insert(UISpecialFrames, "LevelMatesLootCard") end
 	if f.TitleText then f.TitleText:SetText(L.LC_TITLE) end
 	LC.frame = f

@@ -146,14 +146,19 @@ end)
 ------------------------------------------------------------------ the window
 local function build()
 	local f = SK.Window("LevelMatesGuildChat", UIParent)
-	f:SetSize(560, 420); f:SetPoint("CENTER", 200, 0); f:SetFrameStrata("DIALOG")
-	f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	f:SetSize(560, 420); f:SetFrameStrata("DIALOG")
+	SK.Remember(f, "chat", "CENTER", 200, 0)
 	if UISpecialFrames then table.insert(UISpecialFrames, "LevelMatesGuildChat") end
 	if f.TitleText then f.TitleText:SetText(L.GC_TITLE) end
 	GC.frame = f
+	-- what to read: everything, or the officers' lines only
+	local W = ns.Widgets
+	GC.chipAll = W.Chip(f, L.GC_ALL); GC.chipAll:SetPoint("TOPLEFT", 12, -26)
+	GC.chipOfficer = W.Chip(f, L.GC_OFFICERS); GC.chipOfficer:SetPoint("LEFT", GC.chipAll, "RIGHT", 4, 0)
+	GC.chipAll:SetScript("OnClick", function() GC.filter = "all"; GC.Refresh() end)
+	GC.chipOfficer:SetScript("OnClick", function() GC.filter = "officer"; GC.Refresh() end)
 	local msg = GC.MessageFrame(f)
-	msg:SetPoint("TOPLEFT", 12, -28); msg:SetPoint("BOTTOMRIGHT", -12, 40)
+	msg:SetPoint("TOPLEFT", 12, -50); msg:SetPoint("BOTTOMRIGHT", -12, 40)
 	GC.msg = msg
 	GC.input = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
 	GC.input:SetHeight(22); GC.input:SetPoint("BOTTOMLEFT", 16, 12); GC.input:SetPoint("RIGHT", -90, 0); GC.input:SetAutoFocus(false); GC.input:SetMaxLetters(255)
@@ -188,8 +193,9 @@ end
 -- links show their tooltip; written in ink, as the rest of the book. The caller places it.
 function GC.MessageFrame(parent)
 	local msg = CreateFrame("ScrollingMessageFrame", nil, parent)
-	msg:SetFontObject(GameFontHighlightSmall or "GameFontHighlightSmall"); msg:SetJustifyH("LEFT")
-	msg:SetMaxLines(GC.MAX); msg:SetFading(false); msg:SetIndentedWordWrap(true)
+	msg:SetFontObject(ChatFontNormal or GameFontHighlight or "GameFontHighlight"); msg:SetJustifyH("LEFT")   -- the game's own chat letters
+	if msg.SetSpacing then msg:SetSpacing(3) end   -- air between lines, as a chat should have
+	msg:SetMaxLines(GC.MAX + 40); msg:SetFading(false); msg:SetIndentedWordWrap(true)
 	if msg.SetInsertMode and SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM then msg:SetInsertMode(SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM) end
 	msg.lmKeep = true
 	msg:EnableMouseWheel(true)
@@ -200,19 +206,44 @@ function GC.MessageFrame(parent)
 	GC.Hyperlinks(msg)
 	return msg
 end
--- The lines into a message frame, oldest first, names in their class colour (toned for the page). New lines at
--- the end are appended, so the view stays where the reader left it; anything else (older lines arriving, a line
--- gone) rewrites the frame. The view follows the newest line only while it was already at the bottom.
+-- The day a line belongs to, as the date line says it: today, yesterday, else the date.
+local function dayKey(at) return date("%Y%m%d", at) end
+function GC.DayText(at)
+	local today, yesterday = dayKey(time()), dayKey(time() - 86400)
+	local key = dayKey(at)
+	local word = key == today and L.GC_DAY_TODAY or key == yesterday and L.GC_DAY_YESTERDAY or date("%d/%m/%Y", at)
+	return "|cff8a7a60· · ·  " .. word .. "  · · ·|r"
+end
+-- What goes on the page: the lines, with a date line wherever the day changes.
+local function render(list)
+	local out, lastDay = {}, nil
+	for _, e in ipairs(list) do
+		local day = dayKey(e.at or time())
+		if day ~= lastDay then out[#out + 1] = { day = day, at = e.at }; lastDay = day end
+		out[#out + 1] = e
+	end
+	return out
+end
+local function sameItem(a, b) return a == b or (a.day ~= nil and a.day == b.day) end
+-- The lines into a message frame, oldest first, names in their class colour (toned for the page), a date line
+-- where the day changes. New lines at the end are appended, so the view stays where the reader left it; anything
+-- else (older lines arriving, a line gone) rewrites the frame. The view follows the newest line only while it was
+-- already at the bottom.
 function GC.FillMessages(msg, list)
 	if not msg then return end
+	local items = render(list)
 	local r, g, b = SK.Ink(1, 1, 1)
 	local shown = msg.lmShown or {}
-	local keep = #shown > 0 and #list >= #shown
-	for i = 1, #shown do if not keep or list[i] ~= shown[i] then keep = false; break end end
+	local keep = #shown > 0 and #items >= #shown
+	for i = 1, #shown do if not keep or not sameItem(items[i], shown[i]) then keep = false; break end end
 	local wasAtBottom = not msg.AtBottom or msg:AtBottom()
 	local from = 1
 	if keep then from = #shown + 1 else msg:Clear(); shown = {} end
-	for i = from, #list do msg:AddMessage(SK.ToneText(GC.LineText(list[i])), r, g, b); shown[i] = list[i] end
+	for i = from, #items do
+		local it = items[i]
+		if it.day then msg:AddMessage(GC.DayText(it.at), r, g, b) else msg:AddMessage(SK.ToneText(GC.LineText(it)), r, g, b) end
+		shown[i] = it
+	end
 	msg.lmShown = shown
 	if (wasAtBottom or not keep) and msg.ScrollToBottom then msg:ScrollToBottom() end
 end
@@ -229,9 +260,17 @@ function GC.Hyperlinks(f)
 	f:SetScript("OnHyperlinkLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 	f:SetScript("OnHyperlinkClick", function(_, link, text, button) if SetItemRef then pcall(SetItemRef, link, text, button) end end)
 end
+-- The lines the window shows: everything, or the officers' only.
+function GC.Shown()
+	if GC.filter ~= "officer" then return lines end
+	local out = {}
+	for _, e in ipairs(lines) do if e.kind == "officer" then out[#out + 1] = e end end
+	return out
+end
 function GC.Refresh()
 	if not GC.frame or not GC.frame:IsShown() then return end
-	GC.FillMessages(GC.msg, lines)
+	GC.chipAll:SetChecked(GC.filter ~= "officer"); GC.chipOfficer:SetChecked(GC.filter == "officer")
+	GC.FillMessages(GC.msg, GC.Shown())
 end
 -- From a box's Enter or a button: to the guild; false (and a word) when a lockdown holds it, so the box keeps it.
 function GC.Send(text)

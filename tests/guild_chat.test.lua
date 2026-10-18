@@ -19,7 +19,7 @@ B.Toggle()
 SlashCmdList["LEVELMATES"]("chat")
 assert(GC.frame and GC.frame:IsShown(), "the window")
 local shown = {}
-for _, m in ipairs(GC.msg.messages) do shown[#shown + 1] = m.text end   -- a scrolling message frame since 2026-10-17
+for _, m in ipairs(GC.msg.messages) do if not m.text:find("· · ·", 1, true) then shown[#shown + 1] = m.text end end   -- date lines skipped   -- a scrolling message frame since 2026-10-17
 assert(#shown == 3 and shown[1]:find("Mario", 1, true) and shown[1]:find("hola a todos", 1, true) and shown[3]:find("Pepe", 1, true) and shown[3]:find("Discord", 1, true), "lines drawn: " .. table.concat(shown, " | "))
 assert(shown[2]:find(L.GC_OFFICER, 1, true), "officer lines marked")
 -- writing: Enter sends to the guild, the box empties; nothing while a chat lockdown holds, the text stays

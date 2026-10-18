@@ -1776,11 +1776,12 @@ local function FillMembers(list)
 		r.zone:SetTextColor(1, 1, 1); r.group:SetTextColor(0.8, 0.8, 0.8); r.xph:SetTextColor(0.7, 0.7, 0.7)
 		if c and c.member then
 			local m = c.member
-			r.name:SetText(((m.role == 1 or m.role == 2) and "* " or "") .. m.name); r.name:SetTextColor(ClassColor(R.mates[m.name] and R.mates[m.name].class))
+			r.name:SetText(((m.role == 1 or m.role == 2) and "* " or "") .. m.name); r.name:SetTextColor(ClassColor(R.ClassOf(m.name)))
 			r.level:SetText(tostring(m.level))
 			r.zone:SetText(m.note or ""); r.zone:SetTextColor(0.85, 0.85, 0.6)
-			r.group:SetText(L["GUILD_RANK_N"] and string.format(L.GUILD_RANK_N, m.rank) or tostring(m.rank))
+			r.group:SetText(m.rankName or string.format(L.GUILD_RANK_N, m.rank))   -- the rank's own name; its number only when the game hides it
 			if m.online then r.xph:SetText(L.ONLINE); r.xph:SetTextColor(unpack(B.GROUP_COLORS.open))
+			elseif m.days == 0 then r.xph:SetText(L.MEMBER_TODAY)
 			elseif m.days then r.xph:SetText(string.format(L.MEMBER_DAYS, m.days)) end
 			r.button:Show(); RowBg(r, i, false)
 		elseif c and c.history then
@@ -2514,8 +2515,11 @@ ns.On("LM_TOGGLE_BOARD", B.Toggle)
 -- Changes from the guild redraw the open page at most twice a second; clicks still redraw at once.
 ns.OnRedraw("board", function() return B.frame and B.frame:IsShown() end, function() B.Refresh() end)
 ns.On("LM_LOADED", function()
-	if AddonCompartmentFrame and ns.db.settings.minimap then
-		AddonCompartmentFrame:RegisterAddon({ text = L.BOARD_TITLE, icon = "Interface\\AddOns\\LevelMates\\Media\\icon", func = B.Toggle })
+	if AddonCompartmentFrame and AddonCompartmentFrame.RegisterAddon then
+		AddonCompartmentFrame:RegisterAddon({ text = L.BOARD_TITLE, icon = "Interface\\AddOns\\LevelMates\\Media\\icon", notCheckable = true,
+			func = function(_, _, _, _, button) if button == "RightButton" then ns.Settings.Open() else B.Toggle() end end,
+			funcOnEnter = function(btn) if GameTooltip then GameTooltip:SetOwner(btn, "ANCHOR_LEFT"); GameTooltip:AddLine(L.BOARD_TITLE); GameTooltip:AddLine(L.MINIMAP_LEFT); GameTooltip:AddLine(L.MINIMAP_RIGHT); GameTooltip:Show() end end,
+			funcOnLeave = function() if GameTooltip then GameTooltip:Hide() end end })
 	end
 end)
 

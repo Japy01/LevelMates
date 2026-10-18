@@ -55,9 +55,8 @@ end
 ------------------------------------------------------------------ the window
 local function build()
 	local f = SK.Window("LevelMatesLootWindow", UIParent)
-	f:SetSize(700, 400); f:SetPoint("CENTER", 0, 60); f:SetFrameStrata("DIALOG")
-	f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	f:SetSize(700, 400); f:SetFrameStrata("DIALOG")
+	SK.Remember(f, "loot", "CENTER", 0, 60)
 	if UISpecialFrames then table.insert(UISpecialFrames, "LevelMatesLootWindow") end
 	if f.TitleText then f.TitleText:SetText(L.LW_TITLE) end
 	LW.frame = f

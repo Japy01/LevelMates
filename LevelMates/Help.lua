@@ -119,8 +119,12 @@ groupFrame:SetScript("OnEvent", function()
 	end
 end)
 
-ns.Slash("help", function(rest) if H.mine then H.Cancel() else H.Ask(rest) end end)
-ns.Slash("ayuda", function(rest) if H.mine then H.Cancel() else H.Ask(rest) end end)
+local function helpCommand(rest)
+	if H.mine then H.Cancel(); return end
+	if strtrim(rest or "") == "" then ns.ListCommands(); return end   -- /lm help alone: the commands, not a request
+	H.Ask(rest)
+end
+ns.Slash("help", helpCommand); ns.Slash("ayuda", helpCommand); ns.Slash("sos", function(rest) if H.mine then H.Cancel() else H.Ask(rest) end end)
 ns.Slash("cancel", H.Cancel); ns.Slash("cancelar", H.Cancel)
 ns.On("LM_HELP_BUTTON", function()
 	if H.mine then H.Cancel(); return end

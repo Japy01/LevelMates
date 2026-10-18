@@ -23,6 +23,7 @@ local function Build()
 	-- offer mode: the price in gold (empty = free)
 	local price = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
 	price:SetSize(90, 22); price:SetPoint("TOPRIGHT", box, "BOTTOMRIGHT", 0, -8); price:SetAutoFocus(false); price:SetMaxLetters(8)
+	ns.TabOrder({ box, price })
 	local priceLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	priceLabel:SetPoint("RIGHT", price, "LEFT", -10, 0); priceLabel:SetText(L.PRICE_LABEL)
 	Dlg.price, Dlg.priceLabel = price, priceLabel

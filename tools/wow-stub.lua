@@ -255,7 +255,10 @@ function date(fmt, t)
 		local y, m, d = civilFromDays(days)
 		return { year = y, month = m, day = d, hour = math.floor(s / 3600), min = math.floor(s % 3600 / 60), sec = s % 60, wday = (days + 4) % 7 + 1 }
 	end
-	return "00:00:00"
+	-- the common fields from the same calendar (%Y %m %d %H %M %S); anything else stays literal
+	local tt = date("*t", t)
+	local map = { Y = string.format("%04d", tt.year), m = string.format("%02d", tt.month), d = string.format("%02d", tt.day), H = string.format("%02d", tt.hour), M = string.format("%02d", tt.min), S = string.format("%02d", tt.sec) }
+	return (tostring(fmt or "%H:%M:%S"):gsub("%%(%a)", function(k) return map[k] or ("%" .. k) end))
 end
 STUB.printed = {}
 function print(...) local parts = {}; for i = 1, select("#", ...) do parts[i] = tostring((select(i, ...))) end; STUB.printed[#STUB.printed + 1] = table.concat(parts, " ") end
@@ -291,7 +294,8 @@ C_Club = {
 	GetClubMembers = function() local out = {}; for k in pairs(STUB.guildMembers) do out[#out + 1] = k end; return out end,
 	GetMemberInfo = function(_, id)
 		local x = STUB.memberInfo and STUB.memberInfo[id] or {}
-		return { name = id, level = x.level or 1, presence = x.presence or 3, role = STUB.guildRoles and STUB.guildRoles[id] or 4, guildRankOrder = x.rank or 4, classID = x.classID or 8 }
+		return { name = id, level = x.level or 1, presence = x.presence or 3, role = STUB.guildRoles and STUB.guildRoles[id] or 4, guildRankOrder = x.rank or 4, guildRank = x.rankName, classID = x.classID or 8,
+			lastOnlineYear = x.lastOnlineYear, lastOnlineMonth = x.lastOnlineMonth, lastOnlineDay = x.lastOnlineDay, lastOnlineHour = x.lastOnlineHour }
 	end,
 }
 function UnitXP() return STUB.player.xp or 0 end
@@ -317,7 +321,7 @@ function STUB.MenuEntry(text) for _, e in ipairs(STUB.lastMenu and STUB.lastMenu
 ChatFrameUtil = { SendTell = function(name) STUB.lastTell = name end }
 function Region:RegisterForClicks() end
 function Region:GetPoint() return "CENTER", nil, "CENTER", 0, 0 end
-AddonCompartmentFrame = { RegisterAddon = function() end }
+AddonCompartmentFrame = { RegisterAddon = function(_, info) STUB.compartment = info end }
 C_QuestLog.GetTitleForQuestID = function(id) return "Quest " .. id end
 StaticPopupDialogs = {}
 -- Mainline dialogs expose their edit box as dialog.EditBox / dialog:GetEditBox() (GameDialog.xml, parentKey="EditBox").
@@ -399,10 +403,12 @@ Item = { CreateFromItemID = function(_, id) return { ContinueOnItemLoad = functi
 
 -- Copy for Discord support (multi-line edit box in a scroll frame)
 function Region:SetMultiLine() end
-function Region:SetFontObject() end
+function Region:SetFontObject(f) self.fontObject = f end
+ChatFontNormal = "ChatFontNormal"   -- the game's chat font object, a name here
+function Region:SetSpacing(v) self.spacing = v end
 function Region:SetScrollChild(child) self.child = child end
 function Region:HighlightText() self.highlighted = true end
-function Region:SetFocus() self.focused = true end
+function Region:SetFocus() if STUB.focus and STUB.focus ~= self then STUB.focus.focused = false end; STUB.focus = self; self.focused = true end   -- one box has the focus, as in the game
 function Region:ClearFocus() self.focused = false end
 
 -- Screen notices
