@@ -23,6 +23,8 @@ assert(DB.chatMsg.hyperlinks and DB.chatMsg.wheel, "links and the wheel")
 local c = W.GroupCard(DB.frame, true, true)
 c:Set({ id = "g1", src = "now", name = "Excavación: Los Humedales", by = "Tester-Testrealm", mine = true, size = 5, caps = { T = 1, H = 1, D = 3 }, slots = {} })
 assert(c.buttons[1].point[1] == "BOTTOMRIGHT" and c:GetHeight() == W.GROUPCARD_H_COMPACT and (not c.text.point or c.text.point[2] ~= c.buttons[1]), "compact: the button under the slots, the title whole")
+assert(c.foot and c.foot.text == string.format(L.GR_PLACES, 0, 5), "how full the group is, on the button's row: " .. tostring(c.foot and c.foot.text))
+assert(c.slots[5].w and c.slots[5].w <= 46, "five narrow places fit the column")
 local wide = W.GroupCard(DB.frame, true, false)
 wide:Set({ id = "g2", src = "now", name = "X", by = "Tester-Testrealm", mine = true, size = 5, caps = { T = 1 }, slots = {} })
 local p = wide.text.point

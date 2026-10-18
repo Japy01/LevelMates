@@ -280,7 +280,7 @@ local function counterRow(parent, i)
 end
 -- compact (Home): narrower places and one button, so it fits a middle column.
 function W.GroupCard(parent, withButtons, compact)
-	local step = compact and 54 or 68
+	local step = compact and 48 or 68   -- compact: five places fit a Home column
 	local c = CreateFrame("Button", nil, parent)
 	c:SetHeight(compact and W.GROUPCARD_H_COMPACT or W.GROUPCARD_H)
 	c.text = ink(c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
@@ -289,7 +289,7 @@ function W.GroupCard(parent, withButtons, compact)
 	for k = 1, 5 do
 		local s = W.Slot(c)
 		s:SetPoint("TOPLEFT", (k - 1) * step, -16)
-		if compact then s:SetWidth(step - 2); s.name:SetWidth(step - 6) end
+		if compact then s:SetWidth(step - 2); s.name:SetWidth(step - 6); s.icon:SetSize(22, 22) end
 		s:SetScript("OnClick", function() if c.group and ns.Board.OpenGroupMembers then ns.Board.OpenGroupMembers(c.group) end end)
 		c.slots[k] = s
 	end
@@ -301,7 +301,10 @@ function W.GroupCard(parent, withButtons, compact)
 	c.buttons = {}
 	if withButtons then
 		for i = 1, (compact and 1 or 3) do c.buttons[i] = cardButton(c, i); if compact then c.buttons[i]:SetWidth(76) end end
-		if compact then c.buttons[1]:ClearAllPoints(); c.buttons[1]:SetPoint("BOTTOMRIGHT", 0, 0)   -- under the slots, right; the title keeps the whole row
+		if compact then   -- under the slots: how full the group is, left; the one button, right, small; the title keeps the whole row
+			c.buttons[1]:ClearAllPoints(); c.buttons[1]:SetSize(70, 18); c.buttons[1]:SetPoint("BOTTOMRIGHT", 0, 0)
+			c.foot = ink(c:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+			c.foot:SetPoint("BOTTOMLEFT", 2, 3); c.foot:SetPoint("RIGHT", c.buttons[1], "LEFT", -6, 0); c.foot:SetJustifyH("LEFT"); c.foot:SetWordWrap(false)
 		else c.text:SetWidth(0); c.text:SetPoint("RIGHT", c.buttons[1], "LEFT", -6, 0) end   -- the title ends where the buttons start
 	end
 	c:SetScript("OnClick", function(self) if self.group and ns.Board.OpenGroupMembers then ns.Board.OpenGroupMembers(self.group) end end)
@@ -311,6 +314,11 @@ function W.GroupCard(parent, withButtons, compact)
 		local GR = ns.Groups
 		local when = g.at and ns.Meetups.When(g) or L.WHEN_NOW
 		self.text:SetText(when .. "  ·  " .. g.name .. "  ·  " .. short(g.by) .. (g.note and g.note ~= "" and ("  ·  " .. g.note) or ""))
+		if self.foot then   -- compact: "places 2/5"
+			local have, cap = 0, 0
+			for _, role in ipairs(SLOT_ROLES) do cap = cap + (g.caps[role] or 0); have = have + #(g.slots[role] or {}) end
+			self.foot:SetText(string.format(L.GR_PLACES, have, cap)); self.foot:SetTextColor(0.55, 0.45, 0.3)
+		end
 		if g.size <= 5 then
 			self.counters:Hide()
 			local k = 0
