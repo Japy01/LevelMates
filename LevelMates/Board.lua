@@ -268,7 +268,8 @@ local function Build()
 			end
 			if B.tab == "feed" then return end
 			if B.tab == "lfg" then   -- the run calendar, or a suggestion of Together
-				if self.meet then B.OpenMeetMenu(self.meet) elseif self.togetherEntry then B.OpenTogetherMenu(self.togetherEntry)
+				if self.calEvent then ns.Calendar.Open()
+				elseif self.meet then B.OpenMeetMenu(self.meet) elseif self.togetherEntry then B.OpenTogetherMenu(self.togetherEntry)
 				elseif self.questEntry then B.OpenQuestMenu(self.questEntry) end
 				return
 			end
@@ -807,6 +808,14 @@ local function Build()
 	Ink(B.recruitPreview); Ink(B.recruitStatus)
 	B.heading:SetTextColor(1, 0.82, 0); B.restedText:SetTextColor(0.6, 0.8, 1); B.subtitle:SetTextColor(0.8, 0.8, 0.8)
 	ns.Skin.InkPass()
+	-- what each button does, on hover
+	local TIPS = { discordButton = "TIP_DISCORD", helpButton = "TIP_HELP", lootRaidButton = "TIP_LOOT_RAID", lootRulesButton = "TIP_LOOT_RULES", lootCopyButton = "TIP_LOOT_COPY",
+		lootReserveButton = "TIP_LOOT_RESERVE", lootLiveButton = "TIP_LOOT_LIVE", lootHistButton = "TIP_LOOT_HIST", lootViewButton = "TIP_VIEW", journalClear = "TIP_J_CLEAR",
+		journalFilterButton = "TIP_J_FILTER", journalAchButton = "TIP_ACH", togetherButton = "TIP_TOGETHER", questsButton = "TIP_QUESTS", questFilterButton = "TIP_SHOW",
+		questPostButton = "TIP_Q_POST", memberViewButton = "TIP_VIEW", memberFilterButton = "TIP_SHOW", classShare = "TIP_CLASS_SHARE", classAsk = "TIP_CLASS_ASK",
+		feedCemetery = "TIP_CEMETERY", recruitViewButton = "TIP_INACTIVE", recruitDaysButton = "TIP_DAYS", recruitEvery = "TIP_EVERY", recruitPost = "TIP_RECRUIT_POST",
+		goalNew = "TIP_GOAL_NEW", myGoal = "TIP_MY_GOAL", wishAdd = "TIP_WISH_ADD", giftAdd = "TIP_GIFT_ADD", groupsButton = "TIP_GROUPS", catalogButton = "TIP_CATALOG" }
+	for key, tip in pairs(TIPS) do if B[key] then ns.Skin.Tip(B[key], L[tip]) end end
 end
 
 -- `skip`: rows at the foot left to the pager (a long Mates list); the requests go in the ones above.
@@ -1684,15 +1693,21 @@ end
 
 -- Dungeons tab, calendar view: the next 7 days of meetups, a header per day.
 B.CAL_DAYS = 7
+-- The meetups and the game's own calendar events of the coming week, by day.
 local function CalendarVisible()
-	local out, lastDay, now = {}, nil, ns.Meetups.Now()
+	local out, now = {}, ns.Meetups.Now()
+	local all = {}
 	for _, m in ipairs(ns.Meetups.List()) do
-		if m.at >= now and m.at <= now + B.CAL_DAYS * 1440 then   -- not the ones already started
-			local t = date("*t", m.at * 60)
-			local day = t.year * 10000 + t.month * 100 + t.day
-			if day ~= lastDay then out[#out + 1] = { header = day, t = t }; lastDay = day end
-			out[#out + 1] = { meet = m }
-		end
+		if m.at >= now and m.at <= now + B.CAL_DAYS * 1440 then all[#all + 1] = { at = m.at * 60, meet = m } end   -- not the ones already started
+	end
+	for _, e in ipairs(ns.Calendar and ns.Calendar.Upcoming(B.CAL_DAYS) or {}) do all[#all + 1] = { at = e.at, cal = e } end
+	table.sort(all, function(a, b) return a.at < b.at end)
+	local lastDay
+	for _, x in ipairs(all) do
+		local t = date("*t", x.at)
+		local day = t.year * 10000 + t.month * 100 + t.day
+		if day ~= lastDay then out[#out + 1] = { header = day, t = t }; lastDay = day end
+		out[#out + 1] = x.meet and { meet = x.meet } or { cal = x.cal }
 	end
 	return out
 end
@@ -1701,8 +1716,17 @@ local function FillCalendar(list)
 	for i = 1, ROWS do
 		local r, c = B.rows[i], list[i]
 		r.button.mate, r.button.adId = nil, nil
-		r.button.meet, r.button.meetHeader = c and c.meet, c and c.header
-		if c and c.header then
+		r.button.meet, r.button.meetHeader, r.button.calEvent = c and c.meet, c and c.header, c and c.cal
+		if c and c.cal then   -- the game's own event: its hour, its title, who invited; a click opens the game's calendar
+			local e, t = c.cal, date("*t", c.cal.at)
+			r.icon:Hide()
+			r.name:SetText(string.format("   %02d:%02d", t.hour, t.min)); r.name:SetTextColor(1, 1, 1)
+			r.level:SetText("")
+			r.zone:SetText(e.title .. " · " .. L.CAL_GAME .. (e.invitedBy and e.invitedBy ~= "" and (" · " .. e.invitedBy) or "")); r.zone:SetTextColor(1, 0.82, 0)
+			r.group:SetText(""); r.xph:SetText(e.kind == "guild" and L.CAL_GUILD_EVENT or L.CAL_INVITED); r.xph:SetTextColor(0.7, 0.7, 0.7)
+			r.button:Show()
+			RowBg(r, i, false)
+		elseif c and c.header then
 			r.icon:Hide()
 			r.name:SetText(string.format("%s %02d/%02d", L["DAY_" .. c.t.wday], c.t.day, c.t.month)); r.name:SetTextColor(1, 0.82, 0)
 			r.level:SetText(""); r.zone:SetText(""); r.group:SetText(""); r.xph:SetText("")

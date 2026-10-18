@@ -157,6 +157,7 @@ local function build()
 	GC.chipOfficer = W.Chip(f, L.GC_OFFICERS); GC.chipOfficer:SetPoint("LEFT", GC.chipAll, "RIGHT", 4, 0)
 	GC.chipAll:SetScript("OnClick", function() GC.filter = "all"; GC.Refresh() end)
 	GC.chipOfficer:SetScript("OnClick", function() GC.filter = "officer"; GC.Refresh() end)
+	SK.Tip(GC.chipAll, L.TIP_GC_ALL); SK.Tip(GC.chipOfficer, L.TIP_GC_OFFICERS)
 	local msg = GC.MessageFrame(f)
 	msg:SetPoint("TOPLEFT", 12, -50); msg:SetPoint("BOTTOMRIGHT", -12, 40)
 	GC.msg = msg

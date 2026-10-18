@@ -218,6 +218,20 @@ end
 
 -- Buttons are the game's red ones.
 function SK.Button(parent, name) local b = CreateFrame("Button", name, parent, "UIPanelButtonTemplate"); b.lmKeep = true; return b end
+-- What a control does, on hover: its own text as the title (or the one given) and a line of explanation.
+function SK.Tip(b, text, title)
+	if not b then return end
+	b:SetScript("OnEnter", function(self)
+		if not GameTooltip then return end
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		local head = title or (self.GetText and self:GetText()) or ""
+		if head == "" then head = ns.TITLE end
+		GameTooltip:AddLine(head, 1, 0.82, 0)
+		if text then GameTooltip:AddLine(text, 1, 1, 1, true) end
+		GameTooltip:Show()
+	end)
+	b:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+end
 
 -- A main tab: a square icon (as the spellbook's), its name in a tooltip, lit when selected.
 -- A section button in the top band: the section's icon and its name, on a dark plate with a thin gold edge; the chosen

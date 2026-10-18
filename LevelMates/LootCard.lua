@@ -28,6 +28,7 @@ local function build()
 	LC.passRest:SetSize(100, 20); LC.passRest:SetPoint("RIGHT", LC.minButton, "LEFT", -4, 0); LC.passRest:SetText(L.LC_PASS_REST)
 	if LC.passRest.SetFrameLevel then LC.passRest:SetFrameLevel(LC.minButton:GetFrameLevel()) end
 	LC.passRest:SetScript("OnClick", function() LS.PassRest(); LC.Refresh() end)
+	SK.Tip(LC.passRest, L.TIP_LC_PASS_REST); SK.Tip(LC.minButton, L.TIP_LC_SHRINK, L.LC_TITLE)
 	LC.rows = {}
 	for i = 1, LC.MAX do
 		local r = CreateFrame("Frame", nil, f)
@@ -68,6 +69,7 @@ local function build()
 		r.roll100:SetScript("OnClick", function() if r.item then LS.StartRoll(r.item, 100) end end)
 		r.roll50:SetScript("OnClick", function() if r.item then LS.StartRoll(r.item, 50) end end)
 		r.roll25:SetScript("OnClick", function() if r.item then LS.StartRoll(r.item, 25) end end)
+		for key, tip in pairs({ bis = "TIP_LC_BIS", main = "TIP_LC_MAIN", minor = "TIP_LC_MINOR", os = "TIP_LC_OS", tm = "TIP_LC_TM", pass = "TIP_LC_PASS", bid = "TIP_LC_BID", roll100 = "TIP_LC_ROLL", roll50 = "TIP_LC_ROLL", roll25 = "TIP_LC_ROLL", withdraw = "TIP_LC_WITHDRAW" }) do SK.Tip(r[key], L[tip]) end
 		r:Hide()
 		LC.rows[i] = r
 	end

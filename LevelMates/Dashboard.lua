@@ -15,7 +15,7 @@ local I = "Interface\\Icons\\"
 local ICONS = { online = I .. "Spell_Holy_PrayerOfFortitude", ilvl = I .. "INV_Chest_Plate01", challenge = I .. "INV_Misc_Map_01",
 	now = I .. "INV_Misc_PocketWatch_01", groups = I .. "INV_Misc_Key_03", quests = I .. "INV_Misc_Note_01",
 	where = I .. "INV_Misc_Map02", wall = I .. "INV_Misc_Book_09", chat = I .. "INV_Letter_11",
-	help = I .. "Spell_Holy_Heal", gift = I .. "INV_Misc_Bag_10", trainer = I .. "INV_Misc_Book_09" }
+	help = I .. "Spell_Holy_Heal", gift = I .. "INV_Misc_Bag_10", trainer = I .. "INV_Misc_Book_09", calendar = I .. "INV_Misc_Note_02" }
 -- the wall: an icon per kind of entry
 local WALL_ICONS = { lvl = I .. "Spell_ChargePositive", dth = I .. "Ability_Rogue_FeignDeath", dun = I .. "INV_Misc_Key_03",
 	itm = I .. "INV_Misc_Bag_10", pgl = I .. "INV_Misc_Map_01", gol = I .. "INV_Misc_Map_01", join = I .. "INV_Letter_15",
@@ -339,6 +339,8 @@ local function refreshNow()
 				button = g.price and L.HOME_BUY or L.HOME_RESERVE, fn = open, icon = ICONS.gift }
 		end
 	end
+	local up = ns.Calendar and ns.Calendar.Upcoming(2) or {}   -- the game's calendar: the next event within two days
+	if up[1] then list[#list + 1] = { text = string.format(L.HOME_CAL_LINE, up[1].title, ns.Calendar.When(up[1])), button = L.HOME_OPEN_CAL, fn = function() ns.Calendar.Open() end, icon = ICONS.calendar } end
 	for _, s in ipairs(ns.Trainer.Due()) do   -- one line per spell waiting at my trainer
 		list[#list + 1] = { text = string.format(L.HOME_TRAINER_ONE, s.rank and (s.name .. " (" .. s.rank .. ")") or s.name), icon = ICONS.trainer }
 	end
@@ -430,9 +432,16 @@ function DB.Refresh()
 	DB.Layout()
 	refreshStats()
 	local motd, by = ns.GuildNotes.Motd()
-	if motd then DB.motd.text:SetText((by and (by .. ": ") or "") .. motd) end
-	DB.motd:SetShown(motd ~= nil)
+	local okG, game = pcall(function() return C_GuildInfo and C_GuildInfo.GetMOTD and C_GuildInfo.GetMOTD() end)
+	game = okG and ns.Plain(game) or nil
+	if type(game) ~= "string" or game == "" then game = nil end
+	local lines = {}
+	if game then lines[#lines + 1] = L.DB_MOTD_GAME .. " " .. game end
+	if motd then lines[#lines + 1] = (by and (by .. ": ") or "") .. motd end
+	DB.motd.text:SetText(table.concat(lines, "   ·   "))
+	DB.motd:SetShown(#lines > 0)
 	refreshMe(); refreshMine(); refreshNow(); refreshRuns(); refreshQuests(); refreshWhere(); refreshWall(); refreshChat()
 	ns.Skin.InkPass()
 end
 ns.On("LM_GUILD_CHAT", function() ns.Dirty("board") end)
+ns.On("LM_CALENDAR_CHANGED", function() ns.Dirty("board") end)

@@ -219,6 +219,9 @@ function GV.Build(parent)
 	GV.chatButton:SetPoint("BOTTOMLEFT", PAD, PAD)
 	GV.formPanel = W.Panel(fr, L.GR_FORM)
 	buildForm(GV.formPanel)
+	-- the game's own calendar: guild events and invitations of the coming week, under the form; a click opens it
+	GV.CAL_ROWS = 4
+	GV.calPanel = W.Panel(fr, L.GR_CALENDAR); GV.calPanel:SetHint(L.GR_CAL_HINT); items(GV.calPanel, GV.CAL_ROWS)
 	GV.form.role = ns.Roles.Of(ns.Me())
 	GV.Layout()
 	fr:Hide()
@@ -234,7 +237,9 @@ function GV.Layout()
 	if not h or h <= 0 then h = 436 end
 	local lw = math.floor(w * GV.LEFT_W)
 	GV.list:ClearAllPoints(); GV.list:SetPoint("TOPLEFT", 0, 0); GV.list:SetSize(lw, h)
-	GV.formPanel:ClearAllPoints(); GV.formPanel:SetPoint("TOPLEFT", lw + GV.GAP, 0); GV.formPanel:SetSize(w - lw - GV.GAP, h)
+	local calH = 26 + GV.CAL_ROWS * 20 + 4
+	GV.formPanel:ClearAllPoints(); GV.formPanel:SetPoint("TOPLEFT", lw + GV.GAP, 0); GV.formPanel:SetSize(w - lw - GV.GAP, h - calH - GV.GAP)
+	GV.calPanel:ClearAllPoints(); GV.calPanel:SetPoint("TOPLEFT", lw + GV.GAP, -(h - calH)); GV.calPanel:SetSize(w - lw - GV.GAP, calH)
 end
 
 ------------------------------------------------------------------ fill
@@ -265,6 +270,14 @@ function GV.Refresh()
 	GV.chatAds = chat
 	GV.chatButton:SetText(string.format(L.GR_CHAT_N, #chat)); GV.chatButton:SetEnabled(#chat > 0)
 	formLabels()
+	local up = ns.Calendar and ns.Calendar.Upcoming(GV.DAYS) or {}
+	for i, it in ipairs(GV.calPanel.items) do
+		local e = up[i]
+		if e then it.text:SetText(ns.Calendar.When(e) .. "  " .. e.title .. (e.invitedBy and e.invitedBy ~= "" and ("  ·  " .. e.invitedBy) or "")); it.fn = function() ns.Calendar.Open() end; it.event = e; it:Show()
+		else it.event = nil; it:Hide() end
+	end
+	GV.calPanel:SetEmpty(#up == 0)
+	GV.calPanel:SetNote(#up > GV.CAL_ROWS and string.format(L.GR_CAL_MORE, #up - GV.CAL_ROWS) or "")
 	ns.Skin.InkPass()
 end
 
