@@ -230,11 +230,7 @@ end
 
 -- Helpers for the group card below: short names, a member's class, buttons that can ask "Are you sure?".
 local function short(name) return ns.ShortName and ns.ShortName(name) or name end
-local function classOf(name)
-	if name == ns.Me() then return select(2, UnitClass("player")) end
-	local m = ns.Roster.mates[name]
-	return m and m.class
-end
+local function classOf(name) return ns.Roster.ClassOf(name) end   -- with the addon or from the guild list
 local function cardButton(c, i)
 	local b = SK.Button(c)
 	b:SetSize(110, 18); b:SetPoint("TOPRIGHT", 0, -(i - 1) * 21)
@@ -303,7 +299,10 @@ function W.GroupCard(parent, withButtons, compact)
 	for i = 1, 3 do c.counters.rows[i] = counterRow(c.counters, i) end
 	c.counters:Hide()
 	c.buttons = {}
-	if withButtons then for i = 1, (compact and 1 or 3) do c.buttons[i] = cardButton(c, i); if compact then c.buttons[i]:SetWidth(76) end end end
+	if withButtons then
+		for i = 1, (compact and 1 or 3) do c.buttons[i] = cardButton(c, i); if compact then c.buttons[i]:SetWidth(76) end end
+		c.text:SetWidth(0); c.text:SetPoint("RIGHT", c.buttons[1], "LEFT", -6, 0)   -- the title ends where the button starts
+	end
 	c:SetScript("OnClick", function(self) if self.group and ns.Board.OpenGroupMembers then ns.Board.OpenGroupMembers(self.group) end end)
 	function c:Set(g)
 		self.group = g

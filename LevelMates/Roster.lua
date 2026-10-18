@@ -219,6 +219,13 @@ end
 -- many are online in all (the roster's count, never less than those with the addon).
 local CLASS_OF_ID = { [1] = "WARRIOR", [2] = "PALADIN", [3] = "HUNTER", [4] = "ROGUE", [5] = "PRIEST", [7] = "SHAMAN", [8] = "MAGE", [9] = "WARLOCK", [11] = "DRUID" }
 function R.ClassFileOf(m) return m.classFile or (m.classID and CLASS_OF_ID[m.classID]) end
+-- A guildmate's class by name: from the addon's heartbeat, else from the guild list (so names colour without it).
+function R.ClassOf(name)
+	if name == ns.Me() then return (select(2, UnitClass("player"))) end
+	local m = R.mates[name]
+	if m and m.class then return m.class end
+	for _, e in ipairs(R.GuildMembers() or {}) do if e.name == name then return R.ClassFileOf(e) end end
+end
 function R.OnlineWithout()
 	local out = {}
 	for _, m in ipairs(R.GuildMembers() or {}) do

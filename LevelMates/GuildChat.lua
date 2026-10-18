@@ -35,20 +35,8 @@ local function build()
 	if UISpecialFrames then table.insert(UISpecialFrames, "LevelMatesGuildChat") end
 	if f.TitleText then f.TitleText:SetText(L.GC_TITLE) end
 	GC.frame = f
-	-- the lines: the game's own chat frame kind, so long lines wrap, the wheel scrolls (Shift: a page) and item
-	-- links show their tooltip; written in ink, as the rest of the book
-	local msg = CreateFrame("ScrollingMessageFrame", nil, f)
+	local msg = GC.MessageFrame(f)
 	msg:SetPoint("TOPLEFT", 12, -28); msg:SetPoint("BOTTOMRIGHT", -12, 40)
-	msg:SetFontObject(GameFontHighlightSmall or "GameFontHighlightSmall"); msg:SetJustifyH("LEFT")
-	msg:SetMaxLines(GC.MAX); msg:SetFading(false); msg:SetIndentedWordWrap(true)
-	if msg.SetInsertMode and SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM then msg:SetInsertMode(SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM) end
-	msg.lmKeep = true
-	msg:EnableMouseWheel(true)
-	msg:SetScript("OnMouseWheel", function(self, delta)
-		if delta > 0 then if IsShiftKeyDown and IsShiftKeyDown() then self:PageUp() else self:ScrollUp() end
-		else if IsShiftKeyDown and IsShiftKeyDown() then self:PageDown() else self:ScrollDown() end end
-	end)
-	GC.Hyperlinks(msg)
 	GC.msg = msg
 	GC.input = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
 	GC.input:SetHeight(22); GC.input:SetPoint("BOTTOMLEFT", 16, 12); GC.input:SetPoint("RIGHT", -90, 0); GC.input:SetAutoFocus(false); GC.input:SetMaxLetters(255)
@@ -59,16 +47,16 @@ local function build()
 	GC.send:SetScript("OnClick", function() if GC.Send(GC.input:GetText()) then GC.input:SetText("") end end)
 end
 local function classColour(name)
-	local m = ns.Roster.mates[name]
-	local c = m and RAID_CLASS_COLORS and RAID_CLASS_COLORS[m.class or ""]
-	if c then return string.format("|cff%02x%02x%02x%s|r", c.r * 255, c.g * 255, c.b * 255, name) end
+	local class = ns.Roster.ClassOf(name)
+	local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
+	if c then return string.format("|cff%02x%02x%02x%s|r", math.floor(c.r * 255 + 0.5), math.floor(c.g * 255 + 0.5), math.floor(c.b * 255 + 0.5), name) end
 	return name
 end
 -- A line as text: the hour, the name in its class colour, the words (or that Discord hides them).
 function GC.LineText(e)
 	local when = date("%H:%M", e.at)
 	local body
-	if e.kind == "discord" then body = classColour(e.name) .. " " .. L.GC_DISCORD .. ": " .. L.DT_PROTECTED
+	if e.kind == "discord" then body = string.format(L.GC_DISCORD_LINE, classColour(e.name))
 	elseif e.kind == "officer" then body = L.GC_OFFICER .. " " .. classColour(e.name) .. ": " .. e.text
 	else body = classColour(e.name) .. ": " .. e.text end
 	return "|cff888888" .. when .. "|r " .. body
@@ -78,6 +66,30 @@ function GC.Last(n)
 	local out, first = {}, math.max(1, #lines - n + 1)
 	for i = first, #lines do out[#out + 1] = lines[i] end
 	return out
+end
+-- The lines' frame: the game's own chat frame kind, so long lines wrap, the wheel scrolls (Shift: a page) and item
+-- links show their tooltip; written in ink, as the rest of the book. The caller places it.
+function GC.MessageFrame(parent)
+	local msg = CreateFrame("ScrollingMessageFrame", nil, parent)
+	msg:SetFontObject(GameFontHighlightSmall or "GameFontHighlightSmall"); msg:SetJustifyH("LEFT")
+	msg:SetMaxLines(GC.MAX); msg:SetFading(false); msg:SetIndentedWordWrap(true)
+	if msg.SetInsertMode and SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM then msg:SetInsertMode(SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM) end
+	msg.lmKeep = true
+	msg:EnableMouseWheel(true)
+	msg:SetScript("OnMouseWheel", function(self, delta)
+		if delta > 0 then if IsShiftKeyDown and IsShiftKeyDown() then self:PageUp() else self:ScrollUp() end
+		else if IsShiftKeyDown and IsShiftKeyDown() then self:PageDown() else self:ScrollDown() end end
+	end)
+	GC.Hyperlinks(msg)
+	return msg
+end
+-- The lines into a message frame, oldest first, in ink, scrolled to the newest.
+function GC.FillMessages(msg, list)
+	if not msg then return end
+	msg:Clear()
+	local r, g, b = SK.Ink(1, 1, 1)
+	for _, e in ipairs(list) do msg:AddMessage(SK.InkText(GC.LineText(e)), r, g, b) end
+	if msg.ScrollToBottom then msg:ScrollToBottom() end
 end
 -- Item links in a frame's text show their tooltip under the cursor and open on a click, as in the game's chat.
 function GC.Hyperlinks(f)
@@ -93,11 +105,8 @@ function GC.Hyperlinks(f)
 	f:SetScript("OnHyperlinkClick", function(_, link, text, button) if SetItemRef then pcall(SetItemRef, link, text, button) end end)
 end
 function GC.Refresh()
-	if not GC.frame or not GC.frame:IsShown() or not GC.msg then return end
-	GC.msg:Clear()
-	local r, g, b = SK.Ink(1, 1, 1)
-	for _, e in ipairs(lines) do GC.msg:AddMessage(SK.InkText(GC.LineText(e)), r, g, b) end
-	if GC.msg.ScrollToBottom then GC.msg:ScrollToBottom() end
+	if not GC.frame or not GC.frame:IsShown() then return end
+	GC.FillMessages(GC.msg, lines)
 end
 -- From a box's Enter or a button: to the guild; false (and a word) when a lockdown holds it, so the box keeps it.
 function GC.Send(text)

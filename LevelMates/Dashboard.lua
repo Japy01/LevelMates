@@ -216,9 +216,9 @@ function DB.Build(parent)
 	DB.invite = DB.where.emptyButton
 	DB.wall = W.Panel(f, L.DB_WALL, ICONS.wall); DB.wall:SetHint(L.DB_HINT_WALL); items(DB.wall, DB.WALL, false, true, true)
 	-- the guild chat, in the middle: the session's lines and a box to write (the whole guild, with or without the addon)
-	DB.chat = W.Panel(f, L.DB_CHAT, ICONS.chat); DB.chat:SetHint(L.DB_HINT_CHAT); items(DB.chat, DB.CHAT, false)
-	for _, it in ipairs(DB.chat.items) do it.text.lmKeep = true; it:SetScript("OnClick", nil) end   -- the lines keep their class colours
-	ns.GuildChat.Hyperlinks(DB.chat)   -- item links: their tooltip under the cursor
+	DB.chat = W.Panel(f, L.DB_CHAT, ICONS.chat); DB.chat:SetHint(L.DB_HINT_CHAT)
+	DB.chatMsg = ns.GuildChat.MessageFrame(DB.chat)   -- the lines: wrap, scroll with the wheel, link tooltips, in ink
+	DB.chatMsg:SetPoint("TOPLEFT", PAD, -28); DB.chatMsg:SetPoint("BOTTOMRIGHT", -PAD, 30)
 	DB.chatInput = CreateFrame("EditBox", nil, DB.chat, "InputBoxTemplate")
 	DB.chatInput:SetHeight(20); DB.chatInput:SetPoint("BOTTOMLEFT", PAD + 6, 6); DB.chatInput:SetPoint("RIGHT", -PAD - 66, 0); DB.chatInput:SetAutoFocus(false); DB.chatInput:SetMaxLetters(255)
 	DB.chatInput:SetScript("OnEnterPressed", function(self) if ns.GuildChat.Send(self:GetText()) then self:SetText("") end end)
@@ -420,8 +420,9 @@ end
 
 local function refreshChat()
 	local GC = ns.GuildChat
-	local list = GC and GC.Last(DB.CHAT) or {}
-	fill(DB.chat, list, function(it, e) setItem(it, GC.LineText(e)) end)
+	local list = GC and GC.Lines() or {}
+	GC.FillMessages(DB.chatMsg, list)
+	DB.chat:SetEmpty(#list == 0)
 end
 
 function DB.Refresh()

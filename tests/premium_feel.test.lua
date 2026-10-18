@@ -38,7 +38,7 @@ assert(#GC.msg.messages == 1 and GC.msg.messages[1].text:find("Mario", 1, true) 
 assert(not GC.msg.messages[1].text:find("|cffa335ee", 1, true), "the link's colour in ink")
 assert(GC.msg.wheel and GC.msg.hyperlinks and GC.msg.scripts.OnHyperlinkEnter and GC.msg.scripts.OnHyperlinkLeave, "wheel and hyperlink tooltips")
 assert(GC.msg.wordWrap ~= false, "lines wrap")
-assert(ns.Dashboard.chat.hyperlinks and ns.Dashboard.chat.scripts.OnHyperlinkEnter, "Home's chat panel shows link tooltips too")
+assert(ns.Dashboard.chatMsg.hyperlinks and ns.Dashboard.chatMsg.scripts.OnHyperlinkEnter, "Home's chat panel shows link tooltips too")
 GC.frame:Hide()
 
 -- the hidden channel: said once, in chat, when it is first joined
