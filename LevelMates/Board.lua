@@ -434,7 +434,7 @@ local function Build()
 	B.lootRaidButton = lootRaid
 	local lootRules = ns.Skin.Button(f)
 	lootRules:SetSize(90, 20); lootRules:SetPoint("LEFT", lootRaid, "RIGHT", 6, 0); lootRules:SetText(L.BTN_LOOT_RULES)
-	lootRules:SetScript("OnClick", function() B.AskLootRules() end)
+	lootRules:SetScript("OnClick", function() B.lootView = "rules"; B.lootPage = 1; B.Refresh() end)
 	B.lootRulesButton = lootRules
 	local lootCopy = ns.Skin.Button(f)
 	lootCopy:SetSize(130, 20); lootCopy:SetPoint("LEFT", lootRules, "RIGHT", 6, 0); lootCopy:SetText(L.BTN_LOOT_COPY)
@@ -497,7 +497,7 @@ local function Build()
 	-- Loot: standings / history, and Back from someone's entries
 	local lootView = ns.Skin.Button(f)
 	lootView:SetSize(120, 20); lootView:SetPoint("RIGHT", filter, "LEFT", -8, 0)
-	B.LOOT_VIEWS = { { value = "standings", label = L.BTN_LOOT_STANDINGS }, { value = "history", label = L.BTN_LOOT_HISTORY }, { value = "reserves", label = L.BTN_LOOT_RESERVES } }
+	B.LOOT_VIEWS = { { value = "standings", label = L.BTN_LOOT_STANDINGS }, { value = "history", label = L.BTN_LOOT_HISTORY }, { value = "reserves", label = L.BTN_LOOT_RESERVES }, { value = "rules", label = L.BTN_LOOT_RULES_VIEW } }
 	lootView:SetScript("OnClick", function(self)
 		if B.lootView == "ledger" then B.lootView, B.lootPerson = "standings", nil; B.lootPage = 1; B.Refresh(); return end   -- Back
 		W.PickMenu(self, L.BTN_VIEW_TITLE, B.LOOT_VIEWS, B.lootView or "standings", function(v) B.lootView = v; B.lootPage = 1; B.Refresh() end)
@@ -632,6 +632,66 @@ local function Build()
 	classAsk:SetSize(160, 20); classAsk:SetPoint("BOTTOMRIGHT", -12, 3); classAsk:SetText(L.BTN_ASK)
 	classAsk:SetScript("OnClick", function() ns.Ask.OpenBox() end)
 	B.classAsk = classAsk
+
+	-- Guild > Loot > Rules: the rules as a page; officers edit, everyone reads the summary.
+	do
+		local rp = CreateFrame("Frame", nil, f)
+		rp:SetPoint("TOPLEFT", B.MARGIN, -B.TOP); rp:SetSize(B.WIDTH - 2 * B.MARGIN, 320); rp:Hide()
+		B.lootRulesPanel = rp
+		local P = {}
+		B.lootRules = P
+		P.labels, P.controls = {}, {}
+		local function label(text, x, y) local fs = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); fs:SetPoint("TOPLEFT", x, y); fs:SetText(text); fs:SetJustifyH("LEFT"); table.insert(P.labels, fs); return fs end
+		local function box(x, y, w, letters) local e = CreateFrame("EditBox", nil, rp, "InputBoxTemplate"); e:SetSize(w, 20); e:SetPoint("TOPLEFT", x, y); e:SetAutoFocus(false); e:SetMaxLetters(letters); if e.SetNumeric then e:SetNumeric(true) end; e:SetScript("OnEnterPressed", function(self) self:ClearFocus() end); table.insert(P.controls, e); return e end
+		local function pick(x, y, w, fn) local b = ns.Skin.Button(rp); b:SetSize(w, 20); b:SetPoint("TOPLEFT", x, y); b:SetScript("OnClick", fn); table.insert(P.controls, b); return b end
+		local W = ns.Widgets
+		P.draft = {}   -- what the dropdowns chose, until Save
+		label(L.LOOT_RULE_L_MODE, 4, -4)
+		P.mode = pick(150, 0, 130, function(self)
+			W.PickMenu(self, L.LOOT_RULE_L_MODE, { { value = "council", label = L.LC_MODE_council }, { value = "dkp", label = L.LC_MODE_dkp }, { value = "roll", label = L.LC_MODE_roll } }, P.draft.mode, function(v) P.draft.mode = v; B.RefreshLootRules() end)
+		end)
+		label(L.LOOT_RULE_L_RESPONSES, 4, -30)
+		P.rs = {}
+		for i, w in ipairs(ns.LootRaid.RESPONSES) do
+			local chip = W.Chip(rp, L["LS_R_" .. w]); chip:SetPoint("TOPLEFT", 150 + (i - 1) * 76, -26); chip:SetWidth(72)
+			chip:SetScript("OnClick", function() P.draft.responses[w] = not P.draft.responses[w]; B.RefreshLootRules() end)
+			P.rs[w] = chip
+		end
+		label(L.LOOT_RULE_L_POINTS, 4, -56)
+		P.boss = box(150, -52, 60, 4); P.attLabel = label(L.LOOT_RULE_L_ATT, 220, -56); P.att = box(320, -52, 60, 4)
+		label(L.LOOT_RULE_L_QUALITY, 4, -82)
+		P.quality = pick(150, -78, 130, function(self)
+			local options = {}
+			for _, q in ipairs(ns.LootRaid.QUALITIES) do options[#options + 1] = { value = q, label = L["LOOT_QUALITY_" .. q] } end
+			W.PickMenu(self, L.LOOT_RULE_L_QUALITY, options, P.draft.quality, function(v) P.draft.quality = v; B.RefreshLootRules() end)
+		end)
+		label(L.LOOT_RULE_L_MINBID, 4, -108); P.minBid = box(150, -104, 60, 5)
+		label(L.LOOT_RULE_L_RESERVES, 220, -108); P.reserves = box(320, -104, 60, 2)
+		label(L.LOOT_RULE_L_TIMER, 4, -134)
+		P.timer = pick(150, -130, 130, function(self)
+			local options = {}
+			for _, t in ipairs(ns.LootRaid.TIMERS) do options[#options + 1] = { value = t, label = t == 0 and L.LOOT_TIMER_NONE or string.format(L.LOOT_TIMER_N, t) } end
+			W.PickMenu(self, L.LOOT_RULE_L_TIMER, options, P.draft.timer, function(v) P.draft.timer = v; B.RefreshLootRules() end)
+		end)
+		label(L.LOOT_RULE_L_SCOPE, 4, -160)
+		P.scope = pick(150, -156, 160, function(self)
+			W.PickMenu(self, L.LOOT_RULE_L_SCOPE, { { value = "guild", label = L.LOOT_SCOPE_GUILD }, { value = "raid", label = L.LOOT_SCOPE_RAID } }, P.draft.scope, function(v) P.draft.scope = v; B.RefreshLootRules() end)
+		end)
+		P.save = ns.Skin.Button(rp)
+		P.save:SetSize(120, 22); P.save:SetPoint("TOPLEFT", 4, -190); P.save:SetText(L.LOOT_RULE_SAVE)
+		P.save:SetScript("OnClick", function()
+			ns.LootRaid.SetRules({ mode = P.draft.mode, quality = P.draft.quality, timer = P.draft.timer, scope = P.draft.scope, responses = P.draft.responses,
+				boss = tonumber(P.boss:GetText()), att = tonumber(P.att:GetText()), minBid = tonumber(P.minBid:GetText()), reserves = tonumber(P.reserves:GetText()) })
+			P.draft.loaded = nil
+			ns.Say(L.LOOT_RULE_SAVED)
+			B.Refresh()
+		end)
+		table.insert(P.controls, P.save)
+		P.summaryHead = rp:CreateFontString(nil, "OVERLAY", "GameFontNormal"); P.summaryHead:SetPoint("TOPLEFT", 4, -226); P.summaryHead:SetText(L.LOOT_RULE_SUMMARY)
+		P.summary = rp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		P.summary:SetPoint("TOPLEFT", 4, -246); P.summary:SetWidth(B.WIDTH - 2 * B.MARGIN - 8); P.summary:SetJustifyH("LEFT"); P.summary:SetWordWrap(true)
+		if P.summary.SetSpacing then P.summary:SetSpacing(2) end
+	end
 
 	-- Recruit tab (officers): three templates, which one, the channel, a preview, the status and Publish.
 	local rp = CreateFrame("Frame", nil, f)
@@ -909,7 +969,8 @@ local function SetHeaders()
 		return
 	end
 	if B.tab == "loot" then
-		if B.lootView == "history" then
+		if B.lootView == "rules" then for i = 1, 5 do B.headText[i]:SetText("") end; return
+		elseif B.lootView == "history" then
 			B.headText[1]:SetText(L.COL_ITEM); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_FOR); B.headText[4]:SetText(L.COL_STATE); B.headText[5]:SetText(L.COL_WHEN)
 		elseif B.lootView == "reserves" then
 			B.headText[1]:SetText(L.COL_WHO); B.headText[2]:SetText(""); B.headText[3]:SetText(L.COL_ITEM); B.headText[4]:SetText(""); B.headText[5]:SetText(L.COL_WHEN)
@@ -1858,7 +1919,8 @@ end
 -- Guild > Loot: the standings, someone's entries, or the awards history (B.lootView).
 local function LootVisible()
 	local LT, out = ns.Loot, {}
-	if B.lootView == "ledger" and B.lootPerson then
+	if B.lootView == "rules" then return out
+	elseif B.lootView == "ledger" and B.lootPerson then
 		for _, e in ipairs(LT.Ledger(B.lootPerson)) do out[#out + 1] = { entry = e } end
 	elseif B.lootView == "reserves" then
 		for _, r in ipairs(LT.Reserves()) do out[#out + 1] = { reserve = r } end
@@ -2210,6 +2272,31 @@ function B.TurnPage(step)
 	if key then B[key] = (B[key] or 1) + step; B.Refresh() end
 end
 
+-- The rules page: the controls from the record (a draft keeps what was chosen until Save), the summary for all.
+function B.RefreshLootRules()
+	local P, LR = B.lootRules, ns.LootRaid
+	if not P then return end
+	local officer = R.IAmOfficer() or R.IsOfficer(ns.Me())
+	local r = LR.Rules()
+	if not P.draft.loaded then
+		P.draft = { loaded = true, mode = r.mode, quality = r.quality, timer = r.timer, scope = r.scope, responses = { bis = r.responses.bis, main = r.responses.main, minor = r.responses.minor } }
+		P.boss:SetText(tostring(r.boss)); P.att:SetText(tostring(r.att)); P.minBid:SetText(tostring(r.minBid)); P.reserves:SetText(tostring(r.reserves))
+	end
+	local d = P.draft
+	P.mode:SetText(L["LC_MODE_" .. d.mode] or d.mode)
+	P.quality:SetText(L["LOOT_QUALITY_" .. d.quality] or tostring(d.quality))
+	P.timer:SetText(d.timer == 0 and L.LOOT_TIMER_NONE or string.format(L.LOOT_TIMER_N, d.timer))
+	P.scope:SetText(d.scope == "raid" and L.LOOT_SCOPE_RAID or L.LOOT_SCOPE_GUILD)
+	for w, chip in pairs(P.rs) do chip:SetChecked(d.responses[w] == true); chip:SetShown(officer and d.mode == "council") end
+	for _, c in ipairs(P.controls) do c:SetShown(officer) end
+	for _, fs in ipairs(P.labels) do fs:SetShown(officer) end
+	P.save:SetShown(officer)
+	P.summary:SetText(LR.RulesSummary())
+	if officer then P.summaryHead:ClearAllPoints(); P.summaryHead:SetPoint("TOPLEFT", 4, -226); P.summary:ClearAllPoints(); P.summary:SetPoint("TOPLEFT", 4, -246)
+	else P.summaryHead:ClearAllPoints(); P.summaryHead:SetPoint("TOPLEFT", 4, -4); P.summary:ClearAllPoints(); P.summary:SetPoint("TOPLEFT", 4, -24) end
+	P.summary:SetWidth(B.WIDTH - 2 * B.MARGIN - 8)
+end
+
 local function RefreshRecruit()
 	local RC, t = ns.Recruit, ns.Recruit.Templates()
 	RC.RequestLinks()   -- the community's invite link, for {enlace}
@@ -2277,7 +2364,7 @@ local function RefreshTabs()
 	B.lootReserveButton:SetShown(B.tab == "loot" and B.lootView == "reserves" and ns.Loot.ReservesOpen())
 	B.lootRulesButton:SetShown(lootOfficer); B.lootCopyButton:SetShown(B.tab == "loot")
 	if B.tab == "loot" then B.lootCopyButton:ClearAllPoints(); if lootOfficer then B.lootCopyButton:SetPoint("LEFT", B.lootRulesButton, "RIGHT", 6, 0) else B.lootCopyButton:SetPoint("BOTTOMLEFT", 12, 3) end end
-	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or string.format(L.BTN_VIEW_FMT, B.lootView == "history" and L.BTN_LOOT_HISTORY or B.lootView == "reserves" and L.BTN_LOOT_RESERVES or L.BTN_LOOT_STANDINGS))
+	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or string.format(L.BTN_VIEW_FMT, B.lootView == "history" and L.BTN_LOOT_HISTORY or B.lootView == "reserves" and L.BTN_LOOT_RESERVES or B.lootView == "rules" and L.BTN_LOOT_RULES_VIEW or L.BTN_LOOT_STANDINGS))
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
@@ -2355,7 +2442,7 @@ function B.Refresh()
 	end
 	if recruit and B.recruitView == "inactive" then B.heading:SetText(L.HEAD_INACTIVE); B.subtitle:SetText(L.SUB_INACTIVE) end
 	if B.tab == "loot" then   -- whose entries, with their balance
-		B.subtitle:SetText(B.lootView == "ledger" and string.format(L.SUB_LOOT_LEDGER, B.lootPerson or "?", ns.Loot.Balance(B.lootPerson or "")) or B.lootView == "history" and L.SUB_LOOT_HISTORY or B.lootView == "reserves" and string.format(L.SUB_LOOT_RESERVES, ns.LootRaid.Rules().reserves) or L.SUB_LOOT)
+		B.subtitle:SetText(B.lootView == "ledger" and string.format(L.SUB_LOOT_LEDGER, B.lootPerson or "?", ns.Loot.Balance(B.lootPerson or "")) or B.lootView == "history" and L.SUB_LOOT_HISTORY or B.lootView == "reserves" and string.format(L.SUB_LOOT_RESERVES, ns.LootRaid.Rules().reserves) or B.lootView == "rules" and L.SUB_LOOT_RULES or L.SUB_LOOT)
 	end
 	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
 	B.subtitle:SetShown((B.MainOf(B.tab) ~= "guild") or B.tab == "bank" or B.tab == "loot")   -- the bank says whose look it shows   -- the sub-section buttons sit there
@@ -2392,6 +2479,9 @@ function B.Refresh()
 	if extra > B.HEAD_ROOM then B.frame:SetHeight(B.CHROME + (rows + HELP_ROWS) * ROW_H + extra) end   -- only a page of many headers grows
 	B.recruitPanel:SetShown(recruit and B.recruitView ~= "inactive")
 	if recruit and B.recruitView ~= "inactive" then RefreshRecruit() end
+	local rulesPage = B.tab == "loot" and B.lootView == "rules"
+	B.lootRulesPanel:SetShown(rulesPage)
+	if rulesPage then B.RefreshLootRules() else if B.lootRules then B.lootRules.draft.loaded = nil end end
 	local emptyText = ""
 	local onlyMe = B.tab == "mates" and #list == 1 and list[1] == ns.Me()   -- my row alone: still say why nobody else shows, under it
 	B.frame.empty:ClearAllPoints(); B.frame.empty:SetPoint("TOP", 0, -(B.TOP + 40 + (onlyMe and ROW_H or 0)))
@@ -2400,6 +2490,7 @@ function B.Refresh()
 		elseif goals then emptyText = L.GOAL_EMPTY
 		elseif feed then emptyText = L.FEED_EMPTY
 		elseif crafts then emptyText = #ns.Professions.List() > 0 and L.EMPTY_FILTERED or L.CRAFTS_EMPTY
+		elseif B.tab == "loot" and B.lootView == "rules" then emptyText = ""
 		elseif B.tab == "loot" then emptyText = B.lootView == "history" and L.LOOT_HISTORY_EMPTY or B.lootView == "ledger" and L.LOOT_LEDGER_EMPTY or B.lootView == "reserves" and (ns.Loot.ReservesOpen() and L.LOOT_RESERVES_EMPTY or L.LOOT_NO_ROUND_YET) or L.LOOT_EMPTY
 		elseif wishes then emptyText = L.WISH_EMPTY
 		elseif not IsInGuild() then emptyText = L.NOT_IN_GUILD

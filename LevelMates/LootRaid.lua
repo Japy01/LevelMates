@@ -22,20 +22,65 @@ S.Define("lru", { class = "board", life = 365 * 86400, writerOwns = true,
 	accept = function(f, owner) return R.IsOfficer(owner) end,
 	may = function(rec, who) return R.IsOfficer(who) or (who == me() and officer()) end,
 	onChange = function() ns.Fire("LM_LOOT_CHANGED") end })
--- boss and attendance points, the lowest quality recorded (3 blue), the minimum bid, reserves per person
+-- The extra rules (lote 1, 2026-10-18) in a record of their own, so clients that predate them keep the base rules:
+-- the bid timer in seconds (0: none), who may answer (the guild only, or the whole raid), which council answers
+-- are on (a comma list of bis, main, minor; pass is always there).
+S.Define("lrx", { class = "board", life = 365 * 86400, writerOwns = true,
+	fields = { tm = C.V.int(0, 600), sc = C.V.oneOf("guild", "raid"), rs = C.V.text(40) },
+	accept = function(f, owner) return R.IsOfficer(owner) end,
+	may = function(rec, who) return R.IsOfficer(who) or (who == me() and officer()) end,
+	onChange = function() ns.Fire("LM_LOOT_CHANGED") end })
+LR.TIMERS, LR.RESPONSES, LR.QUALITIES = { 0, 60, 120, 180 }, { "bis", "main", "minor" }, { 2, 3, 4 }
+local function responseSet(text)
+	local set, any = {}, false
+	for word in tostring(text or ""):gmatch("%a+") do if word == "bis" or word == "main" or word == "minor" then set[word] = true; any = true end end
+	if not any then set = { bis = true, main = true, minor = true } end
+	return set
+end
+-- boss and attendance points, the lowest quality recorded (3 blue), the minimum bid, reserves per person, the mode;
+-- plus the extra: timer (s), scope, responses (a set)
 function LR.Rules()
 	local rec = S.Get("lru", "rules")
 	local d = rec and rec.d or {}
-	return { boss = d.bp or 0, att = d.ap or 0, quality = d.mq or 3, minBid = d.mb or 1, reserves = d.rl or 2, mode = d.md or "council" }
+	local x = S.Get("lrx", "rules")
+	x = x and x.d or {}
+	return { boss = d.bp or 0, att = d.ap or 0, quality = d.mq or 3, minBid = d.mb or 1, reserves = d.rl or 2, mode = d.md or "council",
+		timer = x.tm or 0, scope = x.sc or "guild", responses = responseSet(x.rs) }
 end
 function LR.SetRules(r)
 	if not officer() then ns.Say(L.LOOT_NOT_OFFICER); return false end
 	local cur = LR.Rules()
+	local extra = false
 	for k, v in pairs(r or {}) do
 		if k == "mode" then if v == "council" or v == "dkp" or v == "roll" then cur.mode = v end
+		elseif k == "scope" then if v == "guild" or v == "raid" then cur.scope = v; extra = true end
+		elseif k == "responses" and type(v) == "table" then cur.responses = responseSet(table.concat((function() local t = {}; for _, w in ipairs(LR.RESPONSES) do if v[w] then t[#t + 1] = w end end; return t end)(), ",")); extra = true
+		elseif k == "timer" and tonumber(v) then cur.timer = math.max(0, math.min(600, math.floor(tonumber(v)))); extra = true
 		elseif cur[k] ~= nil and tonumber(v) then cur[k] = math.floor(tonumber(v)) end
 	end
-	return S.Put("lru", "rules", { bp = cur.boss, ap = cur.att, mq = cur.quality, mb = cur.minBid, rl = cur.reserves, md = cur.mode }) and true or false
+	local ok = S.Put("lru", "rules", { bp = cur.boss, ap = cur.att, mq = cur.quality, mb = cur.minBid, rl = cur.reserves, md = cur.mode }) and true or false
+	if extra then
+		local list = {}
+		for _, w in ipairs(LR.RESPONSES) do if cur.responses[w] then list[#list + 1] = w end end
+		ok = S.Put("lrx", "rules", { tm = cur.timer, sc = cur.scope, rs = table.concat(list, ",") }) and ok
+	end
+	return ok
+end
+-- The rules in sentences, for the page and for whoever asks.
+function LR.RulesSummary()
+	local r = LR.Rules()
+	local out = { string.format(L.LOOT_RULE_MODE, L["LC_MODE_" .. r.mode] or r.mode) }
+	if r.mode == "council" then
+		local names = {}
+		for _, w in ipairs(LR.RESPONSES) do if r.responses[w] then names[#names + 1] = L["LS_R_" .. w] end end
+		out[#out + 1] = string.format(L.LOOT_RULE_RESPONSES, table.concat(names, ", "))
+	elseif r.mode == "dkp" then out[#out + 1] = string.format(L.LOOT_RULE_MINBID, r.minBid) end
+	out[#out + 1] = string.format(L.LOOT_RULE_POINTS, r.boss, r.att)
+	out[#out + 1] = string.format(L.LOOT_RULE_QUALITY, L["LOOT_QUALITY_" .. r.quality] or tostring(r.quality))
+	out[#out + 1] = r.timer > 0 and string.format(L.LOOT_RULE_TIMER, r.timer) or L.LOOT_RULE_NO_TIMER
+	out[#out + 1] = r.scope == "raid" and L.LOOT_RULE_SCOPE_RAID or L.LOOT_RULE_SCOPE_GUILD
+	out[#out + 1] = string.format(L.LOOT_RULE_RESERVES, r.reserves)
+	return table.concat(out, "\n")
 end
 
 ------------------------------------------------------------------ the raid
