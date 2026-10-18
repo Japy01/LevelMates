@@ -30,6 +30,43 @@ local P = ns.Sync.Personal("wl", function()
 	return { ids = #ids > 0 and table.concat(ids, ",") or nil }
 end, { save = "wishPending", worth = function() return #mine() > 0 end })
 local function send(prio) return P.Mark(prio) end
+-- Priorities (1 first, 3 last) ride in their own kind, so clients that predate them keep the wishes themselves.
+local PP = ns.Sync.Personal("wp", function()
+	local parts = {}
+	for _, w in ipairs(mine()) do if w.p then parts[#parts + 1] = w.id .. ":" .. w.p end end
+	return { p = #parts > 0 and table.concat(parts, ","):sub(1, 120) or nil }
+end, { save = "wishPrioPending", worth = function() for _, w in ipairs(mine()) do if w.p then return true end end; return false end })
+function W.SetPriority(id, prio)
+	prio = tonumber(prio)
+	for _, w in ipairs(mine()) do
+		if w.id == id then
+			w.p = (prio and prio >= 1 and prio <= 3) and math.floor(prio) or nil
+			PP.Mark("now"); ns.Fire("LM_WISHES_CHANGED")
+			return true
+		end
+	end
+	return false
+end
+function W.PriorityOf(name, id)
+	if name == me() then for _, w in ipairs(mine()) do if w.id == id then return w.p end end; return nil end
+	local l = theirs()[name]
+	return l and l.prio and l.prio[id] or nil
+end
+-- Who wants an item, with their priority when they set one: "Luis (2), Tester (1)".
+function W.WantedText(id)
+	local parts = {}
+	for _, n in ipairs(W.WantedBy(id)) do local p = W.PriorityOf(n, id); parts[#parts + 1] = n .. (p and (" (" .. p .. ")") or "") end
+	return table.concat(parts, ", ")
+end
+C.OnMessage("wp", function(f, name)
+	if not R.mates[name] then return end
+	local t = theirs()
+	t[name] = t[name] or { ids = {}, t = time() }
+	local prio = {}
+	for id, p in tostring(f.p or ""):gmatch("(%d+):(%d)") do prio[tonumber(id)] = tonumber(p) end
+	t[name].prio = prio
+	ns.Fire("LM_WISHES_CHANGED")
+end)
 
 -- Called from a click (the "Add a wish" dialog).
 function W.Add(link)
@@ -141,7 +178,7 @@ if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and
 	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)
 		if not ns.db or (tooltip ~= GameTooltip and tooltip ~= ItemRefTooltip) or not data or not data.id then return end
 		local names = W.WantedBy(data.id)
-		if #names > 0 then tooltip:AddLine(string.format(L.WISH_TOOLTIP, table.concat(names, ", ")), 0.4, 1, 0.4) end
+		if #names > 0 then tooltip:AddLine(string.format(L.WISH_TOOLTIP, W.WantedText(data.id)), 0.4, 1, 0.4) end
 	end)
 end
 

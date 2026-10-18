@@ -133,6 +133,7 @@ C.SCHEMA = {
 	gc   = { id = word(8), n = int(0, 10000) },
 	gp   = { l = int(0, 60), e = int(0, 100000) },
 	wl   = { ids = itemids(10) },
+	wp   = { p = text(120) },
 	pf   = { p = profs },
 	lfj  = { id = word(8), r = oneOf("T", "H", "D", "A"), w = int(0, 4000000000) },
 	lfjx = { id = word(8) },
@@ -156,7 +157,7 @@ C.SCHEMA = {
 	bye  = {},
 	hi   = { s = function(v) return type(v) == "string" and #v <= 200 and not v:find("[%c|]") end },
 }
-C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qj = { "id", "r" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, hi = { "s" } }
+C.REQUIRED = { hb = { "l", "z" }, q = { "i", "ids" }, help = { "t", "z", "x", "y", "id" }, helpok = { "id" }, helpgo = { "id" }, lfg = { "d", "id", "m" }, lfgx = { "id" }, pal = { "p" }, rx = { "p" }, go = { "id", "ty", "a", "s", "e" }, gx = { "id" }, gd = { "id" }, gc = { "id", "n" }, gp = { "l", "e" }, wl = {}, wp = {}, pf = {}, lfj = { "id", "r" }, lfjx = { "id" }, rr = { "n", "z", "x", "y" }, qo = { "i", "o" }, gv = {}, gr = { "i", "to" }, rt = { "i", "v" }, rc = { "t" }, gro = { "i", "by" }, qd = { "id", "d", "at" }, qj = { "id", "r" }, tb = {}, mc = { "n", "x" }, mcx = { "n" }, xp = { "p", "l" }, al = {}, sl = {}, pt = {}, ac = {}, bye = {}, hi = { "s" } }
 
 local REQUIRED = C.REQUIRED
 -- the field checks, for the record layer's types

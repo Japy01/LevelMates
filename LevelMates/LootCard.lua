@@ -136,7 +136,8 @@ function LC.Refresh()
 			r.itemLink = link
 			r.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(item)) or 134400)
 			r.link.text:SetText(link or name or ("#" .. item))
-			r.worn:SetText(wornText(item))
+			local reservers = LT.ReservedBy(item)
+			r.worn:SetText(wornText(item) .. (#reservers > 0 and (" · " .. string.format(L.LC_RESERVED_BY, table.concat(reservers, ", "))) or ""))
 			for _, b in ipairs({ r.bis, r.main, r.minor, r.os, r.tm, r.pass, r.bid, r.roll100, r.roll50, r.roll25, r.withdraw }) do b:Hide() end
 			r.bidBox:Hide()
 			local given, mine = o.given[item], o.mine[item]

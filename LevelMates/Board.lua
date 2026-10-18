@@ -442,7 +442,14 @@ local function Build()
 	B.lootCopyButton = lootCopy
 	local lootReserve = ns.Skin.Button(f)
 	lootReserve:SetSize(110, 20); lootReserve:SetPoint("LEFT", lootCopy, "RIGHT", 6, 0); lootReserve:SetText(L.BTN_LOOT_RESERVE)
-	lootReserve:SetScript("OnClick", function() B.AskLootReserve() end)
+	lootReserve:SetScript("OnClick", function(self)
+		local officer = R.IAmOfficer() or R.IsOfficer(ns.Me())
+		if not officer then B.AskLootReserve(); return end
+		MenuUtil.CreateContextMenu(self, function(_, root)
+			root:CreateButton(L.LOOT_MENU_RESERVE_MINE, function() B.AskLootReserve() end)
+			root:CreateButton(L.LOOT_MENU_RESERVE_LIST, function() B.AskReserveList() end)
+		end)
+	end)
 	B.lootReserveButton = lootReserve
 	-- the history's filter: everything, open awards, tonight
 	B.lootHistFilter = "all"
@@ -1397,7 +1404,8 @@ local function FillWishes(list)
 			local item = ns.Wishlist.Link(w.id) or string.format(L.WISH_UNKNOWN, w.id)
 			if w.reservedBy then item = item .. "  " .. string.format(L.GIFT_RESERVED_BY, w.reservedBy) end
 			r.zone:SetText(item); r.zone:SetTextColor(1, 1, 1)
-			r.group:SetText(w.kind == "give" and (w.price and ns.Gifts.Money(w.price) or L.GIVES) or L.WANTS)
+			local prio = w.kind ~= "give" and ns.Wishlist.PriorityOf(w.name, w.id)
+			r.group:SetText(w.kind == "give" and (w.price and ns.Gifts.Money(w.price) or L.GIVES) or (L.WANTS .. (prio and (" " .. prio) or "")))
 			r.group:SetTextColor(unpack(w.kind == "give" and { 1, 0.82, 0 } or { 0.4, 1, 0.4 }))
 			r.xph:SetText(date("%d/%m", w.t)); r.xph:SetTextColor(0.7, 0.7, 0.7)
 			r.button:Show()
@@ -1424,6 +1432,12 @@ function B.OpenWishMenu(id, kind, mine, name)
 	if not mine or not ns.Wishlist.Has(id) then return end
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
 		root:CreateButton(L.WISH_REMOVE, function() ns.Confirm(L.CONFIRM_WISH, function() ns.Wishlist.Remove(id) end) end)
+		local cur = ns.Wishlist.PriorityOf(ns.Me(), id)
+		for _, p in ipairs({ 1, 2, 3 }) do
+			local label = string.format(L.WISH_PRIORITY_N, p)
+			if root.CreateRadio then root:CreateRadio(label, function() return cur == p end, function() ns.Wishlist.SetPriority(id, p); B.Refresh() end, p)
+			else root:CreateButton((cur == p and "> " or "") .. label, function() ns.Wishlist.SetPriority(id, p); B.Refresh() end) end
+		end
 	end)
 end
 
@@ -1982,7 +1996,8 @@ local function FillLoot(list)
 			r.name:SetText(v.name); r.name:SetTextColor(ClassColor(R.mates[v.name] and R.mates[v.name].class))
 			r.level:SetText("")
 			r.zone:SetText(ns.Recipes.Link(v.i) .. (v.b and ("  ·  " .. v.b) or "")); r.zone:SetTextColor(1, 1, 1)
-			r.group:SetText(v.name == ns.Me() and L.LOOT_MINE or ""); r.group:SetTextColor(0.8, 0.8, 0.8)
+			r.group:SetText(v.disputed and L.LOOT_DISPUTED or v.over and L.LOOT_OVER_LIMIT or v.name == ns.Me() and L.LOOT_MINE or "")
+			r.group:SetTextColor(unpack(v.disputed and { 1, 0.4, 0.4 } or v.over and { 1, 0.6, 0.2 } or { 0.8, 0.8, 0.8 }))
 			r.xph:SetText(ago(v.t)); r.xph:SetTextColor(0.7, 0.7, 0.7)
 			r.button:Show(); RowBg(r, i, false)
 		elseif c and c.award then
@@ -2022,6 +2037,24 @@ function B.AskLootEntry(name)
 		end,
 	}
 	StaticPopup_Show("LEVELMATES_LOOT_ENTRY", name, nil, name)
+end
+-- The +1 adjustment box: "+1 cambio de main" / "-1 error".
+function B.AskPlusOne(name)
+	StaticPopupDialogs["LEVELMATES_LOOT_PLUS"] = StaticPopupDialogs["LEVELMATES_LOOT_PLUS"] or {
+		text = L.LOOT_PLUS_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 90, timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function(self, data) local eb = self.GetEditBox and self:GetEditBox() or self.EditBox; local p, reason = B.ParseLootEntry(eb and eb:GetText()); if p then ns.Loot.AdjustPlusOne(data, p, reason) else ns.Say(L.LOOT_ADD_BAD) end end,
+		EditBoxOnEnterPressed = function(self) local dialog = self:GetParent(); local p, reason = B.ParseLootEntry(self:GetText()); if p then ns.Loot.AdjustPlusOne(dialog.data, p, reason) else ns.Say(L.LOOT_ADD_BAD) end; dialog:Hide() end,
+	}
+	StaticPopup_Show("LEVELMATES_LOOT_PLUS", name, nil, name)
+end
+-- The officer's reserve list box: "Name: item, item" per line.
+function B.AskReserveList()
+	StaticPopupDialogs["LEVELMATES_LOOT_RLIST"] = StaticPopupDialogs["LEVELMATES_LOOT_RLIST"] or {
+		text = L.LOOT_RLIST_PROMPT, button1 = OKAY, button2 = CANCEL, hasEditBox = true, maxLetters = 1000, timeout = 0, whileDead = true, hideOnEscape = true,
+		OnAccept = function(self) local eb = self.GetEditBox and self:GetEditBox() or self.EditBox; ns.Say(L.LOOT_RLIST_DONE, ns.Loot.SetReserveList(eb and eb:GetText())) end,
+		EditBoxOnEnterPressed = function(self) ns.Say(L.LOOT_RLIST_DONE, ns.Loot.SetReserveList(self:GetText())); self:GetParent():Hide() end,
+	}
+	StaticPopup_Show("LEVELMATES_LOOT_RLIST")
 end
 -- Reassign an award to someone else: the old one is corrected, its cost comes back, the new receiver pays.
 function B.ReassignLoot(id, name)
@@ -2108,6 +2141,7 @@ function B.OpenLootMenu(c)
 			root:CreateButton(L.LOOT_MENU_LEDGER, function() B.lootView, B.lootPerson, B.lootPage = "ledger", c.standing.name, 1; B.Refresh() end)
 			if officer then root:CreateButton(L.LOOT_MENU_ADD, function() B.AskLootEntry(c.standing.name) end) end
 			if officer then root:CreateButton(L.LOOT_MENU_ADD_ALL, function() B.AskLootEntryAll() end) end
+			if officer then root:CreateButton(L.LOOT_MENU_PLUS, function() B.AskPlusOne(c.standing.name) end) end
 			if R.mates[c.standing.name] or c.standing.name == ns.Me() then root:CreateButton(L.MEMBER_CARD, function() ns.MateCard.Show(c.standing.name) end) end
 		elseif c.entry then
 			root:CreateTitle(c.entry.r)

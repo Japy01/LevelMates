@@ -405,6 +405,12 @@ Item = { CreateFromItemID = function(_, id) return { ContinueOnItemLoad = functi
 function Region:SetMultiLine() end
 function Region:SetFontObject(f) self.fontObject = f end
 ChatFontNormal = "ChatFontNormal"
+-- bags (STUB.bags = { itemId, ... } in bag 0) and the trade window
+C_Container = { GetContainerNumSlots = function(bag) return bag == 0 and STUB.bags and #STUB.bags or 0 end,
+	GetContainerItemInfo = function(bag, slot) local id = bag == 0 and STUB.bags and STUB.bags[slot]; return id and { itemID = id } or nil end,
+	PickupContainerItem = function(bag, slot) STUB.picked = { bag, slot } end }
+function ClickTradeButton(i) STUB.tradeSlot = i end
+function GetTradePlayerItemLink(i) return STUB.tradeLinks and STUB.tradeLinks[i] end
 RANDOM_ROLL_RESULT = "%s rolls %d (%d-%d)"
 function RandomRoll(lo, hi) STUB.rolled = { lo, hi } end   -- the game's chat font object, a name here
 function Region:SetSpacing(v) self.spacing = v end

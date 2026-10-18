@@ -58,6 +58,30 @@ local function reserveId(name, item) return "v" .. ns.NameKey(name) .. tostring(
 S.Define("lr", { class = "board", life = LT.RESERVE_LIFE, fields = { i = C.V.int(1, 999999), b = C.V.text(60) }, required = { "i" },
 	idOwner = function(id, owner) return id:sub(2, 9) == ns.NameKey(owner) end,
 	onChange = changed })
+-- An officer's list for the round ("Name: item, item" per line): one record per person, officer-written, beside
+-- what each one reserved for themselves.
+S.Define("lrl", { class = "board", life = LT.RESERVE_LIFE, writerOwns = true, fields = { n = C.V.text(48), i = C.V.idlist(80) }, required = { "n", "i" },
+	accept = function(f, owner) return officer(owner) end,
+	may = function(rec, who) return officer(who) end,
+	onChange = changed })
+-- "Name: item, item" lines (links or numbers) into records; how many people were listed.
+function LT.SetReserveList(text)
+	if not officer(me()) then ns.Say(L.LOOT_NOT_OFFICER); return 0 end
+	local n = 0
+	for line in tostring(text or ""):gmatch("[^\r\n]+") do
+		local name, rest = line:match("^%s*([^:]-)%s*:%s*(.-)%s*$")
+		if name and name ~= "" then
+			local ids, seen = {}, {}
+			for piece in rest:gmatch("[^,]+") do
+				local id = ns.Wishlist.ItemId(piece) or tonumber(strtrim(piece))
+				if id and id >= 1 and id <= 999999 and not seen[id] then seen[id] = true; ids[#ids + 1] = tostring(math.floor(id)) end
+			end
+			name = ns.ShortName(strtrim(name))
+			if #ids > 0 and S.Put("lrl", "l" .. ns.NameKey(name), { n = name, i = table.concat(ids, ",") }) then n = n + 1 end
+		end
+	end
+	return n
+end
 function LT.ReservesOpen()
 	local rec = S.Get("lro", "round")
 	return rec ~= nil and rec.d.on == 1
@@ -72,10 +96,27 @@ function LT.CloseReserves()
 	return S.Remove("lro", "round") and true or false
 end
 -- Everyone's live reserves while the round is open: { name, i, t }, by name then item.
+-- Everyone's reserves (their own and the officer's list), in name order; the same item by two or more is
+-- "disputed", and whatever goes past the per-person limit (oldest first) is "over": seen by all, stopped by none.
 function LT.Reserves()
 	local out = {}
 	if not LT.ReservesOpen() then return out end
-	for _, rec in ipairs(S.List("lr")) do out[#out + 1] = { name = rec.o, i = rec.d.i, b = rec.d.b, t = rec.v } end
+	local seen = {}
+	for _, rec in ipairs(S.List("lr")) do seen[rec.o .. "/" .. rec.d.i] = true; out[#out + 1] = { name = rec.o, i = rec.d.i, b = rec.d.b, t = rec.v } end
+	for _, rec in ipairs(S.List("lrl")) do
+		for id in tostring(rec.d.i or ""):gmatch("%d+") do
+			local item = tonumber(id)
+			if not seen[rec.d.n .. "/" .. item] then seen[rec.d.n .. "/" .. item] = true; out[#out + 1] = { name = rec.d.n, i = item, t = rec.v, listed = true } end
+		end
+	end
+	local limit = ns.LootRaid and ns.LootRaid.Rules().reserves or 2
+	local byItem, byName = {}, {}
+	for _, r in ipairs(out) do byItem[r.i] = (byItem[r.i] or 0) + 1; byName[r.name] = byName[r.name] or {}; table.insert(byName[r.name], r) end
+	for _, list in pairs(byName) do
+		table.sort(list, function(a, b) return (a.t or 0) < (b.t or 0) end)
+		for k, r in ipairs(list) do r.over = k > limit end
+	end
+	for _, r in ipairs(out) do r.disputed = byItem[r.i] > 1 end
 	table.sort(out, function(a, b) if a.name ~= b.name then return a.name < b.name end; return a.i < b.i end)
 	return out
 end
@@ -286,14 +327,49 @@ local function quality(id)
 	local hex = link and tostring(link):match("^|c%x%x(%x%x%x%x%x%x)")
 	return hex and QUALITY_OF_COLOUR[hex:lower()]
 end
+-- Officer adjustments to someone's +1 (a main change, a mistake), with a reason: their own record kind.
+S.Define("lp", { class = "board", life = LT.AWARD_LIFE, fields = { w = C.V.text(48), p = C.V.int(-100, 100), r = C.V.text(80) }, required = { "w", "p" },
+	accept = function(f, owner) return officer(owner) end,
+	onChange = changed })
+function LT.AdjustPlusOne(name, points, reason)
+	if not officer(me()) then ns.Say(L.LOOT_NOT_OFFICER); return false end
+	points = tonumber(points)
+	if not points or points == 0 or not name or name == "" then return false end
+	return S.Put("lp", newId("p"), { w = name, p = math.floor(points), r = strtrim(tostring(reason or "")):sub(1, 80) }) and true or false
+end
+-- A player's family for the +1: themselves and their alts (what they shared, or mine when it is me).
+local function family(name)
+	local names, seen = { name }, { [name] = true }
+	local function addAll(list) for _, n in ipairs(list or {}) do local who = type(n) == "table" and n.name or n; if who and not seen[who] then seen[who] = true; names[#names + 1] = who end end end
+	if ns.Alts then
+		if name == me() then addAll(ns.Alts.MyAlts()) else addAll(ns.Alts.Of(name)) end
+		for _, other in ipairs(ns.Roster.List()) do   -- someone who lists this name as their alt: the main
+			for _, alt in ipairs(ns.Alts.Of(other)) do if alt == name and not seen[other] then seen[other] = true; names[#names + 1] = other; addAll(ns.Alts.Of(other)) end end
+		end
+		for _, alt in ipairs(ns.Alts.MyAlts()) do if alt.name == name and not seen[me()] then seen[me()] = true; names[#names + 1] = me(); addAll(ns.Alts.MyAlts()) end end
+	end
+	return names
+end
 function LT.PlusOne(name)
 	local n = 0
+	local mine = {}
+	for _, who in ipairs(family(name)) do mine[who] = true end
 	for _, rec in ipairs(S.List("la")) do
 		local d = rec.d
-		if d.to == name and (d.s == "rc" or d.s == "eq") then
+		if mine[d.to] and (d.s == "rc" or d.s == "eq") then
 			local q = quality(d.i)
 			if q and q >= LT.PLUS_ONE_QUALITY then n = n + 1 end
 		end
 	end
+	for _, rec in ipairs(S.List("lp")) do if mine[rec.d.w] then n = n + (rec.d.p or 0) end end
 	return n
 end
+-- "Equipped": an award delivered to someone whose shared gear now carries the item (an officer's client moves it).
+ns.On("LM_GEAR_CHANGED", function(name)
+	if not name or not officer(me()) or not ns.Gear then return end
+	local g = ns.Gear.Of(name)
+	if not (g and g.slots) then return end
+	local worn = {}
+	for _, s in pairs(g.slots) do if s.id then worn[s.id] = true end end
+	for _, a in ipairs(LT.History()) do if a.s == "rc" and a.to == name and worn[a.i] then LT.Equipped(a.id) end end
+end)

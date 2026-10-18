@@ -252,6 +252,37 @@ local function bagsHave()
 	end
 	return have
 end
+-- Awards still to deliver, with whether the item sits in my bags (and where).
+function LR.Pending()
+	local out, have = {}, {}
+	if C_Container and C_Container.GetContainerNumSlots and C_Container.GetContainerItemInfo then
+		for bag = 0, 4 do
+			for slot = 1, ns.Plain(C_Container.GetContainerNumSlots(bag)) or 0 do
+				local info = ns.Plain(C_Container.GetContainerItemInfo(bag, slot))
+				local id = type(info) == "table" and ns.Plain(info.itemID)
+				if id and not have[id] then have[id] = { bag = bag, slot = slot } end
+			end
+		end
+	end
+	for _, a in ipairs(LT.History()) do
+		if a.s == "aw" then out[#out + 1] = { id = a.id, i = a.i, to = a.to, inBags = have[a.i] ~= nil, bag = have[a.i] and have[a.i].bag, slot = have[a.i] and have[a.i].slot } end
+	end
+	return out
+end
+-- The trade window opened with someone I owe an item: the item goes from my bag into the trade (the game may
+-- refuse it on Forever; then the notice already said what to hand over).
+function LR.FillTrade(partner)
+	if not partner or not (C_Container and C_Container.PickupContainerItem and ClickTradeButton) then return 0 end
+	local n = 0
+	for _, p in ipairs(LR.Pending()) do
+		if p.inBags and ns.Same(p.to, partner) and n < 6 then
+			n = n + 1
+			local slot = n
+			C_Timer.After(0.3 * n, function() pcall(C_Container.PickupContainerItem, p.bag, p.slot); pcall(ClickTradeButton, slot) end)
+		end
+	end
+	return n
+end
 function LR.CheckHandover()
 	local have
 	for _, a in ipairs(LT.History()) do
@@ -275,7 +306,7 @@ ev:SetScript("OnEvent", function(_, event, ...)
 	elseif event == "LOOT_OPENED" then hookGive(); readSlots()
 	elseif event == "LOOT_SLOT_CLEARED" then onSlotCleared(...)
 	elseif event == "LOOT_CLOSED" then slots = {}
-	elseif event == "TRADE_SHOW" then trade = { partner = ns.Plain(UnitName("NPC")) }
+	elseif event == "TRADE_SHOW" then trade = { partner = ns.Plain(UnitName("NPC")) }; if officer() and trade.partner then LR.FillTrade(ns.ShortName(trade.partner)) end
 	elseif event == "TRADE_ACCEPT_UPDATE" then onTradeAccept(...)
 	elseif event == "TRADE_CLOSED" then trade = nil
 	elseif event == "CHAT_MSG_LOOT" then onChatLoot(...)

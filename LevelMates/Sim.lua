@@ -181,6 +181,12 @@ local function simArt()
 	f:Show()
 end
 
+-- /lm sim botin: a council session from Ana with two sample items, on my card (local only).
+local function simLoot()
+	if not R.mates.Ana then run() end
+	ns.LootSession.OfferFrom("sim" .. (time() % 1000), "Ana", "council", 0, { 19019, 18803 }, 60)
+	ns.Say(ns.L.SIM_LOOT)
+end
 ns.Slash("sim", function(rest)
 	rest = strlower(strtrim(rest or ""))
 	if rest == "off" then off()
@@ -202,5 +208,6 @@ ns.Slash("sim", function(rest)
 	elseif rest == "xp" then simXp()
 	elseif rest == "puntos" or rest == "points" then simPoints()
 	elseif rest == "muertes" or rest == "deaths" then simDeaths()
+	elseif rest == "botin" or rest == "botín" or rest == "loot" then simLoot()
 	else run() end
 end)
