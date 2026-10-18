@@ -59,7 +59,7 @@ function Region:EnableMouseWheel(v) self.wheel = v and true or false end
 function Region:SetHyperlinksEnabled(v) self.hyperlinks = v and true or false end
 -- a ScrollingMessageFrame: its lines in .messages
 function Region:AddMessage(text, r, g, b) self.messages = self.messages or {}; self.messages[#self.messages + 1] = { text = text, r = r, g = g, b = b } end
-function Region:Clear() self.messages = {} end
+function Region:Clear() self.messages = {}; self.clears = (self.clears or 0) + 1 end
 function Region:SetMaxLines(n) self.maxLines = n end
 function Region:SetFading(v) self.fading = v end
 function Region:SetInsertMode() end
@@ -68,10 +68,10 @@ function Region:SetTextCopyable() end
 function Region:ScrollUp() end
 function Region:ScrollDown() end
 function Region:ScrollToTop() end
-function Region:ScrollToBottom() end
+function Region:ScrollToBottom() self.scrolledToBottom = true end
 function Region:PageUp() end
 function Region:PageDown() end
-function Region:AtBottom() return true end
+function Region:AtBottom() return self.atBottom ~= false end
 function Region:IsShown() return self.shown == true end
 function Region:SetText(t) self.text = t end
 function Region:GetText() return self.text end
@@ -272,8 +272,22 @@ C_QuestLog.IsPushableQuest = function() return true end
 function GetNumGroupMembers() return STUB.groupSize or 0 end
 function GetNumSubgroupMembers() return math.max(0, (STUB.groupSize or 0) - 1) end
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
+UNKNOWN = "Unknown"
+Enum.ClubStreamType = { General = 0, Guild = 1, Officer = 2, Discord = 3 }
+-- the club's chat history: STUB.clubStreams = { { streamId, name, streamType } }, STUB.clubMessages[streamId] = { { messageId = { epoch (µs), position }, content, author = { name, classID }, destroyed } }
+STUB.clubStreams, STUB.clubMessages, STUB.clubRequested, STUB.clubFocused = {}, {}, {}, {}
 C_Club = {
 	GetGuildClubId = function() return 1 end,
+	GetStreams = function() return STUB.clubStreams end,
+	GetMessageRanges = function(_, streamId)
+		local list = STUB.clubMessages[streamId] or {}
+		if #list == 0 then return {} end
+		return { { oldestMessageId = list[1].messageId, newestMessageId = list[#list].messageId } }
+	end,
+	GetMessagesInRange = function(_, streamId) return STUB.clubMessages[streamId] or {} end,
+	RequestMoreMessagesBefore = function(_, streamId, messageId, count) STUB.clubRequested[streamId] = { id = messageId, count = count }; return true end,
+	FocusStream = function(_, streamId) STUB.clubFocused[streamId] = true; return true end,
+	SetClubPresenceSubscription = function() end,
 	GetClubMembers = function() local out = {}; for k in pairs(STUB.guildMembers) do out[#out + 1] = k end; return out end,
 	GetMemberInfo = function(_, id)
 		local x = STUB.memberInfo and STUB.memberInfo[id] or {}
