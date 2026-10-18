@@ -193,8 +193,11 @@ end
 -- links show their tooltip; written in ink, as the rest of the book. The caller places it.
 function GC.MessageFrame(parent)
 	local msg = CreateFrame("ScrollingMessageFrame", nil, parent)
-	msg:SetFontObject(ChatFontNormal or GameFontHighlight or "GameFontHighlight"); msg:SetJustifyH("LEFT")   -- the game's own chat letters
+	msg:SetFontObject(GameFontHighlight or "GameFontHighlight"); msg:SetJustifyH("LEFT")   -- the interface's plain letters (the chat font carries the player's outline)
 	if msg.SetSpacing then msg:SetSpacing(3) end   -- air between lines, as a chat should have
+	-- a dark band behind the lines, as chat windows have: class colours and item links read as the game paints them
+	msg.bg = msg:CreateTexture(nil, "BACKGROUND"); msg.bg:SetPoint("TOPLEFT", -6, 4); msg.bg:SetPoint("BOTTOMRIGHT", 6, -4); msg.bg:SetColorTexture(0.06, 0.04, 0.02, 0.78)
+	if msg.SetTextCopyable then msg:SetTextCopyable(true) end
 	msg:SetMaxLines(GC.MAX + 40); msg:SetFading(false); msg:SetIndentedWordWrap(true)
 	if msg.SetInsertMode and SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM then msg:SetInsertMode(SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM) end
 	msg.lmKeep = true
@@ -212,7 +215,7 @@ function GC.DayText(at)
 	local today, yesterday = dayKey(time()), dayKey(time() - 86400)
 	local key = dayKey(at)
 	local word = key == today and L.GC_DAY_TODAY or key == yesterday and L.GC_DAY_YESTERDAY or date("%d/%m/%Y", at)
-	return "|cff8a7a60· · ·  " .. word .. "  · · ·|r"
+	return "|cffb8a070· · ·  " .. word .. "  · · ·|r"
 end
 -- What goes on the page: the lines, with a date line wherever the day changes.
 local function render(list)
@@ -232,7 +235,7 @@ local function sameItem(a, b) return a == b or (a.day ~= nil and a.day == b.day)
 function GC.FillMessages(msg, list)
 	if not msg then return end
 	local items = render(list)
-	local r, g, b = SK.Ink(1, 1, 1)
+	local r, g, b = 0.92, 0.88, 0.80   -- light letters on the dark band; colour codes stay exactly as the game paints them
 	local shown = msg.lmShown or {}
 	local keep = #shown > 0 and #items >= #shown
 	for i = 1, #shown do if not keep or not sameItem(items[i], shown[i]) then keep = false; break end end
@@ -241,7 +244,7 @@ function GC.FillMessages(msg, list)
 	if keep then from = #shown + 1 else msg:Clear(); shown = {} end
 	for i = from, #items do
 		local it = items[i]
-		if it.day then msg:AddMessage(GC.DayText(it.at), r, g, b) else msg:AddMessage(SK.ToneText(GC.LineText(it)), r, g, b) end
+		if it.day then msg:AddMessage(GC.DayText(it.at), r, g, b) else msg:AddMessage(GC.LineText(it), r, g, b) end
 		shown[i] = it
 	end
 	msg.lmShown = shown

@@ -18,7 +18,7 @@ STUB.clubMessages = {
 STUB.Fire("CLUB_MESSAGE_HISTORY_RECEIVED", 1, 11)
 assert(#GC.Lines() == 4, "four lines: " .. #GC.Lines())
 GC.Open()
-assert(GC.msg.fontObject == (ChatFontNormal or "ChatFontNormal") and (GC.msg.spacing or 0) >= 2, "the chat font, with air: " .. tostring(GC.msg.fontObject) .. " / " .. tostring(GC.msg.spacing))
+assert(GC.msg.fontObject == (GameFontHighlight or "GameFontHighlight") and (GC.msg.spacing or 0) >= 2, "the interface's plain letters, with air: " .. tostring(GC.msg.fontObject) .. " / " .. tostring(GC.msg.spacing))
 local texts = {}
 for _, m in ipairs(GC.msg.messages) do texts[#texts + 1] = m.text end
 assert(#texts == 7, "four lines and three date lines: " .. #texts .. "\n" .. table.concat(texts, "\n"))

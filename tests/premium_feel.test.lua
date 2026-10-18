@@ -36,7 +36,7 @@ GC.Open()
 assert(GC.msg and GC.msg.kind == "ScrollingMessageFrame", "a scrolling message frame")
 local lastMsg = GC.msg.messages[#GC.msg.messages]   -- after the date line
 assert(#GC.msg.messages == 2 and lastMsg.text:find("Mario", 1, true) and lastMsg.text:find("|Hitem:9001", 1, true), "the line, link kept")
-assert(not lastMsg.text:find("|cffa335ee", 1, true), "the link's colour toned for the page")
+assert(lastMsg.text:find("|cffa335ee", 1, true), "the link's colour exactly as the game paints it")
 assert(GC.msg.wheel and GC.msg.hyperlinks and GC.msg.scripts.OnHyperlinkEnter and GC.msg.scripts.OnHyperlinkLeave, "wheel and hyperlink tooltips")
 assert(GC.msg.wordWrap ~= false, "lines wrap")
 assert(ns.Dashboard.chatMsg.hyperlinks and ns.Dashboard.chatMsg.scripts.OnHyperlinkEnter, "Home's chat panel shows link tooltips too")

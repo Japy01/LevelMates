@@ -27,10 +27,10 @@ local wide = W.GroupCard(DB.frame, true, false)
 wide:Set({ id = "g2", src = "now", name = "X", by = "Tester-Testrealm", mine = true, size = 5, caps = { T = 1 }, slots = {} })
 local p = wide.text.point
 assert(p and p[1] == "RIGHT" and p[2] == wide.buttons[1] and p[3] == "LEFT", "wide: the title ends before the buttons")
--- the class colour survives on the page: toned, never turned into ink
+-- the class colour survives on the page exactly as the game paints it (the lines sit on a dark band)
 local hunter = string.format("%02x%02x%02x", 171, 212, 115)
 assert(GC.LineText(lines[1]):find("|cff" .. hunter, 1, true), "the hunter colour in the line")
-assert(not DB.chatMsg.messages[2].text:find("|cff" .. hunter, 1, true) and DB.chatMsg.messages[2].text:find("|cff", 1, true), "toned on the page, still a colour")
+assert(DB.chatMsg.messages[2].text:find("|cff" .. hunter, 1, true) and DB.chatMsg.bg, "the exact class colour, on a dark band")
 local ir, ig, ib = ns.Skin.Ink(0.67, 0.83, 0.45)
 local ink = string.format("%02x%02x%02x", math.floor(ir * 255 + 0.5), math.floor(ig * 255 + 0.5), math.floor(ib * 255 + 0.5))
 assert(not DB.chatMsg.messages[2].text:find("|cff" .. ink, 1, true), "not ink")
