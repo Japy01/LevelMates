@@ -56,6 +56,7 @@ assert(LC.frame and LC.frame:IsShown() and #LC.Rows() == 2 and LC.Rows()[1].item
 local card = LC.Rows()[1]
 assert(card.main:IsShown() and card.minor:IsShown() and card.pass:IsShown() and not card.bidBox:IsShown(), "council buttons")
 card.main.scripts.OnClick(card.main)
+for _, r in ipairs(LC.Rows()) do if r.item == 9001 then card = r end end   -- answered items move after the open ones (2026-10-18)
 local lb = sentAfter(n, "lb", "WHISPER")
 assert(#lb == 1 and lb[1]._to == "Ana" and lb[1].s == "sAna1" and lb[1].i == 9001 and lb[1].r == "main", "my answer whispered to Ana: " .. tostring(lb[1] and lb[1]._to))
 assert(card.status.text:find(L.LS_R_main, 1, true), "the card says what I answered")

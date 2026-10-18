@@ -444,7 +444,12 @@ local function Build()
 	lootReserve:SetSize(110, 20); lootReserve:SetPoint("LEFT", lootCopy, "RIGHT", 6, 0); lootReserve:SetText(L.BTN_LOOT_RESERVE)
 	lootReserve:SetScript("OnClick", function() B.AskLootReserve() end)
 	B.lootReserveButton = lootReserve
-	lootRaid:Hide(); lootRules:Hide(); lootCopy:Hide(); lootReserve:Hide()
+	-- the live session: the master's window, or my card, while one runs
+	local lootLive = ns.Skin.Button(f)
+	lootLive:SetSize(130, 20); lootLive:SetPoint("RIGHT", lootView, "LEFT", -8, 0)
+	lootLive:SetScript("OnClick", function() if ns.LootSession.session then ns.LootWindow.Open() else ns.LootCard.Open() end end)
+	B.lootLiveButton = lootLive
+	lootRaid:Hide(); lootRules:Hide(); lootCopy:Hide(); lootReserve:Hide(); lootLive:Hide()
 
 	-- Dungeons tab: its own action button in the same spot as "Ask for help".
 	local lfg = ns.Skin.Button(f)
@@ -2363,6 +2368,9 @@ local function RefreshTabs()
 	else B.lootRaidButton:SetText(ns.LootRaid.raid and L.BTN_LOOT_RAID_CLOSE or L.BTN_LOOT_RAID_OPEN) end
 	B.lootReserveButton:SetShown(B.tab == "loot" and B.lootView == "reserves" and ns.Loot.ReservesOpen())
 	B.lootRulesButton:SetShown(lootOfficer); B.lootCopyButton:SetShown(B.tab == "loot")
+	local live = B.tab == "loot" and (ns.LootSession.session or ns.LootSession.offer)
+	B.lootLiveButton:SetShown(live and true or false)
+	if live then B.lootLiveButton:SetText(ns.LootSession.session and L.BTN_LOOT_SESSION or L.BTN_LOOT_CARD) end
 	if B.tab == "loot" then B.lootCopyButton:ClearAllPoints(); if lootOfficer then B.lootCopyButton:SetPoint("LEFT", B.lootRulesButton, "RIGHT", 6, 0) else B.lootCopyButton:SetPoint("BOTTOMLEFT", 12, 3) end end
 	B.lootViewButton:SetText(B.lootView == "ledger" and L.BTN_LOOT_BACK or string.format(L.BTN_VIEW_FMT, B.lootView == "history" and L.BTN_LOOT_HISTORY or B.lootView == "reserves" and L.BTN_LOOT_RESERVES or B.lootView == "rules" and L.BTN_LOOT_RULES_VIEW or L.BTN_LOOT_STANDINGS))
 	B.journalPrev:SetShown(journal); B.journalNext:SetShown(journal); B.journalPageText:SetShown(journal)

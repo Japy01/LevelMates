@@ -103,8 +103,12 @@ local function build()
 		r:Hide()
 		LW.rows[i] = r
 	end
+	-- the session ends when the master says so (or on its own once everything was handed out)
+	LW.closeSession = SK.Button(f)
+	LW.closeSession:SetSize(130, 22); LW.closeSession:SetPoint("BOTTOMRIGHT", -12, 10); LW.closeSession:SetText(L.LW_CLOSE_SESSION)
+	LW.closeSession:SetScript("OnClick", function() if ns.LootSession then ns.LootSession.Close() end; LW.items = {}; f:Hide() end)
 	LW.note = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	LW.note:SetPoint("BOTTOMLEFT", 12, 10); LW.note:SetPoint("RIGHT", -12, 0); LW.note:SetJustifyH("LEFT"); LW.note:SetWordWrap(true)
+	LW.note:SetPoint("BOTTOMLEFT", 12, 10); LW.note:SetPoint("RIGHT", LW.closeSession, "LEFT", -8, 0); LW.note:SetJustifyH("LEFT"); LW.note:SetWordWrap(true)
 	LW.note:SetText(L.LW_NOTE)
 end
 
@@ -205,7 +209,11 @@ function LW.UpdateClock()
 	local LS = ns.LootSession
 	local secs = LS and LS.Elapsed()
 	if not secs then LW.timer:SetText(""); LW.timer:Hide(); return end
-	LW.timer:SetText(string.format(L.LW_ELAPSED, string.format("%d:%02d", math.floor(secs / 60), math.floor(secs % 60)))); LW.timer:Show()
+	local left = LS.Left()
+	local function mmss(n) return string.format("%d:%02d", math.floor(n / 60), math.floor(n % 60)) end
+	if left then LW.timer:SetText(left > 0 and string.format(L.LW_LEFT, mmss(left)) or L.LW_CLOSED_LIMIT)
+	else LW.timer:SetText(string.format(L.LW_ELAPSED, mmss(secs))) end
+	LW.timer:Show()
 end
 function LW.Open()
 	if not LW.frame then build() end
@@ -220,7 +228,13 @@ ev:SetScript("OnEvent", function(_, event, slot)
 	if not ns.db then return end
 	if event == "LOOT_OPENED" then
 		if not officer() or masterLoot() == false then return end
+		local kept = LW.items
 		readLoot()
+		for _, old in ipairs(kept) do   -- what the running session still holds, from earlier corpses
+			local seen = false
+			for _, it in ipairs(LW.items) do if it.id == old.id then seen = true end end
+			if not seen then old.slot = nil; LW.items[#LW.items + 1] = old end
+		end
 		if #LW.items > 0 then LW.Open(); if ns.LootSession then ns.LootSession.Open(LW.items) end end
 	elseif event == "LOOT_SLOT_CLEARED" then
 		slot = ns.Plain(slot)
@@ -230,9 +244,13 @@ ev:SetScript("OnEvent", function(_, event, slot)
 			if #LW.items == 0 then LW.frame:Hide() else LW.Refresh() end
 		end
 	elseif event == "LOOT_CLOSED" then
-		LW.items = {}
-		if LW.frame then LW.frame:Hide() end
-		if ns.LootSession then ns.LootSession.Close() end
+		if #LW.items == 0 then   -- everything handed out: done
+			if LW.frame then LW.frame:Hide() end
+			if ns.LootSession then ns.LootSession.Close() end
+		else   -- the session outlives the corpse: what is left is awarded by hand (a trade) or on the next corpse
+			for _, it in ipairs(LW.items) do it.slot = nil end
+			LW.Refresh()
+		end
 	end
 end)
 ns.On("LM_LOOT_CHANGED", function() LW.Refresh() end)

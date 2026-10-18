@@ -22,7 +22,7 @@ local seq = 0
 local function newId(prefix) seq = seq + 1; return string.format("%s%s%x%x", prefix, ns.NameKey(me()):sub(1, 6), time() % 100000, seq) end
 local function changed() ns.Fire("LM_LOOT_CHANGED") end
 
-S.Define("lk", { class = "board", life = LT.LEDGER_LIFE, relayMax = 1000,
+S.Define("lk", { class = "board", life = LT.LEDGER_LIFE, relayMax = 5000,   -- a raid night is ~225 entries: whoever joins late still gets whole balances for many nights
 	fields = { w = C.V.text(48), p = C.V.int(-100000, 100000), k = C.V.oneOf("att", "boss", "spend", "adj", "refund"), r = C.V.text(80),
 		i = C.V.int(1, 999999), g = C.V.word(24), f = C.V.word(24) },
 	required = { "w", "p", "k", "r" },

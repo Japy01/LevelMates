@@ -404,7 +404,9 @@ Item = { CreateFromItemID = function(_, id) return { ContinueOnItemLoad = functi
 -- Copy for Discord support (multi-line edit box in a scroll frame)
 function Region:SetMultiLine() end
 function Region:SetFontObject(f) self.fontObject = f end
-ChatFontNormal = "ChatFontNormal"   -- the game's chat font object, a name here
+ChatFontNormal = "ChatFontNormal"
+RANDOM_ROLL_RESULT = "%s rolls %d (%d-%d)"
+function RandomRoll(lo, hi) STUB.rolled = { lo, hi } end   -- the game's chat font object, a name here
 function Region:SetSpacing(v) self.spacing = v end
 function Region:SetScrollChild(child) self.child = child end
 function Region:HighlightText() self.highlighted = true end
