@@ -31,10 +31,16 @@ assert(#GC.Lines() == 4 and GC.Lines()[4].text == "en vivo", "live line appended
 table.insert(STUB.clubMessages[11], { messageId = id(time()), content = "en vivo", author = { name = "Luis-Testrealm", classID = 1 } })
 STUB.Fire("CLUB_MESSAGE_HISTORY_RECEIVED", 1, 11)
 assert(#GC.Lines() == 4, "no duplicate: " .. #GC.Lines())
+-- a live line, then the same words from the history, coloured and a few minutes off the clock: still one line
+STUB.Fire("CHAT_MSG_GUILD", "holaaa", "Luis-Testrealm", "", "", "", "", 0, 0, "", 0, 9, "Player-1-LUIS")
+assert(#GC.Lines() == 5, "the live line")
+table.insert(STUB.clubMessages[11], { messageId = id(time() + 200), content = "|cffffffffholaaa|r", author = { name = "Luis-Testrealm", classID = 1 } })
+STUB.Fire("CLUB_MESSAGE_HISTORY_RECEIVED", 1, 11)
+assert(#GC.Lines() == 5, "no duplicate through colour or clock skew: " .. #GC.Lines())
 -- older lines arriving later go in at the front, in order
 table.insert(STUB.clubMessages[11], 1, { messageId = id(now - 7200), content = "anteayer", author = { name = "Mario-Testrealm", classID = 8 } })
 STUB.Fire("CLUB_MESSAGE_HISTORY_RECEIVED", 1, 11)
-assert(#GC.Lines() == 5 and GC.Lines()[1].text == "anteayer", "older lines first")
+assert(#GC.Lines() == 6 and GC.Lines()[1].text == "anteayer", "older lines first")
 -- the window appends: a new line is one AddMessage, no Clear, and the view stays where it was unless at the bottom
 GC.Open()
 local before = #GC.msg.messages
@@ -45,5 +51,5 @@ GC.msg.atBottom = false; GC.msg.scrolledToBottom = nil
 STUB.Fire("CHAT_MSG_GUILD", "y otra", "Luis-Testrealm", "", "", "", "", 0, 0, "", 0, 3, "Player-1-LUIS")
 assert(not GC.msg.scrolledToBottom, "reading the history: not dragged down")
 -- the lines are kept for the next session
-assert(ns.db.chat and ns.db.chat[ns.GuildKey()] and #ns.db.chat[ns.GuildKey()] >= 5, "saved")
+assert(ns.db.chat and ns.db.chat[ns.GuildKey()] and #ns.db.chat[ns.GuildKey()] >= 6, "saved")
 print("ok")

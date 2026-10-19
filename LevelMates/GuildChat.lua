@@ -38,7 +38,14 @@ local function save()
 	for _, e in ipairs(lines) do out[#out + 1] = { k = e.kind, n = e.name, x = e.text, t = e.at, i = e.id } end
 	ns.db.chat[ns.GuildKey()] = out
 end
-local function same(a, b) return a.name == b.name and a.text == b.text and a.kind == b.kind and math.abs((a.at or 0) - (b.at or 0)) <= 120 end
+-- The same line heard twice (live, then from the game's history): same person and kind, the same words once colour
+-- codes and spacing are gone (the history hands the text as the game's own string kind), within ten minutes (the
+-- client's clock and the server's stamp need not agree to the second).
+local function same(a, b)
+	if a.name ~= b.name or a.kind ~= b.kind then return false end
+	if a.text == nil or b.text == nil then return a.text == b.text end
+	return bare(a.text) == bare(b.text) and math.abs((a.at or 0) - (b.at or 0)) <= 600
+end
 -- A line into the list, in time order; a line already there (by the game's id, or the same words from the same
 -- person within two minutes, as a live line later found in the history) is not added twice.
 local function put(e)
