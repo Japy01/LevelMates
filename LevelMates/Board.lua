@@ -113,7 +113,8 @@ local function Build()
 	B.restedText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")   -- my rested XP, next to the heading
 	B.restedText:SetPoint("LEFT", B.heading, "RIGHT", 12, 0); B.restedText:SetTextColor(0.6, 0.8, 1)
 	B.subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -(insetTop + 34)); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
+	B.SUBTITLE_Y = insetTop + 34
+	B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -B.SUBTITLE_Y); B.subtitle:SetText(L.BOARD_SUBTITLE); B.subtitle:SetJustifyH("LEFT"); B.subtitle:SetTextColor(0.7, 0.7, 0.7)
 	if _G.Fancy24Font then B.heading:SetFontObject("Fancy24Font") end   -- the game's decorative letters, as the spellbook's titles
 	local divider = f:CreateTexture(nil, "ARTWORK")
 	divider:SetAtlas(ns.Skin.DIVIDER); divider:SetHeight(10)
@@ -2579,8 +2580,16 @@ function B.Refresh()
 	if B.tab == "loot" then   -- whose entries, with their balance
 		B.subtitle:SetText(B.lootView == "ledger" and string.format(L.SUB_LOOT_LEDGER, B.lootPerson or "?", ns.Loot.Balance(B.lootPerson or "")) or B.lootView == "history" and L.SUB_LOOT_HISTORY or B.lootView == "reserves" and string.format(L.SUB_LOOT_RESERVES, ns.LootRaid.Rules().reserves) or B.lootView == "rules" and L.SUB_LOOT_RULES or L.SUB_LOOT)
 	end
-	B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
-	B.subtitle:SetShown((B.MainOf(B.tab) ~= "guild") or B.tab == "bank" or B.tab == "loot")   -- the bank says whose look it shows   -- the sub-section buttons sit there
+	local guildSub = B.MainOf(B.tab) == "guild"
+	B.subtitle:ClearAllPoints()
+	if guildSub then   -- the sub-section buttons take the subtitle's line: the subtitle goes right of the heading, one line, cut if long
+		B.subtitle:SetPoint("LEFT", B.restedText:IsShown() and B.restedText or B.heading, "RIGHT", 16, 0); B.subtitle:SetPoint("RIGHT", B.frame, "RIGHT", -70, 0)
+		B.subtitle:SetWidth(0); B.subtitle:SetWordWrap(false)
+	else
+		B.subtitle:SetPoint("TOPLEFT", B.MARGIN, -(B.SUBTITLE_Y or 58)); B.subtitle:SetWordWrap(true)
+		B.subtitle:SetWidth(B.tab == "mates" and B.SUB_NARROW or B.WIDTH - 2 * B.MARGIN)
+	end
+	B.subtitle:SetShown(not guildSub or B.tab == "bank" or B.tab == "loot")   -- the bank says whose look it shows; the loot, which view
 	B.divider:SetShown(B.MainOf(B.tab) ~= "guild")
 	if home then B.heading:SetText(GetGuildInfo("player") or L.HEAD_HOME) end   -- the partner box sits there only on Guildmates
 	if B.searchBox and B.searchBox.Instructions then B.searchBox.Instructions:SetText(L["SEARCH_" .. hk]) end

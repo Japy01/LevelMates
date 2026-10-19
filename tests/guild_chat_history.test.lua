@@ -11,7 +11,8 @@ STUB.clubStreams = { { streamId = 11, name = "Guild", streamType = 1 }, { stream
 STUB.clubMessages = {
 	[11] = { { messageId = id(now - 3600), content = "ayer tarde", author = { name = "Mario-Testrealm", classID = 8 } },
 		{ messageId = id(now - 1800), content = UNKNOWN, author = { name = "Ana-Testrealm" } },   -- not loaded by the game: a placeholder
-		{ messageId = id(now - 1700), content = UNKNOWNOBJECT, author = { name = "Ana-Testrealm" } },   -- the same placeholder under its other name ("Entidad desconocida")
+		{ messageId = id(now - 1700), content = "|cffffffff Unknown entity |r", author = { name = "Ana-Testrealm" } },   -- the same placeholder, coloured and padded as the game may hand it
+		{ messageId = id(now - 1650), content = "Entidad desconocida", author = { name = "Ana-Testrealm" } },   -- and in Spanish, whatever the globals say
 		{ messageId = id(now - 900), content = "borrada", destroyed = true, author = { name = "Ana-Testrealm" } },
 		{ messageId = id(now - 600), content = "hola a todos", author = { name = "Pepe-Testrealm", classID = 3 } } },
 	[12] = { { messageId = id(now - 1200), content = "reunión", author = { name = "Ana-Testrealm", classID = 5 } } },

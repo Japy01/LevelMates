@@ -20,6 +20,7 @@ local function shownRows() local out = {}; for _, r in ipairs(B.rows) do if r.bu
 B.Toggle(); B.ShowTab("loot")
 assert(B.tab == "loot" and B.subs.loot and B.subs.loot:IsShown(), "the Loot sub-section")
 assert(B.frame.empty.text == L.LOOT_EMPTY, "empty book")
+assert(B.subtitle:IsShown() and B.subtitle.point and B.subtitle.point[1] ~= "TOPLEFT", "a guild sub-tab's subtitle sits on the heading line, clear of the sub-tab bar")
 -- standings
 LT.Post("Mario", 10, "boss", "Lucifron"); LT.Post("Mario", 5, "att", "MC"); LT.Post("Luis", 20, "att", "MC"); LT.Post("Luis", -12, "spend", "Casco", { item = 9001 })
 B.Refresh()

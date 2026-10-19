@@ -18,7 +18,15 @@ function GC.Lines() return lines end
 
 local function plain(v) if issecretvalue and issecretvalue(v) then return nil end; return v end
 -- The game's placeholder for a line it has not loaded ("Unknown" / "Entidad desconocida"): never a line of ours.
-local function placeholder(text) return text == nil or text == "" or text == UNKNOWN or text == UNKNOWNOBJECT or text == "Unknown" or text == "Unknown entity" end
+local PLACEHOLDERS = { unknown = true, unknownentity = true, desconocido = true, entidaddesconocida = true }
+local function bare(s) return (tostring(s):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h", ""):gsub("|h", ""):gsub("[%s%c]", "")):lower() end
+local function placeholder(text)
+	if text == nil then return true end
+	local b = bare(text)
+	if b == "" or PLACEHOLDERS[b] then return true end
+	for _, g in ipairs({ UNKNOWN, UNKNOWNOBJECT }) do if type(g) == "string" and b == bare(g) then return true end end
+	return false
+end
 GC.IsPlaceholder = placeholder
 local function trim()
 	while #lines > GC.MAX do local gone = table.remove(lines, 1); if gone.id then seen[gone.id] = nil end end
