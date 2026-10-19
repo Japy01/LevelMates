@@ -37,10 +37,21 @@ assert(#GC.Lines() == 5, "the live line")
 table.insert(STUB.clubMessages[11], { messageId = id(time() + 200), content = "|cffffffffholaaa|r", author = { name = "Luis-Testrealm", classID = 1 } })
 STUB.Fire("CLUB_MESSAGE_HISTORY_RECEIVED", 1, 11)
 assert(#GC.Lines() == 5, "no duplicate through colour or clock skew: " .. #GC.Lines())
+-- the history hands a key string for the words (a code the client paints): fused with the live line by who and when; never saved
+STUB.Fire("CHAT_MSG_GUILD", "buenas", "Luis-Testrealm", "", "", "", "", 0, 0, "", 0, 10, "Player-1-LUIS")
+table.insert(STUB.clubMessages[11], { messageId = id(time() - 30), content = "|Kq1234|k", author = { name = "Luis-Testrealm", classID = 1 } })
+STUB.Fire("CLUB_MESSAGE_HISTORY_RECEIVED", 1, 11)
+assert(#GC.Lines() == 6 and GC.Lines()[6].text == "buenas", "one line, the readable words kept: " .. #GC.Lines() .. " " .. tostring(GC.Lines()[6].text))
+table.insert(STUB.clubMessages[11], { messageId = id(time() - 20), content = "|Kq1235|k", author = { name = "Ana-Testrealm", classID = 5 } })
+STUB.Fire("CLUB_MESSAGE_HISTORY_RECEIVED", 1, 11)
+assert(#GC.Lines() == 7, "a key-string line with no live twin stays (the client paints it)")
+local savedKeys = 0
+for _, e in ipairs(ns.db.chat[ns.GuildKey()]) do if GC.IsKeyString(e.x) then savedKeys = savedKeys + 1 end end
+assert(savedKeys == 0, "key strings are never saved")
 -- older lines arriving later go in at the front, in order
 table.insert(STUB.clubMessages[11], 1, { messageId = id(now - 7200), content = "anteayer", author = { name = "Mario-Testrealm", classID = 8 } })
 STUB.Fire("CLUB_MESSAGE_HISTORY_RECEIVED", 1, 11)
-assert(#GC.Lines() == 6 and GC.Lines()[1].text == "anteayer", "older lines first")
+assert(#GC.Lines() == 8 and GC.Lines()[1].text == "anteayer", "older lines first")
 -- the window appends: a new line is one AddMessage, no Clear, and the view stays where it was unless at the bottom
 GC.Open()
 local before = #GC.msg.messages

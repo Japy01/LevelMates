@@ -20,6 +20,7 @@ local function plain(v) if issecretvalue and issecretvalue(v) then return nil en
 -- The game's placeholder for a line it has not loaded ("Unknown" / "Entidad desconocida"): never a line of ours.
 local PLACEHOLDERS = { unknown = true, unknownentity = true, desconocido = true, entidaddesconocida = true }
 local function bare(s) return (tostring(s):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h", ""):gsub("|h", ""):gsub("[%s%c]", "")):lower() end
+local function keyString(s) return type(s) == "string" and s:find("^|K.-|k$") ~= nil end
 local function placeholder(text)
 	if text == nil then return true end
 	local b = bare(text)
@@ -35,16 +36,21 @@ local function save()
 	if not ns.db then return end
 	ns.db.chat = ns.db.chat or {}
 	local out = {}
-	for _, e in ipairs(lines) do out[#out + 1] = { k = e.kind, n = e.name, x = e.text, t = e.at, i = e.id } end
+	for _, e in ipairs(lines) do if not keyString(e.text) then out[#out + 1] = { k = e.kind, n = e.name, x = e.text, t = e.at, i = e.id } end end
 	ns.db.chat[ns.GuildKey()] = out
 end
 -- The same line heard twice (live, then from the game's history): same person and kind, the same words once colour
 -- codes and spacing are gone (the history hands the text as the game's own string kind), within ten minutes (the
 -- client's clock and the server's stamp need not agree to the second).
+-- The game's history hands a line's words as a key string ("|K…|k": a code the client paints, not the letters):
+-- such a line cannot be compared by its words, only by who, what kind and when.
+GC.IsKeyString = keyString
 local function same(a, b)
 	if a.name ~= b.name or a.kind ~= b.kind then return false end
 	if a.text == nil or b.text == nil then return a.text == b.text end
-	return bare(a.text) == bare(b.text) and math.abs((a.at or 0) - (b.at or 0)) <= 600
+	local gap = math.abs((a.at or 0) - (b.at or 0))
+	if keyString(a.text) or keyString(b.text) then return gap <= 120 end
+	return bare(a.text) == bare(b.text) and gap <= 600
 end
 -- A line into the list, in time order; a line already there (by the game's id, or the same words from the same
 -- person within two minutes, as a live line later found in the history) is not added twice.
@@ -54,7 +60,12 @@ local function put(e)
 		for _, old in ipairs(lines) do if not old.id and same(old, e) then old.id = e.id; seen[e.id] = true; return false end end
 		seen[e.id] = true
 	else
-		for i = #lines, math.max(1, #lines - 20), -1 do if same(lines[i], e) then return false end end
+		for i = #lines, math.max(1, #lines - 20), -1 do
+			if same(lines[i], e) then
+				if keyString(lines[i].text) and not keyString(e.text) then lines[i].text = e.text end   -- the live words are the readable ones
+				return false
+			end
+		end
 	end
 	local at = #lines + 1
 	while at > 1 and (lines[at - 1].at or 0) > (e.at or 0) do at = at - 1 end
