@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.4
+
+- Fixed: every Home redraw raised the game's "blocked action" dialog (the MOTD was asked through a restricted call; it now comes from the game's own event).
+- Fixed: a chat line heard live and the same line from the game's history no longer show twice (the history hands the words as a key string the client paints; such lines fuse by who and when and are never saved).
+
 ## 0.6.3
 
 - **Dark theme**, now the default: a near-black page like the game's dungeon journal, text and colours as the game paints them, light thin lines. Parchment stays under Options > The book > Theme.
