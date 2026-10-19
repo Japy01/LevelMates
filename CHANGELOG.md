@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.3
+
+- **Dark theme**, now the default: a near-black page like the game's dungeon journal, text and colours as the game paints them, light thin lines. Parchment stays under Options > The book > Theme.
+- The heading sits high on the dark page; a guild sub-tab's subtitle (bank, loot) moved to the heading line, clear of the sub-tab bar; Home's left column shares its height better.
+- The chat never shows the game's "unknown entity" placeholder for lines it has not loaded yet; the real text comes in when the game loads it.
+
 ## 0.6.2
 
 - **Loot rules as a page** (Guild > Loot > Rules): mode, council answers (BiS, main, minor, off-spec, transmog), points per boss and attendance, lowest quality, minimum bid, reserves per person, time to answer, who answers, who votes; everyone reads the summary.
