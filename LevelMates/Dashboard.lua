@@ -432,8 +432,8 @@ function DB.Refresh()
 	DB.Layout()
 	refreshStats()
 	local motd, by = ns.GuildNotes.Motd()
-	local okG, game = pcall(function() return C_GuildInfo and C_GuildInfo.GetMOTD and C_GuildInfo.GetMOTD() end)
-	game = okG and ns.Plain(game) or nil
+	-- the game's MOTD: from its event (GetMOTD is a restricted call on Forever: asking it is a "blocked action")
+	local game = DB.gameMotd
 	if type(game) ~= "string" or game == "" then game = nil end
 	local lines = {}
 	if game then lines[#lines + 1] = L.DB_MOTD_GAME .. " " .. game end
@@ -445,3 +445,10 @@ function DB.Refresh()
 end
 ns.On("LM_GUILD_CHAT", function() ns.Dirty("board") end)
 ns.On("LM_CALENDAR_CHANGED", function() ns.Dirty("board") end)
+local motdEv = CreateFrame("Frame")
+motdEv:RegisterEvent("GUILD_MOTD")
+motdEv:SetScript("OnEvent", function(_, _, text)
+	text = ns.Plain(text)
+	DB.gameMotd = type(text) == "string" and text or nil
+	ns.Dirty("board")
+end)

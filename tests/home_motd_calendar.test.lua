@@ -2,7 +2,7 @@
 -- on Home's Now panel, all of the coming week in Groups > Calendar beside the meetups; asked from the game at login
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
-C_GuildInfo.GetMOTD = function() return "Raid el jueves a las 21" end
+C_GuildInfo.GetMOTD = function() error("blocked: a restricted call on Forever") end   -- never asked: the event brings it
 local now = date("*t")
 local tm = date("*t", time() + 86400)
 C_DateAndTime = { GetCurrentCalendarTime = function() return { year = now.year, month = now.month, monthDay = now.day, hour = now.hour, minute = now.min } end }
@@ -16,6 +16,7 @@ C_Calendar = {
 	end,
 }
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(30)
+STUB.Fire("GUILD_MOTD", "Raid el jueves a las 21"); STUB.Advance(1)
 local B, DB, L, CAL = ns.Board, ns.Dashboard, ns.L, ns.Calendar
 assert(STUB.calendarOpened, "the calendar asked for at login")
 local up = CAL.Upcoming(7)
