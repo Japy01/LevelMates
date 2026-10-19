@@ -77,6 +77,9 @@ ns.On("LM_LOADED", function()
 		function() return ns.db.settings.language or "auto" end,
 		function(v) if ns.db.settings.language ~= v then ns.db.settings.language = v; S.OfferReload() end end)
 	Header(category, L.OPT_H_BOOK)
+	Choice(category, "theme", L.OPT_THEME, L.OPT_THEME_TT, { { value = "dark", label = L.THEME_DARK }, { value = "parchment", label = L.THEME_PARCHMENT } },
+		function() return ns.Skin.Theme() end,
+		function(v) if ns.db.settings.theme ~= v then ns.db.settings.theme = v; ns.Skin.ApplyTheme(); S.OfferReload() end end)
 	-- the book's size: a slider where the client has one, else three choices
 	if Settings.CreateSliderOptions and Settings.CreateSlider then
 		local size = Settings.RegisterProxySetting(category, "LevelMates_boardScale", Settings.VarType.Number, L.OPT_SIZE, 100,

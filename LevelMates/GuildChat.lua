@@ -9,6 +9,7 @@ local _, ns = ...
 local GC = {}
 ns.GuildChat = GC
 local L, SK = ns.L, ns.Skin
+local unpack = unpack or table.unpack
 GC.MAX = 200
 GC.ASK = 200   -- how many older lines to ask the game for
 local lines = {}
@@ -197,7 +198,7 @@ function GC.MessageFrame(parent)
 	msg:SetFontObject(GameFontHighlight or "GameFontHighlight"); msg:SetJustifyH("LEFT")   -- the interface's plain letters (the chat font carries the player's outline)
 	if msg.SetSpacing then msg:SetSpacing(3) end   -- air between lines, as a chat should have
 	-- a dark band behind the lines, as chat windows have: class colours and item links read as the game paints them
-	msg.bg = msg:CreateTexture(nil, "BACKGROUND"); msg.bg:SetPoint("TOPLEFT", -6, 4); msg.bg:SetPoint("BOTTOMRIGHT", 6, -4); msg.bg:SetColorTexture(0.06, 0.04, 0.02, 0.78)
+	msg.bg = msg:CreateTexture(nil, "BACKGROUND"); msg.bg:SetPoint("TOPLEFT", -6, 4); msg.bg:SetPoint("BOTTOMRIGHT", 6, -4); msg.bg:SetColorTexture(unpack(SK.C.chatBand))
 	if msg.SetTextCopyable then msg:SetTextCopyable(true) end
 	msg:SetMaxLines(GC.MAX + 40); msg:SetFading(false); msg:SetIndentedWordWrap(true)
 	if msg.SetInsertMode and SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM then msg:SetInsertMode(SCROLLING_MESSAGE_FRAME_INSERT_MODE_BOTTOM) end

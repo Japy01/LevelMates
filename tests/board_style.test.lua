@@ -1,5 +1,6 @@
 -- Board look: height follows the number of rows, title counts mates, the sorted header shows its direction,
 -- group and level are colour-coded, rows are striped.
+LevelMatesDB = { settings = { theme = "parchment" } }   -- this test is about the parchment's ink (the dark theme is the default since 2026-10-19)
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)

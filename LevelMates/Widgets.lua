@@ -20,9 +20,9 @@ end
 W.PANEL_HEAD = 22   -- the header band's height
 function W.Panel(parent, title, icon)
 	local p = CreateFrame("Frame", nil, parent)
-	p.band = p:CreateTexture(nil, "BACKGROUND"); p.band:SetColorTexture(0.30, 0.18, 0.06, 0.22)
+	p.band = p:CreateTexture(nil, "BACKGROUND"); p.band:SetColorTexture(unpack(SK.C.header))
 	p.band:SetPoint("TOPLEFT"); p.band:SetPoint("TOPRIGHT"); p.band:SetHeight(W.PANEL_HEAD)
-	p.tint = p:CreateTexture(nil, "BACKGROUND"); p.tint:SetColorTexture(0.30, 0.18, 0.06, 0.06)
+	p.tint = p:CreateTexture(nil, "BACKGROUND"); p.tint:SetColorTexture(unpack(SK.C.tint))
 	p.tint:SetPoint("TOPLEFT", 0, -W.PANEL_HEAD); p.tint:SetPoint("BOTTOMRIGHT")
 	p.top, p.bottom, p.left, p.right_ = line(p), line(p), line(p), line(p)
 	p.top:SetHeight(1); p.top:SetPoint("TOPLEFT", 0, -W.PANEL_HEAD); p.top:SetPoint("TOPRIGHT", 0, -W.PANEL_HEAD)
@@ -317,7 +317,7 @@ function W.GroupCard(parent, withButtons, compact)
 		if self.foot then   -- compact: "places 2/5"
 			local have, cap = 0, 0
 			for _, role in ipairs(SLOT_ROLES) do cap = cap + (g.caps[role] or 0); have = have + #(g.slots[role] or {}) end
-			self.foot:SetText(string.format(L.GR_PLACES, have, cap)); self.foot:SetTextColor(0.55, 0.45, 0.3)
+			self.foot:SetText(string.format(L.GR_PLACES, have, cap)); self.foot:SetTextColor(unpack(SK.C.dim))
 		end
 		if g.size <= 5 then
 			self.counters:Hide()

@@ -15,15 +15,41 @@ function SK.Banner()
 	local faction = UnitFactionGroup and UnitFactionGroup("player")
 	return faction == "Horde" and "Interface\\Icons\\INV_BannerPVP_01" or "Interface\\Icons\\INV_BannerPVP_02"
 end
-SK.C = {
-	frame = { 0.045, 0.035, 0.025, 0.98 }, frameBorder = { 0.62, 0.47, 0.24, 1 },
-	page = { 0.86, 0.76, 0.58, 1 },                            -- parchment, where the page art is missing
-	ink = { 0.22, 0.13, 0.05 }, inkSoft = { 0.38, 0.28, 0.16 },
-	band = { 0.10, 0.06, 0.02, 0.62 }, section = { 0.30, 0.18, 0.06, 0.16 }, line = { 0.35, 0.22, 0.08, 0.28 },
-	strip = { 0.30, 0.18, 0.06, 0.10 },
-	card = { 0.86, 0.67, 0.32, 1 }, cardDim = { 0.40, 0.33, 0.24, 1 },
-	header = { 0.30, 0.18, 0.06, 0.16 },
+-- Two themes: the parchment book (brown bands, dark ink) and the dark page (as the game's dungeon journal: near
+-- black, light thin lines, text as the game paints it). The dark one is the default (asked 2026-10-19).
+SK.THEMES = {
+	parchment = {
+		frame = { 0.045, 0.035, 0.025, 0.98 }, frameBorder = { 0.62, 0.47, 0.24, 1 },
+		page = { 0.86, 0.76, 0.58, 1 },                            -- parchment, where the page art is missing
+		ink = { 0.22, 0.13, 0.05 }, inkSoft = { 0.38, 0.28, 0.16 },
+		band = { 0.10, 0.06, 0.02, 0.62 }, section = { 0.30, 0.18, 0.06, 0.16 }, line = { 0.35, 0.22, 0.08, 0.28 },
+		strip = { 0.30, 0.18, 0.06, 0.10 },
+		card = { 0.86, 0.67, 0.32, 1 }, cardDim = { 0.40, 0.33, 0.24, 1 },
+		header = { 0.30, 0.18, 0.06, 0.16 }, tint = { 0.30, 0.18, 0.06, 0.06 },
+		highlight = { 0.45, 0.28, 0.08, 0.16 }, chatBand = { 0.06, 0.04, 0.02, 0.78 }, dim = { 0.55, 0.45, 0.3 },
+	},
+	dark = {
+		frame = { 0.045, 0.035, 0.025, 0.98 }, frameBorder = { 0.62, 0.47, 0.24, 1 },
+		page = { 0.06, 0.06, 0.07, 0.96 },                        -- the journal's near-black
+		ink = { 1, 1, 1 }, inkSoft = { 0.8, 0.8, 0.8 },
+		band = { 1, 1, 1, 0.06 }, section = { 1, 1, 1, 0.08 }, line = { 1, 1, 1, 0.12 },
+		strip = { 1, 1, 1, 0.05 },
+		card = { 0.86, 0.67, 0.32, 1 }, cardDim = { 0.40, 0.33, 0.24, 1 },
+		header = { 1, 1, 1, 0.07 }, tint = { 1, 1, 1, 0.02 },
+		highlight = { 1, 1, 1, 0.08 }, chatBand = { 1, 1, 1, 0.04 }, dim = { 0.75, 0.72, 0.65 },
+	},
 }
+SK.C = {}
+function SK.Theme() local t = ns.db and ns.db.settings and ns.db.settings.theme; return SK.THEMES[t] and t or "dark" end
+function SK.Dark() return SK.Theme() == "dark" end
+-- The theme's colours into SK.C (the same table everyone holds), at load and when the option changes.
+function SK.ApplyTheme()
+	local src = SK.THEMES[SK.Theme()]
+	for k in pairs(SK.C) do SK.C[k] = nil end
+	for k, v in pairs(src) do SK.C[k] = v end
+end
+SK.ApplyTheme()
+ns.On("LM_LOADED", SK.ApplyTheme)
 SK.HEAD_H = 22   -- a section header row
 
 function SK.On() return true end   -- one style: the book (kept as a function for the code paths that ask)
@@ -34,12 +60,13 @@ function SK.On() return true end   -- one style: the book (kept as a function fo
 SK.INK_LEVELS = { 0.32, 0.26, 0.21, 0.16, 0.11 }
 function SK.InkLevel() local n = ns.db and ns.db.settings.ink or 4; return SK.INK_LEVELS[n] and n or 4 end
 function SK.Ink(r, g, b)
+	if SK.Dark() then return r or 1, g or 1, b or 1 end   -- a dark page: the colours as the game paints them
 	local k = SK.INK_LEVELS[SK.InkLevel()]
 	return (r or 1) * k, (g or 1) * k * 0.8, (b or 1) * k * 0.55
 end
 -- Colour codes inside a text (item links, quality colours) in ink too: a white or grey item would vanish on paper.
 function SK.InkText(s)
-	if type(s) ~= "string" then return s end
+	if type(s) ~= "string" or SK.Dark() then return s end
 	return (s:gsub("|c(%x%x)(%x%x)(%x%x)(%x%x)", function(a, r, g, b)
 		local ir, ig, ib = SK.Ink(tonumber(r, 16) / 255, tonumber(g, 16) / 255, tonumber(b, 16) / 255)
 		return string.format("|c%s%02x%02x%02x", a, math.floor(ir * 255 + 0.5), math.floor(ig * 255 + 0.5), math.floor(ib * 255 + 0.5))
@@ -75,7 +102,7 @@ SK.inkList = {}
 function SK.InkFont(fs)
 	if not fs or fs.inked then return fs end
 	fs.inked = true
-	if fs.SetShadowColor then fs:SetShadowColor(0, 0, 0, 0) end
+	if fs.SetShadowColor and not SK.Dark() then fs:SetShadowColor(0, 0, 0, 0) end   -- no shadow on paper; the game's own on the dark page
 	SK.inkList[#SK.inkList + 1] = fs
 	SK.InkOne(fs)
 	return fs
@@ -126,11 +153,11 @@ function SK.Page(f, ribbon)
 	-- texts, so a page on it would cover the heading. The panel is hidden; it still gives the page its place.
 	local page = f:CreateTexture(nil, "BACKGROUND", nil, 7)
 	page:SetColorTexture(unpack(SK.C.page))
-	if SK.HasAtlas(SK.PAGE) then page:SetAtlas(SK.PAGE) end   -- else the plain parchment colour
+	if not SK.Dark() and SK.HasAtlas(SK.PAGE) then page:SetAtlas(SK.PAGE) end   -- parchment: the spellbook's art; dark: the plain colour
 	page:SetAllPoints(f.Inset)
 	if f.Inset and f.Inset.Hide and f.Inset.CreateTexture then f.Inset:Hide() end
 	f.page = page
-	if ribbon and SK.HasAtlas(SK.RIBBON) then   -- the ribbon hangs at the page's right edge, clear of the columns
+	if ribbon and not SK.Dark() and SK.HasAtlas(SK.RIBBON) then   -- the ribbon hangs at the page's right edge, clear of the columns
 		local r = f:CreateTexture(nil, "ARTWORK")
 		r:SetAtlas(SK.RIBBON); r:SetSize(28, 80)
 		r:SetPoint("TOPLEFT", page, "TOPRIGHT", -6, 6)

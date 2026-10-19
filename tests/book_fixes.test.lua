@@ -1,5 +1,6 @@
 STUB.atlases["spellbook-Page-Right-C60"] = true
 STUB.atlases["spellbook-background-evergreen-ribbon"] = true
+LevelMatesDB = { settings = { theme = "parchment" } }   -- about the parchment book (the dark theme is the default since 2026-10-19)
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)

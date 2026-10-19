@@ -1,6 +1,7 @@
 -- Home, after the 2026-10-18 screenshot: the chat panel wraps long lines (a scrolling message frame, as the
 -- window), names of guildmates without the addon get their class colour from the roster, a Discord line reads
 -- as a sentence, and a group card's title never runs under its button
+LevelMatesDB = { settings = { theme = "parchment" } }   -- this test is about the parchment's ink (the dark theme is the default since 2026-10-19)
 STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(30)

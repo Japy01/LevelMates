@@ -82,7 +82,7 @@ function Region:IsEnabled() return self.enabled ~= false end
 function Region:SetAutoFocus() end
 function Region:SetMaxLetters() end
 function Region:SetTexCoord(l, r, t, b) self.texcoord = { l, r, t, b } end
-function Region:SetHighlightTexture() end
+function Region:SetHighlightTexture(t) self.highlight = t end
 function Region:SetJustifyH() end
 function Region:SetWordWrap(v) self.wordWrap = v end
 function Region:SetJustifyV() end

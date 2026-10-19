@@ -251,7 +251,7 @@ local function Build()
 		btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		local bg = btn:CreateTexture(nil, "BACKGROUND")   -- zebra striping
 		bg:SetAllPoints(btn); bg:SetColorTexture(1, 1, 1, i % 2 == 0 and 0.06 or 0)
-		local hl = btn:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(0.45, 0.28, 0.08, 0.16)   -- a soft brown shade: a white glow washes the page out
+		local hl = btn:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(unpack(ns.Skin.C.highlight))   -- a soft shade in the theme's colour
 		btn:SetHighlightTexture(hl)
 		local icon = btn:CreateTexture(nil, "ARTWORK")   -- class icon, left of the name
 		icon:SetSize(ROW_H - 4, ROW_H - 4); icon:SetPoint("LEFT", 0, 0)
