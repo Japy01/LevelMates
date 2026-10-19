@@ -86,7 +86,7 @@ local function Build()
 		if type(y1) == "number" and y1 < 0 then insetTop = -y1 end
 		if type(y2) == "number" and y2 > 0 then insetBottom = y2 end
 	end
-	if f.page then insetTop = insetTop + 55 end   -- the page's drawn top edge (its curl): the writing starts below it
+	if f.page and not ns.Skin.Dark() then insetTop = insetTop + 55 end   -- the parchment's drawn top edge (its curl): the writing starts below it; the dark page has none
 	B.TOP, B.BOTTOM = insetTop + 60, insetBottom
 	B.CHROME = B.TOP + ROW_H + B.BOTTOM + 10
 	f:SetSize(B.WIDTH, B.CHROME + (ROWS + HELP_ROWS) * ROW_H)   -- room for the last mate row above the help rows

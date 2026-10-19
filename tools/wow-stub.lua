@@ -275,7 +275,7 @@ C_QuestLog.IsPushableQuest = function() return true end
 function GetNumGroupMembers() return STUB.groupSize or 0 end
 function GetNumSubgroupMembers() return math.max(0, (STUB.groupSize or 0) - 1) end
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true, Luis = true }
-UNKNOWN = "Unknown"
+UNKNOWN = "Unknown"; UNKNOWNOBJECT = "Unknown entity"
 Enum.ClubStreamType = { General = 0, Guild = 1, Officer = 2, Discord = 3 }
 -- the club's chat history: STUB.clubStreams = { { streamId, name, streamType } }, STUB.clubMessages[streamId] = { { messageId = { epoch (µs), position }, content, author = { name, classID }, destroyed } }
 STUB.clubStreams, STUB.clubMessages, STUB.clubRequested, STUB.clubFocused = {}, {}, {}, {}

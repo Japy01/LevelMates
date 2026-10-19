@@ -17,6 +17,9 @@ local seen = {}   -- the game's message ids already in the list
 function GC.Lines() return lines end
 
 local function plain(v) if issecretvalue and issecretvalue(v) then return nil end; return v end
+-- The game's placeholder for a line it has not loaded ("Unknown" / "Entidad desconocida"): never a line of ours.
+local function placeholder(text) return text == nil or text == "" or text == UNKNOWN or text == UNKNOWNOBJECT or text == "Unknown" or text == "Unknown entity" end
+GC.IsPlaceholder = placeholder
 local function trim()
 	while #lines > GC.MAX do local gone = table.remove(lines, 1); if gone.id then seen[gone.id] = nil end end
 end
@@ -86,7 +89,7 @@ local function readStream(s)
 			local text = plain(m.content)
 			local author = plain(m.author)
 			local name = author and plain(author.name)
-			if epoch and type(text) == "string" and text ~= "" and text ~= UNKNOWN and not plain(m.destroyed) and type(name) == "string" and name ~= "" then
+			if epoch and type(text) == "string" and not placeholder(text) and not plain(m.destroyed) and type(name) == "string" and name ~= "" then
 				out[#out + 1] = { kind = s.kind, name = ns.ShortName(name), text = text, at = math.floor(tonumber(epoch) / 1000000),
 					id = string.format("%.0f", tonumber(epoch)) .. ":" .. tostring(plain(mid.position) or 0), class = author and plain(author.classID) or nil }
 			end
@@ -124,7 +127,7 @@ end
 -- What the last session saved, for when the game has nothing to give (never over what it does give).
 local function loadSaved()
 	local saved = ns.db and ns.db.chat and ns.db.chat[ns.GuildKey()]
-	for _, e in ipairs(saved or {}) do put({ kind = e.k, name = e.n, text = e.x, at = e.t, id = e.i }) end
+	for _, e in ipairs(saved or {}) do if e.k == "discord" or not placeholder(e.x) then put({ kind = e.k, name = e.n, text = e.x, at = e.t, id = e.i }) end end
 	trim()
 end
 ns.On("LM_WORLD", function()

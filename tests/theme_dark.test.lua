@@ -11,6 +11,7 @@ assert(math.abs(r - 0.67) < 1e-6 and math.abs(g - 0.83) < 1e-6 and math.abs(b - 
 assert(SK.InkText("|cffa335eex|r") == "|cffa335eex|r", "colour codes untouched")
 assert(SK.C.section[4] <= 0.12 and SK.C.section[1] >= 0.9 and SK.C.line[1] >= 0.9, "light translucent bands and lines on the dark page")
 B.Toggle()
+assert(B.TOP < 120, "no parchment curl to clear: the heading sits high: " .. B.TOP)
 local page = B.frame.page
 assert(page and page.atlas == nil and page.colorTexture and page.colorTexture[1] < 0.12 and page.colorTexture[4] >= 0.9, "the page: a near-black colour, no parchment art")
 -- a panel's band and the row highlight follow the theme
