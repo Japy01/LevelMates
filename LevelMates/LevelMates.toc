@@ -67,6 +67,7 @@ Journal.lua
 Goals.lua
 Personal.lua
 Wishlist.lua
+WishlistAlerts.lua
 Gifts.lua
 Professions.lua
 Recipes.lua

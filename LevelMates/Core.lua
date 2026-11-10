@@ -7,6 +7,7 @@ local DEFAULTS = {
 	share = true, sharePos = true, shareQuests = true, shareXp = true, shareRested = true,
 	matchNotices = true, helpNotices = true, lfgNotices = true, palNotices = true, restedNotices = true, goalNotices = true, wishNotices = true, screenNotices = true, levelNotices = true, shareProfessions = true, shareFeed = true, feedLoot = true, rareNotices = true, mapPins = true, mapNames = true, shareBank = true, shareGear = true, readChatAds = true, shareBuild = true, shareDeaths = true, trainerNotices = true, groupXp = true, askNotices = true, shareAlts = true, sharePoints = true, shareAchievements = true, ink = 4, theme = "dark", sound = true, minimap = true, stripNotices = true, dingBanner = true, levelBar = true, boardScale = 100, discordTag = true, discordTagOff = false,
 	transport = "auto", debug = false, language = "auto",
+	wishRollAlerts = true, wishLootAlerts = true,
 }
 
 ns.DEFAULTS = DEFAULTS
