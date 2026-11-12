@@ -34,6 +34,7 @@ local function wire(rec, target)
 end
 local function send(rec, target)
 	local spec = types[rec.t]
+	if spec.relayFrom and not spec.relayFrom(rec.o, me()) then return false end
 	local mine = rec.o == me() and not target
 	local opts = mine and { hold = true, onSent = function() inQueue[rec] = nil; rec.pending = nil end } or { hold = true }
 	local ok
@@ -55,6 +56,9 @@ S.Send = send
 --         relayKeep = function(rec) -> hand it to newcomers, relayMax = n newest at most,
 --         idOwner = function(id, owner) -> may this owner hold this id (ids made from a name),
 --         accept = function(fields, owner) -> is this owner allowed to say this (checked on receive),
+--         canAnswer = function(to) -> optional permission gate before claiming a catch-up response,
+--         writerTieBreak = true: resolve same-revision shared edits by author; include author in digest,
+--         relayFrom = function(owner, sender) -> optional trusted relay gate for records AND tombstones,
 --         writerOwns = true: the last writer becomes the owner (shared notes: whoever may edit) }
 function S.Define(t, spec)
 	spec.class = spec.class or "board"
@@ -108,13 +112,16 @@ function S.Receive(t, f, sender, catchup)
 	if owner ~= sender and spec.writerOwns and not catchup then return end   -- someone else's word, live: only its writer says it
 	if owner == me() then return end
 	if not trusted(owner) or not trusted(sender) then return end
+	if spec.relayFrom and not spec.relayFrom(owner, sender) then return end
 	if f.v > now() + S.FUTURE or f.e < now() then return end
 	if spec.idOwner and not spec.idOwner(f.id, owner) then return end   -- an id made from someone else's name
 	if spec.accept and not spec.accept(f, owner) then return end
 	local s = store(t)
 	local old = s[f.id]
 	if old and old.o ~= owner and not spec.may(old, owner) then return end   -- an id belongs to its owner
-	if old and old.v >= f.v then return end
+	if old and old.v >= f.v then
+		if not (spec.writerTieBreak and old.v == f.v and not old.dead and owner > old.o) then return end
+	end
 	local d = {}
 	for k, v in pairs(f) do if k ~= "id" and k ~= "o" and k ~= "v" and k ~= "e" then d[k] = v end end
 	if spec.max and not (old and not old.dead) then
@@ -135,11 +142,14 @@ C.OnMessage("x", function(f, sender)
 	local owner = f.o or sender
 	if owner ~= sender and spec.class == "personal" then return end
 	if owner == me() or not trusted(owner) or not trusted(sender) then return end
+	if spec.relayFrom and not spec.relayFrom(owner, sender) then return end
 	if f.v > now() + S.FUTURE or f.e < now() then return end
 	if spec.idOwner and not spec.idOwner(f.id, owner) then return end
 	local s = store(f.t)
 	local old = s[f.id]
-	if old and old.v >= f.v then return end
+	if old and old.v >= f.v then
+		if not (spec.writerTieBreak and old.v == f.v and not old.dead) then return end
+	end
 	if old and not spec.may(old, owner) then return end
 	s[f.id] = { t = f.t, id = f.id, o = old and old.o or owner, v = f.v, e = math.min(f.e, now() + spec.life + S.FUTURE), dead = true }
 	if old and not old.dead then fire(spec, s[f.id], old, "live") end
@@ -165,7 +175,12 @@ end
 function S.Digest(t)
 	local spec, n, sum = types[t], 0, 0
 	for _, r in pairs(store(t)) do
-		if relayable(spec, r) then n = n + 1; sum = (sum + r.v + (r.dead and 7 or 0)) % 2147483647 end
+		if relayable(spec, r) then
+			n = n + 1
+			local author = 0
+			if spec.writerTieBreak then for i = 1, #r.o do author = (author * 31 + r.o:byte(i)) % 1000003 end end
+			sum = (sum + r.v + (r.dead and 7 or 0) + author) % 2147483647
+		end
 	end
 	return n, sum
 end
@@ -207,6 +222,7 @@ end
 -- one whose name sorts first sends.
 local rivals = {}   -- [key] = the lowest other name that claimed it while mine was pending
 local function answer(t, to)
+	if types[t].canAnswer and not types[t].canAnswer(to) then return end
 	if IsInInstance and IsInInstance() then return end   -- my claim could not go out there: others answer
 	local key = to .. ":" .. t
 	if claimed[key] and GetTime() - claimed[key] < 30 then return end
