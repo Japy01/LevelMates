@@ -18,8 +18,18 @@ LT.NEXT = { aw = { rc = true, eq = true, x = true, c = true }, rc = { eq = true,
 
 local function me() return ns.Me() end
 local function officer(name) return R.IsOfficer(name) or (name == me() and R.IAmOfficer()) end
-local seq = 0
-local function newId(prefix) seq = seq + 1; return string.format("%s%s%x%x", prefix, ns.NameKey(me()):sub(1, 6), time() % 100000, seq) end
+-- Saved across reloads; also check retained records for migrated/reset counters and clock repeats.
+-- Keep the historical wire format and stay within the 24-byte record/reference limit.
+local function newId(prefix)
+	local id
+	repeat
+		local seq = tonumber(ns.char.lootSeq)
+		if not seq or seq < 0 or seq >= 2147483647 or seq ~= math.floor(seq) then seq = 0 end
+		ns.char.lootSeq = seq + 1
+		id = string.format("%s%s%x%x", prefix, ns.NameKey(me()):sub(1, 6), time() % 100000, ns.char.lootSeq)
+	until not S.Store("lk")[id] and not S.Store("la")[id] and not S.Store("lp")[id]
+	return id
+end
 local function changed() ns.Fire("LM_LOOT_CHANGED") end
 
 S.Define("lk", { class = "board", life = LT.LEDGER_LIFE, relayMax = 5000,   -- a raid night is ~225 entries: whoever joins late still gets whole balances for many nights
