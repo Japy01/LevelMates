@@ -1482,6 +1482,7 @@ function B.OpenWishMenu(id, kind, mine, name)
 		return
 	end
 	if not mine or not ns.Wishlist.Has(id) then return end
+	if ns.Wishlist.IsExternal() then ns.Say(L.WISH_SOURCE_MANAGED); return end
 	MenuUtil.CreateContextMenu(B.frame, function(_, root)
 		root:CreateButton(L.WISH_REMOVE, function() ns.Confirm(L.CONFIRM_WISH, function() ns.Wishlist.Remove(id) end) end)
 		local cur = ns.Wishlist.PriorityOf(ns.Me(), id)
@@ -2573,6 +2574,7 @@ local function RefreshTabs()
 	B.goalNew:SetShown(goals and R.IAmOfficer())
 	B.myGoal:SetShown(goals)
 	B.wishAdd:SetShown(wishes)
+	B.wishAdd:SetEnabled(not ns.Wishlist.IsExternal())
 	B.classShare:SetShown(class)
 	B.classAsk:SetShown(class)
 	B.feedCemetery:SetShown(feed)
@@ -2637,6 +2639,7 @@ function B.Refresh()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
 	B.subtitle:SetText(journal and ns.Journal.PaceText() or feed and B.feedDeaths and string.format(L.FEED_CEMETERY_SUB, B.feedDeathCount or 0) or L["SUB_" .. hk])
+	if wishes and ns.Wishlist.IsExternal() then B.subtitle:SetText(L.WISH_SOURCE_SUB) end
 	if lfg and B.lfgCalendar then B.heading:SetText(L.HEAD_GROUPS); B.subtitle:SetText(L.SUB_GROUPS) end
 	if lfg and B.lfgTogether then B.heading:SetText(L.HEAD_TOGETHER); B.subtitle:SetText(L.SUB_TOGETHER) end
 	if lfg and B.lfgQuests then B.heading:SetText(L.HEAD_QUESTS); B.subtitle:SetText(L.SUB_QUESTS) end

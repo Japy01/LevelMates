@@ -7,7 +7,35 @@ local L, C, R = ns.L, ns.Comm, ns.Roster
 W.MAX, W.FORGET_DAYS = 10, 30
 
 local function me() return ns.Me() end
-local function mine() ns.char.wishes = ns.char.wishes or {}; return ns.char.wishes end
+function W.IsExternal() return ns.char.wishSource == "needroll" end
+-- Interoperability adapter for the installed NeedRoll wishlist schema (observed in 1.4.1/1.7.0).
+-- Read-only: never assign into NeedRollDB or persist a second list in our character data.
+function W.NeedRollItems()
+	if not (C_AddOns and C_AddOns.IsAddOnLoaded and C_AddOns.IsAddOnLoaded("NeedRoll")) then return nil end
+	local db = NeedRollDB
+	local store = type(db) == "table" and db.wishlist
+	if type(store) ~= "table" or type(store.lists) ~= "table" or type(store.current) ~= "string" or #store.lists > 100 then return nil end
+	local selected
+	for _, list in ipairs(store.lists) do
+		if type(list) ~= "table" then return nil end
+		if list.name == store.current then selected = list; break end
+	end
+	if not selected or type(selected.items) ~= "table" or #selected.items > 500 then return nil end
+	local out, seen, total = {}, {}, 0
+	for _, entry in ipairs(selected.items) do
+		local id = type(entry) == "table" and ns.Plain(entry.itemID)
+		if type(id) ~= "number" or id < 1 or id > 999999 or id ~= math.floor(id) then return nil end
+		if not seen[id] then
+			seen[id], total = true, total + 1
+			if #out < W.MAX then out[#out + 1] = { id = id, t = ns.char.wishSourceAt or time() } end
+		end
+	end
+	return out, total
+end
+local function mine()
+	if W.IsExternal() then return W.NeedRollItems() or {} end
+	ns.char.wishes = ns.char.wishes or {}; return ns.char.wishes
+end
 local function theirs()
 	ns.db.wishes = ns.db.wishes or {}
 	local k = ns.GuildKey()
@@ -36,7 +64,43 @@ local PP = ns.Sync.Personal("wp", function()
 	for _, w in ipairs(mine()) do if w.p then parts[#parts + 1] = w.id .. ":" .. w.p end end
 	return { p = #parts > 0 and table.concat(parts, ","):sub(1, 120) or nil }
 end, { save = "wishPrioPending", worth = function() for _, w in ipairs(mine()) do if w.p then return true end end; return false end })
+local sourceSignature
+function W.SourceTick()
+	if not W.IsExternal() then return end
+	local items = W.NeedRollItems()
+	local ids = {}; for _, w in ipairs(items or {}) do ids[#ids + 1] = w.id end
+	local signature = (items and "ready:" or "unavailable:") .. table.concat(ids, ",")
+	if signature ~= sourceSignature then
+		sourceSignature = signature
+		send("now"); PP.Mark("now"); ns.Fire("LM_WISHES_CHANGED")
+	end
+end
+function W.SetSource(source)
+	if source ~= "local" and source ~= "needroll" then return false end
+	if source == "needroll" and not W.NeedRollItems() then ns.Say(L.WISH_SOURCE_UNAVAILABLE); return false end
+	ns.char.wishSource, ns.char.wishSourceAt = source, time()
+	sourceSignature = nil
+	send("now"); PP.Mark("now"); ns.Fire("LM_WISHES_CHANGED")
+	return true
+end
+function W.SourceStatus()
+	if not W.IsExternal() then return L.WISH_SOURCE_LOCAL end
+	local items, total = W.NeedRollItems()
+	if not items then return L.WISH_SOURCE_UNAVAILABLE end
+	return string.format(L.WISH_SOURCE_NEEDROLL, #items, total)
+end
+ns.Slash("wishsource", function(rest)
+	local source = strtrim(rest or "")
+	if source ~= "" and not W.SetSource(source) then ns.Say(L.WISH_SOURCE_HELP); return end
+	ns.Say(W.SourceStatus()); ns.Say(L.WISH_SOURCE_HELP)
+end)
+ns.On("LM_WORLD", function()
+	if not W.sourceTicker then W.sourceTicker = C_Timer.NewTicker(5, W.SourceTick) end
+	W.SourceTick()
+end)
+
 function W.SetPriority(id, prio)
+	if W.IsExternal() then ns.Say(L.WISH_SOURCE_MANAGED); return false end
 	prio = tonumber(prio)
 	for _, w in ipairs(mine()) do
 		if w.id == id then
@@ -70,6 +134,7 @@ end)
 
 -- Called from a click (the "Add a wish" dialog).
 function W.Add(link)
+	if W.IsExternal() then ns.Say(L.WISH_SOURCE_MANAGED); return false end
 	local id = W.ItemId(link)
 	if not id then ns.Say(L.WISH_NOT_ITEM); return false end
 	if W.Has(id) then ns.Say(L.WISH_DUP); return false end
@@ -83,6 +148,7 @@ function W.Add(link)
 end
 
 function W.Remove(id)
+	if W.IsExternal() then ns.Say(L.WISH_SOURCE_MANAGED); return false end
 	local list = mine()
 	for i, w in ipairs(list) do
 		if w.id == id then
@@ -156,7 +222,7 @@ local told = {}
 ns.On("LM_MY_LOOT", function(link)
 	local id = W.ItemId(link)
 	if not id then return end
-	if W.Has(id) then
+	if W.Has(id) and not W.IsExternal() then
 		W.Remove(id)
 		ns.NoticeAt("wishes", L.WISH_GOT, link)
 	end
