@@ -156,6 +156,8 @@ ns.On("LM_LOADED", function()
 	Bool(notices, "matchNotices", L.OPT_MATCH, L.OPT_MATCH_TT)
 	Bool(notices, "palNotices", L.OPT_PAL, L.OPT_PAL_TT)
 	Bool(notices, "wishNotices", L.OPT_WISH, L.OPT_WISH_TT)
+	Bool(notices, "wishRollAlerts", L.OPT_WISH_ROLL, L.OPT_WISH_ROLL_TT)
+	Bool(notices, "wishLootAlerts", L.OPT_WISH_LOOT, L.OPT_WISH_LOOT_TT)
 	Bool(notices, "rareNotices", L.OPT_RARE, L.OPT_RARE_TT)
 	Bool(notices, "askNotices", L.OPT_ASK, L.OPT_ASK_TT)
 	Bool(notices, "trainerNotices", L.OPT_TRAINER, L.OPT_TRAINER_TT)
@@ -163,7 +165,7 @@ ns.On("LM_LOADED", function()
 	Settings.RegisterAddOnCategory(category)
 end)
 
-S.QUIET_KEYS = { "matchNotices", "palNotices", "restedNotices", "wishNotices", "levelNotices", "rareNotices", "askNotices", "trainerNotices", "screenNotices", "sound", "stripNotices", "dingBanner" }
+S.QUIET_KEYS = { "matchNotices", "palNotices", "restedNotices", "wishNotices", "wishRollAlerts", "wishLootAlerts", "levelNotices", "rareNotices", "askNotices", "trainerNotices", "screenNotices", "sound", "stripNotices", "dingBanner" }
 function S.IsQuiet() return ns.db.settings.quietSaved ~= nil end
 -- On: the lesser notices off, what they were kept to come back; off: as they were.
 function S.SetQuiet(on)
