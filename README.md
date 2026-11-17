@@ -42,6 +42,8 @@ The board opens on **Home**, a dashboard: the guild level, who is online, your i
 - **Wall tab**: the last 7 days in the guild: level-ups, dungeons with guildmates, rare loot, goals reached, deaths (a Cemetery button shows only those). What you missed arrives when you log in.
 
 ### Items and professions
+Optional NeedRoll wishlist source: `/lm wishsource needroll` reads and shares the first ten items of its current list without importing an editable copy. [Opt-in, compatibility and limits](docs/needroll-wishlist-source.md).
+
 - **Wishes tab**: up to 10 items you want, added with Shift+click, and up to 10 you give away. Wishes and giveaways are matched both ways ("Ana gives away [Sword], which is on your list"), a giveaway can be reserved, offers can also have a price in gold ("I'll buy it" tells the seller; you pay by trade or mail), and item tooltips say who wants or gives an item. Looting something a guildmate wants tells you who to pass it to.
 - **Professions tab**: who has each profession and at what rank, grouped by profession, with a hint when someone should visit the trainer. Your recipes are read when you open your own profession window and shared (with "Share professions"); search an item by name, number or link to see **who crafts it**, ask them with a whisper, or browse someone's recipes. Item tooltips say who in the guild crafts the item.
 

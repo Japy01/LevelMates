@@ -5,7 +5,7 @@
 ## Author: Diego and contributors
 ## Version: @project-version@
 ## SavedVariables: LevelMatesDB
-## OptionalDeps: Questie
+## OptionalDeps: Questie, NeedRoll
 ## IconTexture: Interface\AddOns\LevelMates\Media\icon
 ## Category: Guild
 ## Category-esES: Hermandad
