@@ -98,4 +98,7 @@ Report.lua
 GuildChat.lua
 WhatsNew.lua
 RaidProbe.lua
+RaidRequirements.lua
+RaidReadiness.lua
+RaidReadinessConfig.lua
 Sim.lua
