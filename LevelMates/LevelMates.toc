@@ -82,6 +82,7 @@ Home.lua
 Achievements.lua
 GuildFirsts.lua
 Loot.lua
+LootExport.lua
 LootRaid.lua
 LootSession.lua
 LootWindow.lua
