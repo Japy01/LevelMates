@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.4
+
+- **Personal wishlist alerts**: notices when a wished item appears in a group roll or loot window, with separate options under Notices. Need is mentioned only when the game offers it; no automatic rolls.
+- **Optional NeedRoll wishlist source**: `/lm wishsource needroll` uses the first ten distinct items of NeedRoll's current list without creating a second editable list. `/lm wishsource local` restores the character's Forever Guild list.
+- **Shared raid requirements and private reminders**: `/lm raidready config` opens an editor for officer requirements by raid, class or role, current raid-leader additions, and personal extras. Reports combine the highest required count per item and show carried quantities and missing/unknown data. Personal inventory, access declarations and lockouts stay local.
+- **Loot history protected across reloads**: new points entries, item awards and +1 adjustments avoid reusing retained record IDs.
+- **Raid loot and points exports**: `/lm raidexport` lists retained raid IDs; `/lm raidexport <ID> text|csv` opens a report including cancellations, corrections, refunds and linked records.
+
 ## 0.7.3
 
 - **Every feature is on by default**: sharing your quests, XP per hour and rested XP, names on the map pins, the level bar and the Discord bot tag. Whoever had them off finds them on once after updating, with one chat line naming them (they go off in /lm options); turning one off afterwards sticks. The bot tag stays off for whoever ticked "No bot tag". Debug and the officers' guild chat notice stay off.
@@ -231,3 +239,4 @@ First release. English and Spanish.
 ### Under the hood
 - Guild addon messages only, with a hidden temporary channel as fallback; small, validated, rate-limited, and nothing from combat. Every option to share has its own switch; position, quests, XP per hour and rested XP are off by default.
 - `/lm sim` and its variants show fake guildmates, locally, to try everything alone.
+
