@@ -28,13 +28,15 @@ function RR.SetAccess(id, value)
 	return true
 end
 -- Validate a complete replacement first. Never partially change a profile on invalid input.
-function RR.SetItems(id, text)
+function RR.SetItems(id, text, instruction)
 	id = raid(id)
 	local items = ns.RaidRequirements.Parse(text)
-	if not id or not items then return false end
+	if not id or not items or (instruction ~= nil and not ns.RaidRequirements.ValidNote(instruction)) then return false end
 	profile(id).items = items
+	if instruction ~= nil then profile(id).note = instruction ~= "" and instruction or nil end
 	return true
 end
+function RR.PersonalNote(id) id = raid(id); return id and profile(id).note end
 function RR.PersonalItems(id) id = raid(id); return id and profile(id).items or {} end
 function RR.Lockouts()
 	local out = { status = "unknown", rows = {} }
@@ -63,6 +65,7 @@ function RR.Snapshot(id)
 	if p.accessAt and out.at >= p.accessAt and out.at - p.accessAt <= RR.ACCESS_LIFE then out.access, out.accessAt = p.access, p.accessAt end
 	out.lockouts = RR.Lockouts()
 	local sources, class, role, leader = ns.RaidRequirements.Resolve(id)
+	out.note = p.note
 	out.sources, out.class, out.role, out.leader = sources, class, role, leader
 	local items, byId = {}, {}
 	local function merge(list, origin)
@@ -100,12 +103,17 @@ function RR.Text(id)
 	end
 	if not s.class then lines[#lines + 1] = L.READY_CLASS_UNKNOWN end
 	if not s.role then lines[#lines + 1] = L.READY_ROLE_UNSET end
+	local manual = L.READY_SAVE == "Guardar perfil" and "Comprobación manual" or "Manual check"
+	for _, source in ipairs(s.sources) do
+		if source.note then lines[#lines + 1] = "  " .. manual .. " (" .. source.by .. "): " .. source.note end
+	end
+	if s.note then lines[#lines + 1] = "  " .. manual .. " (" .. L.READY_MODE_PERSONAL .. "): " .. s.note end
 	lines[#lines + 1] = L.READY_ITEMS
 	if #s.items == 0 then lines[#lines + 1] = L.READY_UNCONFIGURED end
 	for _, item in ipairs(s.items) do
 		local origins = {}
 		for _, origin in ipairs(item.origins) do origins[#origins + 1] = L["READY_SOURCE_" .. origin.kind:upper()] .. (origin.scope and ("/" .. ns.RaidRequirements.ScopeLabel(origin.scope)) or "") end
-		lines[#lines + 1] = string.format("  #%d: %s/%d · %s · %s", item.id, item.count == nil and "?" or tostring(item.count), item.required, L["READY_" .. item.status:upper()], table.concat(origins, ", "))
+		lines[#lines + 1] = string.format("  %s: %s/%d · %s · %s", ns.ItemInfo(item.id) or ("#" .. item.id), item.count == nil and "?" or tostring(item.count), item.required, L["READY_" .. item.status:upper()], table.concat(origins, ", "))
 	end
 	lines[#lines + 1] = L.READY_LIMITS
 	lines[#lines + 1] = L.READY_HELP

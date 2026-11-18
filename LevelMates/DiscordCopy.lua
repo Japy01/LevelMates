@@ -179,7 +179,7 @@ local function Build()
 	tinsert(UISpecialFrames, "LevelMatesDiscordDialog")
 	f:Hide()
 	local hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	hint:SetPoint("TOP", 0, -32); hint:SetText(L.DC_HINT)
+	hint:SetPoint("TOP", 0, -32); hint:SetText(L.DC_HINT); D.hint = hint
 	local scroll = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate")
 	scroll:SetPoint("TOPLEFT", 16, -50); scroll:SetPoint("BOTTOMRIGHT", -34, 44)
 	local box = CreateFrame("EditBox", nil, scroll)
@@ -194,8 +194,14 @@ local function Build()
 end
 
 -- Any text in the box (Home's invite): to copy and paste anywhere; nothing is sent.
-function D.OpenText(text)
+local function presentation(title, hint)
+	if D.frame.TitleText then D.frame.TitleText:SetText(title or L.DC_TITLE) end
+	D.hint:SetText(hint or L.DC_HINT)
+end
+
+function D.OpenText(text, title, hint)
 	if not D.frame then Build() end
+	presentation(title, hint)
 	D.box:SetText(text)
 	D.frame:Show()
 	D.box:SetFocus(); D.box:HighlightText()
@@ -203,6 +209,7 @@ end
 
 function D.Open(tab)
 	if not D.frame then Build() end
+	presentation()
 	D.box:SetText(D.Text(tab))
 	D.frame:Show()
 	D.box:SetFocus(); D.box:HighlightText()

@@ -3,7 +3,7 @@
 ## 0.7.5
 
 - **Notices are easier to find**: settings are grouped into Display and sound, Guild and groups, Wishlist and loot, and Progress and world. Sound now sits with the other notice settings. Existing preferences are preserved.
-- **Raid readiness is accessible from Options**: open the existing requirements and personal reminders editor without typing a slash command.
+- **Raid readiness is accessible from Options**: add consumables by item link or Shift-click, set quantities separately, and include manual instructions. Officers can publish guild requirements for a raid by class, talent tree or role. Guild requirements, current raid-leader additions and personal reminders combine using the highest quantity per item.
 
 ## 0.7.4
 

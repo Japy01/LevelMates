@@ -1,11 +1,13 @@
 -- Shared consumable requirements reuse guild records; personal reminders stay in RaidReadiness.
 local _, ns = ...
 local P = {}; ns.RaidRequirements = P
-local unpack = unpack or table.unpack
 local S, C, R, L = ns.Sync, ns.Comm, ns.Roster, ns.L
 P.MAX_ITEMS = 20
 P.SCOPES = { "ALL", "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID", "T", "H", "D" }
 local scopeSet, classSet = {}, {}; for _, scope in ipairs(P.SCOPES) do scopeSet[scope] = true; if #scope > 1 and scope ~= "ALL" then classSet[scope] = true end end
+for class in pairs(classSet) do
+	for branch = 1, 3 do scopeSet[class .. branch] = true end
+end
 local function activity(id) local a = ns.Activities.Get(tonumber(id)); return a and a.kind == "r" and a.id end
 local function officer(name) return R.IsOfficer(name) or (name == ns.Me() and R.IAmOfficer()) end
 function P.Parse(text)
@@ -30,7 +32,11 @@ local function key(kind, id, scope, who)
 end
 local function changed() ns.Fire("LM_RAID_REQUIREMENTS_CHANGED") end
 local function trustedRelay(owner, sender) return owner == sender or officer(sender) end
-local fields = { a = C.V.int(101, 199), s = C.V.oneOf(unpack(P.SCOPES)), i = function(v) return type(v) == "string" and #v <= 220 and P.Parse(v) ~= nil end }
+local function note(value)
+	return type(value) == "string" and #value <= 160 and not value:find("[%c|]")
+end
+P.ValidNote = note
+local fields = { n = note, a = C.V.int(101, 199), s = function(v) return scopeSet[v] == true end, i = function(v) return type(v) == "string" and #v <= 220 and P.Parse(v) ~= nil end }
 S.Define("rpg", { class = "board", life = 365 * 86400, writerOwns = true, writerTieBreak = true, max = 256, relayMax = 256,
 	fields = fields, required = { "a", "s", "i" }, relayFrom = trustedRelay, canAnswer = function() return officer(ns.Me()) end,
 	idOwner = function(_, owner) return officer(owner) end,
@@ -77,18 +83,20 @@ function P.Get(kind, id, scope, who)
 	local rec = S.Get(kind == "guild" and "rpg" or "rpl", key(kind, tonumber(id), scope, who))
 	if rec and (kind ~= "guild" or officer(rec.o)) then return rec end
 end
-function P.Set(kind, id, scope, text)
+function P.Set(kind, id, scope, text, instruction)
 	id = activity(id)
 	local items = P.Parse(text)
-	if not id or not scopeSet[scope] or not items then return false, "input" end
+	if not id or not scopeSet[scope] or not items or (instruction ~= nil and not note(instruction)) then return false, "input" end
 	if not P.CanPublish(kind) then return false, "permission" end
-	local data = { a = id, s = scope, i = P.Encode(items) }
+	local data = { a = id, s = scope, i = P.Encode(items), n = instruction ~= "" and instruction or nil }
 	local t, k = kind == "guild" and "rpg" or "rpl", key(kind, id, scope)
-	local wire = { id = k, v = GetServerTime(), e = GetServerTime() + 1, a = id, s = scope, i = data.i }
+	local wire = { id = k, v = GetServerTime(), e = GetServerTime() + 1, a = id, s = scope, i = data.i, n = data.n }
 	if not C.Validate(t, wire) then return false, "input" end
 	return S.Put(t, k, data) and true or false
 end
 function P.ScopeLabel(scope)
+	local class, branch = scope:match("^(%u+)([123])$")
+	if class then return P.ScopeLabel(class) .. " · " .. ns.Talents.BranchName(class, nil, tonumber(branch)) end
 	if scope == "ALL" then return L.READY_SCOPE_ALL end
 	if scope == "T" or scope == "H" or scope == "D" then return L["ROLE_" .. scope] or scope end
 	return (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[scope]) or scope
@@ -100,13 +108,15 @@ function P.Resolve(id)
 	local role = ns.Roles.Mine() -- never guess a role's requirements from the class
 	if role ~= "T" and role ~= "H" and role ~= "D" then role = nil end
 	local scopes = { "ALL" }; if class then scopes[#scopes + 1] = class end
+	local branch = ns.char.raidReadinessBranch
+	if class and branch and branch >= 1 and branch <= 3 then scopes[#scopes + 1] = class .. branch end
 	if role == "T" or role == "H" or role == "D" then scopes[#scopes + 1] = role end
 	local leader, out = P.Leader(), {}
 	for _, scope in ipairs(scopes) do
 		for _, kind in ipairs({ "guild", "raid" }) do
 			local rec = (kind == "guild" or leader) and P.Get(kind, id, scope, leader)
 			if rec and (kind == "guild" or rec.o == leader) then
-				out[#out + 1] = { kind = kind, scope = scope, by = rec.o, at = rec.v, expires = rec.e, items = P.Parse(rec.d.i) or {} }
+				out[#out + 1] = { kind = kind, scope = scope, by = rec.o, at = rec.v, expires = rec.e, note = rec.d.n, items = P.Parse(rec.d.i) or {} }
 			end
 		end
 	end

@@ -48,7 +48,7 @@ issecretvalue=nil
 RR.OpenConfig(101)
 local f=RR.config
 assert(f.frame:IsShown())
-f.box:SetText("600:4"); f.save.scripts.OnClick(f.save)
+f.link:SetText("item:600"); f.link.scripts.OnEnterPressed(f.link); f.rows[1].count:SetText("4"); f.save.scripts.OnClick(f.save)
 assert(RR.PersonalItems(101)[1].id==600)
 local entries
 MenuUtil.CreateContextMenu=function(_,fn)
@@ -59,10 +59,11 @@ assert(not f.save:IsEnabled())
 STUB.guildRoles.Tester=2; ns.Roster.InvalidateGuildRoster()
 RR.OpenConfig(101); assert(f.save:IsEnabled())
 f.scopeButton.scripts.OnClick(f.scopeButton); entries[P.ScopeLabel("ROGUE")]()
-f.box:SetText("700:6"); f.save.scripts.OnClick(f.save)
-assert(P.Get("guild",101,"ROGUE").d.i=="700:6")
+while #f.items > 0 do f.rows[1].remove.scripts.OnClick(f.rows[1].remove) end
+f.link:SetText("item:700"); f.link.scripts.OnEnterPressed(f.link); f.rows[1].count:SetText("6"); f.note:SetText("Food buff"); f.save.scripts.OnClick(f.save)
+assert(P.Get("guild",101,"ROGUE").d.i=="700:6" and P.Get("guild",101,"ROGUE").d.n=="Food buff")
 local opened; ns.DiscordCopy.OpenText=function(text) opened=text end
-f.report.scripts.OnClick(f.report); assert(opened:find("#700",1,true))
+f.report.scripts.OnClick(f.report); assert(opened:find("Food buff",1,true))
 SlashCmdList.LEVELMATES("raidready guild 101 ALL 800:4")
 assert(P.Get("guild",101,"ALL").d.i=="800:4")
 SlashCmdList.LEVELMATES("raidready config 103"); assert(f.id==103)
