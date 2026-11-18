@@ -455,3 +455,11 @@ L.TIP_DISCORD = "Copia un texto para pegarlo en el Discord de la hermandad."; L.
 L.TIP_LC_BIS = "Es tu mejor objeto posible para esa ranura."; L.TIP_LC_MAIN = "Lo quieres para tu especialización principal."; L.TIP_LC_MINOR = "Una mejora pequeña."; L.TIP_LC_OS = "Para tu otra especialización."; L.TIP_LC_TM = "Solo por el aspecto."; L.TIP_LC_PASS = "No lo quieres."; L.TIP_LC_BID = "Puja sellada con tus puntos; el maestro la valida."; L.TIP_LC_ROLL = "Tira los dados del juego; una tirada de 100 gana a una de 50, y esa a una de 25."; L.TIP_LC_WITHDRAW = "Retira tu puja: tus puntos quedan libres para otro objeto."; L.TIP_LC_PASS_REST = "Pasa de todo lo que aún no has respondido."; L.TIP_LC_SHRINK = "Encoge la tarjeta a su título; los objetos siguen ahí."; L.TIP_LW_GIVE = "Entrega el objeto a esta persona y cobra el coste puesto."; L.TIP_LW_VOTE = "Tu voto del consejo para esta persona."; L.TIP_LW_CLOSE = "Cierra la sesión para toda la banda."; L.TIP_GC_ALL = "Todas las líneas."; L.TIP_GC_OFFICERS = "Solo las de oficiales."
 L.GR_CALENDAR = "Calendario del juego"; L.GR_CAL_HINT = "Nada en el calendario del juego esta semana. Los eventos de hermandad y las invitaciones salen aquí."; L.GR_CAL_MORE = "y %d más"
 L.OPT_THEME = "Tema"; L.OPT_THEME_TT = "Oscuro, como el diario de mazmorras del juego, o el libro de pergamino. El cambio pide recargar la interfaz."; L.THEME_DARK = "Oscuro"; L.THEME_PARCHMENT = "Pergamino"
+
+L.OPT_NOTICE_DISPLAY = "Presentación y sonido"
+L.OPT_NOTICE_GUILD = "Hermandad y grupos"
+L.OPT_NOTICE_LOOT = "Deseos y botín"
+L.OPT_NOTICE_PROGRESS = "Progreso y mundo"
+L.OPT_READY_SECTION = "Preparación de banda"
+L.OPT_READY_OPEN = "Abrir editor"
+L.OPT_READY_TT = "Edita tus recordatorios personales o los requisitos compartidos si tienes permiso."

@@ -38,3 +38,11 @@ assert(S.IsQuiet() and not ns.db.settings.levelNotices and not ns.db.settings.sc
 assert(ns.db.settings.helpNotices and ns.db.settings.lfgNotices and ns.db.settings.goalNotices, "help, groups and goals stay")
 S.SetQuiet(false)
 assert(not S.IsQuiet() and ns.db.settings.levelNotices and ns.db.settings.sound and ns.db.settings.rareNotices == false, "back as they were")
+
+assert(on(ns.Settings.pages[3], "sound") and not on(ns.Settings.pages[1], "sound"))
+local opened
+ns.RaidReadiness.OpenConfig = function() opened = true end
+for _, init in ipairs(ns.Settings.pages[1].layout.inits) do
+	if init.button == ns.L.READY_CONFIG_TITLE then init.click() end
+end
+assert(opened, "Options opens the existing readiness editor")

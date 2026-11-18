@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.5
+
+- **Notices are easier to find**: settings are grouped into Display and sound, Guild and groups, Wishlist and loot, and Progress and world. Sound now sits with the other notice settings. Existing preferences are preserved.
+- **Raid readiness is accessible from Options**: open the existing requirements and personal reminders editor without typing a slash command.
+
 ## 0.7.4
 
 - **Personal wishlist alerts**: notices when a wished item appears in a group roll or loot window, with separate options under Notices. Need is mentioned only when the game offers it; no automatic rolls.
