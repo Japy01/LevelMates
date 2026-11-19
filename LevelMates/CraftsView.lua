@@ -43,7 +43,9 @@ function CV.Professions()
 		for _, item in ipairs(e and e.items or {}) do by[c.id].items[item] = true end
 		for _, spell in ipairs(e and e.spells or {}) do by[c.id].items["s" .. spell] = true end
 	end
-	for _, p in pairs(by) do table.sort(p.crafters, function(x, y) if (x.rank or 0) ~= (y.rank or 0) then return (x.rank or 0) > (y.rank or 0) end; return x.name < y.name end) end
+	for _, p in pairs(by) do
+		for _, crafter in ipairs(p.crafters) do crafter.online = RC.IsOnline(crafter.name) end
+		table.sort(p.crafters, function(x, y) if x.online ~= y.online then return x.online end; if (x.rank or 0) ~= (y.rank or 0) then return (x.rank or 0) > (y.rank or 0) end; return x.name < y.name end) end
 	local out = {}
 	for _, id in ipairs(order) do
 		local n = 0
@@ -85,9 +87,8 @@ local function mainRow(parent, i)
 	r:SetHighlightTexture("Interface/QuestFrame/UI-QuestLogTitleHighlight", "ADD")
 	r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(16, 16); r.icon:SetPoint("LEFT", 2, 0)
 	r.name = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.name:SetPoint("LEFT", r.icon, "RIGHT", 4, 0); r.name:SetWidth(190); r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
-	r.barBg = r:CreateTexture(nil, "BORDER"); r.barBg:SetColorTexture(0.24, 0.14, 0.05, 0.45); r.barBg:SetSize(110, 8); r.barBg:SetPoint("LEFT", r.name, "RIGHT", 8, 0)
-	r.bar = r:CreateTexture(nil, "ARTWORK"); r.bar:SetTexture("Interface/TargetingFrame/UI-StatusBar"); r.bar:SetVertexColor(0.80, 0.55, 0.12); r.bar:SetHeight(6); r.bar:SetPoint("LEFT", r.barBg, "LEFT", 0, 0)
-	r.rank = ink(r:CreateFontString(nil, "OVERLAY", "GameFontNormal")); r.rank:SetPoint("LEFT", r.barBg, "RIGHT", 6, 0); r.rank:SetWidth(40); r.rank:SetJustifyH("RIGHT")
+	r.rank = ink(r:CreateFontString(nil, "OVERLAY", "GameFontNormal"))
+	r.rank:SetPoint("LEFT", r.name, "RIGHT", 8, 0); r.rank:SetWidth(33); r.rank:SetJustifyH("RIGHT")
 	r.read = ink(r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")); r.read:SetPoint("LEFT", r.rank, "RIGHT", 8, 0); r.read:SetPoint("RIGHT", -2, 0); r.read:SetJustifyH("LEFT"); r.read:SetWordWrap(false)
 	r.who = ink(r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")); r.who:SetPoint("LEFT", r.name, "RIGHT", 8, 0); r.who:SetPoint("RIGHT", -2, 0); r.who:SetJustifyH("LEFT"); r.who:SetWordWrap(false)
 	r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
@@ -119,7 +120,9 @@ function CV.Build(parent)
 	CV.search = CreateFrame("EditBox", nil, CV.right, "SearchBoxTemplate")
 	CV.search:SetSize(240, 20); CV.search:SetPoint("TOPLEFT", PAD + 6, -70)
 	if CV.search.Instructions then CV.search.Instructions:SetText(L.CV_SEARCH) end
-	CV.search:SetScript("OnTextChanged", function(self) CV.query = self:GetText() or ""; CV.page = 1; CV.Refresh() end)
+	CV.search:SetScript("OnTextChanged", function(self) CV.query = self:GetText() or ""
+		if self.Instructions then self.Instructions:SetShown(CV.query == "") end
+		CV.page = 1; CV.Refresh() end)
 	CV.back = ns.Skin.Button(CV.right); CV.back:SetSize(80, 20); CV.back:SetPoint("TOPRIGHT", -PAD, -70); CV.back:SetText(L.CV_BACK)
 	CV.back:SetScript("OnClick", function() CV.crafter = nil; CV.page = 1; CV.Refresh() end)
 	CV.back:Hide()
@@ -169,7 +172,7 @@ end
 local function ask(owner, name, item)
 	MenuUtil.CreateContextMenu(owner, function(_, root)
 		root:CreateTitle(itemName(item))
-		if name ~= ns.Me() then root:CreateButton(string.format(L.RC_ASK_MENU, name), function() ns.Recipes.Ask(name, item) end) end
+		if name ~= ns.Me() then root:CreateButton(ns.Recipes.AskLabel(name), function() ns.Recipes.Ask(name, item) end) end
 		root:CreateButton(L.CV_WHO_ELSE, function()
 			CV.query, CV.page = "item:" .. item, 1
 			if CV.search then CV.search:SetText(CV.query) end
@@ -221,10 +224,11 @@ local function setRows(list, fill)
 	CV.prev:SetEnabled(CV.page > 1); CV.next:SetEnabled(CV.page < pages)
 	CV.pageText:SetText(pages > 1 and string.format("%d/%d", CV.page, pages) or "")
 end
-local function plainRow(r, showBar)
+local function plainRow(r, crafter)
 	r.header = nil; r.icon:Show()
 	r.icon:SetTexCoord(0, 1, 0, 1)   -- a class circle may have cropped it before
-	r.barBg:SetShown(showBar); r.bar:SetShown(showBar); r.rank:SetShown(showBar); r.read:SetShown(showBar); r.who:SetShown(not showBar)
+	r.name:SetWidth(crafter and 115 or 190)
+	r.rank:SetShown(crafter); r.read:SetShown(crafter); r.who:SetShown(not crafter)
 end
 
 function CV.Refresh()
@@ -272,7 +276,7 @@ function CV.Refresh()
 				MenuUtil.CreateContextMenu(self, function(_, root)
 					root:CreateTitle(itemName(item))
 					for _, c in ipairs(RC.WhoCrafts(item)) do
-						if c.name ~= ns.Me() then root:CreateButton(string.format(L.RC_ASK_MENU, c.name), function() RC.Ask(c.name, item) end) end
+						if c.name ~= ns.Me() then root:CreateButton(RC.AskLabel(c.name), function() RC.Ask(c.name, item) end) end
 					end
 				end)
 			end
@@ -286,7 +290,7 @@ function CV.Refresh()
 		CV.tradable:Show(); CV.tradableLabel:Show()
 		local items, count = recipeRows(e, CV.tradable:GetChecked())
 		CV.icon:SetTexture(P.Icon(current.id)); CV.title:SetText(c.name); CV.title:SetTextColor(1, 0.82, 0)
-		CV.sub:SetText(string.format(L.CV_CRAFTER_SUB, P.Name(current.id), c.rank or 0, c.max or 0, e and string.format(L.CV_READ, ago(e.t)) or L.CV_NOT_READ))
+		CV.sub:SetText(string.format(L.CV_CRAFTER_SUB, P.Name(current.id), c.rank or 0, c.max or 0, e and ago(e.t) or L.CV_NOT_READ))
 		CV.big:SetText(tostring(count)); CV.bigLabel:SetText(L.CV_RECIPES_LOWER); CV.colName:SetText(L.CV_ITEM)
 		setRows(items, function(r, item)
 			plainRow(r, false)
@@ -329,23 +333,21 @@ function CV.Refresh()
 			r.name:SetText(c.name)
 			local cc = RAID_CLASS_COLORS and RAID_CLASS_COLORS[classOf(c.name) or ""]
 			if cc then r.name:SetTextColor(ns.Skin.Ink(cc.r, cc.g, cc.b)) else r.name:SetTextColor(ns.Skin.Ink(1, 1, 1)) end   -- class colours darkened to read on the page
-			local max = c.max and c.max > 0 and c.max or 300
-			r.bar:SetWidth(math.max(1, 110 * math.min(1, (c.rank or 0) / max)))
 			r.rank:SetText(tostring(c.rank or 0))
 			local e = ns.Recipes.Of(c.name)[c.id]
 			local parts = {}
-			if c.mine then parts[#parts + 1] = L.CV_YOU elseif R.mates[c.name] then parts[#parts + 1] = L.ONLINE end
+			if c.mine then parts[#parts + 1] = L.CV_YOU else parts[#parts + 1] = c.online and L.ONLINE or L.CV_OFFLINE end
 			local hint = ns.Professions.TrainHint(c.rank, c.max)
+			if not c.mine then parts[#parts + 1] = e and string.format(L.CV_LAST_BOOK, ago(e.t)) or L.CV_NOT_READ end
 			if hint then parts[#parts + 1] = hint end
-			if not c.mine then parts[#parts + 1] = e and ago(e.t) or L.CV_NOT_READ end
 			r.read:SetText(table.concat(parts, " · "))
-			r.fn = function() CV.crafter = c; CV.page = 1; CV.Refresh() end
+			r.fn = function() CV.crafter = c; CV.page = 1; RC.RequestRefresh(c.name, c.id); CV.Refresh() end
 			if not c.mine then
 				r.rfn = function(self)
 					MenuUtil.CreateContextMenu(self, function(_, root)
 						root:CreateTitle(c.name)
 						root:CreateButton(L.MENU_WHISPER, function() ns.Board.Whisper(c.name) end)
-						if R.mates[c.name] then root:CreateButton(L.MENU_INVITE, function() ns.Board.Invite(c.name) end) end   -- offline: no invite
+						if c.online then root:CreateButton(L.MENU_INVITE, function() ns.Board.Invite(c.name) end) end   -- offline: no invite
 					end)
 				end
 			end

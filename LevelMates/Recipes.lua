@@ -142,9 +142,79 @@ local function later()
 		if settleAt and GetTime() >= settleAt then settleAt = nil; RC.Scan() end
 	end)
 end
+local function learnedProfession(recipe)
+	local T = C_TradeSkillUI
+	if not (T and T.GetTradeSkillLineForRecipe) then return end
+	local ok, id, _, parent = pcall(T.GetTradeSkillLineForRecipe, recipe)
+	if not ok then return end
+	id, parent = ns.Plain(id), ns.Plain(parent)
+	if KNOWN_LINES[id] then return id end
+	if KNOWN_LINES[parent] then return parent end
+end
+local function addLearned(recipe, profession)
+	local item = outputItem(recipe)
+	if type(item) ~= "number" or item < 1 or item > RC.TOP or item ~= math.floor(item) then return false end
+	local mine = RC.Mine()
+	local entry = mine[profession]
+	local skill = ns.char.skills and ns.char.skills[profession]
+	if not entry and not skill then return false end
+	entry = entry or { r = math.min(450, skill.rank or 0), m = math.min(450, skill.max or 0), items = {}, spells = {} }
+	for _, known in ipairs(entry.items) do if known == item then return true end end
+	if #entry.items >= RC.MAX then return false end
+	entry.items[#entry.items + 1] = item
+	entry.t = time()
+	mine[profession] = entry
+	ns.Fire("LM_RECIPES_CHANGED", profession)
+	return true
+end
+local function openForRefresh(profession)
+	if not (C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill) or (InCombatLockdown and InCombatLockdown()) then
+		ns.Chat(L.RC_LEARNED_OPEN_MANUALLY); return
+	end
+	local ok, opened = pcall(C_TradeSkillUI.OpenTradeSkill, profession)
+	if not ok or ns.Plain(opened) ~= true then ns.Chat(L.RC_LEARNED_OPEN_MANUALLY); return end
+	ns.Chat(L.RC_LEARNED_REFRESHING, ns.Professions.Name(profession))
+	later()
+end
+if EventRegistry and EventRegistry.RegisterCallback then
+	EventRegistry:RegisterCallback("SetItemRef", function(_, link)
+		link = ns.Plain(link)
+		local id = type(link) == "string" and tonumber(link:match("^addon:LevelMates:recipe:(%d+)$"))
+		if id and KNOWN_LINES[id] then openForRefresh(id) end
+	end, RC)
+end
+
+local pendingLearned, learnTimer = {}, false
+local function onLearned(recipe)
+	recipe = ns.Plain(recipe)
+	if not (ns.db and ns.db.settings.shareProfessions) or type(recipe) ~= "number" or recipe < 1 or recipe ~= math.floor(recipe) then return end
+	pendingLearned[recipe] = true
+	if learnTimer then return end
+	learnTimer = true
+	C_Timer.After(RC.SETTLE, function()
+		learnTimer = false
+		local recipes = pendingLearned
+		pendingLearned = {}
+		if not ns.db.settings.shareProfessions then return end
+		local missing, unknown = {}, false
+		for rid in pairs(recipes) do
+			local id = learnedProfession(rid)
+			if not id then unknown = true
+			elseif not addLearned(rid, id) then missing[id] = true end
+		end
+		for id in pairs(missing) do
+			local link = string.format("|Haddon:LevelMates:recipe:%d|h|cff7ec8ff[%s]|r|h", id, L.RC_LEARNED_REFRESH)
+			ns.Chat(L.RC_LEARNED_PENDING, ns.Professions.Name(id), link)
+		end
+		if unknown then ns.Chat(L.RC_LEARNED_OPEN_MANUALLY) end
+	end)
+end
 local ev = CreateFrame("Frame")
 for _, e in ipairs({ "TRADE_SKILL_SHOW", "TRADE_SKILL_LIST_UPDATE", "TRADE_SKILL_DATA_SOURCE_CHANGED" }) do ev:RegisterEvent(e) end
-ev:SetScript("OnEvent", later)
+pcall(ev.RegisterEvent, ev, "NEW_RECIPE_LEARNED")
+ev:SetScript("OnEvent", function(_, event, recipe)
+	if event == "NEW_RECIPE_LEARNED" then onLearned(recipe) else later() end
+end)
 
 ------------------------------------------------------------------ sharing
 -- One `rcp` per profession: p (its line), r/m (rank/max), i (items) and s (spells), encoded as above; long lists go in
@@ -164,6 +234,39 @@ end
 local share = ns.Sync.Personal("rcp", build, { save = "recipesPending", helloGap = 600,   -- long lists: newcomers get them at most every 10 minutes
 	worth = function() return next(RC.Mine()) ~= nil end,
 	enabled = function() return ns.db.settings.shareProfessions end })
+-- Fetch one shared snapshot on demand, without opening the crafter's profession window.
+C.SCHEMA.rcr = { p = C.V.int(1, 2000) }
+C.REQUIRED.rcr = { "p" }
+local outgoingRefresh, incomingRefresh, scanned = {}, {}, {}
+function RC.IsOnline(name)
+	if name == ns.Me() then return true end
+	for _, member in ipairs(R.GuildMembers() or {}) do
+		if member.name == name then return member.online end
+	end
+	return R.mates[name] ~= nil
+end
+function RC.RequestRefresh(name, profession)
+	if name == ns.Me() or not RC.IsOnline(name) or not R.IsGuildmate(name) then return end
+	local key = name .. ":" .. profession
+	if GetTime() - (outgoingRefresh[key] or -math.huge) < 120 then return end
+	if C.Whisper("rcr", { p = profession }, name) then outgoingRefresh[key] = GetTime() end
+end
+C.OnMessage("rcr", function(f, name, _, channel)
+	if channel ~= "WHISPER" or not R.IsGuildmate(name) or not ns.db.settings.shareProfessions then return end
+	local key = name .. ":" .. f.p
+	if GetTime() - (incomingRefresh[key] or -math.huge) < 120 then return end
+	if GetTime() - (scanned[f.p] or -math.huge) >= 120 and myWindow() and line() == f.p then
+		scanned[f.p] = GetTime()
+		RC.Scan()
+	end
+	for _, snapshot in ipairs(build() or {}) do
+		if snapshot.p == f.p then
+			if C.SendBig("rcp", snapshot, "normal", name) then incomingRefresh[key] = GetTime() end
+			return
+		end
+	end
+end)
+
 -- A real change goes out 8 s later (one message for a burst of changes).
 local due
 ns.On("LM_RECIPES_CHANGED", function()
@@ -249,7 +352,7 @@ function RC.WhoCrafts(itemId)
 	local out = {}
 	for _, e in ipairs(index[itemId] or {}) do
 		local x = RC.Of(e[1])[e[2]]
-		if x then out[#out + 1] = { name = e[1], line = e[2], r = x.r, m = x.m, t = x.t, online = e[1] == ns.Me() or R.mates[e[1]] ~= nil } end
+		if x then out[#out + 1] = { name = e[1], line = e[2], r = x.r, m = x.m, t = x.t, online = RC.IsOnline(e[1]) } end
 	end
 	table.sort(out, function(a, b)
 		if a.online ~= b.online then return a.online end
@@ -302,12 +405,44 @@ function RC.Link(item) local _, link = ns.ItemInfo(item); return link or ("item:
 
 -- policy: click paths only (RC.Ask is called from the Crafts tab's menu): "Could you make me [item]?", once a minute
 -- per person and item.
-local asked = {}
+local asked, received = {}, {}
+C.SCHEMA.rca = { i = C.V.int(1, 999999) }
+C.REQUIRED.rca = { "i" }
+C.OnMessage("rca", function(f, name, _, channel)
+	if channel ~= "WHISPER" or name == ns.Me() or not R.IsGuildmate(name) then return end
+	local key = name .. ":" .. f.i
+	if GetTime() - (received[key] or -math.huge) < 60 then return end
+	for _, recipes in pairs(RC.Mine()) do
+		for _, id in ipairs(recipes.items or {}) do
+			if id == f.i then
+				received[key] = GetTime()
+				ns.NoticeAt("crafts", L.RC_REQUEST_RECEIVED, name, RC.Link(id))
+				return
+			end
+		end
+	end
+end)
+function RC.AskLabel(name)
+	return string.format(RC.IsOnline(name) and L.RC_ASK_MENU or L.RC_MAIL_MENU, name)
+end
 function RC.Ask(name, item)
-	local key = name .. ":" .. item
-	if GetTime() - (asked[key] or -math.huge) < 60 then ns.Say(L.RC_ASKED_ALREADY, name); return false end
-	asked[key] = GetTime()
-	return ns.SendChat(string.format(L.RC_ASK, RC.Link(item)), "WHISPER", nil, name)
+	local message = string.format(L.RC_ASK, RC.Link(item))
+	if not RC.IsOnline(name) then
+		ns.DiscordCopy.OpenText(message, string.format(L.RC_MAIL_MENU, name), L.RC_MAIL_HINT)
+		return false
+	end
+	ns.DiscordCopy.OpenText(message, string.format(L.RC_ASK_MENU, name), L.RC_WHISPER_HINT, function(text)
+		if not RC.IsOnline(name) then ns.Say(L.RC_WHISPER_OFFLINE, name); return false end
+		text = strtrim((text or ""):gsub("%s+", " "))
+		if text == "" or #text > 255 then ns.Say(L.RC_WHISPER_LENGTH); return false end
+		local key = name .. ":" .. item
+		if GetTime() - (asked[key] or -math.huge) < 60 then ns.Say(L.RC_ASKED_ALREADY, name); return false end
+		if not ns.SendChat(text, "WHISPER", nil, name) then return false end
+		asked[key] = GetTime()
+		if R.IsGuildmate(name) then C.Whisper("rca", { i = item }, name) end
+		return true
+	end)
+	return true
 end
 
 ------------------------------------------------------------------ tooltips

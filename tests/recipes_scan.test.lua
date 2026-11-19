@@ -32,3 +32,23 @@ assert(not RC.Mine()[164], "a linked window is not mine")
 STUB.trade = { line = 171, rank = 120, max = 150, recipes = {} }
 STUB.Fire("TRADE_SKILL_LIST_UPDATE"); STUB.Advance(2)
 assert(#RC.Mine()[171].items == 2, "empty read ignored")
+
+-- A trainer or item learning event can add a known output even with the UI closed.
+local recipes, comm = ns.Recipes, ns.Comm
+ns.db.settings.shareProfessions = true
+ns.char.skills = { [171] = { rank = 75, max = 150 } }
+recipes.Mine()[171] = { r = 75, m = 150, items = {118}, spells = {} }
+C_TradeSkillUI.IsTradeSkillReady = function() return false end
+C_TradeSkillUI.GetTradeSkillLineForRecipe = function() return 9999, "Alchemy", 171 end
+C_TradeSkillUI.GetRecipeItemLink = function() return nil end
+C_TradeSkillUI.GetRecipeOutputItemData = function(id)
+	if id == 4567 then return { itemID = 1234 } end
+end
+STUB.Fire("NEW_RECIPE_LEARNED", 4567)
+STUB.Fire("NEW_RECIPE_LEARNED", 4567)
+STUB.Advance(12)
+assert(#recipes.Mine()[171].items == 2 and recipes.Mine()[171].items[2] == 1234)
+STUB.Fire("NEW_RECIPE_LEARNED", 4568)
+STUB.Advance(2)
+assert(STUB.printed[#STUB.printed]:find("addon:LevelMates:recipe:171", 1, true))
+assert(#recipes.Mine()[171].items == 2, "missing data leaves the existing book intact")

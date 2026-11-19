@@ -3,6 +3,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(30)
 local B, C, L, RC = ns.Board, ns.Comm, ns.L, ns.Recipes
+STUB.memberInfo = { Mario = { presence = 1 } }; ns.Roster.InvalidateGuildRoster()
 local entries
 MenuUtil.CreateContextMenu = function(owner, fn)
 	entries = {}
@@ -27,9 +28,13 @@ local ask = find(string.format(L.RC_ASK_MENU, "Mario"))
 assert(ask, "menu: ask Mario")
 STUB.lastChat = nil
 ask.cb()
-assert(STUB.lastChat and STUB.lastChat.chatType == "WHISPER" and STUB.lastChat.target == "Mario" and STUB.lastChat.msg:find("item:858", 1, true), "a whisper with the link")
+assert(not STUB.lastChat, "opening the draft sends nothing")
+ns.DiscordCopy.box:SetText("Edited request " .. ns.DiscordCopy.box:GetText())
+ns.DiscordCopy.send.scripts.OnClick(ns.DiscordCopy.send)
+assert(STUB.lastChat and STUB.lastChat.chatType == "WHISPER" and STUB.lastChat.target == "Mario" and STUB.lastChat.msg:find("Edited request", 1, true) and STUB.lastChat.msg:find("item:858", 1, true), "a whisper with the link")
 STUB.lastChat = nil
 ask.cb()
+ns.DiscordCopy.send.scripts.OnClick(ns.DiscordCopy.send)
 assert(STUB.lastChat == nil, "not again within a minute")
 -- his recipes: the profession, then Mario
 CV.search:SetText(""); CV.search.scripts.OnTextChanged(CV.search)

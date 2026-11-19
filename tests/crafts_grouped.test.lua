@@ -4,6 +4,7 @@ STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(1)
 local C, B, P, R, L = ns.Comm, ns.Board, ns.Professions, ns.Roster, ns.L
 local function last(kind) for i = #STUB.sent, 1, -1 do local k, f = C.Decode(STUB.sent[i].msg); if k == kind then return f end end end
 STUB.guildMembers = { Tester = true, Mario = true, Ana = true }
+STUB.memberInfo = { Mario = { presence = 1 } }
 R.InvalidateGuildRoster()
 
 -- the journal keeps the maximum rank too, and it travels
@@ -31,4 +32,4 @@ local mario, me1 = CV.rows[1], CV.rows[2]
 assert(mario.name.text == "Mario" and mario.rank.text == "75" and mario.read.text:find(L.ONLINE, 1, true) and mario.read.text:find(L.TRAIN_JOURNEYMAN, 1, true), "full rank, online, time to train: " .. mario.read.text)
 assert(me1.name.text == "Tester" and me1.rank.text == "37" and not me1.read.text:find(L.ONLINE, 1, true), "my row: no 'online'")
 CV.Select(186)
-assert(CV.rows[1].name.text == "Ana" and not CV.rows[1].read.text:find(L.ONLINE, 1, true), "Ana offline: when seen")
+assert(CV.rows[1].name.text == "Tester" and CV.rows[2].name.text == "Ana" and CV.rows[2].read.text:find(L.CV_OFFLINE, 1, true), "Ana offline: when seen")
