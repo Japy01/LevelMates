@@ -18,11 +18,20 @@ assert(LR.SetRules({ boss = 10, att = 5 }) and LR.Rules().boss == 10 and LR.Rule
 -- a raid group inside Molten Core
 STUB.inInstance = true; STUB.instanceName = "Núcleo de Magma"; STUB.groupSize = 3
 IsInGroup = function() return true end; IsInRaid = function() return true end
+local leader = true
+UnitIsGroupLeader = function(unit) return unit == "player" and leader end
 STUB.units.raid1 = { name = "Tester" }; STUB.units.raid2 = { name = "Mario" }; STUB.units.raid3 = { name = "Luis" }
 local before = #STUB.sent
 -- a wipe posts nothing; a kill posts the boss to everyone present
 STUB.Fire("ENCOUNTER_END", 663, "Lucifron", 9, 40, 0)
 assert(LT.Balance("Mario") == 0, "a wipe: nothing")
+leader = false
+STUB.Fire("ENCOUNTER_END", 663, "Lucifron", 9, 40, 1)
+assert(LT.Balance("Mario") == 0, "an officer observing the kill cannot write automatic points")
+assert(LR.raid and #LR.raid.bosses == 1, "observing officer still tracks the encounter")
+LR.Stop()
+assert(LT.Balance("Mario") == 0, "an officer who is not leading cannot pay automatic attendance")
+leader = true
 STUB.Fire("ENCOUNTER_END", 663, "Lucifron", 9, 40, 1)
 assert(LT.Balance("Mario") == 10 and LT.Balance("Luis") == 10 and LT.Balance("Tester") == 10, "boss points to everyone present: " .. LT.Balance("Mario"))
 assert(LT.Ledger("Mario")[1].k == "boss" and LT.Ledger("Mario")[1].r == "Lucifron", "the entry names the boss")

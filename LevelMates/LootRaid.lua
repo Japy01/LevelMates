@@ -104,6 +104,16 @@ local function groupNames()
 	for i = 1, n do add(UnitName(prefix .. i)) end
 	return out
 end
+-- Observe encounters on every officer's client for loot history, but only the
+-- native raid leader may write automated points. An unreadable API grants no authority.
+local function mayAwardAutomaticPoints()
+	if not officer() then return false end
+	local okRaid, inRaid = pcall(IsInRaid)
+	if not okRaid or ns.Plain(inRaid) ~= true then return false end
+	local okLeader, leader = pcall(UnitIsGroupLeader, "player")
+	return okLeader and ns.Plain(leader) == true
+end
+
 -- The open raid lives with the character (a /reload inside loses nothing).
 local function raid() return ns.char.lootRaid end
 LR.raid = nil
@@ -123,7 +133,7 @@ function LR.Stop()
 	if not r then return false end
 	ns.char.lootRaid = nil; sync()
 	local rules = LR.Rules()
-	if rules.att > 0 and officer() then
+	if rules.att > 0 and mayAwardAutomaticPoints() then
 		local names = {}
 		for n in pairs(r.present) do names[#names + 1] = n end
 		table.sort(names)
@@ -144,7 +154,7 @@ local function onEncounterEnd(id, name, _, _, success)
 	r.bosses[#r.bosses + 1] = { id = id, name = name, t = time(), n = #names }
 	lastBoss = { id = id, name = name, t = GetTime() }
 	local rules = LR.Rules()
-	if rules.boss > 0 then LT.PostAll(names, rules.boss, "boss", tostring(name or id or "?"), { raid = r.id }) end
+	if rules.boss > 0 and mayAwardAutomaticPoints() then LT.PostAll(names, rules.boss, "boss", tostring(name or id or "?"), { raid = r.id }) end
 	ns.Fire("LM_LOOT_RAID")
 end
 local function bossNow()
