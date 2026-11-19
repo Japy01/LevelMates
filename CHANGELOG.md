@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0
+
+- **Guild Crafts**: online crafters appear first, with clearer recipe snapshot dates. Search by item name, link or ID. Crafting requests open an editable whisper draft or give you text to copy into in-game mail for an offline crafter.
+- **Recipe updates and recovery**: newly learned recipes can be shared with the profession window closed when the game provides the necessary data. Selecting a profession can recover saved recipe books from online guild peers, keeping their original author and receipt time.
+- **Guild announcements**: a dedicated board for public and rank-restricted posts, with author, date and withdrawal. The guild master can delegate restricted-post moderation from Options > Guild.
+- **Guild notices and recruitment**: officers share the last notice and its interval. Recruitment identifies the game's channel type regardless of its local number and shares cooldowns per zone for General and across Trade.
+- **Automatic DKP**: only the current raid leader, if they are a guild officer, can award automatic boss or attendance points. Manual adjustment permissions are unchanged.
+
 ## 0.7.5
 
 - **Notices are easier to find**: settings are grouped into Display and sound, Guild and groups, Wishlist and loot, and Progress and world. Sound now sits with the other notice settings. Existing preferences are preserved.
