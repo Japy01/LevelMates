@@ -34,9 +34,15 @@ assert(opt(L.MENU_WHISPER) and opt(L.MENU_INVITE), "whisper and invite")
 opt(L.MENU_WHISPER).cb()
 assert(STUB.lastTell == "Mario", "whispers")
 -- offline: when last seen, whisper only
-R.mates.Mario = nil; B.Refresh()
-assert(not CV.rows[1].read.text:find(L.ONLINE, 1, true) and CV.rows[1].read.text ~= "", "last seen when offline")
-CV.rows[1].scripts.OnClick(CV.rows[1], "RightButton")
+local mate = R.mates.Mario
+mate.seenAt = GetTime() - 121
+assert(not ns.Recipes.IsOnline("Mario"), "an expired heartbeat cannot override the guild roster")
+mate.seenAt = GetTime()
+STUB.Receive("LVLM2", C.Encode("bye", {}), "GUILD", "Mario-Testrealm")
+assert(not ns.Recipes.IsOnline("Mario"), "a disconnect invalidates recent presence")
+B.Refresh()
+assert(CV.rows[2].name.text == "Mario" and CV.rows[2].read.text:find(L.CV_OFFLINE, 1, true), "offline Mario is below the online player")
+CV.rows[2].scripts.OnClick(CV.rows[2], "RightButton")
 assert(opt(L.MENU_WHISPER) and not opt(L.MENU_INVITE), "offline: no invite")
 -- Discord: grouped by profession
 local t = ns.DiscordCopy.Text("crafts")

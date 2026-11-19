@@ -240,10 +240,12 @@ C.REQUIRED.rcr = { "p" }
 local outgoingRefresh, incomingRefresh, scanned = {}, {}, {}
 function RC.IsOnline(name)
 	if name == ns.Me() then return true end
+	local mate = R.mates[name]
+	if mate and mate.seenAt and GetTime() - mate.seenAt <= 120 then return true end
 	for _, member in ipairs(R.GuildMembers() or {}) do
 		if member.name == name then return member.online end
 	end
-	return R.mates[name] ~= nil
+	return false
 end
 function RC.RequestRefresh(name, profession)
 	if name == ns.Me() or not RC.IsOnline(name) or not R.IsGuildmate(name) then return end
