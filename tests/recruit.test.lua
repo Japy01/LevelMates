@@ -37,12 +37,12 @@ B.recruitUse[2]:SetChecked(true); B.recruitUse[2].scripts.OnClick(B.recruitUse[2
 assert(B.recruitPreview.text == "Somos Test Guild", "preview")
 B.recruitPost.scripts.OnClick(B.recruitPost)
 assert(STUB.lastChat and STUB.lastChat.msg == "Somos Test Guild" and STUB.lastChat.chatType == "CHANNEL" and STUB.lastChat.target == 2, "posted to channel 2")
-assert(last("rc") and RC.Last().by == "Tester", "the wait starts for everyone")
+assert(last("rcz") and RC.Last().by == "Tester", "the wait starts for everyone")
 
 -- the wait is shared
 B.Refresh()
 assert(RC.Prepare(1, 2) == nil and said(string.format(L.RECRUIT_WAIT, 10)), "wait 10 minutes")
-assert(B.recruitPost.text == L.RECRUIT_POST_ANYWAY, "the button offers to post anyway (asked 2026-10-18); a plain Prepare still waits")
+assert(B.recruitPost.text == L.RECRUIT_POST, "the board no longer offers to bypass the shared cooldown")
 STUB.Advance(RC.GAP + 1)
 STUB.Receive("LVLM2", C.Encode("rc", { t = time() }), "GUILD", "Jefa-Testrealm")
 assert(RC.Last().by == "Jefa" and RC.Wait() > 0, "Jefa just posted")

@@ -44,7 +44,7 @@ function GN.Last() return store().last end   -- { at = seconds, by = name }
 function GN.Wait()
 	local l = store().last
 	if not l then return 0 end
-	return math.max(0, GN.Every() * 60 - (now() - l.at))
+	return math.max(0, math.max(GN.Every(), l.minutes or 0) * 60 - (now() - l.at))
 end
 
 -- What is said: the chosen text's lines that say something, without codes ("|n" is a line break), each line in
@@ -108,12 +108,14 @@ end
 -- Never in combat or in an instance: that is when the game holds chat (its own lockdown flag reads true all the time on
 -- Forever, so it cannot tell; see ns.SendChat). The notice waits for the next turn instead.
 local function free() return not ((InCombatLockdown and InCombatLockdown()) or (IsInInstance and IsInInstance())) end
-local function ready() return GN.On() and R.IAmOfficer() and now() >= (GN.readyAt or 0) and GN.Wait() == 0 and free() end
+local function ready() return GN.On() and R.IAmOfficer() and C.IsReady() and now() >= (GN.readyAt or 0) and GN.Wait() == 0 and free() end
 
 -- Said: the wait starts for every officer.
 local function said()
-	store().last = { at = now(), by = ns.Me() }
-	C.Send("gi", { t = now() }, "now")
+	local at, by, minutes = now(), ns.Me(), GN.Every()
+	store().last = { at = at, by = by, minutes = minutes }
+	C.Send("gi", { t = at }, "now")
+	C.Send("gin", { t = at, by = by, m = minutes }, "now")
 	ns.Fire("LM_RECRUIT_CHANGED")
 end
 
@@ -132,23 +134,34 @@ end
 function GN.Tick()
 	if GN.pending or not ready() then return end
 	GN.pending = true
-	C_Timer.After(math.random(0, GN.JITTER), GN.Send)
+	C.Send("grq", {}, "now")
+	C_Timer.After(6 + math.random(0, GN.JITTER - 6), GN.Send)
 end
 
+local function remember(at, author, minutes)
+	if at > now() + 60 or now() - at >= 240 * 60 then return end
+	local previous = store().last
+	if previous and (at < previous.at or (at == previous.at and (not minutes or previous.minutes))) then return end
+	store().last = { at = at, by = author, minutes = minutes }
+	ns.Fire("LM_RECRUIT_CHANGED")
+end
 C.OnMessage("gi", function(f, name)
-	if not R.IsOfficer(name) then return end
-	local at = f.t
-	if at > now() + 60 then return end
-	local l = store().last
-	if not l or at > l.at then store().last = { at = at, by = name }; ns.Fire("LM_RECRUIT_CHANGED") end
+	if R.IsOfficer(name) then remember(f.t, name) end
+end)
+C.OnMessage("gin", function(f, name)
+	if R.IsOfficer(name) and R.IsOfficer(f.by) then remember(f.t, f.by, f.m) end
 end)
 
--- Officers tell a newcomer when it was last said, so a fresh login does not say it again at once.
-ns.On("LM_HELLO_ANSWERED", function()
-	if not R.IAmOfficer() then return end
+local lastReply = -math.huge
+local function shareLast()
+	if not R.IAmOfficer() or GetTime() - lastReply < 5 then return end
 	local l = store().last
-	if l and now() - l.at < GN.EVERY_CHOICES[#GN.EVERY_CHOICES] * 60 then C.Send("gi", { t = l.at }) end
-end)
+	if not l or now() - l.at >= 240 * 60 then return end
+	lastReply = GetTime()
+	C.Send("gin", { t = l.at, by = l.by, m = l.minutes or GN.Every() }, "now")
+end
+C.OnMessage("grq", function(_, name) if R.IsOfficer(name) then shareLast() end end)
+ns.On("LM_HELLO_ANSWERED", shareLast)
 
 ns.On("LM_WORLD", function()
 	GN.readyAt = now() + GN.SETTLE   -- time to hear the others' last time first
