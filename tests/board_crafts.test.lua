@@ -38,6 +38,8 @@ local mate = R.mates.Mario
 mate.seenAt = GetTime() - 121
 assert(not ns.Recipes.IsOnline("Mario"), "an expired heartbeat cannot override the guild roster")
 mate.seenAt = GetTime()
+STUB.memberInfo = { Mario = { presence = 1 } }
+R.InvalidateGuildRoster()
 STUB.Receive("LVLM2", C.Encode("bye", {}), "GUILD", "Mario-Testrealm")
 assert(not ns.Recipes.IsOnline("Mario"), "a disconnect invalidates recent presence")
 B.Refresh()

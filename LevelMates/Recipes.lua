@@ -238,10 +238,14 @@ local share = ns.Sync.Personal("rcp", build, { save = "recipesPending", helloGap
 C.SCHEMA.rcr = { p = C.V.int(1, 2000) }
 C.REQUIRED.rcr = { "p" }
 local outgoingRefresh, incomingRefresh, scanned = {}, {}, {}
+local recentlyLeft = {}
+C.OnMessage("bye", function(_, name) recentlyLeft[name] = GetTime() end)
+C.OnMessage("hb", function(_, name) recentlyLeft[name] = nil end)
 function RC.IsOnline(name)
 	if name == ns.Me() then return true end
 	local mate = R.mates[name]
 	if mate and mate.seenAt and GetTime() - mate.seenAt <= 120 then return true end
+	if GetTime() - (recentlyLeft[name] or -math.huge) <= 120 then return false end
 	for _, member in ipairs(R.GuildMembers() or {}) do
 		if member.name == name then return member.online end
 	end
