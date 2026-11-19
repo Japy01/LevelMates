@@ -20,6 +20,7 @@ B.GCOLS = { 100, 1, 364, 70, 65 }   -- goals: by, -, goal, progress, until (same
 B.WCOLS = { 100, 1, 320, 105, 74 }   -- wishes and gifts: who, -, item, wants/gives, since (same total as B.COLS)
 B.CCOLS = { 150, 1, 289, 60, 100 }   -- professions: who, -, progress bar, rank, online or last seen (same total as B.COLS)
 B.BAR_W = 160
+B.ACOLS = { 110, 1, 243, 151, 95 }
 B.FCOLS = { 110, 1, 393, 1, 95 }   -- wall: who, -, what, -, when (same total as B.COLS)
 B.KCOLS = { 150, 1, 339, 50, 60 }   -- class: who or macro, -, points or macro text, level, action (same total as B.COLS)
 B.HCOLS = { 170, 1, 279, 80, 70 }   -- home: who or what, -, details, numbers, action (same total as B.COLS)
@@ -28,11 +29,11 @@ B.CARD_COLS, B.CARD_GAP, B.CARD_H, B.ART_H = 5, 8, 104, 50   -- dungeon cards (r
 B.GRID_PAGE = 15   -- cards per page: three rows, the book's own height; more turn pages
 -- Tabs, in order; each key's label is L[TAB_LABELS[key]].
 B.TAB_KEYS = { "home", "mates", "lfg", "guild", "journal" }   -- the five main tabs
-B.GUILD_KEYS = { "feed", "goals", "wishes", "crafts", "class", "members", "bank", "loot", "recruit" }   -- the Guild tab's sub-sections
-B.CONTENT_KEYS = { "home", "mates", "lfg", "journal", "feed", "goals", "wishes", "crafts", "class", "members", "bank", "loot", "recruit" }   -- what a page shows
-local TAB_LABELS = { home = "TAB_HOME", guild = "TAB_GUILD", mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT", members = "TAB_MEMBERS", bank = "TAB_BANK", loot = "TAB_LOOT" }
+B.GUILD_KEYS = { "announcements", "feed", "goals", "wishes", "crafts", "class", "members", "bank", "loot", "recruit" }   -- the Guild tab's sub-sections
+B.CONTENT_KEYS = { "home", "mates", "lfg", "journal", "announcements", "feed", "goals", "wishes", "crafts", "class", "members", "bank", "loot", "recruit" }   -- what a page shows
+local TAB_LABELS = { announcements = "TAB_ANNOUNCEMENTS", home = "TAB_HOME", guild = "TAB_GUILD", mates = "TAB_MATES", lfg = "TAB_LFG", journal = "TAB_JOURNAL", goals = "TAB_GOALS", wishes = "TAB_WISHES", crafts = "TAB_CRAFTS", class = "TAB_CLASS", feed = "TAB_FEED", recruit = "TAB_RECRUIT", members = "TAB_MEMBERS", bank = "TAB_BANK", loot = "TAB_LOOT" }
 B.TAB_LABELS = TAB_LABELS
-local HEAD_KEY = { home = "HOME", mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT", members = "MEMBERS", bank = "BANK", loot = "LOOT" }
+local HEAD_KEY = { announcements = "ANNOUNCEMENTS", home = "HOME", mates = "MATES", lfg = "LFG", journal = "JOURNAL", goals = "GOALS", wishes = "WISHES", crafts = "CRAFTS", class = "CLASS", feed = "FEED", recruit = "RECRUIT", members = "MEMBERS", bank = "BANK", loot = "LOOT" }
 local TAB_ICON = { home = "Interface\\Icons\\INV_Misc_Book_09", mates = "Interface\\Icons\\Spell_Holy_PrayerOfFortitude",
 	lfg = "Interface\\Icons\\INV_Misc_Key_03", guild = "banner", journal = "Interface\\Icons\\INV_Misc_Note_01" }
 local function KnownTab(key) for _, k in ipairs(B.CONTENT_KEYS) do if k == key then return key end end; return "home" end
@@ -266,6 +267,10 @@ local function Build()
 		btn:SetScript("OnClick", function(self, mouse)
 			if B.tab == "home" then
 				if self.homeEntry and not self.homeEntry.header then B.HomeAction(self.homeEntry) end
+				return
+			end
+			if B.tab == "announcements" then
+				if self.announcement then ns.GuildAnnouncements.Detail(self.announcement) end
 				return
 			end
 			if B.tab == "feed" then return end
@@ -655,6 +660,11 @@ local function Build()
 	cemetery:SetSize(120, 20); cemetery:SetPoint("BOTTOMRIGHT", -12, 3); cemetery:SetText(L.BTN_CEMETERY)
 	cemetery:SetScript("OnClick", function() B.feedDeaths = not B.feedDeaths; B.feedPage = 1; B.Refresh() end)
 	B.feedCemetery = cemetery
+	local announcements = ns.Skin.Button(f)
+	announcements:SetSize(160, 20); announcements:SetPoint("BOTTOMLEFT", 12, 3)
+	announcements:SetText(L.ANNOUNCEMENTS_NEW)
+	announcements:SetScript("OnClick", function() ns.GuildAnnouncements.Compose() end)
+	B.feedAnnouncements = announcements
 
 	-- Class tab: "Share macro" (bottom left) lists my macros; a click shares or withdraws one.
 	local classShare = ns.Skin.Button(f)
@@ -1015,6 +1025,10 @@ end
 local function SetHeaders()
 	B.ShowSortArrow(nil)
 	local lfg = B.tab == "lfg"
+	if B.tab == "announcements" then
+		for i, text in ipairs({ L.COL_NAME, "", L.TAB_ANNOUNCEMENTS, L.ANNOUNCEMENTS_VISIBILITY, L.ANNOUNCEMENTS_DATE }) do B.headText[i]:SetText(text) end
+		return
+	end
 	if B.tab == "members" then
 		if B.membersView == "list" then
 			B.headText[1]:SetText(L.COL_NAME); B.headText[2]:SetText(L.COL_LEVEL); B.headText[3]:SetText(L.COL_NOTE)
@@ -2438,7 +2452,7 @@ function B.OpenShareMacroMenu(owner)
 end
 
 -- Pages of ROWS for the long tabs (journal, goals, wishes, a long Mates list…); the pager sits in the help-rows area.
-local PAGE_KEY = { journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", home = "homePage", feed = "feedPage", mates = "matePage", members = "memberPage", bank = "bankPage", loot = "lootPage" }
+local PAGE_KEY = { announcements = "announcementPage", journal = "journalPage", goals = "goalPage", wishes = "wishPage", crafts = "craftPage", class = "classPage", recruit = "recruitPage", home = "homePage", feed = "feedPage", mates = "matePage", members = "memberPage", bank = "bankPage", loot = "lootPage" }
 local function PageKey() if B.tab == "lfg" then return B.lfgCalendar and "calendarPage" or B.lfgTogether and "togetherPage" or B.lfgQuests and "questsPage" or nil end; return PAGE_KEY[B.tab] end
 local function Page(all)
 	local key = PageKey()
@@ -2578,6 +2592,7 @@ local function RefreshTabs()
 	B.classShare:SetShown(class)
 	B.classAsk:SetShown(class)
 	B.feedCemetery:SetShown(feed)
+	B.feedAnnouncements:SetShown(B.tab == "announcements" and ns.GuildAnnouncements.CanPublish())
 	B.feedCemetery:SetText(B.feedDeaths and L.BTN_WALL_ALL or L.BTN_CEMETERY)
 	B.giftAdd:SetShown(wishes)
 	B.recruitViewButton:SetShown(recruit)
@@ -2606,6 +2621,8 @@ function B.Refresh()
 	elseif recruit then
 		list = {}
 		if B.recruitView == "inactive" then list, pages = Page(ns.Inactive.List(ns.char.inactiveDays or 14, B.search)) end
+	elseif B.tab == "announcements" then
+		list, pages = Page(ns.GuildAnnouncements.List(B.search))
 	elseif feed then
 		local all = ns.Feed.List(B.search, B.feedDeaths)
 		B.feedDeathCount = #ns.Feed.List(nil, true)   -- the week's deaths, whatever the search
@@ -2634,7 +2651,7 @@ function B.Refresh()
 		elseif lfg and B.lfgCalendar then list = {}   -- the runs view draws it
 		else list, pages = Page(lfg and (B.lfgTogether and TogetherVisible() or B.lfgQuests and QuestsVisible() or CalendarVisible()) or EveryoneVisible()) end
 	end
-	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or feed and B.FCOLS or class and B.KCOLS or home and B.HCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
+	SetColumns(journal and B.JCOLS or goals and B.GCOLS or wishes and B.WCOLS or crafts and B.CCOLS or B.tab == "announcements" and B.ACOLS or feed and B.FCOLS or class and B.KCOLS or home and B.HCOLS or recruit and B.recruitView == "inactive" and B.ICOLS or B.COLS)
 	SetHeaders()
 	local hk = HEAD_KEY[B.tab] or "MATES"
 	B.heading:SetText(L["HEAD_" .. hk])
@@ -2680,7 +2697,21 @@ function B.Refresh()
 		end
 	end
 	B.restedText:SetText(home and "" or top)   -- Home has it in "My character"
-	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif B.tab == "members" then FillMembers(list) elseif B.tab == "bank" then FillBank(list) elseif B.tab == "loot" then FillLoot(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) elseif B.lfgTogether then FillTogether(list) elseif B.lfgQuests then FillQuests(list) else FillGrid(list) end else FillMates(list) end
+	if journal and B.journalView == "ach" then FillAch(list) elseif home then FillHome(list) elseif recruit and B.recruitView == "inactive" then FillInactive(list) elseif journal then FillJournal(list) elseif class then FillClass(list) elseif B.tab == "announcements" then
+		for i, r in ipairs(B.rows) do
+			ClearRow(r)
+			local e = list[i]
+			r.button.announcement = e
+			if e then
+				r.name:SetText(e.o)
+				r.group:SetText(ns.GuildAnnouncements.Audience(e))
+				for _, column in ipairs({ r.name, r.zone, r.group, r.xph }) do column:SetTextColor(ns.Skin.Ink(1, 1, 1)) end
+				r.zone:SetText(e.d.h .. " — " .. e.d.b:gsub("%s+", " "))
+				r.xph:SetText(date("%d/%m/%Y", e.v))
+				r.button:Show(); RowBg(r, i, false)
+			end
+		end
+	elseif feed then FillFeed(list) elseif crafts then FillCrafts(list) elseif B.tab == "members" then FillMembers(list) elseif B.tab == "bank" then FillBank(list) elseif B.tab == "loot" then FillLoot(list) elseif wishes then FillWishes(list) elseif goals then FillGoals(list) elseif lfg then if B.lfgCalendar then FillCalendar(list) elseif B.lfgTogether then FillTogether(list) elseif B.lfgQuests then FillQuests(list) else FillGrid(list) end else FillMates(list) end
 	if not lfg or B.lfgCalendar or B.lfgTogether or B.lfgQuests then for _, c in ipairs(B.cards) do c:Hide() end end
 	local catalogShown = lfg and not B.lfgCalendar and not B.lfgTogether and not B.lfgQuests
 	if not crafts and not home then for _, r in ipairs(B.rows) do r.barBg:Hide(); r.barFill:Hide() end end
@@ -2703,6 +2734,7 @@ function B.Refresh()
 	if #list == 0 or onlyMe then
 		if journal then emptyText = ns.Journal.Count() == 0 and L.J_EMPTY or L.EMPTY_FILTERED
 		elseif goals then emptyText = L.GOAL_EMPTY
+		elseif B.tab == "announcements" then emptyText = L.ANNOUNCEMENTS_EMPTY
 		elseif feed then emptyText = L.FEED_EMPTY
 		elseif crafts then emptyText = #ns.Professions.List() > 0 and L.EMPTY_FILTERED or L.CRAFTS_EMPTY
 		elseif B.tab == "loot" and B.lootView == "rules" then emptyText = ""

@@ -139,6 +139,11 @@ ns.On("LM_LOADED", function()
 	Settings.CreateCheckbox(share, guildTag, L.OPT_GUILD_TAG_TT)
 	Bool(share, "discordTagOff", L.OPT_TAG_OFF, L.OPT_TAG_OFF_TT)
 	-- Notices: what may pop up
+	local guild = Sub(category, L.OPT_H_GUILD)
+	Header(guild, L.TAB_ANNOUNCEMENTS)
+	Button(guild, L.OPT_ANNOUNCEMENT_PERMISSIONS, L.OPT_ANNOUNCEMENT_CONFIGURE, function()
+		ns.GuildAnnouncements.OpenModeration()
+	end, L.OPT_ANNOUNCEMENT_PERMISSIONS_TT)
 	local notices = Sub(category, L.OPT_PAGE_NOTICES)
 	Header(notices, L.OPT_NOTICE_DISPLAY)
 	-- Quiet: one switch for the lesser notices, the screen messages and the sound; help, groups and goals stay
