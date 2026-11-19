@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.0
 
 - Recover guild recipe books, shared builds, wishlists, macros and restricted announcements from eligible guild peers, including withdrawals.
 - Browse profession recipes with optional LibProfessionDB, inspect item tooltips and open or copy material lists.
