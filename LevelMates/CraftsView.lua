@@ -164,6 +164,7 @@ end
 function CV.Select(id)
 	CV.prof, CV.crafter, CV.page, CV.query = id, nil, 1, ""
 	if CV.search then CV.search:SetText("") end   -- a profession's click ends a search
+	ns.Recipes.RequestProfession(id)
 	CV.Refresh()
 end
 

@@ -315,19 +315,97 @@ C.OnMessage("rcp", function(f, name)
 	changed()
 end)
 
+-- Pull a bounded set of saved books from a guild peer. A relayed snapshot
+-- keeps its original receipt time and cannot replace a newer direct copy.
+C.SCHEMA.rcq = { p = C.V.int(1, 2000) }
+C.REQUIRED.rcq = { "p" }
+C.SCHEMA.rcl = { p = C.V.int(1, 2000), a = C.V.text(48), t = C.V.int(1, 4000000000),
+	r = C.V.int(0, 450), m = C.V.int(0, 450), i = idlist, s = idlist }
+C.REQUIRED.rcl = { "p", "a", "t" }
+local requests, replies, authoritative = {}, {}, {}
+local function denied()
+	ns.db.recipeRelayDenied = ns.db.recipeRelayDenied or {}
+	return ns.db.recipeRelayDenied
+end
+local function permissionKey(name, profession)
+	return ns.GuildKey() .. ":" .. name .. ":" .. profession
+end
+function RC.RequestProfession(profession)
+	if not KNOWN_LINES[profession] then return end
+	local key = ns.GuildKey() .. ":" .. profession
+	if requests[key] and GetTime() - requests[key].at < 120 then return end
+	local peers = {}
+	for name in pairs(R.mates) do
+		if name ~= ns.Me() and R.IsGuildmate(name) then peers[#peers + 1] = name end
+	end
+	table.sort(peers)
+	if #peers == 0 then return end
+	local first = math.random(1, #peers)
+	local pending = { at = GetTime(), peers = {} }
+	for offset = 0, math.min(1, #peers - 1) do
+		local peer = peers[(first + offset - 1) % #peers + 1]
+		if C.Whisper("rcq", { p = profession }, peer) then pending.peers[peer] = true end
+	end
+	if next(pending.peers) then requests[key] = pending end
+end
+C.OnMessage("rcq", function(f, name, _, channel)
+	if channel ~= "WHISPER" or not R.IsGuildmate(name) or not KNOWN_LINES[f.p] then return end
+	local key = permissionKey(name, f.p)
+	if GetTime() - (replies[key] or -math.huge) < 120 then return end
+	replies[key] = GetTime()
+	local books = {}
+	for author, known in pairs(theirs()) do
+		local book = known[f.p]
+		if author ~= name and book and not book.relayed and book.t and GetServerTime() - book.t < RC.FORGET and R.IsGuildmate(author) then
+			books[#books + 1] = { author = author, book = book }
+		end
+	end
+	table.sort(books, function(a, b) return a.book.t > b.book.t end)
+	for n = 1, math.min(#books, 8) do
+		local author, book = books[n].author, books[n].book
+		C.SendBig("rcl", { p = f.p, a = author, t = book.t, r = book.r, m = book.m,
+			i = RC.Encode(book.items), s = RC.Encode(book.spells) }, "normal", name)
+	end
+end)
+C.OnMessage("rcl", function(f, name, _, channel)
+	if channel ~= "WHISPER" or not R.IsGuildmate(name) or not R.IsGuildmate(f.a) or f.a == ns.Me() or not KNOWN_LINES[f.p] then return end
+	local now = GetServerTime()
+	local requested = requests[ns.GuildKey() .. ":" .. f.p]
+	if not requested or not requested.peers[name] or GetTime() - requested.at > 45 or f.t > now or now - f.t >= RC.FORGET then return end
+	local key = permissionKey(f.a, f.p)
+	if denied()[key] or not plausible(f.a, f.r or 0) then return end
+	local t = theirs()
+	local old = t[f.a] and t[f.a][f.p]
+	if old and (not old.relayed or old.t >= f.t) then return end
+	if authoritative[key] then return end
+	local items, spells = RC.Decode(f.i or ""), RC.Decode(f.s or "")
+	if not items or not spells then return end
+	t[f.a] = t[f.a] or {}
+	t[f.a][f.p] = { r = f.r or 0, m = f.m or 0, items = items, spells = spells, t = f.t, relayed = true }
+	changed()
+end)
+C.OnMessage("rcp", function(f, name)
+	local key = permissionKey(name, f.p)
+	authoritative[key] = true
+end)
+
 -- Their own list of professions (pf, the whole list with ranks): recipes kept for a profession not on it, or at a rank
 -- well above the real one, go. A withdrawal (no list) is the sharing setting's business, not this.
 C.OnMessage("pf", function(f, name)
-	if f.p == nil then return end
+	if f.p == nil then
+		for id in pairs(KNOWN_LINES) do denied()[permissionKey(name, id)] = true end
+		if theirs()[name] then theirs()[name] = nil; changed() end
+		return
+	end
 	local e = theirs()[name]
-	if not e then return end
 	local ranks = {}
 	for id, rank in tostring(f.p):gmatch("(%d+):(%d+)") do ranks[tonumber(id)] = tonumber(rank) end
 	local gone = false
-	for p, x in pairs(e) do
+	for id in pairs(KNOWN_LINES) do denied()[permissionKey(name, id)] = not ranks[id] or nil end
+	for p, x in pairs(e or {}) do
 		if not ranks[p] or (x.r or 0) > ranks[p] + RC.RANK_MARGIN then e[p] = nil; gone = true end
 	end
-	if not next(e) then theirs()[name] = nil end
+	if e and not next(e) then theirs()[name] = nil end
 	if gone then changed() end
 end)
 
