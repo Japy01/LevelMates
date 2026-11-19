@@ -131,7 +131,7 @@ end
 function R.Snapshot()
 	local s = ns.db.settings
 	local f = { l = UnitLevel("player"), z = C_Map.GetBestMapForUnit("player") or 0, c = select(2, UnitClass("player")) }
-	local v = ns.VERSION   -- an unpackaged checkout reports "@project-version@", which is not a valid word
+	local v = ns.VERSION   -- an unpackaged checkout reports "v0.8.0", which is not a valid word
 	if type(v) == "string" and #v <= 20 and v:match("^[%w_%.%-]+$") then f.v = v end
 	local size = GetNumGroupMembers()
 	f.g = size > 0 and 1 or 0

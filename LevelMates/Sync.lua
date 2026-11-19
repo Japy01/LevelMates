@@ -22,6 +22,16 @@ local function store(t)
 end
 S.Store = store
 
+function S.OwnerRecordId(owner)
+	local a, b = 5381, 7
+	for i = 1, #owner do
+		local byte = owner:byte(i)
+		a = (a * 33 + byte) % 2147483647
+		b = (b * 131 + byte) % 2147483629
+	end
+	return string.format("%08x%08x", a, b)
+end
+
 local function fire(spec, rec, old, how) if spec.onChange then spec.onChange(rec, old, how) end end
 
 -- On the wire a record is a message of its own type: its data fields plus id, o (only when the owner is not the
@@ -168,10 +178,10 @@ function S.List(t, keep)
 end
 -- What a catch-up hands on: live records and tombstones, no samples, what the type keeps for newcomers.
 local function relayable(spec, r)
-	return r.e >= now() and not (r.d and r.d.sim) and (r.dead or not spec.relayKeep or spec.relayKeep(r))
+	return r.e >= now() and (not spec.relayFrom or spec.relayFrom(r.o, me())) and not (r.d and r.d.sim) and (r.dead or not spec.relayKeep or spec.relayKeep(r))
 end
--- How many of those I hold, and a sum of their revs: two clients with the same digest (almost certainly) hold the
--- same, so nobody answers a newcomer who already has it all.
+-- Mix each revision with its record identity before summing. Summing the
+-- revisions separately would hide differences when revisions swap between IDs.
 function S.Digest(t)
 	local spec, n, sum = types[t], 0, 0
 	for _, r in pairs(store(t)) do
@@ -179,7 +189,11 @@ function S.Digest(t)
 			n = n + 1
 			local author = 0
 			if spec.writerTieBreak then for i = 1, #r.o do author = (author * 31 + r.o:byte(i)) % 1000003 end end
-			sum = (sum + r.v + (r.dead and 7 or 0) + author) % 2147483647
+			local id = 0
+			for i = 1, #r.id do id = (id * 31 + r.id:byte(i)) % 1000003 end
+			local factor = 1 + (id * 31 + author) % 1000003
+			local revision = r.v * 2.0 + (r.dead and 1 or 0)
+			sum = (sum + revision * factor + id + author) % 2147483647
 		end
 	end
 	return n, sum
@@ -195,17 +209,43 @@ function S.Spec(t) return types[t] end
 ------------------------------------------------------------------ catch-up
 -- At login I say hello with a digest of every board type. Whoever holds something different waits 1-6 s; the first
 -- to finish claims the answer on GUILD (hc) and whispers me that type's records and tombstones, oldest first; the
--- others hear the claim and stay quiet. If nothing of a claimed type reached me, I ask the claimer once (hw).
+-- Other eligible peers can advertise a digest. After the first batch, the newcomer may request one more copy.
 S.stats = { answered = 0 }
 C.SCHEMA.hc = { to = C.V.text(48), t = C.V.word(12) }; C.REQUIRED.hc = { "to", "t" }
 C.SCHEMA.hw = { t = C.V.word(12) }; C.REQUIRED.hw = { "t" }
+C.SCHEMA.hd = { t = C.V.word(12), n = C.V.int(1, 100000), s = C.V.int(0, 2147483646) }
+C.REQUIRED.hd = { "t", "n", "s" }
+local recovery
+
 local function digestString()
 	local parts = {}
 	for _, t in ipairs(S.Types("board")) do local n, sum = S.Digest(t); parts[#parts + 1] = t .. ":" .. n .. ":" .. sum end
 	local s = table.concat(parts, ",")
 	return #s <= 200 and s or ""
 end
-function S.Hello() return C.Send("hi", { s = digestString() }, "urgent") end
+local nextRecovery = {}
+function S.Hello()
+	nextRecovery[ns.GuildKey()] = GetTime() + 600 + math.random(0, 120)
+	local sent = C.Send("hi", { s = digestString() }, "urgent")
+	if sent then recovery = { guild = ns.GuildKey(), at = GetTime(), types = {} } end
+	return sent
+end
+
+-- Recover after login as well: a player with a useful copy may connect later.
+-- Limit announcements and skip them when no addon peer is visible.
+ns.On("LM_HB_SENT", function()
+	local guild = ns.GuildKey()
+	if guild == "?" or (IsInInstance and IsInInstance()) then return end
+	local at = GetTime()
+	if at < (nextRecovery[guild] or 0) then return end
+	nextRecovery[guild] = at + 600 + math.random(0, 120)
+	for peer in pairs(R.mates) do
+		if peer ~= me() and R.IsGuildmate(peer) then
+			S.Hello()
+			break
+		end
+	end
+end)
 
 local claimed = {}   -- [requester .. ":" .. type] = when someone claimed answering it
 local function batch(t, to)
@@ -221,18 +261,30 @@ end
 -- Two of us may claim in the same instant: the claimer waits 1.5 s and, if someone else claimed meanwhile, only the
 -- one whose name sorts first sends.
 local rivals = {}   -- [key] = the lowest other name that claimed it while mine was pending
+local offers = {}
+local function offer(t, to, key)
+	local n, sum = S.Digest(t)
+	local previous = offers[key]
+	if previous and previous.n == n and previous.sum == sum and GetTime() - previous.at < 30 then return end
+	if n > 0 and C.Whisper("hd", { t = t, n = n, s = sum }, to, "normal") then
+		offers[key] = { at = GetTime(), n = n, sum = sum }
+	end
+end
 local function answer(t, to)
 	if types[t].canAnswer and not types[t].canAnswer(to) then return end
 	if IsInInstance and IsInInstance() then return end   -- my claim could not go out there: others answer
 	local key = to .. ":" .. t
-	if claimed[key] and GetTime() - claimed[key] < 30 then return end
+	if claimed[key] and GetTime() - claimed[key] < 30 then offer(t, to, key); return end
 	claimed[key] = GetTime()
 	rivals[key] = nil
 	C.Send("hc", { to = to, t = t }, "urgent")
+	local guild = ns.GuildKey()
 	C_Timer.After(1.5, function()
 		local rival = rivals[key]
 		rivals[key] = nil
-		if rival and rival < me() then return end
+		if guild ~= ns.GuildKey() or not R.IsGuildmate(to) or
+			(types[t].canAnswer and not types[t].canAnswer(to)) then return end
+		if rival and rival < me() then offer(t, to, key); return end
 		S.stats.answered = S.stats.answered + 1
 		batch(t, to)
 	end)
@@ -250,7 +302,11 @@ C.OnMessage("hi", function(f, name)
 	end
 	if #differ == 0 then return end
 	-- one wait for the whole hello, then the types in name order (a run's line-up never before the run)
-	C_Timer.After(1 + math.random() * 5, function() for _, t in ipairs(differ) do answer(t, name) end end)
+	local guild = ns.GuildKey()
+	C_Timer.After(1 + math.random() * 5, function()
+		if guild ~= ns.GuildKey() or not R.IsGuildmate(name) then return end
+		for _, t in ipairs(differ) do answer(t, name) end
+	end)
 end)
 local asked = {}
 C.OnMessage("hc", function(f, name)
@@ -259,14 +315,54 @@ C.OnMessage("hc", function(f, name)
 		if not rivals[key] or name < rivals[key] then rivals[key] = name end
 	end
 	claimed[key] = GetTime()
-	if f.to ~= me() or asked[f.t] then return end
-	-- my answer is coming by whisper; if none of it arrived in 12 s, ask the claimer once more
-	local n0 = S.Digest(f.t)
+	local spec = types[f.t]
+	if f.to ~= me() or not spec or spec.class ~= "board" or not R.IsGuildmate(name) then return end
+	local guild = ns.GuildKey()
+	local retryKey = guild .. ":" .. f.t
+	if asked[retryKey] and GetTime() - asked[retryKey] < 30 then return end
+	asked[retryKey] = GetTime()
+	-- A same-size update changes the digest too. Retry only if no progress was made.
+	local n0, sum0 = S.Digest(f.t)
 	C_Timer.After(12, function()
-		if S.Digest(f.t) == n0 and not asked[f.t] then asked[f.t] = true; C.Whisper("hw", { t = f.t }, name, "urgent") end
+		if guild ~= ns.GuildKey() or not R.IsGuildmate(name) then return end
+		local n, sum = S.Digest(f.t)
+		if n == n0 and sum == sum0 then C.Whisper("hw", { t = f.t }, name, "urgent") end
 	end)
 end)
-C.OnMessage("hw", function(f, name) if types[f.t] and types[f.t].class == "board" then batch(f.t, name) end end)
+C.OnMessage("hd", function(f, name, _, channel)
+	local spec = types[f.t]
+	local round = recovery
+	if channel ~= "WHISPER" or not spec or spec.class ~= "board" or not R.IsGuildmate(name)
+		or not round or round.guild ~= ns.GuildKey() or GetTime() - round.at > 15 then return end
+	local state = round.types[f.t]
+	if not state then
+		state = { offers = {} }
+		round.types[f.t] = state
+		C_Timer.After(12, function()
+			if round ~= recovery or round.guild ~= ns.GuildKey() then return end
+			local n, sum = S.Digest(f.t)
+			local best, count
+			for peer, advertised in pairs(state.offers) do
+				if (advertised.n ~= n or advertised.s ~= sum) and
+					(not best or advertised.n > count or (advertised.n == count and peer < best)) then
+					best, count = peer, advertised.n
+				end
+			end
+			if best then C.Whisper("hw", { t = f.t }, best, "normal") end
+		end)
+	end
+	state.offers[name] = { n = f.n, s = f.s }
+end)
+local answeredRetry = {}
+C.OnMessage("hw", function(f, name, _, channel)
+	local spec = types[f.t]
+	local key = name .. ":" .. f.t
+	if channel ~= "WHISPER" or not spec or spec.class ~= "board" or not R.IsGuildmate(name)
+		or (spec.canAnswer and not spec.canAnswer(name))
+		or (answeredRetry[key] and GetTime() - answeredRetry[key] < 10) then return end
+	answeredRetry[key] = GetTime()
+	batch(f.t, name)
+end)
 
 -- Expired records and tombstones go once a minute (never while a list is being read).
 ns.Every("sync-prune", 60, function()

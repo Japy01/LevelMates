@@ -79,16 +79,60 @@ local function fields()
 end
 local function key(f) return table.concat({ f.c or "", f.s or "", f.l or "", f.p or "", f.b or "" }, "|") end
 
+local function withdrawal()
+	return ns.char.buildWithdrawalGuild == ns.GuildKey()
+end
+
+-- Officers can relay snapshots the owner originally published to the guild.
+-- Keep the legacy direct message for peers that do not know the new record type.
+local S = ns.Sync
+local BUILD_RECORD = "tbr"
+
+S.Define(BUILD_RECORD, {
+	class = "board", life = BU.FORGET_DAYS * 86400, relayMax = 300,
+	fields = C.SCHEMA.tb,
+	writerOwns = true,
+	idOwner = function(id, owner) return id == S.OwnerRecordId(owner) and R.IsGuildmate(owner) end,
+	accept = function(f) return not f.p or (f.c and f.s and f.l) ~= nil end,
+	relayFrom = function(owner, sender)
+		return owner == sender or R.IsOfficer(sender) or (sender == me() and R.IAmOfficer())
+	end,
+	onChange = function(rec, _, how)
+		if rec.o == me() then return end
+		local t = store()
+		local d = rec.d
+		if how == "expired" or rec.dead or not (d and d.p) then
+			t[rec.o] = nil
+		else
+			local mate = R.mates[rec.o]
+			t[rec.o] = { c = mate and mate.class or d.c, s = d.s, l = d.l, p = d.p, b = d.b, t = rec.v }
+		end
+		ns.Fire("LM_BUILDS_CHANGED")
+	end,
+})
+
+local function publishRecord(f)
+	local id = S.OwnerRecordId(me())
+	local old = S.Get(BUILD_RECORD, id)
+	if not (f.p or withdrawal() or old) then return end
+	if old and key(old.d or {}) == key(f) and old.e - GetServerTime() > 86400 then return end
+	S.Put(BUILD_RECORD, id, f)
+end
+
 local lastSent, announced
 local function send(prio)
 	local f = fields()
+	publishRecord(f)
 	if C.Send("tb", f, prio) then ns.char.buildPending, lastSent = nil, key(f); return true end
 	ns.char.buildPending = true
 	return false
 end
 local function sendIfChanged() if announced and key(fields()) ~= lastSent then send() end end
 
-function BU.SetSharing() send("now") end
+function BU.SetSharing()
+	ns.char.buildWithdrawalGuild = not ns.db.settings.shareBuild and ns.GuildKey() or nil
+	send("now")
+end
 
 -- A talent change, a level or the talent window closing: once things settle (respeccing fires many events).
 local scheduled
@@ -106,12 +150,14 @@ events:SetScript("OnEvent", function(_, event, arg)
 	end
 	soon()
 end)
-ns.On("LM_ANNOUNCED", function() announced = true; if fields().p then send() else lastSent = key({}) end end)   -- nothing to share: nothing sent
-ns.On("LM_HELLO_ANSWERED", function() if fields().p then send() end end)
+ns.On("LM_ANNOUNCED", function() announced = true; if fields().p or withdrawal() then send() else lastSent = key({}) end end)   -- nothing to share: nothing sent
+ns.On("LM_HELLO_ANSWERED", function() if fields().p or withdrawal() then send() end end)
 ns.On("LM_HB_SENT", function() if ns.char.buildPending then send() end end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "tb" then ns.char.buildPending = true end end)
 
 C.OnMessage("tb", function(f, name)
+	local rec = S.Get(BUILD_RECORD, S.OwnerRecordId(name))
+	if rec and rec.e >= GetServerTime() then return end
 	local m = R.mates[name]
 	if not m then return end
 	local t = store()

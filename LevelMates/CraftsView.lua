@@ -46,16 +46,22 @@ function CV.Professions()
 	for _, p in pairs(by) do
 		for _, crafter in ipairs(p.crafters) do crafter.online = RC.IsOnline(crafter.name) end
 		table.sort(p.crafters, function(x, y) if x.online ~= y.online then return x.online end; if (x.rank or 0) ~= (y.rank or 0) then return (x.rank or 0) > (y.rank or 0) end; return x.name < y.name end) end
+	for _, id in ipairs(P.IDS) do
+		if not by[id] and RC.HasProfessionCatalogue(id) then
+			by[id] = { crafters = {}, items = {} }
+			order[#order + 1] = id
+		end
+	end
 	local out = {}
 	for _, id in ipairs(order) do
 		local n = 0
 		for _ in pairs(by[id].items) do n = n + 1 end
-		out[#out + 1] = { id = id, who = #by[id].crafters, recipes = n, crafters = by[id].crafters }
+		out[#out + 1] = { id = id, who = #by[id].crafters, recipes = n, crafters = by[id].crafters, items = by[id].items }
 	end
 	table.sort(out, function(a, b) return P.Name(a.id) < P.Name(b.id) end)
 	return out
 end
-local function itemName(id) local name = ns.ItemInfo(id); return name or ("#" .. id) end
+local function itemName(id) local name = ns.ItemInfo(id); return name or ns.Recipes.CatalogueName(id) or ("#" .. id) end
 local function itemColor(id)
 	local _, link, quality = ns.ItemInfo(id)
 	local c = quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[quality]
@@ -80,6 +86,10 @@ local function profRow(parent, i)
 	it:Hide()
 	return it
 end
+local function hideItemTooltip(row)
+	if GameTooltip and GameTooltip.IsOwned and GameTooltip:IsOwned(row) then GameTooltip:Hide() end
+end
+
 local function mainRow(parent, i)
 	local r = CreateFrame("Button", nil, parent)
 	r:SetHeight(ROW_H); r:SetPoint("TOPLEFT", PAD, -102 - (i - 1) * ROW_H); r:SetPoint("RIGHT", -PAD, 0)
@@ -91,6 +101,14 @@ local function mainRow(parent, i)
 	r.rank:SetPoint("LEFT", r.name, "RIGHT", 8, 0); r.rank:SetWidth(33); r.rank:SetJustifyH("RIGHT")
 	r.read = ink(r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")); r.read:SetPoint("LEFT", r.rank, "RIGHT", 8, 0); r.read:SetPoint("RIGHT", -2, 0); r.read:SetJustifyH("LEFT"); r.read:SetWordWrap(false)
 	r.who = ink(r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")); r.who:SetPoint("LEFT", r.name, "RIGHT", 8, 0); r.who:SetPoint("RIGHT", -2, 0); r.who:SetJustifyH("LEFT"); r.who:SetWordWrap(false)
+	r:SetScript("OnEnter", function(self)
+		if not (self.item and GameTooltip) then return end
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetHyperlink("item:" .. self.item)
+		GameTooltip:Show()
+	end)
+	r:SetScript("OnLeave", hideItemTooltip)
+	r:SetScript("OnHide", hideItemTooltip)
 	r:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	r:SetScript("OnClick", function(self, mouse) if mouse == "RightButton" then if self.rfn then self.rfn(self) end elseif self.fn then self.fn(self) end end)
 	r:Hide()
@@ -123,9 +141,32 @@ function CV.Build(parent)
 	CV.search:SetScript("OnTextChanged", function(self) CV.query = self:GetText() or ""
 		if self.Instructions then self.Instructions:SetShown(CV.query == "") end
 		CV.page = 1; CV.Refresh() end)
+	local function capture(link)
+		link = ns.Plain(link)
+		if CV.frame:IsShown() and CV.search:HasFocus() and type(link) == "string"
+			and (link:find("|Hitem:", 1, true) or link:find("|Henchant:", 1, true)) then CV.search:SetText(link) end
+	end
+	if hooksecurefunc then
+		if ChatFrameUtil and ChatFrameUtil.InsertLink then hooksecurefunc(ChatFrameUtil, "InsertLink", capture) end
+		if ChatEdit_InsertLink then hooksecurefunc("ChatEdit_InsertLink", capture) end
+	end
 	CV.back = ns.Skin.Button(CV.right); CV.back:SetSize(80, 20); CV.back:SetPoint("TOPRIGHT", -PAD, -70); CV.back:SetText(L.CV_BACK)
-	CV.back:SetScript("OnClick", function() CV.crafter = nil; CV.page = 1; CV.Refresh() end)
+	CV.back:SetScript("OnClick", function() CV.crafter, CV.catalogue, CV.page = nil, nil, 1; CV.Refresh() end)
 	CV.back:Hide()
+	CV.browse = ns.Skin.Button(CV.right)
+	CV.browse:SetSize(120, 20); CV.browse:SetPoint("TOPRIGHT", -PAD, -70)
+	CV.browse:SetText(L.CV_BROWSE_RECIPES)
+	CV.browse:SetScript("OnClick", function()
+		CV.catalogue, CV.page, CV.expanded = true, 1, {}
+		CV.Refresh()
+	end)
+	CV.browse:Hide()
+	CV.catalogueHint = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
+	CV.catalogueHint:SetPoint("TOPRIGHT", -PAD, -70)
+	CV.catalogueHint:SetWidth(265)
+	CV.catalogueHint:SetJustifyH("RIGHT")
+	CV.catalogueHint:SetText(L.CV_CATALOGUE_INSTALL)
+	CV.catalogueHint:Hide()
 	-- a crafter's recipes: only what can change hands (remembered)
 	CV.tradable = CreateFrame("CheckButton", nil, CV.right, "UICheckButtonTemplate")
 	CV.tradable:SetSize(22, 22); CV.tradable:SetPoint("RIGHT", CV.back, "LEFT", -130, 0)
@@ -133,7 +174,7 @@ function CV.Build(parent)
 	CV.tradable:SetScript("OnClick", function(self) ns.db.settings.craftsTradable = self:GetChecked() and true or false; CV.page = 1; CV.Refresh() end)
 	CV.tradableLabel = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"))
 	CV.tradableLabel:SetPoint("LEFT", CV.tradable, "RIGHT", 2, 0); CV.tradableLabel:SetText(L.CV_TRADABLE)
-	CV.tradable:Hide(); CV.tradableLabel:Hide()
+	CV.tradable:Hide(); CV.tradableLabel:Hide(); CV.browse:Hide(); CV.catalogueHint:Hide()
 	CV.colName = ink(CV.right:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")); CV.colName:SetPoint("TOPLEFT", PAD + 22, -92)
 	CV.rows = {}
 	for i = 1, CV.ROWS do CV.rows[i] = mainRow(CV.right, i) end
@@ -162,7 +203,7 @@ function CV.Layout()
 end
 
 function CV.Select(id)
-	CV.prof, CV.crafter, CV.page, CV.query = id, nil, 1, ""
+	CV.prof, CV.crafter, CV.catalogue, CV.page, CV.query = id, nil, nil, 1, ""
 	if CV.search then CV.search:SetText("") end   -- a profession's click ends a search
 	ns.Recipes.RequestProfession(id)
 	CV.Refresh()
@@ -173,6 +214,7 @@ end
 local function ask(owner, name, item)
 	MenuUtil.CreateContextMenu(owner, function(_, root)
 		root:CreateTitle(itemName(item))
+		root:CreateButton(L.RC_MATERIALS, function() ns.Recipes.ShowMaterials(item) end)
 		if name ~= ns.Me() then root:CreateButton(ns.Recipes.AskLabel(name), function() ns.Recipes.Ask(name, item) end) end
 		root:CreateButton(L.CV_WHO_ELSE, function()
 			CV.query, CV.page = "item:" .. item, 1
@@ -191,7 +233,7 @@ local function recipeRows(e, onlyTradable)
 		local name, _, _, _, level, kind, _, _, slot, _, _, _, _, bind = ns.ItemInfo(item)
 		if not (onlyTradable and NOT_TRADED[bind]) then
 			local cat = slot and slot ~= "" and (_G[slot] or slot) or (kind and kind ~= "" and kind) or nil
-			list[#list + 1] = { item = item, cat = cat or L.CV_OTHER, known = cat ~= nil, level = level or 0, name = name or ("#" .. item) }
+			list[#list + 1] = { item = item, cat = cat or L.CV_OTHER, known = cat ~= nil, level = level or 0, name = name or itemName(item) }
 		end
 	end
 	table.sort(list, function(a, b)
@@ -212,13 +254,71 @@ local function recipeRows(e, onlyTradable)
 	end
 	return out, count
 end
+-- The full catalogue uses the client's recipe category when it is available.
+local function nativeCategory(recipe)
+	local api = C_TradeSkillUI
+	if not (recipe and api and api.GetRecipeInfo and api.GetCategoryInfo) then return end
+	local ok, info = pcall(api.GetRecipeInfo, recipe)
+	info = ok and ns.Plain(info)
+	local id = type(info) == "table" and ns.Plain(info.categoryID)
+	if type(id) ~= "number" or id <= 0 then return end
+	ok, info = pcall(api.GetCategoryInfo, id)
+	info = ok and ns.Plain(info)
+	local name = type(info) == "table" and ns.Plain(info.name)
+	if type(name) == "string" and name ~= "" then return name end
+end
+
+local function catalogueRows(items, spells, spellData)
+	local groups, names = {}, {}
+	local function add(category, row)
+		if not groups[category] then
+			groups[category] = {}
+			names[#names + 1] = category
+		end
+		local group = groups[category]
+		group[#group + 1] = row
+	end
+	for _, item in ipairs(items) do
+		local name, _, _, _, level, kind, subclass, _, slot = ns.ItemInfo(item)
+		local category = nativeCategory(ns.Recipes.RecipeID(item))
+		if not category and slot and slot ~= "" then
+			local label = _G[slot] or slot
+			category = subclass and subclass ~= "" and (subclass .. " · " .. label) or label
+		end
+		add(category or subclass or kind or L.CV_OTHER, { item = item, level = level or 0, name = name or itemName(item) })
+	end
+	for _, spell in ipairs(spells) do
+		local info = C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(spell)
+		local data = spellData[spell]
+		add(nativeCategory(spell) or L.CV_SPELLS, {
+			spell = spell, level = 0, name = (data and data.name) or (info and info.name) or ("#" .. spell),
+		})
+	end
+	table.sort(names)
+	local rows = {}
+	for _, category in ipairs(names) do
+		local group = groups[category]
+		rows[#rows + 1] = { category = category, count = #group }
+		if CV.expanded and CV.expanded[category] then
+			table.sort(group, function(a, b)
+				if a.level ~= b.level then return a.level < b.level end
+				if a.name ~= b.name then return a.name < b.name end
+				return (a.item or a.spell) < (b.item or b.spell)
+			end)
+			for _, row in ipairs(group) do rows[#rows + 1] = row end
+		end
+	end
+	return rows
+end
+
 local function setRows(list, fill)
 	local pages = math.max(1, math.ceil(#list / CV.ROWS))
 	CV.page = math.min(math.max(1, CV.page or 1), pages)
 	local first = (CV.page - 1) * CV.ROWS
 	for i, r in ipairs(CV.rows) do
 		local e = list[first + i]
-		r.fn, r.rfn = nil, nil
+		hideItemTooltip(r)
+		r.fn, r.rfn, r.item = nil, nil, nil
 		if e then fill(r, e); r:Show() else r:Hide() end
 	end
 	CV.prev:SetShown(pages > 1); CV.next:SetShown(pages > 1)
@@ -232,12 +332,36 @@ local function plainRow(r, crafter)
 	r.rank:SetShown(crafter); r.read:SetShown(crafter); r.who:SetShown(not crafter)
 end
 
+local function fillRecipe(r, item, exact)
+	local RC = ns.Recipes
+	plainRow(r, false)
+	r.item = item
+	r.icon:SetTexture(itemIcon(item)); r.name:SetText(itemName(item)); r.name:SetTextColor(ns.Skin.Ink(itemColor(item)))
+	local who = {}
+	for _, c in ipairs(RC.WhoCrafts(item)) do who[#who + 1] = c.name .. (c.online and "" or (" (" .. L.CV_OFFLINE .. ")")) end
+	local list = #who > 0 and table.concat(who, ", ") or L.CV_NO_KNOWN_CRAFTER
+	if item == exact then
+		local recipe = RC.RecipeID(item)
+		list = (recipe and string.format(L.RC_RECIPE_ID, recipe) or string.format(L.CV_ITEM_ID, item)) .. " · " .. list
+	end
+	r.who:SetText(list)
+	r.fn = function(self)
+		MenuUtil.CreateContextMenu(self, function(_, root)
+			root:CreateTitle(itemName(item))
+			root:CreateButton(L.RC_MATERIALS, function() RC.ShowMaterials(item) end)
+			for _, c in ipairs(RC.WhoCrafts(item)) do
+				if c.name ~= ns.Me() then root:CreateButton(RC.AskLabel(c.name), function() RC.Ask(c.name, item) end) end
+			end
+		end)
+	end
+end
+
 function CV.Refresh()
 	if not CV.frame or not CV.frame:IsShown() then return end
 	CV.Layout()
 	CV.redraws = (CV.redraws or 0) + 1
 	local P, RC = ns.Professions, ns.Recipes
-	CV.tradable:Hide(); CV.tradableLabel:Hide()
+	CV.tradable:Hide(); CV.tradableLabel:Hide(); CV.browse:Hide(); CV.catalogueHint:Hide()
 	local profs = CV.Professions()
 	local people, recipes = {}, 0
 	for _, p in ipairs(profs) do recipes = recipes + p.recipes; for _, c in ipairs(p.crafters) do people[c.name] = true end end
@@ -266,22 +390,56 @@ function CV.Refresh()
 		CV.back:Hide()
 		CV.icon:SetTexture("Interface\\Icons\\INV_Misc_Spyglass_03"); CV.title:SetText(L.CV_FOUND); CV.colName:SetText(L.CV_ITEM)
 		local found = RC.Find(q)
+		local exact = RC.ResolveSearch(q)
+		if exact then
+			for i = #found, 1, -1 do if found[i] == exact then table.remove(found, i) end end
+			table.insert(found, 1, exact)
+		end
 		CV.sub:SetText(string.format(L.CV_FOUND_N, #found)); CV.big:SetText(tostring(#found)); CV.bigLabel:SetText(L.CV_ITEMS)
-		setRows(found, function(r, item)
+		setRows(found, function(r, item) fillRecipe(r, item, exact) end)
+	elseif CV.catalogue and current then
+		CV.mode = "catalogue"
+		CV.back:Show()
+		CV.icon:SetTexture(P.Icon(current.id)); CV.title:SetText(P.Name(current.id))
+		CV.title:SetTextColor(1, 0.82, 0)
+		CV.sub:SetText(RC.HasProfessionCatalogue(current.id) and L.CV_BROWSE_RECIPES or L.CV_CATALOGUE_PARTIAL)
+		CV.colName:SetText(L.CV_ITEM)
+		local items, spells, seen = RC.CatalogueItems(current.id), {}, {}
+		local spellData = RC.CatalogueSpells(current.id)
+		for spell in pairs(spellData) do spells[#spells + 1] = spell end
+		for _, item in ipairs(items) do seen[item] = true end
+		for key in pairs(current.items) do
+			if type(key) == "number" then
+				if not seen[key] then items[#items + 1] = key end
+			else
+				local spell = tonumber(key:sub(2))
+				if spell and not spellData[spell] then spells[#spells + 1] = spell end
+			end
+		end
+		table.sort(spells)
+		local rows, count = catalogueRows(items, spells, spellData), #items + #spells
+		CV.big:SetText(tostring(count)); CV.bigLabel:SetText(L.CV_ITEMS)
+		setRows(rows, function(r, entry)
+			if entry.item then fillRecipe(r, entry.item); return end
 			plainRow(r, false)
-			r.icon:SetTexture(itemIcon(item)); r.name:SetText(itemName(item)); r.name:SetTextColor(ns.Skin.Ink(itemColor(item)))
-			local who = {}
-			for _, c in ipairs(RC.WhoCrafts(item)) do who[#who + 1] = c.name .. (c.online and "" or (" (" .. L.CV_OFFLINE .. ")")) end
-			r.who:SetText(table.concat(who, ", "))
-			r.fn = function(self)
-				MenuUtil.CreateContextMenu(self, function(_, root)
-					root:CreateTitle(itemName(item))
-					for _, c in ipairs(RC.WhoCrafts(item)) do
-						if c.name ~= ns.Me() then root:CreateButton(RC.AskLabel(c.name), function() RC.Ask(c.name, item) end) end
-					end
-				end)
+			r.icon:Hide(); r.who:SetText("")
+			if entry.category then
+				local open = CV.expanded[entry.category]
+				r.name:SetText((open and "− " or "+ ") .. entry.category .. " (" .. entry.count .. ")")
+				r.name:SetTextColor(ns.Skin.Ink(1, 0.82, 0))
+				r.fn = function()
+					CV.expanded[entry.category] = not open
+					CV.Refresh()
+				end
+			else
+				r.name:SetText(entry.name)
+				r.name:SetTextColor(ns.Skin.Ink(1, 1, 1))
 			end
 		end)
+		CV.right:SetHint(L.CV_CATALOGUE_PARTIAL)
+		CV.right:SetEmpty(count == 0)
+		ns.Skin.InkPass()
+		return
 	elseif CV.crafter and current then
 		-- a crafter's recipes in this profession
 		CV.mode = "recipes"
@@ -307,6 +465,7 @@ function CV.Refresh()
 				r.name:SetText(info and info.name or ("#" .. item.spell)); r.name:SetTextColor(ns.Skin.Ink(1, 1, 1))
 				return
 			end
+			r.item = item
 			r.icon:SetTexture(itemIcon(item)); r.name:SetText(itemName(item)); r.name:SetTextColor(ns.Skin.Ink(itemColor(item)))
 			r.fn = function(self) ask(self, c.name, item) end
 		end)
@@ -318,6 +477,9 @@ function CV.Refresh()
 		-- the profession's crafters
 		CV.mode = "crafters"
 		CV.back:Hide()
+		local hasCatalogue = current and RC.HasProfessionCatalogue(current.id)
+		CV.browse:SetShown(not not hasCatalogue)
+		CV.catalogueHint:SetShown(current ~= nil and not hasCatalogue)
 		local crafters = current and current.crafters or {}
 		if current then
 			CV.icon:SetTexture(P.Icon(current.id)); CV.title:SetText(P.Name(current.id)); CV.title:SetTextColor(1, 0.82, 0)

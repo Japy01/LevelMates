@@ -56,14 +56,68 @@ local P = ns.Sync.Personal("wl", function()
 	local ids = {}
 	for _, w in ipairs(mine()) do ids[#ids + 1] = w.id end
 	return { ids = #ids > 0 and table.concat(ids, ",") or nil }
-end, { save = "wishPending", worth = function() return #mine() > 0 end })
-local function send(prio) return P.Mark(prio) end
+end, { save = "wishPending", worth = function() return #mine() > 0 or ns.char.wishWithdrawalGuild == ns.GuildKey() end })
 -- Priorities (1 first, 3 last) ride in their own kind, so clients that predate them keep the wishes themselves.
-local PP = ns.Sync.Personal("wp", function()
+local function priorityFields()
 	local parts = {}
 	for _, w in ipairs(mine()) do if w.p then parts[#parts + 1] = w.id .. ":" .. w.p end end
 	return { p = #parts > 0 and table.concat(parts, ","):sub(1, 120) or nil }
-end, { save = "wishPrioPending", worth = function() for _, w in ipairs(mine()) do if w.p then return true end end; return false end })
+end
+local PP = ns.Sync.Personal("wp", priorityFields, { save = "wishPrioPending", worth = function() for _, w in ipairs(mine()) do if w.p then return true end end; return false end })
+local S = ns.Sync
+local WISH_RECORD = "wlr"
+S.Define(WISH_RECORD, {
+	class = "board", life = W.FORGET_DAYS * 86400, relayMax = 300, writerOwns = true,
+	fields = { ids = C.SCHEMA.wl.ids, p = C.SCHEMA.wp.p },
+	idOwner = function(id, owner) return id == S.OwnerRecordId(owner) and R.IsGuildmate(owner) end,
+	relayFrom = function(owner, sender)
+		return owner == sender or R.IsOfficer(sender) or (sender == me() and R.IAmOfficer())
+	end,
+	onChange = function(rec, _, how)
+		if rec.o == me() then return end
+		local t, d = theirs(), rec.d
+		if how == "expired" or rec.dead or not (d and d.ids) then
+			t[rec.o] = nil
+		else
+			local ids, priorities = {}, {}
+			for id in d.ids:gmatch("%d+") do ids[#ids + 1] = tonumber(id) end
+			for id, priority in (d.p or ""):gmatch("(%d+):(%d)") do priorities[tonumber(id)] = tonumber(priority) end
+			t[rec.o] = { ids = ids, prio = priorities, t = rec.v }
+		end
+		ns.Fire("LM_WISHES_CHANGED")
+	end,
+})
+
+local function publishRecord()
+	local id = S.OwnerRecordId(me())
+	local old = S.Get(WISH_RECORD, id)
+	local ids = {}
+	for _, item in ipairs(mine()) do ids[#ids + 1] = item.id end
+	if #ids == 0 and not old and ns.char.wishWithdrawalGuild ~= ns.GuildKey() then return end
+	local data = { ids = #ids > 0 and table.concat(ids, ",") or nil, p = priorityFields().p }
+	if old and old.d and old.d.ids == data.ids and old.d.p == data.p and old.e - GetServerTime() > 86400 then return end
+	S.Put(WISH_RECORD, id, data)
+end
+
+local publishPending
+local function publishSoon()
+	local guild = ns.GuildKey()
+	if publishPending == guild then return end
+	publishPending = guild
+	C_Timer.After(8, function()
+		if publishPending ~= guild then return end
+		publishPending = nil
+		if ns.GuildKey() == guild then publishRecord() end
+	end)
+end
+
+local function send(prio)
+	ns.char.wishWithdrawalGuild = #mine() == 0 and ns.GuildKey() or nil
+	publishSoon()
+	return P.Mark(prio)
+end
+ns.On("LM_ANNOUNCED", publishSoon)
+
 local sourceSignature
 function W.SourceTick()
 	if not W.IsExternal() then return end
@@ -72,7 +126,7 @@ function W.SourceTick()
 	local signature = (items and "ready:" or "unavailable:") .. table.concat(ids, ",")
 	if signature ~= sourceSignature then
 		sourceSignature = signature
-		send("now"); PP.Mark("now"); ns.Fire("LM_WISHES_CHANGED")
+		send("now"); PP.Mark("now"); publishSoon(); ns.Fire("LM_WISHES_CHANGED")
 	end
 end
 function W.SetSource(source)
@@ -80,7 +134,7 @@ function W.SetSource(source)
 	if source == "needroll" and not W.NeedRollItems() then ns.Say(L.WISH_SOURCE_UNAVAILABLE); return false end
 	ns.char.wishSource, ns.char.wishSourceAt = source, time()
 	sourceSignature = nil
-	send("now"); PP.Mark("now"); ns.Fire("LM_WISHES_CHANGED")
+	send("now"); PP.Mark("now"); publishSoon(); ns.Fire("LM_WISHES_CHANGED")
 	return true
 end
 function W.SourceStatus()
@@ -105,7 +159,7 @@ function W.SetPriority(id, prio)
 	for _, w in ipairs(mine()) do
 		if w.id == id then
 			w.p = (prio and prio >= 1 and prio <= 3) and math.floor(prio) or nil
-			PP.Mark("now"); ns.Fire("LM_WISHES_CHANGED")
+			PP.Mark("now"); publishSoon(); ns.Fire("LM_WISHES_CHANGED")
 			return true
 		end
 	end
@@ -123,6 +177,7 @@ function W.WantedText(id)
 	return table.concat(parts, ", ")
 end
 C.OnMessage("wp", function(f, name)
+	if S.Get(WISH_RECORD, S.OwnerRecordId(name)) then return end
 	if not R.mates[name] then return end
 	local t = theirs()
 	t[name] = t[name] or { ids = {}, t = time() }
@@ -205,6 +260,7 @@ function W.Link(id)
 end
 
 C.OnMessage("wl", function(f, name)
+	if S.Get(WISH_RECORD, S.OwnerRecordId(name)) then return end
 	if not R.mates[name] then return end   -- only people the roster knows
 	local t = theirs()
 	if f.ids == nil then
@@ -212,7 +268,10 @@ C.OnMessage("wl", function(f, name)
 	else
 		local ids = {}
 		for id in tostring(f.ids):gmatch("%d+") do ids[#ids + 1] = tonumber(id) end
-		t[name] = { ids = ids, t = time() }
+		local prio = {}
+		local old = t[name] and t[name].prio
+		for _, id in ipairs(ids) do if old then prio[id] = old[id] end end
+		t[name] = { ids = ids, prio = prio, t = time() }
 	end
 	ns.Fire("LM_WISHES_CHANGED")
 end)

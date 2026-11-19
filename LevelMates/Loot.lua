@@ -208,7 +208,19 @@ function LT.Post(who, points, kind, reason, opts)
 	if not (who and who ~= "" and points and points == math.floor(points) and points ~= 0 and LT.KINDS[kind] and reason ~= "") then return false, "bad" end
 	if points < 0 and LT.Balance(who) + points < 0 then ns.Say(L.LOOT_LOW, who, LT.Balance(who)); return false, "low" end
 	opts = opts or {}
-	local id = newId("k")
+	local id
+	if opts.operation then
+		if kind ~= "att" and kind ~= "boss" then return false, "bad" end
+		id = "ka" .. S.OwnerRecordId(opts.operation .. ":" .. who)
+		local existing = S.Store("lk")[id]
+		if existing then
+			local d = existing.d
+			if d and d.w == who and d.k == kind and d.p == points and d.g == opts.raid then return id end
+			return false, "conflict"
+		end
+	else
+		id = newId("k")
+	end
 	if not S.Put("lk", id, { w = who, p = points, k = kind, r = reason, i = opts.item, g = opts.raid, f = opts.ref }) then return false, "bad" end
 	return id
 end

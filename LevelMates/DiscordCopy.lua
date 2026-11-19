@@ -187,7 +187,30 @@ local function Build()
 	box:SetScript("OnEscapePressed", function() f:Hide() end)
 	box:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
 	scroll:SetScrollChild(box)
-	D.box = box
+	D.box, D.scroll = box, scroll
+	local links = CreateFrame("ScrollingMessageFrame", nil, f)
+	links:SetPoint("TOPLEFT", scroll); links:SetPoint("BOTTOMRIGHT", scroll)
+	links:SetFontObject("ChatFontNormal"); links:SetJustifyH("LEFT"); links:SetFading(false)
+	local insertAtTop = SCROLLING_MESSAGE_FRAME_INSERT_MODE_TOP or "TOP"
+	links:SetInsertMode(insertAtTop)
+	links:EnableMouseWheel(true)
+	links:SetScript("OnMouseWheel", function(self, delta)
+		if delta > 0 then self:ScrollUp() else self:ScrollDown() end
+	end)
+	ns.GuildChat.Hyperlinks(links)
+	links:Hide()
+	D.links = links
+	local copy = ns.Skin.Button(f)
+	copy:SetSize(120, 22); copy:SetPoint("BOTTOM", 0, 12); copy:SetText(L.RC_COPY_MATERIALS)
+	copy:SetScript("OnClick", function()
+		local render = D.renderLinks
+		D.OpenText(render(false), D.linkTitle, D.linkHint)
+	end)
+	D.copy = copy
+	f:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+	f:SetScript("OnEvent", function()
+		if D.renderLinks and f:IsShown() then D.RefreshLinks() end
+	end)
 	local close = ns.Skin.Button(f)
 	close:SetSize(120, 22); close:SetPoint("BOTTOM", 0, 12); close:SetText(L.LFG_CLOSE)
 	close:SetScript("OnClick", function() f:Hide() end)
@@ -199,11 +222,13 @@ local function Build()
 		if action and action(D.box:GetText()) then f:Hide() end
 	end)
 	D.send = send
-	f:SetScript("OnHide", function() D.action = nil end)
+	f:SetScript("OnHide", function() D.action, D.renderLinks = nil, nil end)
 end
 
 -- Any text in the box (Home's invite): to copy and paste anywhere; nothing is sent.
 local function presentation(title, hint, action, actionLabel)
+	D.renderLinks, D.linkText = nil, nil
+	D.links:Hide(); D.copy:Hide(); D.scroll:Show()
 	D.action = action
 	D.close:ClearAllPoints()
 	D.close:SetPoint("BOTTOM", action and -68 or 0, 12)
@@ -219,6 +244,34 @@ function D.OpenText(text, title, hint, action, actionLabel)
 	D.box:SetText(text)
 	D.frame:Show()
 	D.box:SetFocus(); D.box:HighlightText()
+end
+
+function D.RefreshLinks()
+	local text = D.renderLinks(true)
+	if text == D.linkText then return end
+	D.linkText = text
+	D.links:Clear()
+	local lines = {}
+	for line in (text .. "\n"):gmatch("(.-)\n") do
+		lines[#lines + 1] = line
+	end
+	-- Insert in reverse so the first line is the newest entry at the top.
+	for i = #lines, 1, -1 do
+		D.links:AddMessage(lines[i])
+	end
+	D.links:SetScrollOffset(0)
+end
+
+function D.OpenLinks(render, title, hint)
+	if not D.frame then Build() end
+	presentation(title, hint)
+	D.renderLinks, D.linkTitle, D.linkHint = render, title, hint
+	D.box:ClearFocus(); D.scroll:Hide()
+	D.close:ClearAllPoints(); D.close:SetPoint("BOTTOM", -68, 12)
+	D.copy:ClearAllPoints(); D.copy:SetPoint("BOTTOM", 68, 12)
+	D.copy:Show(); D.links:Show()
+	D.frame:Show()
+	D.RefreshLinks()
 end
 
 function D.Open(tab)

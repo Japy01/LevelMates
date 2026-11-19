@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Recover guild recipe books, shared builds, wishlists, macros and restricted announcements from eligible guild peers, including withdrawals.
+- Browse profession recipes with optional LibProfessionDB, inspect item tooltips and open or copy material lists.
+- Retry automatic DKP batches without double-crediting recipients and delegate requests to officers, with review for requests from outside their raid.
+
 ## 0.8.0
 
 - **Guild Crafts**: online crafters appear first, with clearer recipe snapshot dates. Search by item name, link or ID. Crafting requests open an editable whisper draft or give you text to copy into in-game mail for an offline crafter.
