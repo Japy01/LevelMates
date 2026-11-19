@@ -175,3 +175,9 @@ STUB.Advance(3 * 60 * 60)
 assert(#guild == 9, "off: nothing more")
 
 print("ok guild_notice")
+
+-- Another officer can relay the original author and interval at a fresh client's login.
+STUB.guildMembers.Marisol = true; STUB.guildRoles.Marisol = 2; R.InvalidateGuildRoster()
+local at = GetServerTime()
+STUB.Receive("LVLM2", C.Encode("gin", { t = at, by = "Marisol", m = 120 }), "GUILD", "Jefa-Testrealm")
+assert(GN.Last().by == "Marisol" and GN.Wait() == 120 * 60)

@@ -1,6 +1,6 @@
 -- Recruit.lua: guild recruitment for officers and the guild master. Three templates shared between officers (`rt`),
 -- placeholders filled in at post time, posted to channel 2 (Trade) or 1 (General) only from a click, with a
--- 10-minute wait shared by all officers (`rc`). Automatic posting is impossible in the client and against the rules:
+-- shared cooldown per General zone or one for Trade (`rcz`). Automatic posting is impossible in the client and against the rules:
 -- the reminder only offers a one-click Publish.
 local _, ns = ...
 local RC = {}
@@ -21,11 +21,33 @@ local function store()
 	return ns.db.recruit[k]
 end
 function RC.Templates() return store().templates end
-function RC.Last() return store().last end   -- { at = seconds, by = name }
-function RC.Wait()
-	local l = store().last
+local function scope(channel)
+	if channel == 2 then return "trade" end
+	if channel ~= 1 or not (C_Map and C_Map.GetBestMapForUnit) then return nil end
+	local id = ns.Plain(C_Map.GetBestMapForUnit("player"))
+	if type(id) ~= "number" or id <= 0 then return nil end
+	if C_Map.GetMapInfo then
+		for _ = 1, 6 do
+			local map = ns.Plain(C_Map.GetMapInfo(id))
+			if type(map) ~= "table" or (ns.Plain(map.mapType) or 0) < 4 then break end
+			local parent = ns.Plain(map.parentMapID)
+			if type(parent) ~= "number" or parent <= 0 or parent == id then break end
+			id = parent
+		end
+	end
+	return "zone" .. id
+end
+function RC.Last(channel)
+	local s = store()
+	local k = scope(channel or ns.char.recruitChannel or 2)
+	local scoped = k and s.posts and s.posts[k]
+	if not scoped or (s.last and s.last.at > scoped.at) then return s.last end
+	return scoped
+end
+function RC.Wait(channel)
+	local l = RC.Last(channel)
 	if not l then return 0 end
-	return math.max(0, RC.Gap() - (now() - l.at))
+	return math.max(0, math.max(RC.Gap(), (l.minutes or 0) * 60) - (now() - l.at))
 end
 
 local function plain(v) return (tostring(v):gsub("%%", "%%%%")) end
@@ -90,29 +112,52 @@ function RC.Expand(text)
 	return ns.CutUtf8(before, math.max(0, room)) .. link .. after
 end
 
--- In that public channel: the slot is taken, and not by our own hidden channel ("LM" and 8 hex digits).
-function RC.InChannel(channel)
-	local id, name = GetChannelName(channel)
-	return (id or 0) ~= 0 and name ~= nil and not tostring(name):find("^LM%x%x%x%x%x%x%x%x$")
+-- Saved values are Blizzard's static zone-channel IDs, not local /chat slots.
+function RC.Channel(channel)
+	if channel ~= 1 and channel ~= 2 then return nil end
+	if not (GetChannelList and C_ChatInfo and C_ChatInfo.GetChannelInfoFromIdentifier) then return nil end
+	local joined = { pcall(GetChannelList) }
+	if not joined[1] then return nil end
+	for i = 2, #joined, 3 do
+		local id, name = ns.Plain(joined[i]), ns.Plain(joined[i + 1])
+		if type(id) == "number" and id > 0 and type(name) == "string" and ns.Plain(joined[i + 2]) == false then
+			local ok, info = pcall(C_ChatInfo.GetChannelInfoFromIdentifier, name)
+			info = ok and ns.Plain(info) or nil
+			if type(info) == "table" and ns.Plain(info.zoneChannelID) == channel and ns.Plain(info.localID) == id then return id end
+		end
+	end
 end
+function RC.InChannel(channel) return RC.Channel(channel) ~= nil end
 
--- Called from the Publish click: the text and channel to post, or nil after saying why. force: post although the
--- wait holds (the button said "post anyway"; the officer's call).
-function RC.Prepare(index, channel, force)
+function RC.Prepare(index, channel)
 	if not R.IAmOfficer() then ns.Say(L.GOAL_NOT_OFFICER); return nil end
-	local wait = RC.Wait()
-	if wait > 0 and not force then ns.Say(L.RECRUIT_WAIT, math.ceil(wait / 60)); return nil end
+	local wait = RC.Wait(channel)
+	if wait > 0 then ns.Say(L.RECRUIT_WAIT, math.ceil(wait / 60)); return nil end
+	if channel == 1 and GetTime() < (RC.zoneReadyAt or 0) then return nil end
 	local text = RC.Expand(RC.Templates()[index] or "")
 	if strtrim(text) == "" then ns.Say(L.RECRUIT_EMPTY); return nil end
-	if not RC.InChannel(channel) then ns.Say(L.RECRUIT_NO_CHANNEL, channel); return nil end
-	return text, channel
+	local target = RC.Channel(channel)
+	if not target or not scope(channel) then ns.Say(L.RECRUIT_NO_CHANNEL, channel); return nil end
+	return text, target
 end
 
--- After the post: the wait starts for every officer.
-function RC.Posted()
-	store().last = { at = now(), by = me() }
-	C.Send("rc", { t = now() }, "now")
+local function remember(k, at, author, minutes)
+	if at > now() + 60 or now() - at >= 3600 then return end
+	local s = store()
+	s.posts = s.posts or {}
+	for old, post in pairs(s.posts) do if now() - post.at >= 3600 then s.posts[old] = nil end end
+	local l = k and s.posts[k] or (not k and s.last)
+	if l and l.at >= at then return end
+	local entry = { at = at, by = author, minutes = minutes }
+	if k then s.posts[k] = entry else s.last = entry end
 	ns.Fire("LM_RECRUIT_CHANGED")
+end
+function RC.Posted(channel)
+	local k = scope(channel or ns.char.recruitChannel or 2)
+	if not k then return end
+	local at, minutes = now(), math.min(RC.Every(), 60)
+	remember(k, at, me(), minutes)
+	C.Send("rcz", { t = at, k = k, by = me(), m = minutes }, "now")
 end
 
 function RC.SetTemplate(i, text)
@@ -139,22 +184,46 @@ C.OnMessage("rt", function(f, name)
 end)
 
 C.OnMessage("rc", function(f, name)
-	if not R.IsOfficer(name) then return end
-	local at = f.t
-	if at > now() + 60 then return end
-	local l = store().last
-	if not l or at > l.at then store().last = { at = at, by = name }; ns.Fire("LM_RECRUIT_CHANGED") end
+	if R.IsOfficer(name) then remember(nil, f.t, name) end
+end)
+C.OnMessage("rcz", function(f, name)
+	if R.IsOfficer(name) and R.IsOfficer(f.by) and (f.k == "trade" or f.k:match("^zone%d+$")) then
+		remember(f.k, f.t, f.by, f.m)
+	end
 end)
 
--- Officers share the templates and a recent post with newcomers.
+local lastReply = -math.huge
+local function sharePosts()
+	if not R.IAmOfficer() or GetTime() - lastReply < 10 then return end
+	lastReply = GetTime()
+	for k, l in pairs(store().posts or {}) do
+		if now() - l.at < 3600 then C.Send("rcz", { k = k, t = l.at, by = l.by, m = l.minutes }) end
+	end
+end
+C.OnMessage("grq", function(_, name) if R.IsOfficer(name) then sharePosts() end end)
 ns.On("LM_HELLO_ANSWERED", function()
 	if not R.IAmOfficer() then return end
 	local s = store()
 	s.versions = s.versions or {}
 	for i, x in ipairs(s.templates) do if x ~= "" and (s.versions[i] or 0) > 0 then C.Send("rt", { i = i, x = x, v = s.versions[i] }) end end
-	local l = s.last
-	if l and now() - l.at < RC.Gap() then C.Send("rc", { t = l.at }) end
+	sharePosts()
 end)
+
+local lastScope
+local function refreshZone()
+	local current = scope(1)
+	if current == lastScope then return end
+	lastScope = current
+	if R.IAmOfficer() and C.IsReady() then
+		RC.zoneReadyAt = GetTime() + 6
+		C.Send("grq", {}, "now")
+	end
+	ns.Fire("LM_RECRUIT_CHANGED")
+end
+local zone = CreateFrame("Frame")
+zone:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+zone:RegisterEvent("ZONE_CHANGED")
+zone:SetScript("OnEvent", refreshZone)
 
 
 -- The reminder: every 10 minutes (when the shared wait is over) a small prompt offers Publish; it never posts by itself.
@@ -187,11 +256,13 @@ function RC.ShowPrompt()
 end
 
 function RC.Tick()
+	local board = ns.Board
+	if board and board.tab == "recruit" and board.frame and board.frame:IsShown() then ns.Fire("LM_RECRUIT_CHANGED") end
 	if not ns.char.recruitRemind or not R.IAmOfficer() then return end
-	if RC.Wait() > 0 or now() < snoozeUntil then return end
+	if RC.Wait() > 0 or now() < snoozeUntil or (ns.char.recruitChannel == 1 and GetTime() < (RC.zoneReadyAt or 0)) then return end
 	-- only when a post can happen: out of combat, out of instances, in the chosen channel
 	if (InCombatLockdown and InCombatLockdown()) or (IsInInstance and IsInInstance()) or not RC.InChannel(ns.char.recruitChannel or 2) then return end
 	if RC.prompt and RC.prompt:IsShown() then return end
 	RC.ShowPrompt()
 end
-ns.On("LM_WORLD", function() if not RC.ticker then RC.ticker = C_Timer.NewTicker(30, RC.Tick) end; RC.RequestLinks() end)
+ns.On("LM_WORLD", function() if not RC.ticker then RC.ticker = C_Timer.NewTicker(30, RC.Tick) end; RC.RequestLinks(); refreshZone() end)

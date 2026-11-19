@@ -765,7 +765,7 @@ local function Build()
 	post:SetSize(140, 24); post:SetPoint("TOPLEFT", 0, -226); post:SetText(L.RECRUIT_POST)
 	post:SetScript("OnClick", function()   -- the only place recruitment reaches a public channel: a click
 		for i = 1, 3 do ns.Recruit.SetTemplate(i, B.recruitEdit[i]:GetText()) end   -- what is typed, even without Enter
-		local text, ch = ns.Recruit.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2, ns.Recruit.Wait() > 0)   -- the button read "post anyway"
+		local text, ch = ns.Recruit.Prepare(ns.char.recruitTemplate or 1, ns.char.recruitChannel or 2)
 		if text and ns.SendChat(text, "CHANNEL", nil, ch) then ns.Recruit.Posted() end
 	end)
 	B.recruitPost = post
@@ -2496,7 +2496,7 @@ local function RefreshRecruit()
 	B.recruitEvery:SetText(string.format(L.RECRUIT_EVERY, RC.Every()))
 	B.recruitPreview:SetText(RC.Expand(t[use] or ""))
 	local l, wait = RC.Last(), RC.Wait()
-	B.recruitPost:SetText(wait > 0 and L.RECRUIT_POST_ANYWAY or L.RECRUIT_POST)
+	B.recruitPost:SetText(L.RECRUIT_POST)
 	local status = l and string.format(L.RECRUIT_LAST, ns.Journal.Duration(math.max(0, time() - l.at)), l.by) or L.RECRUIT_NONE
 	status = status .. "  ·  " .. (wait > 0 and string.format(L.RECRUIT_WAIT, math.ceil(wait / 60)) or L.RECRUIT_READY)
 	B.recruitStatus:SetText(status)
@@ -2507,6 +2507,8 @@ local function RefreshRecruit()
 	B.noticeText:SetShown(GN.What() == "text")
 	if not B.noticeText:HasFocus() then B.noticeText:SetText(GN.Text()) end
 	local said = nl and string.format(L.NOTICE_LAST, ns.Journal.Duration(math.max(0, ((GetServerTime and GetServerTime()) or time()) - nl.at)), nl.by) or L.NOTICE_NONE   -- the server's clock, as it was stored
+	local remaining = GN.Wait()
+	if GN.On() and remaining > 0 then said = said .. "  ·  " .. string.format(L.NOTICE_WAIT_SHARED, math.ceil(remaining / 60)) end
 	B.noticeStatus:SetText(#GN.Lines() == 0 and L.NOTICE_EMPTY or said)
 end
 

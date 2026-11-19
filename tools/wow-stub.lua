@@ -169,6 +169,22 @@ function JoinTemporaryChannel(name)
 	return 0, name
 end
 function GetChannelName(name) return STUB.channels[name] or 0, name end
+function GetChannelList()
+	local out = {}
+	for kind = 1, 2 do
+		local id, name = GetChannelName(kind)
+		if id > 0 then
+			out[#out+1] = id
+			out[#out+1] = type(name) == "number" and ("Built-in " .. kind) or name
+			out[#out+1] = false
+		end
+	end
+	return (unpack or table.unpack)(out)
+end
+function C_ChatInfo.GetChannelInfoFromIdentifier(name)
+	local kind = tonumber(name:match("^Built%-in ([12])$"))
+	if kind then return { zoneChannelID = kind, localID = STUB.channels[kind] } end
+end
 function STUB.ResolveChannelJoins()
 	for name in pairs(STUB.pendingChannels) do
 		STUB.channels[name] = STUB.nextChannelId; STUB.joinedChannelIds[STUB.nextChannelId] = true
@@ -223,7 +239,7 @@ SettingsPanel = { GetLayout = function(_, cat) cat.layout = cat.layout or { init
 function CreateSettingsListSectionHeaderInitializer(name) return { header = name } end
 function CreateSettingsButtonInitializer(name, buttonText, click, tooltip) return { button = name, buttonText = buttonText, click = click } end
 MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
-function strsplit(d, s, n) local out, i = {}, 1; for piece in (s .. d):gmatch("(.-)" .. d:gsub("%p", "%%%0")) do out[#out + 1] = piece end; return unpack(out) end
+function strsplit(d, s, n) local out, i = {}, 1; for piece in (s .. d):gmatch("(.-)" .. d:gsub("%p", "%%%0")) do out[#out + 1] = piece end; return (unpack or table.unpack)(out) end
 function strtrim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
 function strlower(s) return s:lower() end
 function tinsert(t, v) t[#t + 1] = v end
