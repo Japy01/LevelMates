@@ -102,4 +102,5 @@ RaidProbe.lua
 RaidRequirements.lua
 RaidReadiness.lua
 RaidReadinessConfig.lua
+GuildAnnouncements.lua
 Sim.lua

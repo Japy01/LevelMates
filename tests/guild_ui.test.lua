@@ -18,9 +18,14 @@ STUB.Receive("LVLM2", C.Encode("gn", STUB.Rec{ id = ns.NameKey("Mario"), f = "Ma
 STUB.Receive("LVLM2", C.Encode("gmo", STUB.Rec{ id = "motd", n = "Raid el viernes" }), "GUILD", "Luis-Testrealm")
 STUB.Fire("GUILD_ROSTER_UPDATE"); STUB.Advance(3)
 B.Toggle()
--- nine sub-tabs that fit (Ruling 2026-10-16: Loot joined them; the buttons narrowed to 72)
-assert(#B.GUILD_KEYS == 9 and B.subs.members and B.subs.bank and B.subs.loot, "members, bank and loot among the sub-tabs")
-for _, k in ipairs(B.GUILD_KEYS) do assert(B.subs[k]:GetWidth() <= 72, "narrow: " .. k) end
+-- The Guild navigation keeps its existing pages and adds Announcements before Wall.
+assert(B.GUILD_KEYS[1] == "announcements" and B.GUILD_KEYS[2] == "feed")
+for _, key in ipairs({ "announcements", "feed", "goals", "wishes", "crafts", "class", "members", "bank", "loot", "recruit" }) do
+	assert(B.subs[key], "missing subsection " .. key)
+end
+local width = 2 * B.MARGIN
+for i, key in ipairs(B.GUILD_KEYS) do width = width + B.subs[key]:GetWidth() + (i > 1 and 4 or 0) end
+assert(width <= B.frame:GetWidth(), "subsections fit in the book")
 -- Home: the message of the day first
 B.ShowTab("home")
 assert(ns.Dashboard.motd:IsShown() and ns.Dashboard.motd.text.text:find("Raid el viernes", 1, true), "the MOTD strip on Home")

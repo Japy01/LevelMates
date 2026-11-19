@@ -40,7 +40,7 @@ local function readGuildMembers()
 					local y, mo, d, h = plain(info.lastOnlineYear), plain(info.lastOnlineMonth), plain(info.lastOnlineDay), plain(info.lastOnlineHour)
 					if y or mo or d or h then days = (y or 0) * 365 + (mo or 0) * 30 + (d or 0) + math.floor((h or 0) / 24) end
 				end
-				out[#out + 1] = { name = ns.ShortName(full), level = plain(info.level) or 0, rank = plain(info.guildRankOrder) or 4, rankName = plain(info.guildRank),
+				out[#out + 1] = { name = ns.ShortName(full), fullName = full, level = plain(info.level) or 0, verifiedRank = plain(info.guildRankOrder), rank = plain(info.guildRankOrder) or 4, rankName = plain(info.guildRank),
 					role = plain(info.role) or 4, classID = plain(info.classID), classFile = plain(info.classFileName), online = online, zone = plain(info.zone), days = days, note = plain(info.memberNote) }
 			end
 		end
@@ -57,8 +57,8 @@ local function readGuildMembers()
 					y = plain(y)
 					if y then days = y * 365 + (plain(m) or 0) * 30 + (plain(d) or 0) + math.floor((plain(h) or 0) / 24) end
 				end
-				rankIndex = plain(rankIndex) or 4
-				out[#out + 1] = { name = ns.ShortName(full), level = plain(level) or 0, rank = rankIndex, rankName = plain(rankName),
+				rankIndex = plain(rankIndex)
+				out[#out + 1] = { name = ns.ShortName(full), fullName = full, level = plain(level) or 0, verifiedRank = rankIndex, rank = rankIndex or 4, rankName = plain(rankName),
 					role = rankIndex == 0 and 1 or rankIndex == 1 and 2 or 4, classFile = plain(classFile), online = online, zone = plain(zone), days = days, note = plain(note) }
 			end
 		end

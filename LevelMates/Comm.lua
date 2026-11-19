@@ -303,7 +303,7 @@ local function pump()
 			i = i + 1
 		else
 		table.remove(queue, i)
-		local r = rawSend(item.text, item.target)
+		local r = (not item.canSend or item.canSend()) and rawSend(item.text, item.target) or -1
 		if r == 0 then
 			C.stats.sent = C.stats.sent + 1; allowance = allowance - 1
 			if item.onSent then item.onSent() end
@@ -356,7 +356,7 @@ function C.Whisper(kind, fields, target, prio, opts)
 	local text, why = C.Encode(kind, fields)
 	if not text then ns.Log("encode %s failed: %s", kind, tostring(why)); return false end
 	local bare = ns.ShortName(target):match("^([^%-]+)") or target
-	enqueue({ text = text, kind = kind, lane = laneOf(kind, prio), target = bare, hold = opts and opts.hold, onSent = opts and opts.onSent })
+	enqueue({ text = text, kind = kind, lane = laneOf(kind, prio), target = opts and opts.fullTarget or bare, canSend = opts and opts.canSend, hold = opts and opts.hold, onSent = opts and opts.onSent })
 	pump()
 	return true
 end
@@ -438,7 +438,7 @@ function C.SendBig(kind, fields, prio, target, opts)
 	end
 	local ok = true
 	for i = 1, total do
-		local o = opts and { hold = opts.hold, onSent = i == total and opts.onSent or nil } or nil
+		local o = opts and { hold = opts.hold, onSent = i == total and opts.onSent or nil, fullTarget = opts.fullTarget, canSend = opts.canSend } or nil
 		if target then ok = C.Whisper("bl", parts[i], target, prio, o) and ok else ok = C.Send("bl", parts[i], prio, o) and ok end
 	end
 	return ok

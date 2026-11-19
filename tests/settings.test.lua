@@ -26,9 +26,9 @@ table.sort(kinds)
 assert(table.concat(kinds, ",") == "eq,hb,hi,q,rx", "re-announced after share on (with my gear, quests and rested XP, on by default since 0.7.3): " .. table.concat(kinds, ","))
 
 -- three pages: general, share, notices
-assert(#ns.Settings.pages == 3 and ns.Settings.pages[2].name == ns.L.OPT_PAGE_SHARE and ns.Settings.pages[3].name == ns.L.OPT_PAGE_NOTICES, "three pages")
+assert(#ns.Settings.pages == 4 and ns.Settings.pages[2].name == ns.L.OPT_PAGE_SHARE and ns.Settings.pages[4].name == ns.L.OPT_PAGE_NOTICES, "four pages")
 local function on(page, key) for _, s in ipairs(page.settings) do if s.key == key then return true end end end
-assert(on(ns.Settings.pages[1], "share") and on(ns.Settings.pages[2], "sharePos") and on(ns.Settings.pages[3], "helpNotices"), "each switch on its page")
+assert(on(ns.Settings.pages[1], "share") and on(ns.Settings.pages[2], "sharePos") and on(ns.Settings.pages[4], "helpNotices"), "each switch on its page")
 
 -- quiet mode: the lesser notices off, back as they were
 local S = ns.Settings
@@ -39,7 +39,7 @@ assert(ns.db.settings.helpNotices and ns.db.settings.lfgNotices and ns.db.settin
 S.SetQuiet(false)
 assert(not S.IsQuiet() and ns.db.settings.levelNotices and ns.db.settings.sound and ns.db.settings.rareNotices == false, "back as they were")
 
-assert(on(ns.Settings.pages[3], "sound") and not on(ns.Settings.pages[1], "sound"))
+assert(on(ns.Settings.pages[4], "sound") and not on(ns.Settings.pages[1], "sound"))
 local opened
 ns.RaidReadiness.OpenConfig = function() opened = true end
 for _, init in ipairs(ns.Settings.pages[1].layout.inits) do

@@ -95,7 +95,7 @@ function S.Remove(t, id)
 	local s = store(t)
 	local old = s[id]
 	if not old or old.dead or not spec.may(old, me()) then return false end
-	local rec = { t = t, id = id, o = old.o, v = math.max(now(), old.v + 1), e = old.e, dead = true }
+	local rec = { t = t, id = id, o = spec.removerOwns and me() or old.o, v = math.max(now(), old.v + 1), e = old.e, dead = true }
 	s[id] = rec
 	if not (old.d and old.d.sim) then rec.pending = true; send(rec) end
 	fire(spec, rec, old, "mine")
@@ -151,7 +151,7 @@ C.OnMessage("x", function(f, sender)
 		if not (spec.writerTieBreak and old.v == f.v and not old.dead) then return end
 	end
 	if old and not spec.may(old, owner) then return end
-	s[f.id] = { t = f.t, id = f.id, o = old and old.o or owner, v = f.v, e = math.min(f.e, now() + spec.life + S.FUTURE), dead = true }
+	s[f.id] = { t = f.t, id = f.id, o = (spec.removerOwns and owner) or (old and old.o or owner), v = f.v, e = math.min(f.e, now() + spec.life + S.FUTURE), dead = true }
 	if old and not old.dead then fire(spec, s[f.id], old, "live") end
 end)
 
