@@ -172,7 +172,14 @@ end)
 
 C.OnMessage("gx", function(f, name)
 	local g = G.Get(f.id)
-	if g and (g.by == name or R.IsOfficer(name)) then bury(f.id, g.e); ns.Fire("LM_GOALS_CHANGED") end
+	if not R.IsOfficer(name) and not (g and g.by == name) then return end
+	if g then
+		bury(f.id, g.e)
+		ns.Fire("LM_GOALS_CHANGED")
+	elseif not store()[f.id] then
+		-- The deletion can arrive before the original goal during catch-up.
+		bury(f.id, today() + 30)
+	end
 end)
 
 -- Levels last seen per guildmate, for "everyone to level X".

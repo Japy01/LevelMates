@@ -101,6 +101,13 @@ end
 local function me() return ns.Me() end
 local function myClass() return select(2, UnitClass("player")) end
 local function shared() ns.char.sharedMacros = ns.char.sharedMacros or {}; return ns.char.sharedMacros end
+local function withdrawals()
+	ns.char.macroWithdrawals = ns.char.macroWithdrawals or {}
+	local guild = ns.GuildKey()
+	local all = ns.char.macroWithdrawals
+	all[guild] = all[guild] or {}
+	return all[guild]
+end
 local function store()
 	ns.db.macros = ns.db.macros or {}
 	local k = ns.GuildKey()
@@ -137,6 +144,67 @@ function MA.Mine()
 	return out
 end
 
+local S = ns.Sync
+local MACRO_RECORD = "mcr"
+local function macroId(owner, name)
+	return S.OwnerRecordId(owner) .. S.OwnerRecordId(name):sub(1, 8)
+end
+
+S.Define(MACRO_RECORD, {
+	class = "board", life = MA.FORGET_DAYS * 86400, relayMax = 300, writerOwns = true,
+	fields = { n = C.SCHEMA.mc.n, x = C.SCHEMA.mc.x, c = C.SCHEMA.tb.c },
+	required = { "n" },
+	idOwner = function(id, owner)
+		return #id == 24 and id:sub(1, 16) == S.OwnerRecordId(owner) and R.IsGuildmate(owner)
+	end,
+	accept = function(f, owner)
+		return f.id == macroId(owner, f.n) and (not f.x or f.c ~= nil)
+	end,
+	relayFrom = function(owner, sender)
+		return owner == sender or R.IsOfficer(sender) or (sender == me() and R.IAmOfficer())
+	end,
+	onChange = function(rec, old, how)
+		if rec.o == me() then return end
+		local data = rec.d or (old and old.d)
+		if not data then return end
+		local cache = store()
+		local macros = cache[rec.o] or {}
+		if how == "expired" or rec.dead or not data.x then
+			macros[data.n] = nil
+		else
+			local count = 0
+			for _ in pairs(macros) do count = count + 1 end
+			if not macros[data.n] and count >= MA.MAX_SHARED then return end
+			local mate = R.mates[rec.o]
+			macros[data.n] = { x = data.x, c = mate and mate.class or data.c, t = rec.v }
+		end
+		cache[rec.o] = next(macros) and macros or nil
+		ns.Fire("LM_MACROS_CHANGED")
+	end,
+})
+
+local pendingGuild
+local function publishSoon()
+	local guild = ns.GuildKey()
+	if pendingGuild == guild then return end
+	pendingGuild = guild
+	C_Timer.After(8, function()
+		if pendingGuild ~= guild then return end
+		pendingGuild = nil
+		if ns.GuildKey() ~= guild then return end
+		local owner = me()
+		local function publish(name, body)
+			local id = macroId(owner, name)
+			local old = S.Get(MACRO_RECORD, id)
+			if old and old.d and old.d.x == body and old.e - GetServerTime() > 86400 then return end
+			S.Put(MACRO_RECORD, id, { n = name, x = body, c = body and myClass() or nil })
+		end
+		for _, name in ipairs(shared()) do publish(name, bodyOf(name)) end
+		local cutoff = time() - MA.FORGET_DAYS * 86400
+		for name, at in pairs(withdrawals()) do if at >= cutoff then publish(name) end end
+	end)
+end
+
 local function sendOne(name)
 	local body = bodyOf(name)
 	if not body then return nil end
@@ -151,21 +219,32 @@ function MA.Share(name)
 	if #name > 16 then ns.Notice(L.MACRO_LONG, name); return false end   -- 16 bytes on the wire: accents take two
 	local ok, why = C.Encode("mc", { n = name, x = body })
 	if not ok then ns.Notice(why == "too long" and L.MACRO_LONG or L.MACRO_BAD, name); return false end
+	withdrawals()[name] = nil
 	table.insert(shared(), name)
 	if not sendOne(name) then ns.char.macroPending = true end
+	publishSoon()
 	return true
 end
 
 function MA.Unshare(name)
 	local list = shared()
 	for i = #list, 1, -1 do if list[i] == name then table.remove(list, i) end end
+	withdrawals()[name] = time()
 	if not C.Send("mcx", { n = name }) then ns.char.macroPending = true end
+	publishSoon()
 	return true
 end
 
 -- Everything again (a newcomer, a dropped send): a macro deleted since stops being shared.
 local function resendAll()
+	publishSoon()
 	ns.char.macroPending = nil
+	local cutoff = time() - MA.FORGET_DAYS * 86400
+	local removed = withdrawals()
+	for name, at in pairs(removed) do
+		if at < cutoff then removed[name] = nil
+		elseif not C.Send("mcx", { n = name }) then ns.char.macroPending = true end
+	end
 	local copy = {}
 	for i, n in ipairs(shared()) do copy[i] = n end
 	for _, name in ipairs(copy) do
@@ -173,12 +252,13 @@ local function resendAll()
 		elseif not sendOne(name) then ns.char.macroPending = true end
 	end
 end
-ns.On("LM_ANNOUNCED", function() if #shared() > 0 then resendAll() end end)
-ns.On("LM_HELLO_ANSWERED", function() if #shared() > 0 then resendAll() end end)
+ns.On("LM_ANNOUNCED", function() if #shared() > 0 or next(withdrawals()) then resendAll() end end)
+ns.On("LM_HELLO_ANSWERED", function() if #shared() > 0 or next(withdrawals()) then resendAll() end end)
 ns.On("LM_HB_SENT", function() if ns.char.macroPending then resendAll() end end)
 ns.On("LM_COMM_DROPPED", function(kind) if kind == "mc" or kind == "mcx" then ns.char.macroPending = true end end)
 
 C.OnMessage("mc", function(f, name)
+	if S.Get(MACRO_RECORD, macroId(name, f.n)) then return end
 	local m = R.mates[name]
 	if not m then return end
 	local t = store()
@@ -190,6 +270,7 @@ C.OnMessage("mc", function(f, name)
 	ns.Fire("LM_MACROS_CHANGED")
 end)
 C.OnMessage("mcx", function(f, name)
+	if S.Get(MACRO_RECORD, macroId(name, f.n)) then return end
 	local t = store()
 	if t[name] and t[name][f.n] then t[name][f.n] = nil; ns.Fire("LM_MACROS_CHANGED") end
 end)

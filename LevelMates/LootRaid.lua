@@ -106,11 +106,10 @@ local function groupNames()
 end
 -- Observe encounters on every officer's client for loot history, but only the
 -- native raid leader may write automated points. An unreadable API grants no authority.
-local function mayAwardAutomaticPoints()
-	if not officer() then return false end
+local function isRaidLeader(unit)
 	local okRaid, inRaid = pcall(IsInRaid)
 	if not okRaid or ns.Plain(inRaid) ~= true then return false end
-	local okLeader, leader = pcall(UnitIsGroupLeader, "player")
+	local okLeader, leader = pcall(UnitIsGroupLeader, unit)
 	return okLeader and ns.Plain(leader) == true
 end
 
@@ -127,17 +126,178 @@ function LR.Start()
 	ns.Fire("LM_LOOT_RAID")
 	return raid()
 end
+-- Retain the original batch until all recipients have a ledger entry.
+local function raidUnit(name)
+	local n = ns.Plain(GetNumGroupMembers and GetNumGroupMembers()) or 0
+	for i = 1, n do
+		local unit = "raid" .. i
+		local member = ns.Plain(UnitName(unit))
+		if type(member) == "string" and ns.ShortName(member) == name then return unit end
+	end
+end
+local function validRecipients(value)
+	return type(value) == "string" and #value > 0 and #value <= 1960 and not value:find("[%c|]")
+end
+C.SCHEMA.dka = { g = C.V.word(24), b = C.V.int(0, 10000), p = C.V.int(1, 100000),
+	r = C.V.text(80), n = validRecipients }
+C.REQUIRED.dka = { "g", "b", "p", "r", "n" }
+C.SCHEMA.dkk = { g = C.V.word(24), b = C.V.int(0, 10000) }
+C.REQUIRED.dkk = { "g", "b" }
+
+local function operationId(raidId, boss)
+	return raidId .. (boss == 0 and ":att" or (":boss:" .. boss))
+end
+local function delegate(award)
+	if inside() then return end
+	if award.nextAttempt and GetServerTime() < award.nextAttempt then return end
+	local candidates = {}
+	for _, member in ipairs(groupNames()) do
+		if isRaidLeader("player") and member ~= ns.Me() and R.IsOfficer(member) and R.mates[member] then
+			candidates[#candidates + 1] = member
+		end
+	end
+	table.sort(candidates)
+	if #candidates == 0 then
+		for member in pairs(R.mates) do
+			if member ~= ns.Me() and not raidUnit(member) and R.IsOfficer(member) then candidates[#candidates + 1] = member end
+		end
+		table.sort(candidates)
+	end
+	if #candidates == 0 then return end
+	local index = (award.attempt or 0) % #candidates + 1
+	local peer = candidates[index]
+	award.attempt, award.nextAttempt = (award.attempt or 0) + 1, GetServerTime() + 30
+	award.sentTo = award.sentTo or {}
+	if C.SendBig("dka", { g = award.raid, b = award.boss, p = award.points,
+		r = award.reason, n = table.concat(award.names, ",") }, "normal", peer, { hold = true }) then
+		award.sentTo[peer] = true
+	end
+end
+
+local REVIEW_LIFE = 86400
+local function reviews()
+	ns.char.lootAwardReviews = ns.char.lootAwardReviews or {}
+	local byGuild = ns.char.lootAwardReviews
+	local guild = ns.GuildKey()
+	byGuild[guild] = byGuild[guild] or {}
+	local inbox = byGuild[guild]
+	local cutoff = GetServerTime() - REVIEW_LIFE
+	for key, award in pairs(inbox) do if award.at < cutoff then inbox[key] = nil end end
+	return inbox
+end
+
+local function applyDelegation(f, sender, names)
+	local kind = f.b == 0 and "att" or "boss"
+	if f.p ~= LR.Rules()[kind] then return false end
+	local operation = operationId(f.g, f.b)
+	if LT.PostAll(names, f.p, kind, f.r, { raid = f.g, operation = operation }) ~= #names then return false end
+	C.Whisper("dkk", { g = f.g, b = f.b }, sender, "normal", { hold = true })
+	return true
+end
+
+C.OnMessage("dka", function(f, sender, _, channel)
+	if channel ~= "WHISPER" or not officer() or not R.IsGuildmate(sender) then return end
+	local unit = raidUnit(sender)
+	if unit and not isRaidLeader(unit) then return end
+	local kind = f.b == 0 and "att" or "boss"
+	if f.p ~= LR.Rules()[kind] then return end
+	local names, seen = {}, {}
+	for name in f.n:gmatch("[^,]+") do
+		if #name > 48 or seen[name] or name:find("[%s%c|]") then return end
+		if unit and kind == "boss" and not raidUnit(name) then return end
+		seen[name] = true
+		names[#names + 1] = name
+	end
+	if #names == 0 or #names > 40 or not seen[sender] then return end
+	if unit then applyDelegation(f, sender, names); return end
+
+	-- Outside the raid, the guild roster cannot prove that the sender is its leader.
+	local inbox = reviews()
+	local key = S.OwnerRecordId(sender .. ":" .. operationId(f.g, f.b))
+	local existing = inbox[key]
+	if existing then
+		if existing.approved then C.Whisper("dkk", { g = f.g, b = f.b }, sender, "normal", { hold = true }) end
+		return
+	end
+	local count = 0
+	for _ in pairs(inbox) do count = count + 1 end
+	if count >= 40 then return end
+	inbox[key] = { sender = sender, fields = f, names = names, at = GetServerTime() }
+	ns.Say(L.DKP_REVIEW_NEW, sender)
+end)
+
+ns.Slash("dkpreview", function(args)
+	if not officer() then return end
+	local inbox = reviews()
+	local action, key = (args or ""):match("^(%S+)%s+(%S+)$")
+	local award = key and inbox[key]
+	if action == "approve" or action == "reject" then
+		if not award then ns.Say(L.DKP_REVIEW_MISSING); return end
+		if action == "reject" then award.rejected = true; return end
+		if award.rejected or not R.IsGuildmate(award.sender) or not applyDelegation(award.fields, award.sender, award.names) then
+			ns.Say(L.DKP_REVIEW_MISSING)
+			return
+		end
+		award.approved = true
+		return
+	end
+	for id, entry in pairs(inbox) do
+		if not entry.rejected and not entry.approved then
+			ns.Say(L.DKP_REVIEW_ENTRY, id, entry.sender, entry.fields.p, entry.fields.r, table.concat(entry.names, ", "))
+		end
+	end
+	ns.Say(L.DKP_REVIEW_HELP)
+end)
+
+C.OnMessage("dkk", function(f, sender, _, channel)
+	if channel ~= "WHISPER" or not R.IsOfficer(sender) then return end
+	local pending = ns.char.lootAutomaticAwards
+	local key = operationId(f.g, f.b)
+	local award = pending and pending[key]
+	if award and award.guild == ns.GuildKey() and award.sentTo and award.sentTo[sender] then
+		pending[key] = nil
+	end
+end)
+
+local function retryAwards()
+	local pending = ns.char.lootAutomaticAwards
+	local guild = ns.GuildKey()
+	for operation, award in pairs(pending or {}) do
+		if award.guild == guild then
+			if officer() then
+				local posted = LT.PostAll(award.names, award.points, award.kind, award.reason,
+					{ raid = award.raid, operation = operation })
+				if posted == #award.names then pending[operation] = nil end
+			elseif award.boss then
+				delegate(award)
+			end
+		end
+	end
+end
+
+local function awardOnce(raidId, boss, names, points, kind, reason)
+	local operation = operationId(raidId, boss)
+	ns.char.lootAutomaticAwards = ns.char.lootAutomaticAwards or {}
+	local pending = ns.char.lootAutomaticAwards
+	pending[operation] = pending[operation] or {
+		guild = ns.GuildKey(), raid = raidId, boss = boss, names = names, points = points, kind = kind, reason = reason,
+	}
+	retryAwards()
+end
+ns.On("LM_HB_SENT", retryAwards)
+ns.On("LM_ANNOUNCED", retryAwards)
+
 -- Closing: the attendance to everyone seen, then the raid is gone.
 function LR.Stop()
 	local r = raid()
 	if not r then return false end
 	ns.char.lootRaid = nil; sync()
 	local rules = LR.Rules()
-	if rules.att > 0 and mayAwardAutomaticPoints() then
+	if rules.att > 0 and isRaidLeader("player") then
 		local names = {}
 		for n in pairs(r.present) do names[#names + 1] = n end
 		table.sort(names)
-		LT.PostAll(names, rules.att, "att", string.format(L.LOOT_ATT_REASON, r.name or "?", date("%d/%m", r.started or time())), { raid = r.id })
+		awardOnce(r.id, 0, names, rules.att, "att", string.format(L.LOOT_ATT_REASON, r.name or "?", date("%d/%m", r.started or time())))
 	end
 	ns.Fire("LM_LOOT_RAID")
 	return true
@@ -147,14 +307,14 @@ end
 local lastBoss
 local function onEncounterEnd(id, name, _, _, success)
 	id, name, success = ns.Plain(id), ns.Plain(name), ns.Plain(success)
-	if success ~= 1 or not officer() or not inside() then return end
+	if success ~= 1 or (not officer() and not isRaidLeader("player")) or not inside() then return end
 	local r = LR.Start()
 	local names = groupNames()
 	for _, n in ipairs(names) do r.present[n] = true end
 	r.bosses[#r.bosses + 1] = { id = id, name = name, t = time(), n = #names }
 	lastBoss = { id = id, name = name, t = GetTime() }
 	local rules = LR.Rules()
-	if rules.boss > 0 and mayAwardAutomaticPoints() then LT.PostAll(names, rules.boss, "boss", tostring(name or id or "?"), { raid = r.id }) end
+	if rules.boss > 0 and isRaidLeader("player") then awardOnce(r.id, #r.bosses, names, rules.boss, "boss", tostring(name or id or "?")) end
 	ns.Fire("LM_LOOT_RAID")
 end
 local function bossNow()

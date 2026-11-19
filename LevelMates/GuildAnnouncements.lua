@@ -75,31 +75,55 @@ end
 A.IsMaster = isMaster
 C.SCHEMA.gar = { id = C.V.word(24), h = valid(60), b = valid(500, true), v = C.V.int(0, 4000000000), r = C.V.int(0, 255), n = C.V.text(60), x = C.V.int(1, 1) }
 C.REQUIRED.gar = { "id", "h", "b", "v", "r", "n" }
-local function send(f, name, ranks, members)
+C.SCHEMA.grr = { o = C.V.text(48) }
+for key, check in pairs(C.SCHEMA.gar) do C.SCHEMA.grr[key] = check end
+C.REQUIRED.grr = { "o", "id", "h", "b", "v", "r", "n" }
+
+local function canRelay(f, author, sender, ranks, members)
+	return officer(sender) and allowed(f, sender, ranks, members)
+		and R.IsGuildmate(author) and canSend(f, author, ranks, members)
+end
+
+local function send(f, name, ranks, members, author)
+	author = author or ns.Me()
+	local relayed = author ~= ns.Me()
+	if relayed and not canRelay(f, author, ns.Me(), ranks, members) then return end
 	if name ~= ns.Me() and allowed(f, name, ranks, members) then
 		local guild, full = ns.GuildKey(), members[name].fullName
 		if not full or guild == "?" then return end
-		C.SendBig("gar", f, "normal", name, { fullTarget = full, canSend = function()
+		local payload = f
+		if relayed then
+			payload = { o = author }
+			for key, value in pairs(f) do payload[key] = value end
+		end
+		C.SendBig(relayed and "grr" or "gar", payload, "normal", name, { fullTarget = full, canSend = function()
 			if ns.GuildKey() ~= guild then return false end
 			local currentRanks, currentMembers = roster()
 			local member = currentMembers[name]
-			return member and member.fullName == full and allowed(f, name, currentRanks, currentMembers) and canSend(f, ns.Me(), currentRanks, currentMembers)
+			return member and member.fullName == full and allowed(f, name, currentRanks, currentMembers) and (relayed and canRelay(f, author, ns.Me(), currentRanks, currentMembers)
+					or not relayed and canSend(f, ns.Me(), currentRanks, currentMembers))
 		end })
 	end
 end
 local LIFE = 90 * 86400
-C.OnMessage("gar", function(f, author, _, channel)
-	if channel ~= "WHISPER" or not R.IsGuildmate(author) then return end
+local function receive(f, sender, _, channel)
+	if channel ~= "WHISPER" or not R.IsGuildmate(sender) then return end
+	local author = f.o or sender
 	if f.v > GetServerTime() + 300 or f.v < GetServerTime() - LIFE then return end
 	R.InvalidateGuildRoster()
 	local ranks, members = roster()
 	if not allowed(f, ns.Me(), ranks, members) or not canSend(f, author, ranks, members) then return end
+	if f.o and not canRelay(f, author, sender, ranks, members) then return end
 	if f.x and (f.h ~= "-" or f.b ~= "-") then return end
 	local old = private()[f.id]
 	if old and (old.d.x or old.v >= f.v) then return end
-	private()[f.id] = { id = f.id, o = author, v = f.v, d = f }
+	local data = {}
+	for key, value in pairs(f) do if key ~= "o" then data[key] = value end end
+	private()[f.id] = { id = f.id, o = author, v = f.v, d = data }
 	ns.Board.Refresh()
-end)
+end
+C.OnMessage("gar", receive)
+C.OnMessage("grr", receive)
 local replied = {}
 C.OnMessage("hi", function(_, name)
 	if not R.IsGuildmate(name) or (replied[name] or -60) + 60 > GetTime() then return end
@@ -107,7 +131,9 @@ C.OnMessage("hi", function(_, name)
 	R.InvalidateGuildRoster()
 	local ranks, members = roster()
 	for _, rec in pairs(private()) do
-		if rec.o == ns.Me() and canSend(rec.d, ns.Me(), ranks, members) and rec.v >= GetServerTime() - LIFE then send(rec.d, name, ranks, members) end
+		if rec.v >= GetServerTime() - LIFE and canSend(rec.d, rec.o, ranks, members) then
+			send(rec.d, name, ranks, members, rec.o)
+		end
 	end
 end)
 function A.List(search)

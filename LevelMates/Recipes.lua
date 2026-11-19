@@ -90,20 +90,20 @@ function RC.Scan()
 	if skills and next(skills) and not skills[id] then return end   -- not one of my professions (as my skills know them)
 	if skills and skills[id] and skills[id].rank and math.abs(rank - skills[id].rank) > RC.RANK_MARGIN then return end   -- not my rank: not my window
 	RC.scans = RC.scans + 1
-	local items, spells = {}, {}
+	local items, spells, recipeIDs = {}, {}, {}
 	local okA, all = pcall(C_TradeSkillUI.GetAllRecipeIDs)
 	for _, rid in ipairs(okA and ns.List(all) or {}) do
 		local okI, info = pcall(C_TradeSkillUI.GetRecipeInfo, rid)
 		info = okI and ns.Plain(info) or nil
 		if type(info) == "table" and ns.Plain(info.learned) ~= false then
 			local item = outputItem(rid)
-			if item then items[#items + 1] = item else spells[#spells + 1] = rid end
+			if item then items[#items + 1] = item; recipeIDs[item] = rid else spells[#spells + 1] = rid end
 		end
 	end
 	local mine = RC.Mine()
 	if #items + #spells == 0 and mine[id] then return end   -- an empty read never wipes a filled one
 	local old = mine[id]
-	local new = { r = math.min(450, rank), m = math.min(450, max), items = items, spells = spells, t = time() }
+	local new = { r = math.min(450, rank), m = math.min(450, max), items = items, spells = spells, recipeIDs = recipeIDs, t = time() }
 	mine[id] = new
 	while #items > RC.MAX do table.remove(items) end
 	while #spells > RC.MAX do table.remove(spells) end
@@ -162,6 +162,8 @@ local function addLearned(recipe, profession)
 	for _, known in ipairs(entry.items) do if known == item then return true end end
 	if #entry.items >= RC.MAX then return false end
 	entry.items[#entry.items + 1] = item
+	entry.recipeIDs = entry.recipeIDs or {}
+	entry.recipeIDs[item] = recipe
 	entry.t = time()
 	mine[profession] = entry
 	ns.Fire("LM_RECIPES_CHANGED", profession)
@@ -322,7 +324,7 @@ C.REQUIRED.rcq = { "p" }
 C.SCHEMA.rcl = { p = C.V.int(1, 2000), a = C.V.text(48), t = C.V.int(1, 4000000000),
 	r = C.V.int(0, 450), m = C.V.int(0, 450), i = idlist, s = idlist }
 C.REQUIRED.rcl = { "p", "a", "t" }
-local requests, replies, authoritative = {}, {}, {}
+local requests, replies, lastPeer = {}, {}, {}
 local function denied()
 	ns.db.recipeRelayDenied = ns.db.recipeRelayDenied or {}
 	return ns.db.recipeRelayDenied
@@ -340,53 +342,64 @@ function RC.RequestProfession(profession)
 	end
 	table.sort(peers)
 	if #peers == 0 then return end
-	local first = math.random(1, #peers)
+	local first = 1
+	for i, peer in ipairs(peers) do
+		if not lastPeer[key] or peer > lastPeer[key] then first = i; break end
+	end
 	local pending = { at = GetTime(), peers = {} }
 	for offset = 0, math.min(1, #peers - 1) do
 		local peer = peers[(first + offset - 1) % #peers + 1]
-		if C.Whisper("rcq", { p = profession }, peer) then pending.peers[peer] = true end
+		if C.Whisper("rcq", { p = profession }, peer) then pending.peers[peer] = true; lastPeer[key] = peer end
 	end
 	if next(pending.peers) then requests[key] = pending end
 end
 C.OnMessage("rcq", function(f, name, _, channel)
 	if channel ~= "WHISPER" or not R.IsGuildmate(name) or not KNOWN_LINES[f.p] then return end
 	local key = permissionKey(name, f.p)
-	if GetTime() - (replies[key] or -math.huge) < 120 then return end
-	replies[key] = GetTime()
+	local previous = replies[key]
+	if previous and GetTime() - previous.at < 120 then return end
 	local books = {}
 	for author, known in pairs(theirs()) do
 		local book = known[f.p]
-		if author ~= name and book and not book.relayed and book.t and GetServerTime() - book.t < RC.FORGET and R.IsGuildmate(author) then
+		if author ~= name and book and not denied()[permissionKey(author, f.p)] and book.t and GetServerTime() - book.t < RC.FORGET and R.IsGuildmate(author) then
 			books[#books + 1] = { author = author, book = book }
 		end
 	end
-	table.sort(books, function(a, b) return a.book.t > b.book.t end)
-	for n = 1, math.min(#books, 8) do
+	table.sort(books, function(a, b)
+		if a.book.t ~= b.book.t then return a.book.t > b.book.t end
+		return a.author < b.author
+	end)
+	local first = previous and previous.nextIndex or 1
+	if first > #books then first = 1 end
+	local last = math.min(#books, first + 7)
+	replies[key] = { at = GetTime(), nextIndex = last + 1 }
+	for n = first, last do
 		local author, book = books[n].author, books[n].book
 		C.SendBig("rcl", { p = f.p, a = author, t = book.t, r = book.r, m = book.m,
 			i = RC.Encode(book.items), s = RC.Encode(book.spells) }, "normal", name)
 	end
 end)
-C.OnMessage("rcl", function(f, name, _, channel)
-	if channel ~= "WHISPER" or not R.IsGuildmate(name) or not R.IsGuildmate(f.a) or f.a == ns.Me() or not KNOWN_LINES[f.p] then return end
+-- Merge only after the transport has established the sender and guild context.
+-- Keep transport checks separate from the rules for accepting a cached book.
+local function mergeCachedBook(f)
 	local now = GetServerTime()
-	local requested = requests[ns.GuildKey() .. ":" .. f.p]
-	if not requested or not requested.peers[name] or GetTime() - requested.at > 45 or f.t > now or now - f.t >= RC.FORGET then return end
+	if f.t > now or now - f.t >= RC.FORGET then return end
 	local key = permissionKey(f.a, f.p)
 	if denied()[key] or not plausible(f.a, f.r or 0) then return end
 	local t = theirs()
 	local old = t[f.a] and t[f.a][f.p]
-	if old and (not old.relayed or old.t >= f.t) then return end
-	if authoritative[key] then return end
+	if old and (old.t or 0) >= f.t then return end
 	local items, spells = RC.Decode(f.i or ""), RC.Decode(f.s or "")
 	if not items or not spells then return end
 	t[f.a] = t[f.a] or {}
 	t[f.a][f.p] = { r = f.r or 0, m = f.m or 0, items = items, spells = spells, t = f.t, relayed = true }
 	changed()
-end)
-C.OnMessage("rcp", function(f, name)
-	local key = permissionKey(name, f.p)
-	authoritative[key] = true
+end
+C.OnMessage("rcl", function(f, name, _, channel)
+	if channel ~= "WHISPER" or not R.IsGuildmate(name) or not R.IsGuildmate(f.a) or f.a == ns.Me() or not KNOWN_LINES[f.p] then return end
+	local requested = requests[ns.GuildKey() .. ":" .. f.p]
+	if not requested or not requested.peers[name] or GetTime() - requested.at > 45 then return end
+	mergeCachedBook(f)
 end)
 
 -- Their own list of professions (pf, the whole list with ranks): recipes kept for a profession not on it, or at a rank
@@ -467,6 +480,86 @@ function RC.Known()
 end
 
 ------------------------------------------------------------------ search and ask
+-- Forever recipe data, independently of the guild's recipe books.
+-- Entries below are verified against the corresponding Forever spell records.
+local catalogue = {
+	-- https://www.wowhead.com/forever/spell=2160/embossed-leather-vest
+	[2300] = { profession = 165, recipe = 2160, materials = "2318:8,2320:4",
+		en = "Embossed Leather Vest", es = "Jubón de cuero repujado" },
+	-- https://www.wowhead.com/forever/spell=3292/heavy-copper-broadsword
+	[3487] = { profession = 164, recipe = 3292, materials = "2840:14,2880:2,818:2,2319:2",
+		en = "Heavy Copper Broadsword", es = "Espada ancha pesada de cobre" },
+	-- https://www.wowhead.com/forever/spell=3496/moonsteel-broadsword
+	[3853] = { profession = 164, recipe = 3496, materials = "3859:8,3466:2,3486:2,1705:3,4234:3",
+		en = "Moonsteel Broadsword", es = "Espada ancha de acero lunar" },
+}
+local catalogueOutputs = {}
+for item, entry in pairs(catalogue) do
+	catalogueOutputs[entry.recipe] = item
+end
+
+local libraryIndex
+local function professionCatalogue()
+	if libraryIndex then return libraryIndex end
+	local db = LibStub and LibStub("LibProfessionDB-1.0", true)
+	if not (db and db.IsReady and db:IsReady() and db.GetRecipes
+		and db.GetGameVersion and db:GetGameVersion() == "Forever") then return end
+
+	local data = { items = {}, outputs = {}, professions = {}, spells = {} }
+	for _, profession in ipairs(ns.Professions.IDS) do
+		for id, recipe in pairs(db:GetRecipes(profession) or {}) do
+			local spell = recipe.spellID or recipe.spellId or recipe.recipeId or id
+			local item = recipe.craftedItemId
+			if type(spell) == "number" and spell > 0 then
+				data.professions[profession] = true
+				if type(item) == "number" and item > 0 then
+					local entry = { profession = profession, recipe = spell, data = recipe }
+					local old = data.items[item]
+					if not old or spell < old.recipe then data.items[item] = entry end
+					data.outputs[spell] = item
+				else
+					data.spells[profession] = data.spells[profession] or {}
+					data.spells[profession][spell] = recipe
+				end
+			end
+		end
+	end
+	if next(data.professions) then libraryIndex = data; return data end
+end
+
+function RC.HasProfessionCatalogue(profession)
+	local data = professionCatalogue()
+	return data and data.professions[profession]
+end
+
+function RC.CatalogueSpells(profession)
+	local data = professionCatalogue()
+	return data and data.spells[profession] or {}
+end
+
+local function catalogueEntry(item)
+	local data = professionCatalogue()
+	return data and data.items[item] or catalogue[item]
+end
+
+function RC.CatalogueItems(profession)
+	local items, seen = {}, {}
+	local data = professionCatalogue()
+	for item, entry in pairs(data and data.items or {}) do
+		if entry.profession == profession then items[#items + 1] = item; seen[item] = true end
+	end
+	for item, entry in pairs(catalogue) do
+		if entry.profession == profession and not seen[item] then items[#items + 1] = item end
+	end
+	table.sort(items)
+	return items
+end
+
+function RC.CatalogueName(item)
+	local entry = catalogueEntry(item)
+	if entry and entry.data then return entry.data.name end
+	if entry then return L.CV_BACK == "Volver" and entry.es or entry.en end
+end
 -- Items someone crafts, from an item link, an item number or a part of a known item's name (names the client has
 -- not loaded yet are skipped this time and found once it has them). At most ten.
 function RC.Find(text)
@@ -474,15 +567,30 @@ function RC.Find(text)
 	local id = tonumber(text:match("item:(%d+)") or "") or tonumber(text)
 	if id then
 		if not index then build_index() end
-		return index[id] and { id } or {}
+		return (index[id] or catalogueEntry(id)) and { id } or {}
 	end
 	local q = strtrim(text):lower()
 	if #q < 3 then return {} end
-	local out = {}
-	for _, item in ipairs(RC.Known()) do
-		local name = ns.ItemInfo(item)
-		if name and name:lower():find(q, 1, true) then out[#out + 1] = item; if #out >= 10 then break end end
+	local out, seen = {}, {}
+	for item, entry in pairs(catalogue) do
+		if entry.es:lower():find(q, 1, true) or entry.en:lower():find(q, 1, true) then
+			out[#out + 1] = item; seen[item] = true
+		end
 	end
+	local data = professionCatalogue()
+	for item, entry in pairs(data and data.items or {}) do
+		local name = entry.data.name
+		if not seen[item] and type(name) == "string" and name:lower():find(q, 1, true) then
+			out[#out + 1] = item; seen[item] = true
+		end
+	end
+	table.sort(out)
+	for _, item in ipairs(RC.Known()) do
+		if #out >= 10 then break end
+		local name = ns.ItemInfo(item)
+		if not seen[item] and name and name:lower():find(q, 1, true) then out[#out + 1] = item; if #out >= 10 then break end end
+	end
+	for i = #out, 11, -1 do out[i] = nil end
 	return out
 end
 function RC.Link(item) local _, link = ns.ItemInfo(item); return link or ("item:" .. item) end
@@ -506,13 +614,227 @@ C.OnMessage("rca", function(f, name, _, channel)
 		end
 	end
 end)
+-- Material details are requested separately so recipe books stay compatible
+-- with older clients and large inventories do not carry a second catalogue.
+local function decodeMaterials(value)
+	if type(value) ~= "string" or #value > 220 then return end
+	local list, count = {}, 0
+	for pair in value:gmatch("[^,]+") do
+		local id, n = pair:match("^(%d+):(%d+)$")
+		id, n = tonumber(id), tonumber(n)
+		if not id or id < 1 or id > 999999 or not n or n < 1 or n > 999 or #list >= 20 then return end
+		list[#list + 1] = { id = id, count = n }
+		count = count + #pair
+	end
+	if #list > 0 and count + #list - 1 == #value then return list end
+end
+local function ownRecipeID(item)
+	for _, book in pairs(RC.Mine()) do
+		local id = book.recipeIDs and book.recipeIDs[item]
+		if id then return id end
+	end
+end
+local function materialsByRecipe(item, id)
+	local T = C_TradeSkillUI
+	if not (id and T and T.GetRecipeSchematic) then return end
+	local ok, schematic = pcall(T.GetRecipeSchematic, id, false)
+	schematic = ok and ns.Plain(schematic) or nil
+	if type(schematic) == "table" then
+		local output = ns.Plain(schematic.outputItemID)
+		if output and output ~= item then return end
+		local slots = ns.List(schematic.reagentSlotSchematics)
+		local pairs = {}
+		for _, slot in ipairs(slots) do
+			slot = ns.Plain(slot)
+			if type(slot) ~= "table" then return end
+			local required = ns.Plain(slot.required)
+			if required == nil then return end
+			if required then
+				local reagents = ns.List(slot.reagents)
+				local reagent = ns.Plain(reagents[1])
+				local material = type(reagent) == "table" and ns.Plain(reagent.itemID)
+				local quantity = ns.Plain(slot.quantityRequired)
+				if #reagents ~= 1 or type(material) ~= "number" or type(quantity) ~= "number" then return end
+				pairs[#pairs + 1] = string.format("%s:%s", material, quantity)
+			end
+		end
+		local payload = table.concat(pairs, ",")
+		if decodeMaterials(payload) then return payload end
+	end
+end
+local function materialCache()
+	ns.db.recipeMaterials = ns.db.recipeMaterials or {}
+	local key = ns.GuildKey()
+	ns.db.recipeMaterials[key] = ns.db.recipeMaterials[key] or {}
+	return ns.db.recipeMaterials[key]
+end
+local materialRequests, materialReplies = {}, {}
+C.SCHEMA.rcm = { i = C.V.int(1, 999999) }; C.REQUIRED.rcm = { "i" }
+C.SCHEMA.rcd = { i = C.V.int(1, 999999), r = C.V.int(1, RC.TOP), m = function(v) return decodeMaterials(v) ~= nil end }
+C.REQUIRED.rcd = { "i" }
+local function savedMaterialData(item)
+	local cached = materialCache()[item]
+	return cached and GetServerTime() - cached.at < RC.FORGET and cached or nil
+end
+C.OnMessage("rcm", function(f, peer, _, channel)
+	if channel ~= "WHISPER" or not ns.db.settings.shareProfessions or not R.IsGuildmate(peer) then return end
+	if GetTime() - (materialReplies[peer] or -math.huge) < 5 then return end
+	materialReplies[peer] = GetTime()
+	local cached = savedMaterialData(f.i)
+	local id = ownRecipeID(f.i) or (cached and cached.recipe)
+	local value = materialsByRecipe(f.i, id) or (cached and cached.value)
+	if id or value then C.SendBig("rcd", { i = f.i, r = id, m = value }, "normal", peer) end
+end)
+C.OnMessage("rcd", function(f, peer, _, channel)
+	local req = materialRequests[f.i]
+	if channel ~= "WHISPER" or not req or req.guild ~= ns.GuildKey() or req.peer ~= peer or GetTime() - req.at > 45 or not R.IsGuildmate(peer) then return end
+	if not f.r and not f.m then return end
+	local old = savedMaterialData(f.i)
+	materialCache()[f.i] = { value = f.m or (old and old.recipe == f.r and old.value),
+		recipe = f.r or (old and old.recipe), at = GetServerTime() }
+	ns.Say(L.RC_MATERIALS_ARRIVED)
+end)
+function RC.RecipeID(item)
+	local cached = savedMaterialData(item)
+	return ownRecipeID(item) or (catalogueEntry(item) and catalogueEntry(item).recipe) or (cached and cached.recipe)
+end
+function RC.RecipeLink(item)
+	local id, T = RC.RecipeID(item), C_TradeSkillUI
+	if not (id and T and T.GetRecipeLink) then return end
+	local ok, link = pcall(T.GetRecipeLink, id)
+	link = ok and ns.Plain(link) or nil
+	if type(link) == "string" and link ~= "" then return link end
+end
+
+-- An item ID identifies the product. A linked recipe identifies the
+-- crafting spell and lets the client find its output without a guild crafter.
+function RC.ResolveSearch(query)
+	local recipe = tonumber(query:match("|Henchant:(%d+)") or query:match("^enchant:(%d+)$") or query:match("^recipe:(%d+)$"))
+	if recipe then
+		if recipe < 1 or recipe > RC.TOP then return end
+		local data = professionCatalogue()
+		local known = (data and data.outputs[recipe]) or catalogueOutputs[recipe]
+		if known then return known end
+		local item = outputItem(recipe)
+		if type(item) ~= "number" or item < 1 or item > 999999 or item ~= math.floor(item) then
+			local T = C_TradeSkillUI
+			local ok, schema = pcall(function() return T and T.GetRecipeSchematic and T.GetRecipeSchematic(recipe, false) end)
+			schema = ok and ns.Plain(schema) or nil
+			item = type(schema) == "table" and ns.Plain(schema.outputItemID)
+		end
+		if type(item) ~= "number" or item < 1 or item > 999999 or item ~= math.floor(item) then return end
+		local old = savedMaterialData(item)
+		if not old or old.recipe ~= recipe then
+			materialCache()[item] = { recipe = recipe, value = materialsByRecipe(item, recipe), at = GetServerTime() }
+		end
+		return item
+	end
+	local id = tonumber(query:match("|Hitem:(%d+)") or query:match("^item:(%d+)$")) or tonumber(query)
+	if id and (id < 1 or id > 999999 or id ~= math.floor(id)) then return end
+	if id and catalogueEntry(id) then return id end
+	if not id then
+		local name = query:lower()
+		for item, entry in pairs(catalogue) do
+			if entry.en:lower() == name or entry.es:lower() == name then return item end
+		end
+	end
+	local ok, name, link = pcall(ns.ItemInfo, id or query)
+	name, link = ns.Plain(name), ns.Plain(link)
+	if id and (savedMaterialData(id) or (ok and type(name) == "string")) then return id end
+	if not id and ok and type(name) == "string" and type(link) == "string" and name:lower() == query:lower() then
+		return tonumber(link:match("|Hitem:(%d+)"))
+	end
+end
+local catalogueMaterialNames = {
+	[2318] = { "Light Leather", "Cuero ligero" },
+	[2320] = { "Coarse Thread", "Hilo burdo" },
+	[2840] = { "Copper Bar", "Lingote de cobre" },
+	[2880] = { "Weak Flux", "Fundente débil" },
+	[818] = { "Tigerseye", "Ojo de tigre" },
+	[2319] = { "Medium Leather", "Cuero medio" },
+	[3859] = { "Steel Bar", "Lingote de acero" },
+	[3466] = { "Strong Flux", "Fundente fuerte" },
+	[3486] = { "Heavy Grinding Stone", "Piedra de pulir pesada" },
+	[1705] = { "Lesser Moonstone", "Piedra lunar inferior" },
+	[4234] = { "Heavy Leather", "Cuero pesado" },
+}
+
+function RC.MaterialText(item, hyperlinks)
+	local cached = savedMaterialData(item)
+	local id = RC.RecipeID(item)
+	local resolved = materialsByRecipe(item, id)
+	if resolved and (not cached or cached.value ~= resolved or cached.recipe ~= id) then
+		materialCache()[item] = { value = resolved, recipe = id, at = GetServerTime() }
+	end
+	local entry = catalogueEntry(item)
+	local fromLibrary = entry and entry.data and entry.recipe == id and entry.data.reagents
+	local payload = resolved or (catalogue[item] and catalogue[item].materials) or (cached and cached.value)
+	local materials = decodeMaterials(payload)
+	if fromLibrary and not resolved then
+		local reagents = {}
+		for key, row in pairs(fromLibrary) do
+			local reagent, count
+			if type(row) == "table" then
+				reagent = row.itemId or row.itemID or row[1]
+				count = row.count or row.quantity or row[2]
+			else
+				reagent, count = key, row
+			end
+			if type(reagent) == "number" and reagent > 0 and type(count) == "number" and count > 0 then
+				reagents[#reagents + 1] = { id = reagent, count = count }
+			else
+				reagents = nil
+				break
+			end
+		end
+		if reagents and #reagents > 0 then materials = reagents end
+	end
+	if not materials then return end
+	local lines = { L.RC_MATERIALS }
+	for _, material in ipairs(materials) do
+		local name, link = ns.ItemInfo(material.id)
+		local fallback = catalogueMaterialNames[material.id]
+		name = name or (fallback and fallback[L.CV_BACK == "Volver" and 2 or 1])
+			or string.format(L.RC_MATERIAL_PENDING, material.id)
+		lines[#lines + 1] = string.format("%d × %s", material.count, hyperlinks and link or name)
+	end
+	return table.concat(lines, "\n")
+end
+function RC.ShowMaterials(item)
+	local materials = RC.MaterialText(item)
+	if not materials then
+		local req = materialRequests[item]
+		if not req or req.guild ~= ns.GuildKey() or GetTime() - req.at >= 45 then
+			local function ask(peer)
+				if peer == ns.Me() or not R.IsGuildmate(peer) or not C.Whisper("rcm", { i = item }, peer) then return false end
+				materialRequests[item] = { peer = peer, at = GetTime(), guild = ns.GuildKey() }
+				return true
+			end
+			local tried
+			for _, crafter in ipairs(RC.WhoCrafts(item)) do
+				if crafter.online and ask(crafter.name) then tried = true; break end
+			end
+			if not tried then
+				for _, peer in ipairs(R.List()) do if ask(peer) then break end end
+			end
+		end
+	end
+	ns.DiscordCopy.OpenLinks(function(hyperlinks)
+		local text = RC.MaterialText(item, hyperlinks) or L.RC_MATERIALS_UNKNOWN
+		local recipe = RC.RecipeID(item)
+		if not recipe then return text end
+		local link = hyperlinks and RC.RecipeLink(item)
+		return string.format(L.RC_RECIPE_ID, recipe) .. (link and ("\n" .. link) or "") .. "\n\n" .. text
+	end, ns.ItemInfo(item) or RC.CatalogueName(item) or ("#" .. item), L.RC_MATERIALS_HINT)
+end
 function RC.AskLabel(name)
 	return string.format(RC.IsOnline(name) and L.RC_ASK_MENU or L.RC_MAIL_MENU, name)
 end
 function RC.Ask(name, item)
 	local message = string.format(L.RC_ASK, RC.Link(item))
 	if not RC.IsOnline(name) then
-		ns.DiscordCopy.OpenText(message, string.format(L.RC_MAIL_MENU, name), L.RC_MAIL_HINT)
+		local materials = RC.MaterialText(item)
+		ns.DiscordCopy.OpenText(materials and (message .. "\n\n" .. materials) or message, string.format(L.RC_MAIL_MENU, name), L.RC_MAIL_HINT)
 		return false
 	end
 	ns.DiscordCopy.OpenText(message, string.format(L.RC_ASK_MENU, name), L.RC_WHISPER_HINT, function(text)
