@@ -191,17 +191,31 @@ local function Build()
 	local close = ns.Skin.Button(f)
 	close:SetSize(120, 22); close:SetPoint("BOTTOM", 0, 12); close:SetText(L.LFG_CLOSE)
 	close:SetScript("OnClick", function() f:Hide() end)
+	D.close = close
+	local send = ns.Skin.Button(f)
+	send:SetSize(120, 22); send:SetPoint("BOTTOM", 68, 12)
+	send:SetScript("OnClick", function()
+		local action = D.action
+		if action and action(D.box:GetText()) then f:Hide() end
+	end)
+	D.send = send
+	f:SetScript("OnHide", function() D.action = nil end)
 end
 
 -- Any text in the box (Home's invite): to copy and paste anywhere; nothing is sent.
-local function presentation(title, hint)
+local function presentation(title, hint, action, actionLabel)
+	D.action = action
+	D.close:ClearAllPoints()
+	D.close:SetPoint("BOTTOM", action and -68 or 0, 12)
+	D.send:SetShown(action ~= nil)
+	if action then D.send:SetText(actionLabel or L.RC_SEND_WHISPER) end
 	if D.frame.TitleText then D.frame.TitleText:SetText(title or L.DC_TITLE) end
 	D.hint:SetText(hint or L.DC_HINT)
 end
 
-function D.OpenText(text, title, hint)
+function D.OpenText(text, title, hint, action, actionLabel)
 	if not D.frame then Build() end
-	presentation(title, hint)
+	presentation(title, hint, action, actionLabel)
 	D.box:SetText(text)
 	D.frame:Show()
 	D.box:SetFocus(); D.box:HighlightText()

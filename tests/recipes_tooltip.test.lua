@@ -3,6 +3,7 @@ STUB.Fire("ADDON_LOADED", "LevelMates")
 local _, ns = ...
 STUB.Fire("PLAYER_ENTERING_WORLD", true, false); STUB.Advance(30)
 local C, L, RC, B = ns.Comm, ns.L, ns.Recipes, ns.Board
+STUB.memberInfo = { Mario = { presence = 1 }, Ana = { presence = 1 }, Luis = { presence = 1 }, Pepe = { presence = 1 } }
 for _, n in ipairs({ "Mario", "Ana", "Luis", "Pepe", "Zoe" }) do
 	STUB.guildMembers[n] = true
 	STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1412, c = "MAGE" }), "GUILD", n .. "-Testrealm")

@@ -10,6 +10,8 @@ MenuUtil.CreateContextMenu = function(owner, fn)
 	local root = { CreateTitle = function() end, CreateButton = function(_, text, cb) entries[#entries + 1] = { text = text, cb = cb } end }
 	fn(owner, root)
 end
+STUB.memberInfo = { Mario = { presence = 1 }, Ana = { presence = 3 } }
+ns.Roster.InvalidateGuildRoster()
 STUB.items[2300] = "|cff1eff00|Hitem:2300::::::::20:::::::|h[Embossed Leather Vest]|h|r"
 STUB.items[2304] = "|cffffffff|Hitem:2304::::::::20:::::::|h[Light Armor Kit]|h|r"
 STUB.Receive("LVLM2", C.Encode("hb", { l = 30, z = 1412, c = "MAGE" }), "GUILD", "Mario-Testrealm")
@@ -46,6 +48,9 @@ local ask
 for _, e in ipairs(entries) do if e.text:find("Mario", 1, true) then ask = e end end
 assert(ask, "ask Mario")
 ask.cb()
+assert(not STUB.lastChat, "opening the draft sends nothing")
+ns.DiscordCopy.box:SetText("Edited request " .. ns.DiscordCopy.box:GetText())
+ns.DiscordCopy.send.scripts.OnClick(ns.DiscordCopy.send)
 assert(STUB.lastChat and STUB.lastChat.chatType == "WHISPER" and STUB.lastChat.target == "Mario", "the whisper went from the click")
 CV.back.scripts.OnClick(CV.back)
 assert(CV.mode == "crafters" and CV.rows[1].name.text == "Mario", "back to the crafters")
@@ -65,3 +70,17 @@ mario.scripts.OnClick(mario, "RightButton")
 local w, inv
 for _, e in ipairs(entries or {}) do if e.text == L.MENU_WHISPER then w = e end; if e.text == L.MENU_INVITE then inv = e end end
 assert(w and inv, "whisper and invite")
+
+local function refreshCount()
+	local n = 0
+	for _, packet in ipairs(STUB.sent) do if C.Decode(packet.msg) == "rcr" then n = n + 1 end end
+	return n
+end
+assert(refreshCount() == 1, "opening the online crafter requested their snapshot")
+RC.RequestRefresh("Mario", 165)
+assert(refreshCount() == 1, "another request within two minutes is suppressed")
+local prepared
+ns.DiscordCopy.OpenText = function(message) prepared = message end
+STUB.lastChat = nil
+RC.Ask("Ana", 2304)
+assert(prepared and not STUB.lastChat, "offline opens a mail draft without whispering")
