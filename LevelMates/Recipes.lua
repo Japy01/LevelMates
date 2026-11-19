@@ -333,7 +333,7 @@ end
 function RC.RequestProfession(profession)
 	if not KNOWN_LINES[profession] then return end
 	local key = ns.GuildKey() .. ":" .. profession
-	if GetTime() - (requests[key] or -math.huge) < 120 then return end
+	if requests[key] and GetTime() - requests[key].at < 120 then return end
 	local peers = {}
 	for name in pairs(R.mates) do
 		if name ~= ns.Me() and R.IsGuildmate(name) then peers[#peers + 1] = name end
@@ -341,10 +341,12 @@ function RC.RequestProfession(profession)
 	table.sort(peers)
 	if #peers == 0 then return end
 	local first = math.random(1, #peers)
+	local pending = { at = GetTime(), peers = {} }
 	for offset = 0, math.min(1, #peers - 1) do
-		C.Whisper("rcq", { p = profession }, peers[(first + offset - 1) % #peers + 1])
+		local peer = peers[(first + offset - 1) % #peers + 1]
+		if C.Whisper("rcq", { p = profession }, peer) then pending.peers[peer] = true end
 	end
-	requests[key] = GetTime()
+	if next(pending.peers) then requests[key] = pending end
 end
 C.OnMessage("rcq", function(f, name, _, channel)
 	if channel ~= "WHISPER" or not R.IsGuildmate(name) or not KNOWN_LINES[f.p] then return end
@@ -369,7 +371,7 @@ C.OnMessage("rcl", function(f, name, _, channel)
 	if channel ~= "WHISPER" or not R.IsGuildmate(name) or not R.IsGuildmate(f.a) or f.a == ns.Me() or not KNOWN_LINES[f.p] then return end
 	local now = GetServerTime()
 	local requested = requests[ns.GuildKey() .. ":" .. f.p]
-	if not requested or GetTime() - requested > 45 or f.t > now or now - f.t >= RC.FORGET then return end
+	if not requested or not requested.peers[name] or GetTime() - requested.at > 45 or f.t > now or now - f.t >= RC.FORGET then return end
 	local key = permissionKey(f.a, f.p)
 	if denied()[key] or not plausible(f.a, f.r or 0) then return end
 	local t = theirs()
