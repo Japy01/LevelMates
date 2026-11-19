@@ -290,6 +290,39 @@ function A.Compose()
 	button(w, CANCEL or "Cancel", 178, function() w:Hide() end)
 	w:Show()
 end
+function A.ModerationChoices()
+	local ranks, members = roster()
+	local me = members[ns.Me()]
+	local choices = { { value = "master", label = label("Solo el maestro", "Guild master only") } }
+	if not me or not isMaster(ns.Me()) then return choices end
+	local ordered = {}
+	for id, name in pairs(ranks) do
+		if id > me.verifiedRank and C.V.text(60)(name) then ordered[#ordered + 1] = id end
+	end
+	table.sort(ordered)
+	for _, id in ipairs(ordered) do
+		choices[#choices + 1] = { value = tostring(id), label = label("Desde ", "From ") .. ranks[id] }
+	end
+	return choices
+end
+function A.ModerationValue()
+	local policy = S.Get("gam", "moderation")
+	if not policy or not isMaster(policy.o) then return "master" end
+	local ranks, members = roster()
+	local owner = members[policy.o]
+	if not owner or policy.d.r == owner.verifiedRank or ranks[policy.d.r] ~= policy.d.n then return "master" end
+	return tostring(policy.d.r)
+end
+function A.SetModerationValue(value)
+	if not isMaster(ns.Me()) then return false end
+	R.InvalidateGuildRoster()
+	local ranks, members = roster()
+	local me = members[ns.Me()]
+	local number = value == "master" and me and me.verifiedRank or tonumber(value)
+	if not me or not number or number < me.verifiedRank or not ranks[number] or not C.V.text(60)(ranks[number]) then return false end
+	return S.Put("gam", "moderation", { r = number, n = ranks[number] })
+end
+
 local function moderationMenu(anchor, selected)
 	if not isMaster(ns.Me()) then return end
 	R.InvalidateGuildRoster()

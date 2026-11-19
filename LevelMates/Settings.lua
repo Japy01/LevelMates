@@ -141,9 +141,23 @@ ns.On("LM_LOADED", function()
 	-- Notices: what may pop up
 	local guild = Sub(category, L.OPT_H_GUILD)
 	Header(guild, L.TAB_ANNOUNCEMENTS)
-	Button(guild, L.OPT_ANNOUNCEMENT_PERMISSIONS, L.OPT_ANNOUNCEMENT_CONFIGURE, function()
-		ns.GuildAnnouncements.OpenModeration()
-	end, L.OPT_ANNOUNCEMENT_PERMISSIONS_TT)
+	if Settings.CreateDropdown and Settings.CreateControlTextContainer then
+		local A = ns.GuildAnnouncements
+		local policy = Settings.RegisterProxySetting(guild, "LevelMates_announcementModeration",
+			Settings.VarType.String, L.OPT_ANNOUNCEMENT_PERMISSIONS, "master", A.ModerationValue, A.SetModerationValue)
+		local control = Settings.CreateDropdown(guild, policy, function()
+			local options = Settings.CreateControlTextContainer()
+			for _, choice in ipairs(A.ModerationChoices()) do options:Add(choice.value, choice.label) end
+			return options:GetData()
+		end, L.OPT_ANNOUNCEMENT_PERMISSIONS_TT)
+		if control and control.AddEnabledPredicate then
+			control:AddEnabledPredicate(function() return A.IsMaster(ns.Me()) end)
+		end
+	else
+		Button(guild, L.OPT_ANNOUNCEMENT_PERMISSIONS, L.OPT_ANNOUNCEMENT_CONFIGURE, function()
+			ns.GuildAnnouncements.OpenModeration()
+		end, L.OPT_ANNOUNCEMENT_PERMISSIONS_TT)
+	end
 	local notices = Sub(category, L.OPT_PAGE_NOTICES)
 	Header(notices, L.OPT_NOTICE_DISPLAY)
 	-- Quiet: one switch for the lesser notices, the screen messages and the sound; help, groups and goals stay
