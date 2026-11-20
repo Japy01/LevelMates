@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.2
+
+- Send every page of a large sync summary in one recovery round so stale raid requirements can be repaired immediately.
+
 ## 0.9.1
 
 - Stop queued addon whispers when a guildmate disconnects or the server reports that the player cannot be found.

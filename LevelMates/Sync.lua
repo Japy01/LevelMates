@@ -217,32 +217,34 @@ C.SCHEMA.hd = { t = C.V.word(12), n = C.V.int(1, 100000), s = C.V.int(0, 2147483
 C.REQUIRED.hd = { "t", "n", "s" }
 local recovery
 
--- Keep the existing hello format for older peers. A leading ~ marks a
--- partial digest, so newer peers can distinguish omitted types from empty ones.
-local digestCursor = {}
-local function digestString(guild)
+-- Each partial hello covers only its listed types. Send all pages in the
+-- same recovery round so a stale record can be repaired on the first hello.
+local function digestPages()
  local parts = {}
  for _, t in ipairs(S.Types("board")) do
   local n, sum = S.Digest(t)
   parts[#parts + 1] = t .. ":" .. n .. ":" .. sum
  end
  local full = table.concat(parts, ",")
- if #full <= 200 then return full end
- local cursor = (digestCursor[guild] or 0) % #parts + 1
- local partial = "~"
- for _ = 1, #parts do
-  local part = "," .. parts[cursor]
-  if #partial + #part > 200 then break end
-  partial = partial .. part
-  cursor = cursor % #parts + 1
+ if #full <= 200 then return { full } end
+ local pages, page = {}, "~"
+ for _, part in ipairs(parts) do
+  if #page + 1 + #part > 200 then
+   pages[#pages + 1] = page
+   page = "~"
+  end
+  page = page .. "," .. part
  end
- digestCursor[guild] = cursor - 1
- return partial
+ pages[#pages + 1] = page
+ return pages
 end
 local nextRecovery = {}
 function S.Hello()
 	nextRecovery[ns.GuildKey()] = GetTime() + 600 + math.random(0, 120)
-	local sent = C.Send("hi", { s = digestString(ns.GuildKey()) }, "urgent")
+	local sent = false
+ for _, page in ipairs(digestPages()) do
+  if C.Send("hi", { s = page }, "urgent") then sent = true end
+ end
 	if sent then recovery = { guild = ns.GuildKey(), at = GetTime(), types = {} } end
 	return sent
 end

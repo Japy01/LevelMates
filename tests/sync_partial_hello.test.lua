@@ -10,19 +10,20 @@ for i = 1, 35 do
  S.Define(kind, { class = "board", life = 3600, fields = {} })
 end
 local seen = {}
-for _ = 1, 8 do
- local start = #STUB.sent
- assert(S.Hello())
- STUB.Advance(2)
- local summary
- for i = start + 1, #STUB.sent do
-  local kind, fields = C.Decode(STUB.sent[i].msg)
-  if kind == "hi" then summary = fields.s end
+local first = #STUB.sent
+assert(S.Hello())
+STUB.Advance(8)
+local pages = 0
+for i = first + 1, #STUB.sent do
+ local kind, fields = C.Decode(STUB.sent[i].msg)
+ if kind == "hi" then
+  assert(fields.s:sub(1, 2) == "~," and #fields.s <= 200)
+  pages = pages + 1
+  for covered in fields.s:gmatch(",([%w_]+):") do seen[covered] = true end
  end
- assert(summary and summary:sub(1, 2) == "~," and #summary <= 200)
- for kind in summary:gmatch(",([%w_]+):") do seen[kind] = true end
 end
-for kind in pairs(types) do assert(seen[kind], "rotation omitted " .. kind) end
+assert(pages > 1, "expected multiple hello pages")
+for kind in pairs(types) do assert(seen[kind], "hello omitted " .. kind) end
 S.Put("zz1", "entry", {})
 STUB.Advance(2)
 local start = #STUB.sent
