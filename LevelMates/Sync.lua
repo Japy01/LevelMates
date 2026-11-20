@@ -220,12 +220,15 @@ local recovery
 -- Each partial hello covers only its listed types. Send all pages in the
 -- same recovery round so a stale record can be repaired on the first hello.
 local function digestPages()
- local parts = {}
+ local parts, nonempty = {}, {}
  for _, t in ipairs(S.Types("board")) do
   local n, sum = S.Digest(t)
-  parts[#parts + 1] = t .. ":" .. n .. ":" .. sum
+  local digest = t .. ":" .. n .. ":" .. sum
+  parts[#parts + 1] = digest
+  if n > 0 then nonempty[#nonempty + 1] = digest end
  end
- local full = table.concat(parts, ",")
+ -- In a complete hello, an omitted type already means no local records.
+ local full = table.concat(nonempty, ",")
  if #full <= 200 then return { full } end
  local pages, page = {}, "~"
  for _, part in ipairs(parts) do

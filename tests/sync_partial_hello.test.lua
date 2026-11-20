@@ -8,7 +8,9 @@ for i = 1, 35 do
  local kind = "zz" .. i
  types[kind] = true
  S.Define(kind, { class = "board", life = 3600, fields = {} })
+ S.Put(kind, "entry", {})
 end
+STUB.Advance(60)
 local seen = {}
 local first = #STUB.sent
 assert(S.Hello())
@@ -24,8 +26,6 @@ for i = first + 1, #STUB.sent do
 end
 assert(pages > 1, "expected multiple hello pages")
 for kind in pairs(types) do assert(seen[kind], "hello omitted " .. kind) end
-S.Put("zz1", "entry", {})
-STUB.Advance(2)
 local start = #STUB.sent
 STUB.Receive(C.PREFIX, C.Encode("hi", {s = "~,zz2:0:0"}), "GUILD", "Luis-Testrealm")
 STUB.Advance(9)
