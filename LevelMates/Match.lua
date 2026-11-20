@@ -36,13 +36,27 @@ function M.Notice(fmt, ...)
 	if ns.db.settings.sound and PlaySound then PlaySound(SOUNDKIT and SOUNDKIT.IG_QUEST_LOG_OPEN or 844) end
 end
 
+local noticed = {}
+local function noticeMatch(name, id, title)
+ local seen = noticed[id] or {}
+ noticed[id] = seen
+ if seen[name] then return end
+ seen[name] = true
+ M.Notice(L.MATCH_HAS, name, title)
+end
+
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("QUEST_ACCEPTED")
-ev:SetScript("OnEvent", function(_, _, questID)
+ev:RegisterEvent("QUEST_REMOVED")
+ev:SetScript("OnEvent", function(_, event, questID)
+ if event == "QUEST_REMOVED" then
+  if type(questID) == "number" then noticed[questID] = nil end
+  return
+ end
 	if not ns.db.settings.matchNotices or type(questID) ~= "number" then return end
 	local title = C_QuestLog.GetTitleForQuestID(questID) or tostring(questID)
 	local m = M.ForQuest(questID)
-	for _, name in ipairs(m.has) do M.Notice(L.MATCH_HAS, name, title) end
+	for _, name in ipairs(m.has) do noticeMatch(name, questID, title) end
 	for i, name in ipairs(m.needs) do
 		if i > 3 then break end   -- a crowded zone must not flood the chat
 		M.Notice(L.MATCH_CAN, name, title)
@@ -57,6 +71,6 @@ ns.On("LM_MATE_QUESTS", function(name)
 	local myMap = C_Map.GetBestMapForUnit("player")
 	if not mate or mate.mapId ~= myMap then return end
 	for id in pairs(mine) do
-		if mate.quests[id] then M.Notice(L.MATCH_HAS, name, C_QuestLog.GetTitleForQuestID(id) or tostring(id)); return end
+		if mate.quests[id] then noticeMatch(name, id, C_QuestLog.GetTitleForQuestID(id) or tostring(id)); return end
 	end
 end)

@@ -46,7 +46,7 @@ local function send(rec, target)
 	local spec = types[rec.t]
 	if spec.relayFrom and not spec.relayFrom(rec.o, me()) then return false end
 	local mine = rec.o == me() and not target
-	local opts = mine and { hold = true, onSent = function() inQueue[rec] = nil; rec.pending = nil end } or { hold = true }
+	local opts = mine and { hold = true, onSent = function() inQueue[rec] = nil; rec.pending = nil end } or { hold = true, syncType = target and rec.t }
 	local ok
 	if rec.dead then
 		local f = { t = rec.t, id = rec.id, v = rec.v, e = rec.e }
@@ -217,16 +217,32 @@ C.SCHEMA.hd = { t = C.V.word(12), n = C.V.int(1, 100000), s = C.V.int(0, 2147483
 C.REQUIRED.hd = { "t", "n", "s" }
 local recovery
 
-local function digestString()
-	local parts = {}
-	for _, t in ipairs(S.Types("board")) do local n, sum = S.Digest(t); parts[#parts + 1] = t .. ":" .. n .. ":" .. sum end
-	local s = table.concat(parts, ",")
-	return #s <= 200 and s or ""
+-- Keep the existing hello format for older peers. A leading ~ marks a
+-- partial digest, so newer peers can distinguish omitted types from empty ones.
+local digestCursor = {}
+local function digestString(guild)
+ local parts = {}
+ for _, t in ipairs(S.Types("board")) do
+  local n, sum = S.Digest(t)
+  parts[#parts + 1] = t .. ":" .. n .. ":" .. sum
+ end
+ local full = table.concat(parts, ",")
+ if #full <= 200 then return full end
+ local cursor = (digestCursor[guild] or 0) % #parts + 1
+ local partial = "~"
+ for _ = 1, #parts do
+  local part = "," .. parts[cursor]
+  if #partial + #part > 200 then break end
+  partial = partial .. part
+  cursor = cursor % #parts + 1
+ end
+ digestCursor[guild] = cursor - 1
+ return partial
 end
 local nextRecovery = {}
 function S.Hello()
 	nextRecovery[ns.GuildKey()] = GetTime() + 600 + math.random(0, 120)
-	local sent = C.Send("hi", { s = digestString() }, "urgent")
+	local sent = C.Send("hi", { s = digestString(ns.GuildKey()) }, "urgent")
 	if sent then recovery = { guild = ns.GuildKey(), at = GetTime(), types = {} } end
 	return sent
 end
@@ -249,6 +265,8 @@ end)
 
 local claimed = {}   -- [requester .. ":" .. type] = when someone claimed answering it
 local function batch(t, to)
+ if not C.TargetAvailable(to) then return end
+ if C.HasPendingSync(to, t) then return end
 	local spec = types[t]
 	local list = {}
 	for _, r in pairs(store(t)) do
@@ -256,7 +274,10 @@ local function batch(t, to)
 	end
 	table.sort(list, function(a, b) if a.v ~= b.v then return a.v < b.v end; return a.id < b.id end)
 	local first = math.max(1, #list - (spec.relayMax or S.BATCH) + 1)   -- the newest, oldest first
-	for i = first, #list do send(list[i], to) end
+ local accepted = 0
+ for i = first, #list do if send(list[i], to) then accepted = accepted + 1 end end
+
+ return accepted > 0
 end
 -- Two of us may claim in the same instant: the claimer waits 1.5 s and, if someone else claimed meanwhile, only the
 -- one whose name sorts first sends.
@@ -291,6 +312,7 @@ local function answer(t, to)
 end
 C.OnMessage("hi", function(f, name)
 	local theirs = {}
+ local partial = f.s:sub(1, 1) == "~"
 	for part in f.s:gmatch("[^,]+") do
 		local t, n, sum = part:match("^([%w_]+):(%d+):(%d+)$")
 		if t then theirs[t] = n .. ":" .. sum end
@@ -298,8 +320,9 @@ C.OnMessage("hi", function(f, name)
 	local differ = {}
 	for _, t in ipairs(S.Types("board")) do
 		local n, sum = S.Digest(t)
-		if n > 0 and theirs[t] ~= n .. ":" .. sum then differ[#differ + 1] = t end
+		if n > 0 and (not partial or theirs[t]) and theirs[t] ~= n .. ":" .. sum then differ[#differ + 1] = t end
 	end
+
 	if #differ == 0 then return end
 	-- one wait for the whole hello, then the types in name order (a run's line-up never before the run)
 	local guild = ns.GuildKey()
@@ -360,8 +383,8 @@ C.OnMessage("hw", function(f, name, _, channel)
 	if channel ~= "WHISPER" or not spec or spec.class ~= "board" or not R.IsGuildmate(name)
 		or (spec.canAnswer and not spec.canAnswer(name))
 		or (answeredRetry[key] and GetTime() - answeredRetry[key] < 10) then return end
-	answeredRetry[key] = GetTime()
-	batch(f.t, name)
+
+	if batch(f.t, name) then answeredRetry[key] = GetTime() end
 end)
 
 -- Expired records and tombstones go once a minute (never while a list is being read).

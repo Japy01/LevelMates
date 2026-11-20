@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.1
+
+- Stop queued addon whispers when a guildmate disconnects or the server reports that the player cannot be found.
+- Avoid repeating a catch-up batch while messages of the same type are still queued for that guildmate.
+- Send a bounded, rotating sync summary when the full summary exceeds the message limit.
+- Show each shared quest notice once per guildmate and quest during a session.
+
 ## 0.9.0
 
 - Recover guild recipe books, shared builds, wishlists, macros and restricted announcements from eligible guild peers, including withdrawals.

@@ -272,6 +272,59 @@ end
 local INSTANCE_OK = { help = true, helpok = true }
 local function inInstance() return IsInInstance and IsInInstance() == true end
 
+-- A missing recipient is asynchronous on Forever: SendAddonMessage may return 0.
+local unavailable, recentlyHeard = {}, {}
+local function targetKey(name) return ns.ShortName(name):lower() end
+function C.CancelTarget(target)
+ local key = targetKey(target)
+ unavailable[key] = GetTime() + 120
+ recentlyHeard[key] = nil
+ local dropped = {}
+ for i = #queue, 1, -1 do
+  if queue[i].target and targetKey(queue[i].target) == key then
+   dropped[#dropped + 1] = table.remove(queue, i).kind
+  end
+ end
+ C.stats.queued = #queue
+ local held = 0
+ for _, item in ipairs(queue) do if item.heldAt then held = held + 1 end end
+ C.stats.held = held
+ C.stats.dropped = C.stats.dropped + #dropped
+ for _, kind in ipairs(dropped) do ns.Fire("LM_COMM_DROPPED", kind) end
+end
+-- Read the live queue so sent, cancelled and evicted packets stop counting.
+function C.HasPendingSync(target, syncType)
+ local key = targetKey(target)
+ for _, item in ipairs(queue) do
+  if item.syncType == syncType and item.target and targetKey(item.target) == key then
+   return true
+  end
+ end
+ return false
+end
+function C.TargetAvailable(target)
+ local key = targetKey(target)
+ if unavailable[key] and unavailable[key] > GetTime() then return false end
+ unavailable[key] = nil
+ if recentlyHeard[key] and GetTime() - recentlyHeard[key] < 120 then return true end
+ local R = ns.Roster
+ for _, member in ipairs(R and R.GuildMembers and R.GuildMembers() or {}) do
+  if targetKey(member.name) == key then return member.online ~= false end
+ end
+ return true -- missing/unreadable roster is unknown, not proof of disconnection
+end
+function C.TargetSystemMessage(message)
+ message = ns.Plain(message)
+ if type(message) ~= "string" then return end
+ local fmt = ns.Plain(ERR_CHAT_PLAYER_NOT_FOUND_S)
+ if type(fmt) ~= "string" then return end
+ local before, after = fmt:match("^(.-)%%s(.*)$")
+ if not before then return end
+ local function escape(x) return (x:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")) end
+ local target = message:match("^" .. escape(before) .. "(.+)" .. escape(after) .. "$")
+ if target then C.CancelTarget(target) end
+end
+
 local function pump()
 	local now = GetTime()
 	allowance = math.min(10, allowance + (now - lastTick))
@@ -284,6 +337,14 @@ local function pump()
 			table.remove(queue, i); C.stats.dropped = C.stats.dropped + 1; ns.Fire("LM_COMM_DROPPED", item.kind)
 		end
 	end
+ local offline, checked = {}, {}
+ for _, item in ipairs(queue) do
+  if item.target and not checked[item.target] then
+   checked[item.target] = true
+   if not C.TargetAvailable(item.target) then offline[item.target] = true end
+  end
+ end
+ for target in pairs(offline) do C.CancelTarget(target) end
 	local inside = inInstance()
 	if inside then   -- entering an instance: what cannot wait is dropped (its sender re-marks it pending)
 		for j = #queue, 1, -1 do
@@ -355,8 +416,9 @@ function C.Whisper(kind, fields, target, prio, opts)
 	if inInstance() and not (opts and opts.hold) then return false end
 	local text, why = C.Encode(kind, fields)
 	if not text then ns.Log("encode %s failed: %s", kind, tostring(why)); return false end
+ if not C.TargetAvailable(target) then return false end
 	local bare = ns.ShortName(target):match("^([^%-]+)") or target
-	enqueue({ text = text, kind = kind, lane = laneOf(kind, prio), target = opts and opts.fullTarget or bare, canSend = opts and opts.canSend, hold = opts and opts.hold, onSent = opts and opts.onSent })
+	enqueue({ text = text, kind = kind, lane = laneOf(kind, prio), target = opts and opts.fullTarget or bare, syncType = opts and opts.syncType, canSend = opts and opts.canSend, hold = opts and opts.hold, onSent = opts and opts.onSent })
 	pump()
 	return true
 end
@@ -438,7 +500,7 @@ function C.SendBig(kind, fields, prio, target, opts)
 	end
 	local ok = true
 	for i = 1, total do
-		local o = opts and { hold = opts.hold, onSent = i == total and opts.onSent or nil, fullTarget = opts.fullTarget, canSend = opts.canSend } or nil
+		local o = opts and { hold = opts.hold, onSent = i == total and opts.onSent or nil, fullTarget = opts.fullTarget, syncType = opts.syncType, canSend = opts.canSend } or nil
 		if target then ok = C.Whisper("bl", parts[i], target, prio, o) and ok else ok = C.Send("bl", parts[i], prio, o) and ok end
 	end
 	return ok
@@ -514,10 +576,18 @@ local function onAddonMessage(prefix, text, channel, sender)
 	end
 	local kind, fields = C.Decode(text)
 	if not kind then C.stats.bad = C.stats.bad + 1; return end
+ if kind == "bye" then
+  C.CancelTarget(name)
+ else
+  local key = targetKey(name)
+  unavailable[key] = nil
+  recentlyHeard[key] = GetTime()
+ end
 	deliver(kind, fields, name, sender, channel)
 end
 
 ns.On("LM_GUILD_ROSTER", function()
+ recentlyHeard = {}
 	if #C.waiting == 0 or not ns.Roster.RosterLoaded() then return end
 	local list = C.waiting
 	C.waiting = {}
@@ -539,10 +609,12 @@ function C.Start()
 		frame = CreateFrame("Frame")
 		frame:SetScript("OnEvent", function(_, event, ...)
 			if event == "CHAT_MSG_ADDON" then onAddonMessage(...)
+   elseif event == "CHAT_MSG_SYSTEM" then C.TargetSystemMessage(...)
 			else C_Timer.After(2, pump) end   -- out of an instance or a fight: what waited goes now
 		end)
 	end
 	frame:RegisterEvent("CHAT_MSG_ADDON")
+ frame:RegisterEvent("CHAT_MSG_SYSTEM")
 	frame:RegisterEvent("ZONE_CHANGED_NEW_AREA"); frame:RegisterEvent("PLAYER_REGEN_ENABLED"); frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	lastTick = GetTime()
 	ns.Every("comm", 0.2, pump)   -- on the addon's one ticker; an empty queue returns at once
